@@ -48,6 +48,7 @@
 #include "text.h"
 #include "tuplet.h"
 #include "vrv.h"
+#include "glyph.h"
 
 namespace vrv {
 
@@ -562,79 +563,18 @@ void View::DrawBrace(DeviceContext *dc, int x, int y1, int y2, int staffSize)
 {
     assert(dc);
 
-    // int new_coords[2][6];
-    Point points[4];
-    Point bez1[4];
-    Point bez2[4];
+    Glyph *glyph = Resources::GetGlyph(SMUFL_E000_brace);
+    FontInfo *font = m_doc->GetDrawingSmuflFont(staffSize, false);
 
-    int penWidth;
-    penWidth = m_doc->GetDrawingStemWidth(staffSize);
-    y1 -= penWidth;
-    y2 += penWidth;
-    BoundingBox::Swap(y1, y2);
+    int dummy, g_h;
+    glyph->GetBoundingBox(dummy, dummy, dummy, g_h);
 
-    int ymed, xdec, fact;
+    float ratio = float(glyph->GetUnitsPerEm()) / font->GetPointSize();
 
-    x -= m_doc->GetDrawingBeamWhiteWidth(staffSize, false); // distance between bar and start brace
+    int x1 = x - m_doc->GetDrawingBeamWidth(staffSize, false) - x * ratio;
+    staffSize *= ratio * (y1 - y2) / g_h;
 
-    ymed = (y1 + y2) / 2;
-    fact = m_doc->GetDrawingBeamWhiteWidth(staffSize, false) + m_doc->GetDrawingStemWidth(staffSize);
-    xdec = ToDeviceContextX(fact);
-
-    points[0].x = ToDeviceContextX(x);
-    points[0].y = ToDeviceContextY(y1);
-    points[1].x = ToDeviceContextX(x - m_doc->GetDrawingDoubleUnit(staffSize) * 2);
-    points[1].y = points[0].y - ToDeviceContextX(m_doc->GetDrawingDoubleUnit(staffSize) * 3);
-    points[3].x = ToDeviceContextX(x - m_doc->GetDrawingDoubleUnit(staffSize));
-    points[3].y = ToDeviceContextY(ymed);
-    points[2].x = ToDeviceContextX(x + m_doc->GetDrawingUnit(staffSize));
-    points[2].y = points[3].y + ToDeviceContextX(m_doc->GetDrawingDoubleUnit(staffSize));
-
-    bez1[0] = points[0];
-    bez1[1] = points[1];
-    bez1[2] = points[2];
-    bez1[3] = points[3];
-
-    points[1].x += xdec;
-    points[2].x += xdec;
-
-    bez2[0] = points[0];
-    bez2[1] = points[1];
-    bez2[2] = points[2];
-    bez2[3] = points[3];
-
-    dc->StartCustomGraphic("grpSym");
-
-    dc->SetPen(m_currentColour, std::max(1, penWidth), AxSOLID);
-    dc->SetBrush(m_currentColour, AxSOLID);
-
-    dc->DrawComplexBezierPath(bez1, bez2);
-
-    // on produit l'image reflet vers le bas: 0 est identique
-    points[0].y = ToDeviceContextY(y2);
-    points[1].y = points[0].y + ToDeviceContextX(m_doc->GetDrawingDoubleUnit(staffSize) * 3);
-    points[3].y = ToDeviceContextY(ymed);
-    points[2].y = points[3].y - ToDeviceContextX(m_doc->GetDrawingDoubleUnit(staffSize));
-
-    bez1[0] = points[0];
-    bez1[1] = points[1];
-    bez1[2] = points[2];
-    bez1[3] = points[3];
-
-    points[1].x -= xdec;
-    points[2].x -= xdec;
-
-    bez2[0] = points[0];
-    bez2[1] = points[1];
-    bez2[2] = points[2];
-    bez2[3] = points[3];
-
-    dc->DrawComplexBezierPath(bez1, bez2);
-
-    dc->ResetPen();
-    dc->ResetBrush();
-
-    dc->EndCustomGraphic();
+    DrawSmuflCode(dc, x1, y2, SMUFL_E000_brace, staffSize, false);
 
     return;
 }
