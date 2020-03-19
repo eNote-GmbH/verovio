@@ -570,11 +570,11 @@ void View::DrawBrace(DeviceContext *dc, int x, int y1, int y2, int staffSize)
     glyph->GetBoundingBox(dummy, dummy, g_w, g_h);
 
     float ratio = float(glyph->GetUnitsPerEm()) / font->GetPointSize();
+    float scale = ratio * (y1 - y2) / g_h;
+    staffSize *= scale;
+    x -= m_doc->GetDrawingBeamWhiteWidth(staffSize, false) + g_w / scale;
 
-    int x1 = x - m_doc->GetDrawingBeamWidth(staffSize, false);
-    staffSize *= ratio * (y1 - y2) / g_h;
-
-    DrawSmuflCode(dc, x1, y2, SMUFL_E000_brace, staffSize, false);
+    DrawSmuflCode(dc, x, y2, SMUFL_E000_brace, staffSize, false);
 
     return;
 }
