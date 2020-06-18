@@ -831,6 +831,8 @@ void Doc::CastOffDoc()
 
     // Here we redo the alignment because of the new scoreDefs
     // We can actually optimise this and have a custom version that does not redo all the calculation
+    // Because of the new scoreDef, we need to reset cached drawingX
+    contentPage->ResetCachedDrawingX();
     contentPage->LayOutVertically();
 
     // Detach the contentPage
