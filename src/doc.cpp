@@ -795,22 +795,41 @@ void Doc::CastOffDoc()
     assert(contentPage);
     contentPage->LayOutHorizontally();
 
-    System *contentSystem = dynamic_cast<System *>(contentPage->DetachChild(0));
-    assert(contentSystem);
+    const int systemCount = contentPage->GetChildCount();
+    std::vector<System *> contentSystems(systemCount);
+    std::vector<System *> currentSystems;
 
-    System *currentSystem = new System();
-    contentPage->AddChild(currentSystem);
-    CastOffSystemsParams castOffSystemsParams(contentSystem, contentPage, currentSystem, this);
-    castOffSystemsParams.m_systemWidth = this->m_drawingPageWidth - this->m_drawingPageMarginLeft
-        - this->m_drawingPageMarginRight - currentSystem->m_systemLeftMar - currentSystem->m_systemRightMar;
-    castOffSystemsParams.m_shift = -contentSystem->GetDrawingLabelsWidth();
-    castOffSystemsParams.m_currentScoreDefWidth
-        = contentPage->m_drawingScoreDef.GetDrawingWidth() + contentSystem->GetDrawingAbbrLabelsWidth();
+    for (int i = 0; i < systemCount; i++) {
+        System *contentSystem = dynamic_cast<System *>(contentPage->DetachChild(0));
+        assert(contentSystem);
+        contentSystems[i] = contentSystem;
+    }
 
-    Functor castOffSystems(&Object::CastOffSystems);
-    Functor castOffSystemsEnd(&Object::CastOffSystemsEnd);
-    contentSystem->Process(&castOffSystems, &castOffSystemsParams, &castOffSystemsEnd);
-    delete contentSystem;
+    for (int i = 0; i < systemCount; i++) {
+        System *currentSystem = new System();
+        contentPage->AddChild(currentSystem);
+        CastOffSystemsParams castOffSystemsParams(contentSystems[i], contentPage, currentSystem, this);
+        castOffSystemsParams.m_systemWidth = this->m_drawingPageWidth - this->m_drawingPageMarginLeft
+            - this->m_drawingPageMarginRight - currentSystem->m_systemLeftMar - currentSystem->m_systemRightMar;
+        castOffSystemsParams.m_shift = -contentSystems[i]->GetDrawingLabelsWidth();
+        castOffSystemsParams.m_currentScoreDefWidth
+            = contentPage->m_drawingScoreDef.GetDrawingWidth() + contentSystems[i]->GetDrawingAbbrLabelsWidth();
+
+        Functor castOffSystems(&Object::CastOffSystems);
+        Functor castOffSystemsEnd(&Object::CastOffSystemsEnd);
+        contentSystems[i]->Process(&castOffSystems, &castOffSystemsParams, &castOffSystemsEnd);
+        delete contentSystems[i];
+        for (int i = 0; contentPage->GetChildCount(); i++) {
+            System *castedSystem = dynamic_cast<System *>(contentPage->DetachChild(0));
+            assert(castedSystem);
+            currentSystems.push_back(castedSystem);
+        }
+        assert(contentPage->GetChildCount() == 0);
+    }
+
+    for (System * castedSystem : currentSystems) {
+        contentPage->AddChild(castedSystem);
+    }
 
     // Reset the scoreDef at the beginning of each system
     this->SetCurrentScoreDefDoc(true);
@@ -946,29 +965,44 @@ void Doc::CastOffEncodingDoc()
 
 void Doc::ConvertToPageBasedDoc()
 {
-    Score *score = this->GetScore();
-    assert(score);
-
+    std::vector<Score *> scores = this->GetScores();
+    bool firstScore = true;
     Pages *pages = new Pages();
-    pages->ConvertFrom(score);
     Page *page = new Page();
     pages->AddChild(page);
-    System *system = new System();
-    page->AddChild(system);
 
-    ConvertToPageBasedParams convertToPageBasedParams(system);
-    Functor convertToPageBased(&Object::ConvertToPageBased);
-    Functor convertToPageBasedEnd(&Object::ConvertToPageBasedEnd);
-    score->Process(&convertToPageBased, &convertToPageBasedParams, &convertToPageBasedEnd);
+    System *system = NULL;
 
-    score->ClearRelinquishedChildren();
-    assert(score->GetChildCount() == 0);
+    for (Object *scoreObject : scores) {
+        Score *score = dynamic_cast<Score *>(scoreObject);
+        assert(score);
 
-    Mdiv *mdiv = dynamic_cast<Mdiv *>(score->GetParent());
-    assert(mdiv);
+        if (firstScore) {
+            pages->ConvertFrom(score);
+        }
 
-    mdiv->ReplaceChild(score, pages);
-    delete score;
+        system = new System();
+        page->AddChild(system);
+
+        ConvertToPageBasedParams convertToPageBasedParams(system);
+        Functor convertToPageBased(&Object::ConvertToPageBased);
+        Functor convertToPageBasedEnd(&Object::ConvertToPageBasedEnd);
+        score->Process(&convertToPageBased, &convertToPageBasedParams, &convertToPageBasedEnd);
+
+        score->ClearRelinquishedChildren();
+        assert(score->GetChildCount() == 0);
+
+        if (firstScore) {
+            Mdiv *mdiv = dynamic_cast<Mdiv *>(score->GetParent());
+            assert(mdiv);
+
+            mdiv->ReplaceChild(score, pages);
+            firstScore = false;
+            delete score;
+        } else {
+            delete this->DetachChild(1);
+        }
+    }
 
     this->ResetDrawingPage();
 }
@@ -1264,9 +1298,20 @@ bool Doc::HasPage(int pageIdx)
     return ((pageIdx >= 0) && (pageIdx < pages->GetChildCount()));
 }
 
-Score *Doc::GetScore()
+std::vector<Score *> Doc::GetScores()
 {
-    return dynamic_cast<Score *>(this->FindDescendantByType(SCORE));
+    ArrayOfObjects scores;
+    ClassIdComparison matchType(SCORE);
+    FindAllDescendantByComparison(&scores, &matchType);
+
+    std::vector<Score *> res(scores.size());
+    std::transform(scores.begin(), scores.end(), res.begin(),[](Object *scoreObject) {
+        Score *score = dynamic_cast<Score *>(scoreObject);
+        assert(score);
+        return score;
+    });
+
+    return res;
 }
 
 Pages *Doc::GetPages()

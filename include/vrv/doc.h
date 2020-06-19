@@ -107,7 +107,7 @@ public:
      * Get the Score in the visible Mdiv.
      * Will find it only when having read a score-based MEI file
      */
-    Score *GetScore();
+    std::vector<Score *> GetScores();
 
     /**
      * Get the Pages in the visible Mdiv.
