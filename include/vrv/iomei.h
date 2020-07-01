@@ -445,6 +445,7 @@ private:
     bool ReadDoc(pugi::xml_node root);
 
     ///@{
+    bool MEIInput::VerifyMdivNode(const pugi::xml_node &mdiv) const;
     bool ReadMdiv(Object *parent, pugi::xml_node parentNode, bool isVisible);
     bool ReadMdivChildren(Object *parent, pugi::xml_node parentNode, bool isVisible);
     bool ReadPages(Object *parent, pugi::xml_node parentNode);
@@ -733,6 +734,10 @@ private:
      * If not specified by --mdiv-x-path query, then it is the first <mdiv> in the body
      */
     pugi::xml_node m_selectedMdiv;
+    /**
+    * If this flag is set up all mdivs will be processed
+    */
+    bool m_processAllMdivs;
 
     /**
      * A flag indicating if the first scoreDef has to be used as Doc scoreDef.

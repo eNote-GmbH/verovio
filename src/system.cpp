@@ -801,11 +801,12 @@ int System::CastOffPages(FunctorParams *functorParams)
     const int childCount = params->m_currentPage->GetChildCount();
     if ((systemMaxPerPage && systemMaxPerPage == childCount)
         || (childCount > 0 && (this->m_drawingYRel - this->GetHeight() - currentShift < 0))) {
-        params->m_currentPage = new Page();
+        Mdiv *mdiv = params->m_currentPage->GetPageMdiv();
+        params->m_currentPage = new Page(mdiv);
         // Use VRV_UNSET value as a flag
         params->m_pgHeadHeight = VRV_UNSET;
-        assert(params->m_doc->GetPages());
-        params->m_doc->GetPages()->AddChild(params->m_currentPage);
+        assert(params->m_doc->GetPages(mdiv));
+        params->m_doc->GetPages(mdiv)->AddChild(params->m_currentPage);
         params->m_shift = this->m_drawingYRel - params->m_pageHeight;
     }
 

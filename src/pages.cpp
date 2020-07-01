@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "page.h"
+#include "mdiv.h"
 #include "score.h"
 #include "vrv.h"
 
@@ -23,7 +24,7 @@ namespace vrv {
 // Pages
 //----------------------------------------------------------------------------
 
-Pages::Pages() : Object("pages-"), AttLabelled(), AttNNumberLike()
+Pages::Pages(Mdiv *mdiv) : Object("pages-"), AttLabelled(), AttNNumberLike(), m_parentMdiv(mdiv)
 {
     RegisterAttClass(ATT_LABELLED);
     RegisterAttClass(ATT_NNUMBERLIKE);

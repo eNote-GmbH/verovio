@@ -13,6 +13,8 @@
 
 namespace vrv {
 
+class ScoreDef;
+
 //----------------------------------------------------------------------------
 // Mdiv
 //----------------------------------------------------------------------------
@@ -61,6 +63,8 @@ public:
      * See Mdiv::MakeVisible();
      */
     VisibilityType m_visibility;
+
+    ScoreDef *m_referenceScoreDef;
 
 private:
     //

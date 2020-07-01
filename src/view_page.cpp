@@ -37,6 +37,7 @@
 #include "measure.h"
 #include "mensur.h"
 #include "metersig.h"
+#include "mdiv.h"
 #include "mnum.h"
 #include "note.h"
 #include "options.h"
@@ -62,7 +63,7 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
     assert(dc);
     assert(m_doc);
 
-    m_currentPage = m_doc->SetDrawingPage(m_pageIdx);
+    m_currentPage = m_doc->SetDrawingPage(m_currentMdiv, m_pageIdx);
 
     int i;
 
@@ -361,10 +362,13 @@ void View::DrawStaffGrp(
     if (lastDef->GetLines() <= 1) yBottom -= m_doc->GetDrawingDoubleUnit(last->m_drawingStaffSize);
 
     // draw the system start bar line
+    Object *mdivObject = measure->GetFirstAncestor(MDIV);
+    Mdiv *mdiv = dynamic_cast<Mdiv *>(mdivObject);
+    assert(mdiv);
     if (topStaffGrp
         && ((((firstDef != lastDef) || staffGrp->HasSymbol())
-                && (m_doc->m_mdivScoreDef.GetSystemLeftline() != BOOLEAN_false))
-            || (m_doc->m_mdivScoreDef.GetSystemLeftline() == BOOLEAN_true))) {
+                && (mdiv->m_referenceScoreDef->GetSystemLeftline() != BOOLEAN_false))
+            || (mdiv->m_referenceScoreDef->GetSystemLeftline() == BOOLEAN_true))) {
         int barLineWidth = m_doc->GetDrawingBarLineWidth(staffSize);
         x += barLineWidth / 2;
         DrawVerticalLine(dc, yTop, yBottom, x, barLineWidth);

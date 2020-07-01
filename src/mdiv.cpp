@@ -40,6 +40,7 @@ void Mdiv::Reset()
     ResetNNumberLike();
 
     m_visibility = Hidden;
+    m_referenceScoreDef = NULL;
 }
 
 bool Mdiv::IsSupportedChild(Object *child)

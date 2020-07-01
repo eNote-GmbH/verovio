@@ -12,6 +12,7 @@
 #include "expansionmap.h"
 #include "facsimile.h"
 #include "options.h"
+#include "pages.h"
 #include "scoredef.h"
 
 namespace smf {
@@ -23,7 +24,6 @@ namespace vrv {
 class CastOffPagesParams;
 class FontInfo;
 class Glyph;
-class Pages;
 class Page;
 class Score;
 
@@ -101,7 +101,7 @@ public:
     /**
      * Check if the document has a page with the specified value
      */
-    bool HasPage(int pageIdx);
+    bool HasPage(Mdiv *mdiv, int pageIdx);
 
     /**
      * Get the Score in the visible Mdiv.
@@ -110,16 +110,21 @@ public:
     std::vector<Score *> GetScores();
 
     /**
-     * Get the Pages in the visible Mdiv.
+     * Get the list of Pages for each visible Mdiv.
      * Will find it only when having read a pages-based MEI file,
      * or when a file was converted to page-based MEI.
      */
-    Pages *GetPages();
+    std::vector<Pages *> GetPagesList();
+
+    /**
+    * Get the Pages in the Mdiv with corresponding index.
+    */
+    Pages *GetPages(Mdiv *mdiv);
 
     /**
      * Get the total page count
      */
-    int GetPageCount();
+    int GetPageCount(int mdivNumber = -1);
 
     /**
      * Return true if the MIDI generation is already done
@@ -326,7 +331,7 @@ public:
      * By default, the page size of the document is taken.
      * If a page is given, the size of the page is taken.
      */
-    Page *SetDrawingPage(int pageIdx);
+    Page *SetDrawingPage(Mdiv *mdiv, int pageIdx);
 
     /**
      * Reset drawing page to NULL.
@@ -474,6 +479,8 @@ private:
      * the default in the following order and if available.
      */
 
+    /** The page set currently processed */
+    Pages *m_pages;
     /** The page currently being drawn */
     Page *m_drawingPage;
     /** Height of a beam (10 and 6 by default) */
