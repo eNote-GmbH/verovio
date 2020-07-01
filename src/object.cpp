@@ -152,9 +152,11 @@ Object &Object::operator=(const Object &object)
             for (i = 0; i < (int)object.m_children.size(); ++i) {
                 Object *current = object.m_children.at(i);
                 Object *clone = current->Clone();
-                clone->SetParent(this);
-                clone->CloneReset();
-                m_children.push_back(clone);
+                if (clone) {
+                    clone->SetParent(this);
+                    clone->CloneReset();
+                    m_children.push_back(clone);
+                }
             }
         }
     }
@@ -922,10 +924,10 @@ void ObjectListInterface::ResetList(Object *node)
     this->FilterList(&m_list);
 }
 
-const ArrayOfObjects *ObjectListInterface::GetList(Object *node)
+const ArrayOfObjects &ObjectListInterface::GetList(Object *node)
 {
     ResetList(node);
-    return &m_list;
+    return m_list;
 }
 
 int ObjectListInterface::GetListIndex(const Object *listElement)
@@ -1003,8 +1005,8 @@ std::wstring TextListInterface::GetText(Object *node)
 {
     // alternatively we could cache the concatString in the interface and instantiate it in FilterList
     std::wstring concatText;
-    const ArrayOfObjects *childList = this->GetList(node); // make sure it's initialized
-    for (ArrayOfObjects::const_iterator it = childList->begin(); it != childList->end(); ++it) {
+    const ArrayOfObjects &childList = this->GetList(node); // make sure it's initialized
+    for (ArrayOfObjects::const_iterator it = childList.begin(); it != childList.end(); ++it) {
         if ((*it)->Is(LB)) {
             continue;
         }
@@ -1019,8 +1021,8 @@ void TextListInterface::GetTextLines(Object *node, std::vector<std::wstring> &li
 {
     // alternatively we could cache the concatString in the interface and instantiate it in FilterList
     std::wstring concatText;
-    const ArrayOfObjects *childList = this->GetList(node); // make sure it's initialized
-    for (ArrayOfObjects::const_iterator it = childList->begin(); it != childList->end(); ++it) {
+    const ArrayOfObjects &childList = this->GetList(node); // make sure it's initialized
+    for (ArrayOfObjects::const_iterator it = childList.begin(); it != childList.end(); ++it) {
         if ((*it)->Is(LB) && !concatText.empty()) {
             lines.push_back(concatText);
             concatText.clear();

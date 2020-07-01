@@ -76,7 +76,7 @@ int Neume::GetPosition(LayerElement *element)
 
 bool Neume::IsLastInNeume(LayerElement *element)
 {
-    int size = (int)this->GetList(this)->size();
+    int size = (int)this->GetList(this).size();
     int position = this->GetPosition(element);
 
     // This method should be called only if the note is part of a neume

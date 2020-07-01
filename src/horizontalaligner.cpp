@@ -21,6 +21,7 @@
 #include "functorparams.h"
 #include "layer.h"
 #include "measure.h"
+#include "mdiv.h"
 #include "note.h"
 #include "options.h"
 #include "smufl.h"
@@ -1073,8 +1074,8 @@ int AlignmentReference::AdjustAccidX(FunctorParams *functorParams)
 
     if (m_accidSpace.empty()) return FUNCTOR_SIBLINGS;
 
-    assert(params->m_doc);
-    StaffDef *staffDef = params->m_doc->m_mdivScoreDef.GetStaffDef(this->GetN());
+    assert(params->m_mdiv);
+    StaffDef *staffDef = params->m_mdiv->m_referenceScoreDef->GetStaffDef(this->GetN());
     int staffSize = (staffDef && staffDef->HasScale()) ? staffDef->GetScale() : 100;
 
     std::sort(m_accidSpace.begin(), m_accidSpace.end(), AccidSpaceSort());

@@ -27,6 +27,7 @@
 #include "iopae.h"
 #include "layer.h"
 #include "measure.h"
+#include "mdiv.h"
 #include "nc.h"
 #include "neume.h"
 #include "note.h"
@@ -706,7 +707,7 @@ std::string Toolkit::GetMEI(const std::string &jsonOptions)
     meioutput.SetRemoveIds(removeIds);
 
     std::string output = meioutput.GetOutput(pageNo);
-    if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);
+    if (initialPageNo >= 0) m_doc.SetDrawingPage(0, initialPageNo);
     return output;
 }
 
@@ -1201,18 +1202,15 @@ void Toolkit::RedoPagePitchPosLayout()
     page->LayOutPitchPos();
 }
 
-bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
+bool Toolkit::RenderToDeviceContext(Mdiv *mdiv, int pageNo, DeviceContext *deviceContext)
 {
     if (pageNo > GetPageCount()) {
         LogWarning("Page %d does not exist", pageNo);
         return false;
     }
 
-    // Page number is one-based - correct it to 0-based first
-    pageNo--;
-
     // Get the current system for the SVG clipping size
-    m_view.SetPage(pageNo);
+    m_view.SetPage(mdiv, pageNo);
 
     // Adjusting page width and height according to the options
     int width = m_options->m_pageWidth.GetUnfactoredValue();
@@ -1275,11 +1273,28 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xml_declaration)
 
     svg.SetHtml5(m_options->m_svgHtml5.GetValue());
 
+    // Page number is one-based - correct it to 0-based first
+    pageNo--;
+
+    std::vector<Pages *> renderPages = m_doc.GetPagesList();
+    Mdiv *pageMdiv = NULL;
+    for (Pages *pages : renderPages) {
+        pageMdiv = pages->GetParentMdiv();
+        if (pageMdiv->m_visibility == Hidden) {
+            continue;
+        }
+        if (pageNo < pages->GetChildCount()) {
+            break;
+        } else {
+            pageNo -= pages->GetChildCount();
+        }
+    }
+
     // render the page
-    RenderToDeviceContext(pageNo, &svg);
+    RenderToDeviceContext(pageMdiv, pageNo, &svg);
 
     std::string out_str = svg.GetStringSVG(xml_declaration);
-    if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);
+    if (initialPageNo >= 0) m_doc.SetDrawingPage(pageMdiv, initialPageNo);
     return out_str;
 }
 

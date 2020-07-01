@@ -118,13 +118,12 @@ int Ligature::CalcLigatureNotePos(FunctorParams *functorParams)
 
     m_drawingShapes.clear();
 
-    Note *lastNote = dynamic_cast<Note *>(this->GetList(this)->back());
+    Note *lastNote = dynamic_cast<Note *>(this->GetList(this).back());
     Staff *staff = dynamic_cast<Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff);
 
-    const ArrayOfObjects *notes = this->GetList(this);
-    assert(notes);
-    if (notes->size() < 2) return FUNCTOR_SIBLINGS;
+    const ArrayOfObjects notes = this->GetList(this);
+    if (notes.size() < 2) return FUNCTOR_SIBLINGS;
 
     Note *previousNote = NULL;
     bool previousUp = false;
@@ -133,12 +132,12 @@ int Ligature::CalcLigatureNotePos(FunctorParams *functorParams)
 
     bool isMensuralBlack = (staff->m_drawingNotationType == NOTATIONTYPE_mensural_black);
     bool oblique = false;
-    if ((notes->size() == 2) && this->GetForm() == LIGATUREFORM_obliqua) oblique = true;
+    if ((notes.size() == 2) && this->GetForm() == LIGATUREFORM_obliqua) oblique = true;
 
     // For better clarify, we loop withing the Ligature::CalcLigatureNotePos instead of
     // implementing Note::CalcLigatureNotePos.
 
-    for (auto &iter : *notes) {
+    for (auto &iter : notes) {
 
         Note *note = dynamic_cast<Note *>(iter);
         assert(note);
@@ -282,7 +281,7 @@ int Ligature::CalcLigatureNotePos(FunctorParams *functorParams)
     previousNote = NULL;
     n1 = 0;
 
-    for (auto &iter : *notes) {
+    for (auto &iter : notes) {
 
         Note *note = dynamic_cast<Note *>(iter);
         assert(note);

@@ -14,6 +14,7 @@
 namespace vrv {
 
 class DeviceContext;
+class Mdiv;
 class PrepareProcessingListsParams;
 class RunningElement;
 class Staff;
@@ -35,7 +36,7 @@ public:
      * Reset method resets all attribute classes
      */
     ///@{
-    Page();
+    Page(Mdiv *mdiv);
     virtual ~Page();
     virtual void Reset();
     virtual std::string GetClassName() const { return "Page"; }
@@ -75,6 +76,11 @@ public:
      * Return the index position of the page in its document parent
      */
     int GetPageIdx() const { return Object::GetIdx(); }
+
+    /**
+    * Return the mdiv this page belongs to
+    */
+    Mdiv *GetPageMdiv() const { return m_mdiv; }
 
     /**
      * Return the position of the staff on the page, from top to bottom
@@ -230,6 +236,10 @@ private:
      * the force parameter is set.
      */
     bool m_layoutDone;
+    /**
+    * The number of mdiv in mdiv list for which this page was created
+    */
+    Mdiv *m_mdiv;
 };
 
 } // namespace vrv

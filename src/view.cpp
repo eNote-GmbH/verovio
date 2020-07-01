@@ -58,16 +58,19 @@ void View::SetDoc(Doc *doc)
     m_currentStaff = NULL;
     m_currentSystem = NULL;
     m_currentPage = NULL;
+    m_currentMdiv = NULL;
     m_pageIdx = 0;
 }
 
-void View::SetPage(int pageIdx, bool doLayout)
+void View::SetPage(Mdiv *mdiv, int pageIdx, bool doLayout)
 {
-    assert(m_doc); // Page cannot be NULL
-    assert(m_doc->HasPage(pageIdx));
+    assert(m_doc);
+    // Page cannot be NULL
+    assert(m_doc->HasPage(mdiv, pageIdx));
 
     m_pageIdx = pageIdx;
-    m_currentPage = m_doc->SetDrawingPage(pageIdx);
+    m_currentMdiv = mdiv;
+    m_currentPage = m_doc->SetDrawingPage(mdiv, pageIdx);
 
     if (doLayout) {
         m_doc->SetCurrentScoreDefDoc();
@@ -91,8 +94,8 @@ void View::SetPage(int pageIdx, bool doLayout)
 
 bool View::HasNext(bool forward)
 {
-    if (forward) return (m_doc && (m_doc->HasPage(m_pageIdx + 1)));
-    return (m_doc && (m_doc->HasPage(m_pageIdx - 1)));
+    if (forward) return (m_doc && (m_doc->HasPage(m_currentMdiv, m_pageIdx + 1)));
+    return (m_doc && (m_doc->HasPage(m_currentMdiv, m_pageIdx - 1)));
 }
 
 void View::Next(bool forward)
@@ -105,7 +108,7 @@ void View::Next(bool forward)
     else if (!forward && this->HasNext(false)) {
         m_pageIdx--;
     }
-    SetPage(m_pageIdx);
+    SetPage(m_currentMdiv, m_pageIdx);
 }
 
 int View::ToDeviceContextX(int i)
