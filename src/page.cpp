@@ -17,6 +17,7 @@
 #include "comparison.h"
 #include "doc.h"
 #include "functorparams.h"
+#include "mdiv.h"
 #include "pages.h"
 #include "pgfoot.h"
 #include "pgfoot2.h"
@@ -33,7 +34,7 @@ namespace vrv {
 // Page
 //----------------------------------------------------------------------------
 
-Page::Page() : Object("page-")
+Page::Page(Mdiv *mdiv) : Object("page-"), m_mdiv(mdiv)
 {
     Reset();
 }
@@ -84,15 +85,15 @@ RunningElement *Page::GetHeader() const
         return NULL;
     }
 
-    Pages *pages = doc->GetPages();
+    Pages *pages = doc->GetPages(m_mdiv);
     assert(pages);
 
     // first page or use the pgHeader for all pages?
     if ((pages->GetFirst() == this) || (doc->GetOptions()->m_usePgHeaderForAll.GetValue())) {
-        return doc->m_scoreDef.GetPgHead();
+        return m_mdiv->m_referenceScoreDef->GetPgHead();
     }
     else {
-        return doc->m_scoreDef.GetPgHead2();
+        return m_mdiv->m_referenceScoreDef->GetPgHead2();
     }
 }
 
@@ -103,15 +104,15 @@ RunningElement *Page::GetFooter() const
         return NULL;
     }
 
-    Pages *pages = doc->GetPages();
+    Pages *pages = doc->GetPages(m_mdiv);
     assert(pages);
 
     // first page or use the pgFooter for all pages?
     if ((pages->GetFirst() == this) || (doc->GetOptions()->m_usePgFooterForAll.GetValue())) {
-        return doc->m_scoreDef.GetPgFoot();
+        return m_mdiv->m_referenceScoreDef->GetPgFoot();
     }
     else {
-        return doc->m_scoreDef.GetPgFoot2();
+        return m_mdiv->m_referenceScoreDef->GetPgFoot2();
     }
 }
 
@@ -136,7 +137,7 @@ void Page::LayOut(bool force)
         view.SetDoc(doc);
         BBoxDeviceContext bBoxDC(&view, 0, 0);
         // Do not do the layout in this view - otherwise we will loop...
-        view.SetPage(this->GetIdx(), false);
+        view.SetPage(m_mdiv, this->GetIdx(), false);
         view.DrawCurrentPage(&bBoxDC, false);
     }
 
@@ -202,7 +203,7 @@ void Page::LayOutTranscription(bool force)
     view.SetDoc(doc);
     BBoxDeviceContext bBoxDC(&view, 0, 0, BBOX_HORIZONTAL_ONLY);
     // Do not do the layout in this view - otherwise we will loop...
-    view.SetPage(this->GetIdx(), false);
+    view.SetPage(m_mdiv, this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
     Functor adjustXRelForTranscription(&Object::AdjustXRelForTranscription);
@@ -294,25 +295,25 @@ void Page::LayOutHorizontally()
     view.SetDoc(doc);
     BBoxDeviceContext bBoxDC(&view, 0, 0, BBOX_HORIZONTAL_ONLY);
     // Do not do the layout in this view - otherwise we will loop...
-    view.SetPage(this->GetIdx(), false);
+    view.SetPage(m_mdiv, this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
     // Adjust the x position of the LayerElement where multiple layer collide
     // Look at each LayerElement and change the m_xShift if the bounding box is overlapping
     Functor adjustLayers(&Object::AdjustLayers);
-    AdjustLayersParams adjustLayersParams(doc, &adjustLayers, doc->m_scoreDef.GetStaffNs());
+    AdjustLayersParams adjustLayersParams(doc, &adjustLayers, m_mdiv->m_referenceScoreDef->GetStaffNs());
     this->Process(&adjustLayers, &adjustLayersParams);
 
     // Adjust the X position of the accidentals, including in chords
     Functor adjustAccidX(&Object::AdjustAccidX);
-    AdjustAccidXParams adjustAccidXParams(doc, &adjustAccidX);
+    AdjustAccidXParams adjustAccidXParams(doc, m_mdiv, &adjustAccidX);
     this->Process(&adjustAccidX, &adjustAccidXParams);
 
     // Adjust the X shift of the Alignment looking at the bounding boxes
     // Look at each LayerElement and change the m_xShift if the bounding box is overlapping
     Functor adjustXPos(&Object::AdjustXPos);
     Functor adjustXPosEnd(&Object::AdjustXPosEnd);
-    AdjustXPosParams adjustXPosParams(doc, &adjustXPos, &adjustXPosEnd, doc->m_scoreDef.GetStaffNs());
+    AdjustXPosParams adjustXPosParams(doc, &adjustXPos, &adjustXPosEnd, m_mdiv->m_referenceScoreDef->GetStaffNs());
     this->Process(&adjustXPos, &adjustXPosParams, &adjustXPosEnd);
 
     // Adjust the X shift of the Alignment looking at the bounding boxes
@@ -320,7 +321,7 @@ void Page::LayOutHorizontally()
     Functor adjustGraceXPos(&Object::AdjustGraceXPos);
     Functor adjustGraceXPosEnd(&Object::AdjustGraceXPosEnd);
     AdjustGraceXPosParams adjustGraceXPosParams(
-        doc, &adjustGraceXPos, &adjustGraceXPosEnd, doc->m_scoreDef.GetStaffNs());
+        doc, &adjustGraceXPos, &adjustGraceXPosEnd, m_mdiv->m_referenceScoreDef->GetStaffNs());
     this->Process(&adjustGraceXPos, &adjustGraceXPosParams, &adjustGraceXPosEnd);
 
     // We need to populate processing lists for processing the document by Layer (for matching @tie) and
@@ -395,7 +396,7 @@ void Page::LayOutVertically()
     BBoxDeviceContext bBoxDC(&view, 0, 0);
     view.SetDoc(doc);
     // Do not do the layout in this view - otherwise we will loop...
-    view.SetPage(this->GetIdx(), false);
+    view.SetPage(m_mdiv, this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
     // Adjust the position of outside articulations with slurs end and start positions
@@ -415,7 +416,7 @@ void Page::LayOutVertically()
 
     // If slurs were adjusted we need to redraw to adjust the bounding boxes
     if (adjustSlursParams.m_adjusted) {
-        view.SetPage(this->GetIdx(), false);
+        view.SetPage(m_mdiv, this->GetIdx(), false);
         view.DrawCurrentPage(&bBoxDC, false);
     }
 
@@ -510,7 +511,7 @@ void Page::JustifyVertically()
     int stepSize = this->CalcJustificationStepSize(systemsOnly);
 
     // Last page and justification of last page is not enabled
-    Pages *pages = doc->GetPages();
+    Pages *pages = doc->GetPages(m_mdiv);
     assert(pages);
     if (pages->GetLast() == this) {
         if (!doc->GetOptions()->m_justifyIncludeLastPage.GetValue()) {
@@ -521,9 +522,9 @@ void Page::JustifyVertically()
             Page *penultimatePage = dynamic_cast<Page *>(pages->GetPrevious(this));
             assert(penultimatePage);
             if (!penultimatePage->m_layoutDone) {
-                doc->SetDrawingPage(idx - 1);
+                doc->SetDrawingPage(m_mdiv, idx - 1);
                 penultimatePage->LayOut();
-                doc->SetDrawingPage(idx);
+                doc->SetDrawingPage(m_mdiv, idx);
             }
             int previousStepSize = penultimatePage->CalcJustificationStepSize(systemsOnly);
             if (previousStepSize < stepSize) {

@@ -13,6 +13,7 @@
 
 namespace vrv {
 
+class Mdiv;
 class Score;
 
 //----------------------------------------------------------------------------
@@ -30,7 +31,7 @@ public:
      * Reset method resets all attribute classes
      */
     ///@{
-    Pages();
+    Pages(Mdiv *mdiv);
     virtual ~Pages();
     virtual void Reset();
     virtual std::string GetClassName() const { return "Pages"; }
@@ -49,6 +50,8 @@ public:
      */
     void ConvertFrom(Score *score);
 
+    Mdiv *GetParentMdiv() const { return m_parentMdiv; }
+
     //----------//
     // Functors //
     //----------//
@@ -59,6 +62,7 @@ public:
     //
 private:
     //
+    Mdiv *m_parentMdiv;
 };
 
 } // namespace vrv

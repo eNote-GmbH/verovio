@@ -42,6 +42,7 @@ class Layer;
 class LayerElement;
 class Lb;
 class Measure;
+class Mdiv;
 class MNum;
 class Mordent;
 class Nc;
@@ -148,7 +149,7 @@ public:
      * This is the default behavior, however, in some cases, we do not
      * want it. For example, when drawing the pages for getting the bounding boxes.
      */
-    void SetPage(int pageIdx, bool doLayout = true);
+    void SetPage(Mdiv *mdiv, int pageIdx, bool doLayout = true);
 
     /**
      * Method that actually draw the current page.
@@ -545,6 +546,7 @@ public:
     Doc *m_doc;
     /** Options of the document */
     Options *m_options;
+
     /** Index of the current page */
     int m_pageIdx;
 
@@ -560,6 +562,7 @@ public:
     Staff *m_currentStaff;
     System *m_currentSystem;
     Page *m_currentPage;
+    Mdiv *m_currentMdiv;
     ///@}
 
 protected:

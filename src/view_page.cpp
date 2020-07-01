@@ -35,6 +35,7 @@
 #include "measure.h"
 #include "mensur.h"
 #include "metersig.h"
+#include "mdiv.h"
 #include "mnum.h"
 #include "note.h"
 #include "options.h"
@@ -60,7 +61,7 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
     assert(dc);
     assert(m_doc);
 
-    m_currentPage = m_doc->SetDrawingPage(m_pageIdx);
+    m_currentPage = m_doc->SetDrawingPage(m_currentMdiv, m_pageIdx);
 
     int i;
 
@@ -363,10 +364,13 @@ void View::DrawStaffGrp(
     this->DrawLabels(dc, measure, system, staffGrp, xLabel, yLabel, abbreviations, 100, space);
 
     // draw the system start bar line
+    Object *mdivObject = measure->GetFirstAncestor(MDIV);
+    Mdiv *mdiv = dynamic_cast<Mdiv *>(mdivObject);
+    assert(mdiv);
     if (topStaffGrp
         && ((((firstDef != lastDef) || staffGrp->HasSymbol())
-                && (m_doc->m_scoreDef.GetSystemLeftline() != BOOLEAN_false))
-            || (m_doc->m_scoreDef.GetSystemLeftline() == BOOLEAN_true))) {
+                && (mdiv->m_referenceScoreDef->GetSystemLeftline() != BOOLEAN_false))
+            || (mdiv->m_referenceScoreDef->GetSystemLeftline() == BOOLEAN_true))) {
         DrawVerticalLine(dc, yTop, yBottom, x, barLineWidth);
     }
     // actually draw the line, the brace or the bracket

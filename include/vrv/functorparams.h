@@ -38,9 +38,11 @@ class Measure;
 class MeasureAligner;
 class Mensur;
 class MeterSig;
+class Mdiv;
 class MRpt;
 class Object;
 class Page;
+class Pages;
 class ScoreDef;
 class Slur;
 class Staff;
@@ -110,14 +112,16 @@ public:
 
 class AdjustAccidXParams : public FunctorParams {
 public:
-    AdjustAccidXParams(Doc *doc, Functor *functor)
+    AdjustAccidXParams(Doc *doc, Mdiv *mdiv, Functor *functor)
     {
         m_currentMeasure = NULL;
         m_functor = functor;
         m_doc = doc;
+        m_mdiv = mdiv;
     }
     Measure *m_currentMeasure;
     Functor *m_functor;
+    Mdiv *m_mdiv;
     Doc *m_doc;
 };
 
@@ -802,20 +806,22 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: a pointer to the page we are taking the content from
- * member 1: a pointer the document we are adding pages to
- * member 2: a pointer to the current page
- * member 3: the cummulated shift (m_drawingYRel of the first system of the current page)
- * member 4: the page height
+ * member 0: a pointer to the page collection object
+ * member 1: a pointer to the page we are taking the content from
+ * member 2: a pointer the document we are adding pages to
+ * member 3: a pointer to the current page
+ * member 4: the cummulated shift (m_drawingYRel of the first system of the current page)
+ * member 5: the page height
  **/
 
 class CastOffPagesParams : public FunctorParams {
 public:
-    CastOffPagesParams(Page *contentPage, Doc *doc, Page *currentPage)
+    CastOffPagesParams(Pages *currentPages, Page *contentPage, Doc *doc, Page *currentPage)
     {
         m_contentPage = contentPage;
         m_doc = doc;
         m_currentPage = currentPage;
+        m_currentPages = currentPages;
         m_shift = 0;
         m_pageHeight = 0;
         m_pgHeadHeight = 0;
@@ -826,6 +832,7 @@ public:
     Page *m_contentPage;
     Doc *m_doc;
     Page *m_currentPage;
+    Pages *m_currentPages;
     int m_shift;
     int m_pageHeight;
     int m_pgHeadHeight;
