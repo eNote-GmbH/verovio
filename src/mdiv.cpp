@@ -15,6 +15,7 @@
 
 #include "pages.h"
 #include "score.h"
+#include "scoredef.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -53,6 +54,9 @@ bool Mdiv::IsSupportedChild(Object *child)
     }
     else if (child->Is(SCORE)) {
         assert(dynamic_cast<Score *>(child));
+    }
+    else if (child->Is(SCOREDEF)) {
+        assert(dynamic_cast<ScoreDef *>(child));
     }
     else {
         return false;

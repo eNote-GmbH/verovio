@@ -3490,8 +3490,8 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
         || dynamic_cast<EditorialElement *>(parent));
     // assert(dynamic_cast<Pages *>(parent));
 
-    ScoreDef *vrvScoreDef;
-    vrvScoreDef = new ScoreDef();
+    ScoreDef *vrvScoreDef = new ScoreDef();
+
     ReadScoreDefElement(scoreDef, vrvScoreDef);
 
     if (m_version < MEI_4_0_0) {
@@ -3507,9 +3507,13 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
         m_hasScoreDef = true;
         m_doc->m_mdivScoreDef = *vrvScoreDef;
     }
-    //else {
-        parent->AddChild(vrvScoreDef);
-    //}
+
+    Object *mdivObject = parent->GetFirstAncestor(MDIV);
+    assert(mdivObject);
+    Mdiv *mdiv = dynamic_cast<Mdiv *>(mdivObject);
+    mdiv->AddChild(vrvScoreDef);
+    mdiv->m_referenceScoreDef = vrvScoreDef;
+
     ReadUnsupportedAttr(scoreDef, vrvScoreDef);
     return ReadScoreDefChildren(vrvScoreDef, scoreDef);
 }
