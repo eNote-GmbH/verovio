@@ -2801,10 +2801,6 @@ bool MEIInput::ReadMdiv(Object *parent, pugi::xml_node mdiv, bool isVisible)
     ReadUnsupportedAttr(mdiv, vrvMdiv);
     bool result = ReadMdivChildren(vrvMdiv, mdiv, isVisible);
 
-    ClassIdComparison matchType(SCOREDEF);
-    Object *scoreDefObject = vrvMdiv->FindDescendantByComparison(&matchType, 2);
-    vrvMdiv->m_referenceScoreDef = scoreDefObject == NULL ? &m_doc->m_scoreDef : dynamic_cast<ScoreDef *>(scoreDefObject);
-
     return result;
 }
 
@@ -3381,14 +3377,8 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
         || dynamic_cast<EditorialElement *>(parent));
     // assert(dynamic_cast<Pages *>(parent));
 
-    ScoreDef *vrvScoreDef;
-    // We have not reached the first scoreDef and we have to use if for the doc
-    /*if (!m_hasScoreDef && m_useScoreDefForDoc) {
-        vrvScoreDef = &m_doc->m_scoreDef;
-    }
-    else {*/
-        vrvScoreDef = new ScoreDef();
-    //}
+    ScoreDef *vrvScoreDef = new ScoreDef();
+
     ReadScoreDefElement(scoreDef, vrvScoreDef);
 
     if (m_version < MEI_4_0_0) {
@@ -3403,9 +3393,13 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
         m_hasScoreDef = true;
         m_doc->m_scoreDef = *vrvScoreDef;
     }
-    //else {
-        parent->AddChild(vrvScoreDef);
-    //}
+
+    Object *mdivObject = parent->GetFirstAncestor(MDIV);
+    assert(mdivObject);
+    Mdiv *mdiv = dynamic_cast<Mdiv *>(mdivObject);
+    mdiv->AddChild(vrvScoreDef);
+    mdiv->m_referenceScoreDef = vrvScoreDef;
+
     ReadUnsupportedAttr(scoreDef, vrvScoreDef);
     return ReadScoreDefChildren(vrvScoreDef, scoreDef);
 }

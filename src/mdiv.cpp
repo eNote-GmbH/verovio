@@ -15,6 +15,7 @@
 
 #include "pages.h"
 #include "score.h"
+#include "scoredef.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -53,6 +54,9 @@ void Mdiv::AddChild(Object *child)
     }
     else if (child->Is(SCORE)) {
         assert(dynamic_cast<Score *>(child));
+    }
+    else if (child->Is(SCOREDEF)) {
+        assert(dynamic_cast<ScoreDef *>(child));
     }
     else {
         LogError("Adding '%s' to a '%s'", child->GetClassName().c_str(), this->GetClassName().c_str());
