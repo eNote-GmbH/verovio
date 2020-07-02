@@ -2706,33 +2706,26 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
         return false;
     }
 
-    // TODO create external flag
-    m_processAllMdivs = true;
+    // Check if the document contains at least one mdiv
+    m_selectedMdiv = body.child("mdiv");
+    if (m_selectedMdiv.empty()) {
+        LogError("No <mdiv> element found in the MEI data");
+        return false;
+    }
 
-    if (!m_processAllMdivs) {
-        // Select the first mdiv by default
-        m_selectedMdiv = body.child("mdiv");
-        if (m_selectedMdiv.empty()) {
-            LogError("No <mdiv> element found in the MEI data");
+    m_processAllMdivs = false;
+    std::string xPathQuery = m_doc->GetOptions()->m_mdivXPathQuery.GetValue();
+    if (!xPathQuery.empty()) {
+        pugi::xpath_node selection = body.select_node(xPathQuery.c_str());
+        if (selection) {
+            m_selectedMdiv = selection.node();
+        } else {
+            LogError("The <mdiv> requested with the xpath query '%s' could not be found", xPathQuery.c_str());
             return false;
         }
-
-        std::string xPathQuery = m_doc->GetOptions()->m_mdivXPathQuery.GetValue();
-        if (!xPathQuery.empty()) {
-            pugi::xpath_node selection = body.select_node(xPathQuery.c_str());
-            if (selection) {
-                m_selectedMdiv = selection.node();
-            } else {
-                LogError("The <mdiv> requested with the xpath query '%s' could not be found", xPathQuery.c_str());
-                return false;
-            }
-        } else {
-            // Try to select the mdiv above the first score (if any) - if not, we have pages or something is wrong
-            pugi::xpath_node scoreMdiv = body.select_node(".//mdiv[count(score)>0]");
-            if (scoreMdiv) {
-                m_selectedMdiv = scoreMdiv.node();
-            }
-        }
+        m_processAllMdivs = false;
+    } else {
+        m_processAllMdivs = true;
     }
 
     success = ReadMdivChildren(m_doc, body, false);

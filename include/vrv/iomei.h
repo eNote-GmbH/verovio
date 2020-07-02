@@ -710,7 +710,7 @@ private:
      */
     pugi::xml_node m_selectedMdiv;
     /**
-    * If this flag is set up all mdivs will be processed
+    * If this flag is set up all mdivs will be processed as visible
     */
     bool m_processAllMdivs;
 
