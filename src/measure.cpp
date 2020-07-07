@@ -930,11 +930,21 @@ int Measure::CastOffSystems(FunctorParams *functorParams)
             return FUNCTOR_SIBLINGS;
         }
         // Break it if necessary
-        else if (this->m_drawingXRel + this->GetWidth() + params->m_currentScoreDefWidth - params->m_shift
+        else if (this->m_drawingXRel + this->GetWidth() + params->m_currentScoreDefWidth - params->m_shift + params->m_contentSystem->GetDrawingLabelsWidth()
             > params->m_systemWidth) {
+            if (GetUuid() == "measure-0000000328244630") {
+                std::cout << "XRel = " << this->m_drawingXRel << ", Width = " << this->GetWidth() << ", ScoreDefWidth = " << params->m_currentScoreDefWidth << ", shift = " << params->m_shift << std::endl;
+            }
             params->m_currentSystem = new System();
             params->m_page->AddChild(params->m_currentSystem);
             params->m_shift = this->m_drawingXRel;
+            for (Object *oneOfPendingObjects : params->m_pendingObjects) {
+                if (oneOfPendingObjects->Is(MEASURE)) {
+                    Measure *firstPendingMesure = dynamic_cast<Measure *>(oneOfPendingObjects);
+                    assert(firstPendingMesure);
+                    params->m_shift = firstPendingMesure->m_drawingXRel;
+                }
+            }
         }
     }
 
