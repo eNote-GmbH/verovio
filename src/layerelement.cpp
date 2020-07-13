@@ -1075,8 +1075,14 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
                     assert(firstLayer);
                     if (firstLayer->GetN() == layerY->GetN())
                         loc += 2;
-                    else
-                        loc -= 2;
+                    else {
+                        Note *note = dynamic_cast<Note *>(firstLayer->GetChild(this->GetIdx()));
+                        if (note) {
+                            loc = PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), layerY->GetClefLocOffset(layerElementY));
+                        }
+                        loc -= 5;
+                        loc &= ~decltype(loc)(0x1);
+                    }
                 }
             }
         }
