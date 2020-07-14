@@ -1084,7 +1084,10 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
                                 int h = params->m_doc->GetGlyphHeight(rest->GetRestGlyph(), staff->m_drawingStaffSize, GetDrawingCueSize());
                                 float as = static_cast<float>(h) / staff->m_drawingStaffSize;
                                 int locHeight = static_cast<int>(ceil(as / 2));
-                                loc += locHeight;
+                                loc += locHeight + (loc & 0x1 ? 3 : 1);
+                                if (loc & 0x1) {
+                                    loc += 1;
+                                }
                             } else {
                                 loc -= 5;
                                 loc &= ~decltype(loc)(0x1);
