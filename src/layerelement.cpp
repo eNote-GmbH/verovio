@@ -1076,11 +1076,11 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
                     if (firstLayer->GetN() == layerY->GetN())
                         loc += 2;
                     else {
-                        Note *note = dynamic_cast<Note *>(firstLayer->GetChild(this->GetIdx()));
-                        if (note) {
-                            if (note->GetStemDir() == STEMDIRECTION_down) {}
+                        int restIndex = this->GetIdx();
+                        Note* note;
+                        if (firstLayer->GetChildCount() > restIndex && (note = dynamic_cast<Note*>(firstLayer->GetChild(restIndex))) != NULL) {
                             loc = PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), layerY->GetClefLocOffset(layerElementY));
-                            if (note->GetStemDir() == STEMDIRECTION_down) {
+                            if (note->GetStemDir()==STEMDIRECTION_down) {
                                 int h = params->m_doc->GetGlyphHeight(rest->GetRestGlyph(), staff->m_drawingStaffSize, GetDrawingCueSize());
                                 float as = static_cast<float>(h) / staff->m_drawingStaffSize;
                                 int locHeight = static_cast<int>(ceil(as / 2));
