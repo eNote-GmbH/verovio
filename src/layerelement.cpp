@@ -1080,16 +1080,34 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
                         Note* note;
                         if (firstLayer->GetChildCount() > restIndex && (note = dynamic_cast<Note*>(firstLayer->GetChild(restIndex))) != NULL) {
                             loc = PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), layerY->GetClefLocOffset(layerElementY));
-                            if (note->GetStemDir()==STEMDIRECTION_down) {
-                                int h = params->m_doc->GetGlyphHeight(rest->GetRestGlyph(), staff->m_drawingStaffSize, GetDrawingCueSize());
-                                float as = static_cast<float>(h) / staff->m_drawingStaffSize;
-                                int locHeight = static_cast<int>(ceil(as / 2));
-                                loc += locHeight + (loc & 0x1 ? 3 : 1);
+                            if (note->GetStemDir() == STEMDIRECTION_down) {
+                                int restGlyph = rest->GetRestGlyph();
+                                int restHeight;
+                                if (restGlyph == 0) {
+                                    restHeight = 2;
+                                } else {
+                                    int h = params->m_doc->GetGlyphHeight(restGlyph, staff->m_drawingStaffSize, GetDrawingCueSize());
+                                    float as = static_cast<float>(h)/staff->m_drawingStaffSize;
+                                    restHeight = static_cast<int>(ceil(as / 2));
+                                    if (restHeight & 0x1) {
+                                        restHeight += 1;
+                                    }
+                                }
+                                loc += restHeight + ((loc & 0x1) ? 3 : 1);
                                 if (loc & 0x1) {
                                     loc += 1;
                                 }
                             } else {
-                                loc -= 5;
+                                switch (rest->GetActualDur()) {
+                                    case DUR_128:
+                                    case DUR_256: loc -= 7;
+                                        break;
+                                    case DUR_512: loc -= 9;
+                                        break;
+                                    case DUR_1024: loc -= 11;
+                                        break;
+                                    default: loc -= 5;
+                                }
                                 loc &= ~decltype(loc)(0x1);
                             }
                         } else {
