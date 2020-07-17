@@ -445,7 +445,7 @@ private:
     bool ReadDoc(pugi::xml_node root);
 
     ///@{
-    bool MEIInput::VerifyMdivNode(const pugi::xml_node &mdiv) const;
+    bool VerifyMdivNode(const pugi::xml_node &mdiv) const;
     bool ReadMdiv(Object *parent, pugi::xml_node parentNode, bool isVisible);
     bool ReadMdivChildren(Object *parent, pugi::xml_node parentNode, bool isVisible);
     bool ReadPages(Object *parent, pugi::xml_node parentNode);
