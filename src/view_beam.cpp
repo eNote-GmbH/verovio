@@ -71,15 +71,15 @@ void View::DrawBeam(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     /******************************************************************/
     // initialization
 
-    const ArrayOfObjects *beamChildren = beam->GetList(beam);
+    const ArrayOfObjects &beamChildren = beam->GetList(beam);
 
     // Should we assert this at the beginning?
-    if (beamChildren->empty()) {
+    if (beamChildren.empty()) {
         return;
     }
     const ArrayOfBeamElementCoords *beamElementCoords = beam->GetElementCoords();
 
-    int elementCount = (int)beamChildren->size();
+    int elementCount = (int)beamChildren.size();
     int last = elementCount - 1;
 
     /******************************************************************/
@@ -308,10 +308,10 @@ void View::DrawFTrem(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
     /******************************************************************/
     // initialization
 
-    const ArrayOfObjects *fTremChildren = fTrem->GetList(fTrem);
+    const ArrayOfObjects &fTremChildren = fTrem->GetList(fTrem);
 
     // Should we assert this at the beginning?
-    if (fTremChildren->empty()) {
+    if (fTremChildren.empty()) {
         return;
     }
     const ArrayOfBeamElementCoords *beamElementCoords = fTrem->GetElementCoords();

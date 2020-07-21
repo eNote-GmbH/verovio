@@ -136,9 +136,9 @@ void KeySig::FilterList(ArrayOfObjects *childList)
 
 int KeySig::GetAccidCount()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        return (int)childList->size();
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    if (childList.size() > 0) {
+        return (int)childList.size();
     }
 
     if (!this->HasSig()) return 0;
@@ -148,10 +148,10 @@ int KeySig::GetAccidCount()
 
 data_ACCIDENTAL_WRITTEN KeySig::GetAccidType()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    if (childList.size() > 0) {
         if (m_mixedChildrenAccidType) return ACCIDENTAL_WRITTEN_NONE;
-        KeyAccid *keyAccid = dynamic_cast<KeyAccid *>(childList->at(0));
+        KeyAccid *keyAccid = dynamic_cast<KeyAccid *>(childList.at(0));
         assert(keyAccid);
         return keyAccid->GetAccid();
     }
@@ -165,9 +165,9 @@ void KeySig::FillMap(MapOfPitchAccid &mapOfPitchAccid)
 {
     mapOfPitchAccid.clear();
 
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        for (auto &child : *childList) {
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    if (childList.size() > 0) {
+        for (auto child : childList) {
             KeyAccid *keyAccid = dynamic_cast<KeyAccid *>(child);
             assert(keyAccid);
             mapOfPitchAccid[keyAccid->GetPname()] = keyAccid->GetAccid();
@@ -188,10 +188,10 @@ std::wstring KeySig::GetKeyAccidStrAt(int pos, data_ACCIDENTAL_WRITTEN &accid, d
     accid = ACCIDENTAL_WRITTEN_s;
     std::wstring symbolStr = L"";
 
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        if ((int)childList->size() <= pos) return symbolStr;
-        KeyAccid *keyAccid = dynamic_cast<KeyAccid *>(childList->at(pos));
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    if (childList.size() > 0) {
+        if ((int)childList.size() <= pos) return symbolStr;
+        KeyAccid *keyAccid = dynamic_cast<KeyAccid *>(childList.at(pos));
         assert(keyAccid);
         accid = keyAccid->GetAccid();
         pname = keyAccid->GetPname();

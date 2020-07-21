@@ -773,13 +773,13 @@ void Doc::SetCurrentScoreDefDoc(bool force)
             pages->Process(&unsetCurrentScoreDef, &unsetCurrentScoreDefParams);
         }
 
-        ScoreDef upcomingScoreDef = *pages->GetParentMdiv()->m_referenceScoreDef;
-        SetCurrentScoreDefParams setCurrentScoreDefParams(this, &upcomingScoreDef);
+        ScoreDef *upcomingScoreDef = pages->GetParentMdiv()->m_referenceScoreDef;
+        SetCurrentScoreDefParams setCurrentScoreDefParams(this, upcomingScoreDef);
         Functor setCurrentScoreDef(&Object::SetCurrentScoreDef);
 
         // First process the current scoreDef in order to fill the staffDef with
         // the appropriate drawing values
-        upcomingScoreDef.Process(&setCurrentScoreDef, &setCurrentScoreDefParams);
+        upcomingScoreDef->Process(&setCurrentScoreDef, &setCurrentScoreDefParams);
 
         pages->Process(&setCurrentScoreDef, &setCurrentScoreDefParams);
     }
@@ -801,6 +801,8 @@ void Doc::CastOffDoc()
     std::vector<Pages *> pagesList = this->GetPagesList();
     assert(pagesList.size() > 0);
 
+    this->SetCurrentScoreDefDoc();
+
     for (Pages *pages : pagesList) {
         assert(pages);
         if (pages->GetChildCount() != 1) {
@@ -810,15 +812,13 @@ void Doc::CastOffDoc()
 
         Mdiv *mdiv = pages->GetParentMdiv();
         assert(mdiv);
-        
+
         // By default, optimize scores
         bool optimize = (m_scoreDef.GetOptimize() != BOOLEAN_false);
         // However, if nothing specified, do not if there is only one staffGrp
         if ((m_scoreDef.GetOptimize() == BOOLEAN_NONE) && (m_scoreDef.GetChildCount(STAFFGRP, UNLIMITED_DEPTH) < 2)) {
             optimize = false;
         }
-
-        this->SetCurrentScoreDefDoc();
 
         Page *contentPage = this->SetDrawingPage(mdiv, 0);
         assert(contentPage);
@@ -1333,21 +1333,19 @@ std::vector<Score *> Doc::GetScores()
 
 std::vector<Pages *> Doc::GetPagesList()
 {
-    static std::vector<Pages *> cachedPages;
-    if (cachedPages.empty()) {
-        ArrayOfObjects pagesList;
-        ClassIdComparison matchType(PAGES);
-        FindAllDescendantByComparison(&pagesList, &matchType, 2);
+    static std::vector<Pages *> allPages;
+    ArrayOfObjects pagesList;
+    ClassIdComparison matchType(PAGES);
+    FindAllDescendantByComparison(&pagesList, &matchType, 2);
 
-        cachedPages.resize(pagesList.size());
-        std::transform(pagesList.begin(), pagesList.end(), cachedPages.begin(),[](Object *scoreObject) {
-            Pages *pages = dynamic_cast<Pages *>(scoreObject);
-            assert(pages);
-            return pages;
-                       });
-    }
+    allPages.resize(pagesList.size());
+    std::transform(pagesList.begin(), pagesList.end(), allPages.begin(),[](Object *scoreObject) {
+        Pages *pages = dynamic_cast<Pages *>(scoreObject);
+        assert(pages);
+        return pages;
+                   });
 
-    return cachedPages;
+    return allPages;
 }
 
 Pages * Doc::GetPages(Mdiv *mdiv)

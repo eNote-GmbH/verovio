@@ -107,14 +107,14 @@ void StaffGrp::FilterList(ArrayOfObjects *childList)
 int StaffGrp::GetMaxStaffSize()
 {
     this->ResetList(this);
-    const ArrayOfObjects *childList = this->GetList(this);
+    const ArrayOfObjects &childList = this->GetList(this);
 
-    if (childList->empty()) return 100;
+    if (childList.empty()) return 100;
 
     int max = 0;
 
     StaffDef *staffDef = NULL;
-    for (auto &child : *childList) {
+    for (auto child : childList) {
         staffDef = dynamic_cast<StaffDef *>(child);
         assert(staffDef);
         if (staffDef->HasScale() && staffDef->GetScale() >= max) {

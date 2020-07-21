@@ -483,7 +483,7 @@ bool Beam::IsFirstInBeam(LayerElement *element)
 
 bool Beam::IsLastInBeam(LayerElement *element)
 {
-    int size = (int)this->GetList(this)->size();
+    int size = (int)this->GetList(this).size();
     int position = this->GetPosition(element);
     // This method should be called only if the note is part of a beam
     assert(position != -1);
@@ -643,15 +643,15 @@ int Beam::CalcStem(FunctorParams *functorParams)
     CalcStemParams *params = dynamic_cast<CalcStemParams *>(functorParams);
     assert(params);
 
-    const ArrayOfObjects *beamChildren = this->GetList(this);
+    const ArrayOfObjects &beamChildren = this->GetList(this);
 
     // Should we assert this at the beginning?
-    if (beamChildren->empty()) {
+    if (beamChildren.empty()) {
         return FUNCTOR_CONTINUE;
     }
     const ArrayOfBeamElementCoords *beamElementCoords = this->GetElementCoords();
 
-    int elementCount = (int)beamChildren->size();
+    int elementCount = (int)beamChildren.size();
 
     Layer *layer = dynamic_cast<Layer *>(this->GetFirstAncestor(LAYER));
     assert(layer);

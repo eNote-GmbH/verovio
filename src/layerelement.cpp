@@ -963,16 +963,16 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
             if (beam) {
                 beam->ResetList(beam);
 
-                const ArrayOfObjects *beamList = beam->GetList(beam);
+                const ArrayOfObjects &beamList = beam->GetList(beam);
                 int restIndex = beam->GetChildIndex(rest);
 
                 int leftLoc = loc;
-                ArrayOfObjects::const_iterator it = beamList->begin();
+                ArrayOfObjects::const_iterator it = beamList.begin();
                 std::advance(it, restIndex);
                 ArrayOfObjects::const_reverse_iterator rit(it);
                 // iterate through the elements from the rest to the beginning of the beam
                 // until we hit a note or chord, which we will use to determine where the rest should be placed
-                for (; rit != beamList->rend(); ++rit) {
+                for (; rit != beamList.rend(); ++rit) {
                     LayerElement *layerElement = dynamic_cast<LayerElement *>(*rit);
                     assert(layerElement);
                     if (layerElement->Is(NOTE)) {
@@ -989,11 +989,11 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
                 }
 
                 int rightLoc = loc;
-                it = beamList->begin();
+                it = beamList.begin();
                 std::advance(it, restIndex);
                 // iterate through the elements from the rest to the end of the beam
                 // until we hit a note or chord, which we will use to determine where the rest should be placed
-                for (; it != beamList->end(); ++it) {
+                for (; it != beamList.end(); ++it) {
                     LayerElement *layerElement = dynamic_cast<LayerElement *>(*it);
                     assert(layerElement);
                     if (layerElement->Is(NOTE)) {

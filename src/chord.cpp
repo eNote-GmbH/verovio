@@ -191,7 +191,7 @@ void Chord::FilterList(ArrayOfObjects *childList)
 
 int Chord::PositionInChord(Note *note)
 {
-    int size = (int)this->GetList(this)->size();
+    int size = (int)this->GetList(this).size();
     int position = this->GetListIndex(note);
     assert(position != -1);
     // this is the middle (only if odd)
@@ -202,62 +202,62 @@ int Chord::PositionInChord(Note *note)
 
 void Chord::GetYExtremes(int &yMax, int &yMin)
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     // The first note is the bottom
-    yMin = childList->front()->GetDrawingY();
+    yMin = childList.front()->GetDrawingY();
     // The last note is the top
-    yMax = childList->back()->GetDrawingY();
+    yMax = childList.back()->GetDrawingY();
 }
 
 int Chord::GetYTop()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     // The last note is the top
-    return childList->back()->GetDrawingY();
+    return childList.back()->GetDrawingY();
 }
 
 int Chord::GetYBottom()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     // The first note is the bottom
-    return childList->front()->GetDrawingY();
+    return childList.front()->GetDrawingY();
 }
 
 Note *Chord::GetTopNote()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
-    Note *topNote = dynamic_cast<Note *>(childList->back());
+    Note *topNote = dynamic_cast<Note *>(childList.back());
     assert(topNote);
     return topNote;
 }
 
 Note *Chord::GetBottomNote()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     // The first note is the bottom
-    Note *bottomNote = dynamic_cast<Note *>(childList->front());
+    Note *bottomNote = dynamic_cast<Note *>(childList.front());
     assert(bottomNote);
     return bottomNote;
 }
 
 int Chord::GetXMin()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     int x = -VRV_UNSET;
-    ArrayOfObjects::const_iterator iter = childList->begin();
-    while (iter != childList->end()) {
+    ArrayOfObjects::const_iterator iter = childList.begin();
+    while (iter != childList.end()) {
         if ((*iter)->GetDrawingX() < x) x = (*iter)->GetDrawingX();
         ++iter;
     }
@@ -266,12 +266,12 @@ int Chord::GetXMin()
 
 int Chord::GetXMax()
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    assert(childList->size() > 0);
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    assert(childList.size() > 0);
 
     int x = VRV_UNSET;
-    ArrayOfObjects::const_iterator iter = childList->begin();
-    while (iter != childList->end()) {
+    ArrayOfObjects::const_iterator iter = childList.begin();
+    while (iter != childList.end()) {
         if ((*iter)->GetDrawingX() > x) x = (*iter)->GetDrawingX();
         ++iter;
     }
@@ -359,10 +359,9 @@ bool Chord::IsVisible()
     }
 
     // if the chord doens't have it, see if all the children are invisible
-    const ArrayOfObjects *notes = this->GetList(this);
-    assert(notes);
+    const ArrayOfObjects &notes = this->GetList(this);
 
-    for (auto &iter : *notes) {
+    for (auto iter : notes) {
         Note *note = dynamic_cast<Note *>(iter);
         assert(note);
         if (!note->HasVisible() || note->GetVisible() == BOOLEAN_true) {
@@ -375,10 +374,9 @@ bool Chord::IsVisible()
 
 bool Chord::HasNoteWithDots()
 {
-    const ArrayOfObjects *notes = this->GetList(this);
-    assert(notes);
+    const ArrayOfObjects notes = this->GetList(this);
 
-    for (auto &iter : *notes) {
+    for (auto iter : notes) {
         Note *note = dynamic_cast<Note *>(iter);
         assert(note);
         if (note->GetDots() > 0) {
@@ -542,13 +540,12 @@ int Chord::CalcDots(FunctorParams *functorParams)
     params->m_chordStemDir = this->GetDrawingStemDir();
 
     ArrayOfObjects::const_reverse_iterator rit;
-    const ArrayOfObjects *notes = this->GetList(this);
-    assert(notes);
+    const ArrayOfObjects &notes = this->GetList(this);
 
     assert(this->GetTopNote());
     assert(this->GetBottomNote());
 
-    for (rit = notes->rbegin(); rit != notes->rend(); ++rit) {
+    for (rit = notes.rbegin(); rit != notes.rend(); ++rit) {
         Note *note = dynamic_cast<Note *>(*rit);
         assert(note);
 
@@ -646,8 +643,8 @@ int Chord::PrepareLayerElementParts(FunctorParams *functorParams)
     SetDrawingStem(currentStem);
 
     // Also set the drawing stem object (or NULL) to all child notes
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    for (ArrayOfObjects::const_iterator it = childList->begin(); it != childList->end(); ++it) {
+    const ArrayOfObjects &childList = this->GetList(this); // make sure it's initialized
+    for (ArrayOfObjects::const_iterator it = childList.begin(); it != childList.end(); ++it) {
         assert((*it)->Is(NOTE));
         Note *note = dynamic_cast<Note *>(*it);
         assert(note);

@@ -156,7 +156,7 @@ void Layer::AddChild(Object *child)
 LayerElement *Layer::GetPrevious(LayerElement *element)
 {
     this->ResetList(this);
-    if (!element || this->GetList(this)->empty()) return NULL;
+    if (!element || this->GetList(this).empty()) return NULL;
 
     return dynamic_cast<LayerElement *>(GetListPrevious(element));
 }

@@ -109,20 +109,20 @@ int Ligature::PositionInLigature(Note *note)
 
 Note *Ligature::GetFirstNote()
 {
-    const ArrayOfObjects *list = this->GetList(this);
-    if (list->empty()) {
+    const ArrayOfObjects &list = this->GetList(this);
+    if (list.empty()) {
         return NULL;
     }
-    return dynamic_cast<Note *>(list->front());
+    return dynamic_cast<Note *>(list.front());
 }
 
 Note *Ligature::GetLastNote()
 {
-    const ArrayOfObjects *list = this->GetList(this);
-    if (list->empty()) {
+    const ArrayOfObjects &list = this->GetList(this);
+    if (list.empty()) {
         return NULL;
     }
-    return dynamic_cast<Note *>(list->back());
+    return dynamic_cast<Note *>(list.back());
 }
 
 //----------------------------------------------------------------------------
