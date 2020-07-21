@@ -1111,6 +1111,7 @@ int Beam::CalcStem(FunctorParams *functorParams)
     }
 
     this->m_beamSegment.InitCoordRefs(this->GetElementCoords());
+    int elementCount = (int)beamChildren.size();
 
     Layer *layer = dynamic_cast<Layer *>(this->GetFirstAncestor(LAYER));
     assert(layer);

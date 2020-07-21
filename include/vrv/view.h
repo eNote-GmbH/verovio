@@ -605,7 +605,7 @@ protected:
      * The is set when starting to draw a page in DrawCurrentPage and then
      * modified appropriately when going through the page.
      */
-    ScoreDef m_drawingScoreDef;
+    ScoreDef *m_drawingScoreDef;
 
 private:
     /** @name Internal values for storing temporary values for ligatures */

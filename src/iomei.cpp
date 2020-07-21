@@ -2800,7 +2800,9 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
         return false;
     }
 
-    m_processAllMdivs = false;
+    // TODO Should be specified in the options?
+    m_processAllMdivs = true;
+
     std::string xPathQuery = m_doc->GetOptions()->m_mdivXPathQuery.GetValue();
     if (!xPathQuery.empty()) {
         pugi::xpath_node selection = body.select_node(xPathQuery.c_str());
@@ -2811,8 +2813,6 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
             return false;
         }
         m_processAllMdivs = false;
-    } else {
-        m_processAllMdivs = true;
     }
 
     success = ReadMdivChildren(m_doc, body, false);
@@ -2890,10 +2890,8 @@ bool MEIInput::ReadMdivChildren(Object *parent, pugi::xml_node parentNode, bool 
     bool success = true;
     for (current = parentNode.first_child(); current; current = current.next_sibling()) {
         // We make the mdiv visible if already set or if matching the desired selection
-        bool makeVisible = true;
-        if ( !m_selectedMdiv.empty()) {
-            makeVisible = m_selectedMdiv == current;
-        }
+        bool makeVisible = m_processAllMdivs ? true : m_selectedMdiv == current;
+
         m_useScoreDefForDoc = makeVisible;
         if (!success) break;
         if (std::string(current.name()) == "mdiv") {
@@ -3504,11 +3502,11 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
     }
 
     if (parent->Is(SCORE)) {
+        parent->AddChild(vrvScoreDef);
         Object* mdivObject = parent->GetFirstAncestor(MDIV);
         assert(mdivObject);
         Mdiv* mdiv = dynamic_cast<Mdiv*>(mdivObject);
         if (mdiv->m_referenceScoreDef == NULL) {
-            mdiv->AddChild(vrvScoreDef);
             mdiv->m_referenceScoreDef = vrvScoreDef;
         }
     }
