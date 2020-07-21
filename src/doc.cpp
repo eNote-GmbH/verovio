@@ -1393,7 +1393,6 @@ std::vector<Score *> Doc::GetScores()
 
 std::vector<Pages *> Doc::GetPagesList()
 {
-
     static std::vector<Pages *> allPages;
     ListOfObjects pagesList;
     ClassIdComparison matchType(PAGES);

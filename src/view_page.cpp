@@ -72,7 +72,7 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
     // Set the current score def to the page one
     // The page one has previously been set by Object::SetCurrentScoreDef
-   // m_drawingScoreDef = &m_currentPage->m_drawingScoreDef;
+    m_drawingScoreDef = &m_currentPage->m_drawingScoreDef;
 
     // if (background) dc->DrawRectangle(0, 0, m_doc->m_drawingPageWidth, m_doc->m_drawingPageHeight);
 
@@ -936,7 +936,7 @@ void View::DrawMeasure(DeviceContext *dc, Measure *measure, System *system)
         dc->StartGraphic(measure, "", measure->GetUuid());
     }
 
-    if (m_drawingScoreDef.GetMnumVisible() != BOOLEAN_false) {
+    if (m_drawingScoreDef->GetMnumVisible() != BOOLEAN_false) {
         MNum *mnum = dynamic_cast<MNum *>(measure->FindDescendantByType(MNUM));
         if (mnum) {
             // this should be an option
