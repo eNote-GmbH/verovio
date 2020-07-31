@@ -1352,22 +1352,12 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         }
         else {
             // Whole notes
-            if (drawingDur == DUR_1) {
-                if (note->GetColored() == BOOLEAN_true) {
-                    fontNo = SMUFL_E0FA_noteheadWholeFilled;
-                }
-                else {
-                    fontNo = SMUFL_E0A2_noteheadWhole;
-                }
+            wchar_t fontNo;
+            if (note->GetColored() == BOOLEAN_true) {
+                fontNo = (drawingDur == DUR_1) ? SMUFL_E0FA_noteheadWholeFilled : SMUFL_E0A3_noteheadHalf;
             }
-            // Other values
             else {
-                if ((note->GetColored() == BOOLEAN_true) || drawingDur == DUR_2) {
-                    fontNo = SMUFL_E0A3_noteheadHalf;
-                }
-                else {
-                    fontNo = note->GetNoteheadGlyph();
-                }
+                fontNo = note->GetNoteheadGlyph(drawingDur);
             }
 
             dc->StartCustomGraphic("notehead");
