@@ -740,7 +740,7 @@ bool MEIOutput::WriteObject(Object *object)
         // First save the main scoreDef
         m_doc->m_mdivScoreDef.Save(this);
     }
-    else if (object->Is(SCORE) && (dynamic_cast<Score *>(object) == m_doc->GetScore())) {
+    else if (object->Is(SCORE)) {
         // First save the main scoreDef
         m_doc->m_mdivScoreDef.Save(this);
     }
@@ -2879,7 +2879,7 @@ bool MEIInput::ReadMdivChildren(Object *parent, pugi::xml_node parentNode, bool 
     bool success = true;
     for (current = parentNode.first_child(); current; current = current.next_sibling()) {
         // We make the mdiv visible if already set or if matching the desired selection
-        bool makeVisible = (isVisible || (m_selectedMdiv == current));
+        bool makeVisible = true;//(isVisible || (m_selectedMdiv == current));
         m_useScoreDefForDoc = makeVisible;
         if (!success) break;
         if (std::string(current.name()) == "mdiv") {

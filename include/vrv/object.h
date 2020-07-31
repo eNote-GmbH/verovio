@@ -58,7 +58,7 @@ public:
      */
     ///@{
     Object();
-    Object(const std::string &classid);
+    explicit Object(const std::string &classid);
     virtual ~Object();
     virtual ClassId GetClassId() const;
     virtual std::string GetClassName() const { return "[MISSING]"; }

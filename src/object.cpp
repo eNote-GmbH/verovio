@@ -1363,6 +1363,7 @@ int Object::SetCurrentScoreDef(FunctorParams *functorParams)
         assert(system);
         // This is the only thing we do for now - we need to wait until we reach the first measure
         params->m_currentSystem = system;
+        params->m_previousMeasure = NULL;
         return FUNCTOR_CONTINUE;
     }
 
