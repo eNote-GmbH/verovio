@@ -1338,14 +1338,11 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     bool drawingCueSize = note->GetDrawingCueSize();
     int noteY = element->GetDrawingY();
     int noteX = element->GetDrawingX();
-    int drawingDur;
-    wchar_t fontNo;
-
-    drawingDur = note->GetDrawingDur();
-    drawingDur = ((note->GetColored() == BOOLEAN_true) && drawingDur > DUR_1) ? (drawingDur + 1) : drawingDur;
 
     if (!(note->GetHeadVisible() == BOOLEAN_false)) {
         /************** Noteheads: **************/
+        int drawingDur = note->GetDrawingDur();
+        drawingDur = ((note->GetColored() == BOOLEAN_true) && drawingDur > DUR_1) ? (drawingDur + 1) : drawingDur;
 
         if (drawingDur < DUR_1) {
             DrawMaximaToBrevis(dc, noteY, element, layer, staff);
@@ -1468,6 +1465,21 @@ void View::DrawStem(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     DrawFilledRectangle(dc, stem->GetDrawingX() - m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize) / 2,
         stem->GetDrawingY(), stem->GetDrawingX() + m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize) / 2,
         stem->GetDrawingY() - stem->GetDrawingStemLen());
+
+    if (stem->HasStemMod()) {
+        if (stem->GetStemMod() == STEMMODIFIER_sprech) {
+            int yShift = m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * 2;
+            Note *note = dynamic_cast<Note *>(stem->GetParent());
+            assert(note);
+            if ((note->GetDrawingLoc() % 2) != 0) {
+                yShift += m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+            }
+            yShift *= (stem->GetDrawingStemLen() > 0)? -1 : 1;
+            yShift -= m_doc->GetGlyphHeight(SMUFL_E645_vocalSprechgesang, staff->m_drawingStaffSize, false) / 2;
+            DrawSmuflCode(dc, stem->GetDrawingX(), note->GetDrawingY() + yShift, SMUFL_E645_vocalSprechgesang,
+                staff->m_drawingStaffSize, false);
+        }
+    }
 
     DrawLayerChildren(dc, stem, layer, staff, measure);
 

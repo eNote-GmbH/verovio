@@ -1332,8 +1332,8 @@ bool MusicXmlInput::ReadMusicXmlMeasure(
     }
 
     // match open ties with close ties
-    std::vector<std::pair<Tie *, Note *> >::iterator iter;
-    for (iter = m_tieStack.begin(); iter != m_tieStack.end(); ++iter) {
+    std::vector<std::pair<Tie *, Note *> >::iterator iter = m_tieStack.begin();
+    while (iter != m_tieStack.end()) {
         double lastScoreTimeOnset = 9999; // __DBL_MAX__;
         bool tieMatched = false;
         std::vector<Note *>::iterator jter;
@@ -1349,10 +1349,11 @@ bool MusicXmlInput::ReadMusicXmlMeasure(
             }
         }
         if (tieMatched) {
-            m_tieStack.erase(iter--);
+            iter = m_tieStack.erase(iter);
         }
         else {
             iter->second->SetScoreTimeOnset(-1); // make scoreTimeOnset small for next measure
+            ++iter;
         }
     }
     if (!m_tieStopStack.empty()) { // clear m_tieStopStack after each measure
@@ -1625,8 +1626,7 @@ void MusicXmlInput::ReadMusicXmlBarLine(pugi::xml_node node, Measure *measure, s
     }
 
     // fermatas
-    pugi::xpath_node xmlFermata = node.select_node("fermata");
-    if (xmlFermata) {
+    for (pugi::xml_node xmlFermata : node.children("fermata")) {
         Fermata *fermata = new Fermata();
         m_controlElements.push_back(std::make_pair(measureNum, fermata));
         if (HasAttributeWithValue(node, "location", "left")) {
@@ -1636,10 +1636,10 @@ void MusicXmlInput::ReadMusicXmlBarLine(pugi::xml_node node, Measure *measure, s
             LogWarning("MusicXML import: Unsupported barline location 'middle'");
         }
         else {
-            fermata->SetTstamp(m_meterCount + 1);
+            fermata->SetTstamp((double)(m_durTotal) * (double)m_meterUnit / (double)(4 * m_ppq) + 1.0);
         }
         fermata->SetStaff(staff->AttNInteger::StrToXsdPositiveIntegerList(std::to_string(staff->GetN())));
-        ShapeFermata(fermata, xmlFermata.node());
+        ShapeFermata(fermata, xmlFermata);
     }
 }
 
@@ -1699,6 +1699,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
         Dir *dir = new Dir();
         dir->SetPlace(dir->AttPlacement::StrToStaffrel(placeStr.c_str()));
         dir->SetTstamp(timeStamp - 1.0);
+        dir->SetType("coda");
         dir->SetStaff(dir->AttStaffIdent::StrToXsdPositiveIntegerList("1"));
         Rend *rend = new Rend;
         rend->SetFontname("VerovioText");
@@ -1729,6 +1730,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
             }
             dir->SetPlace(dir->AttPlacement::StrToStaffrel(placeStr.c_str()));
             dir->SetTstamp(timeStamp);
+            dir->SetType(node.child("sound").first_attribute().name());
             pugi::xpath_node staffNode = node.select_node("staff");
             if (staffNode) {
                 dir->SetStaff(dir->AttStaffIdent::StrToXsdPositiveIntegerList(
@@ -2072,6 +2074,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
         Dir *dir = new Dir();
         dir->SetPlace(dir->AttPlacement::StrToStaffrel(placeStr.c_str()));
         dir->SetTstamp(timeStamp - 1.0);
+        dir->SetType("segno");
         dir->SetStaff(dir->AttStaffIdent::StrToXsdPositiveIntegerList("1"));
         Rend *rend = new Rend;
         rend->SetFontname("VerovioText");
@@ -2317,6 +2320,33 @@ void MusicXmlInput::ReadMusicXmlNote(
         m_elementStackMap.at(layer).push_back(beam);
     }
 
+    // tuplet start
+    // For now tuplet with beam if starting at the same time. However, this will
+    // quite likely not work if we have a tuplet over serveral beams. We would need to check which
+    // one is ending first in order to determine which one is on top of the hierarchy.
+    // Also, it is not 100% sure that we can represent them as tuplet and beam elements.
+    pugi::xpath_node tupletStart = notations.node().select_node("tuplet[@type='start']");
+    if (tupletStart && !isChord) {
+        Tuplet *tuplet = new Tuplet();
+        AddLayerElement(layer, tuplet);
+        m_elementStackMap.at(layer).push_back(tuplet);
+        int num = node.select_node("time-modification/actual-notes").node().text().as_int();
+        int numbase = node.select_node("time-modification/normal-notes").node().text().as_int();
+        if (tupletStart.node().first_child()) {
+            num = tupletStart.node().select_node("tuplet-actual/tuplet-number").node().text().as_int();
+            numbase = tupletStart.node().select_node("tuplet-normal/tuplet-number").node().text().as_int();
+        }
+        if (num) tuplet->SetNum(num);
+        if (numbase) tuplet->SetNumbase(numbase);
+        tuplet->SetNumPlace(
+            tuplet->AttTupletVis::StrToStaffrelBasic(tupletStart.node().attribute("placement").as_string()));
+        tuplet->SetBracketPlace(
+            tuplet->AttTupletVis::StrToStaffrelBasic(tupletStart.node().attribute("placement").as_string()));
+        tuplet->SetNumFormat(ConvertTupletNumberValue(tupletStart.node().attribute("show-number").as_string()));
+        if (HasAttributeWithValue(tupletStart.node(), "show-number", "none")) tuplet->SetNumVisible(BOOLEAN_false);
+        tuplet->SetBracketVisible(ConvertWordToBool(tupletStart.node().attribute("bracket").as_string()));
+    }
+
     // tremolos
     pugi::xpath_node tremolo = notations.node().select_node("ornaments/tremolo");
     int tremSlashNum = 0;
@@ -2343,33 +2373,6 @@ void MusicXmlInput::ReadMusicXmlNote(
             tremSlashNum = tremolo.node().text().as_int();
             // if (HasAttributeWithValue(tremolo.node(), "type", "unmeasured")) bTrem->SetForm(bTremLog_FORM_unmeas);
         }
-    }
-
-    // tuplet start
-    // For now tuplet with beam if starting at the same time. However, this will
-    // quite likely not work if we have a tuplet over serveral beams. We would need to check which
-    // one is ending first in order to determine which one is on top of the hierarchy.
-    // Also, it is not 100% sure that we can represent them as tuplet and beam elements.
-    pugi::xpath_node tupletStart = notations.node().select_node("tuplet[@type='start']");
-    if (tupletStart && !isChord) {
-        Tuplet *tuplet = new Tuplet();
-        AddLayerElement(layer, tuplet);
-        m_elementStackMap.at(layer).push_back(tuplet);
-        int num = node.select_node("time-modification/actual-notes").node().text().as_int();
-        int numbase = node.select_node("time-modification/normal-notes").node().text().as_int();
-        if (tupletStart.node().first_child()) {
-            num = tupletStart.node().select_node("tuplet-actual/tuplet-number").node().text().as_int();
-            numbase = tupletStart.node().select_node("tuplet-normal/tuplet-number").node().text().as_int();
-        }
-        if (num) tuplet->SetNum(num);
-        if (numbase) tuplet->SetNumbase(numbase);
-        tuplet->SetNumPlace(
-            tuplet->AttTupletVis::StrToStaffrelBasic(tupletStart.node().attribute("placement").as_string()));
-        tuplet->SetBracketPlace(
-            tuplet->AttTupletVis::StrToStaffrelBasic(tupletStart.node().attribute("placement").as_string()));
-        tuplet->SetNumFormat(ConvertTupletNumberValue(tupletStart.node().attribute("show-number").as_string()));
-        if (HasAttributeWithValue(tupletStart.node(), "show-number", "none")) tuplet->SetNumVisible(BOOLEAN_false);
-        tuplet->SetBracketVisible(ConvertWordToBool(tupletStart.node().attribute("bracket").as_string()));
     }
 
     std::string noteID = node.attribute("id").as_string();
