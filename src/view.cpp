@@ -61,7 +61,7 @@ void View::SetDoc(Doc *doc)
     m_pageIdx = 0;
 }
 
-void View::SetPage(int pageIdx, bool doLayout)
+bool View::SetPage(int pageIdx, bool doLayout)
 {
     assert(m_doc); // Page cannot be NULL
     assert(m_doc->HasPage(pageIdx));
@@ -78,6 +78,7 @@ void View::SetPage(int pageIdx, bool doLayout)
         else
             m_currentPage->LayOut();
     }
+    if (!m_currentPage->LayoutDone()) return false;
 
     m_currentElement = NULL;
     m_currentLayer = NULL;
@@ -87,6 +88,8 @@ void View::SetPage(int pageIdx, bool doLayout)
 
     OnPageChange();
     DoRefresh();
+
+    return true;
 }
 
 bool View::HasNext(bool forward)

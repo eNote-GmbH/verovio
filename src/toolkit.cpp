@@ -1212,7 +1212,7 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
     pageNo--;
 
     // Get the current system for the SVG clipping size
-    m_view.SetPage(pageNo);
+    if (!m_view.SetPage(pageNo)) return false;
 
     // Adjusting page width and height according to the options
     int width = m_options->m_pageWidth.GetUnfactoredValue();
@@ -1276,7 +1276,12 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xml_declaration)
     svg.SetHtml5(m_options->m_svgHtml5.GetValue());
 
     // render the page
-    RenderToDeviceContext(pageNo, &svg);
+    const bool result = RenderToDeviceContext(pageNo, &svg);
+    if (m_options->m_validateLayout.GetValue()) {
+        std::cerr << "The page #" << pageNo << " has been laid out " << (result ? "without" : "with")
+                << " errors." << std::endl;
+        return "";
+    }
 
     std::string out_str = svg.GetStringSVG(xml_declaration);
     if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);

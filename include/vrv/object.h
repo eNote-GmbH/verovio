@@ -861,6 +861,8 @@ public:
     virtual int AlignSystemsEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
+    virtual int ValidatePlacement(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
     ///@}
 
     /**

@@ -139,6 +139,14 @@ public:
      */
     int CalcJustificationStepSize(bool systemsOnly) const;
 
+    /**
+     * Validate wheter all elements on the page fit within margins. Stop search when first
+     * such element is found and fail validation at that point.
+     */
+    bool Validate();
+
+    bool LayoutDone() { return m_layoutDone; }
+
     //----------//
     // Functors //
     //----------//

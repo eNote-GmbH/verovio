@@ -125,6 +125,11 @@ void Page::LayOut(bool force)
     this->LayOutVertically();
     this->JustifyVertically();
 
+    if (!Validate()) {
+        m_layoutDone = false;
+        return;
+    }
+
     Doc *doc = dynamic_cast<Doc *>(GetFirstAncestor(DOC));
     assert(doc);
     if (doc->GetOptions()->m_svgBoundingBoxes.GetValue()) {
@@ -671,6 +676,25 @@ void Page::AdjustSylSpacingByVerse(PrepareProcessingListsParams &listsParams, Do
             }
         }
     }
+}
+
+bool Page::Validate() 
+{
+    Doc *doc = dynamic_cast<Doc *>(GetFirstAncestor(DOC));
+    assert(doc);
+
+    if (!doc->GetOptions()->m_validateLayout.GetValue()) return true;
+
+    // Doc::SetDrawingPage should have been called before
+    // Make sure we have the correct page
+    assert(this == doc->GetDrawingPage());
+
+    Functor validatePlacement(&Object::ValidatePlacement);
+    ValidatePlacementParams validatePlacementParams(doc->GetOptions()->m_pageWidth.GetValue(),
+        doc->GetOptions()->m_pageHeight.GetValue(), doc->m_drawingPageContentHeight);
+    Process(&validatePlacement, &validatePlacementParams);
+
+    return validatePlacementParams.isValid;
 }
 
 //----------------------------------------------------------------------------

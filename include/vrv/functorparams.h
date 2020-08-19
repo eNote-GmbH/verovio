@@ -1925,6 +1925,32 @@ public:
     Functor *m_functor;
 };
 
+//----------------------------------------------------------------------------
+// ValidatePlacementParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: current page width
+ * member 1: current page height
+ * member 2: height of content on current page
+ **/
+
+class ValidatePlacementParams : public FunctorParams {
+public:
+    ValidatePlacementParams(int pageWidth, int pageHeight, int pageContentHeight) { 
+        isValid = true;
+        m_pageWidth = pageWidth;
+        m_pageHeight = pageHeight;
+        m_pageContentHeight = pageContentHeight;
+    }
+
+    int m_pageWidth;
+    int m_pageHeight;
+    int m_pageContentHeight;
+
+    bool isValid;
+};
+
 } // namespace vrv
 
 #endif

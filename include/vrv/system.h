@@ -252,6 +252,11 @@ public:
      */
     virtual int CastOffSystemsEnd(FunctorParams *functorParams);
 
+    /**
+     * See Object::ValidatePlacement
+     */
+    virtual int ValidatePlacement(FunctorParams *functorParams);
+
 public:
     SystemAligner m_systemAligner;
 

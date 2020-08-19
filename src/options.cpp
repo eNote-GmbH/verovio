@@ -655,6 +655,10 @@ Options::Options()
     m_usePgHeaderForAll.Init(false);
     this->Register(&m_usePgHeaderForAll, "usePgHeaderForAll", &m_general);
 
+    m_validateLayout.SetInfo("Validate output layout", "Validate layout of output pages. Pages with invalid layout will be empty");
+    m_validateLayout.Init(false);
+    this->Register(&m_validateLayout, "validateLayout", &m_general);
+    
     /********* General layout *********/
 
     m_generalLayout.SetLabel("General layout options", "2-generalLayout");

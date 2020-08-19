@@ -153,7 +153,7 @@ public:
      * This is the default behavior, however, in some cases, we do not
      * want it. For example, when drawing the pages for getting the bounding boxes.
      */
-    void SetPage(int pageIdx, bool doLayout = true);
+    bool SetPage(int pageIdx, bool doLayout = true);
 
     /**
      * Method that actually draw the current page.

@@ -326,6 +326,11 @@ public:
      */
     virtual int ResetDrawing(FunctorParams *functorParams);
 
+    /**
+     * See Object::ValidatePlacement
+     */
+    virtual int ValidatePlacement(FunctorParams *functorParams);
+
 private:
     int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticPartType type);
 
