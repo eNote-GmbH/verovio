@@ -78,7 +78,6 @@ bool View::SetPage(int pageIdx, bool doLayout)
         else
             m_currentPage->LayOut();
     }
-    if (!m_currentPage->LayoutDone()) return false;
 
     m_currentElement = NULL;
     m_currentLayer = NULL;
@@ -89,7 +88,7 @@ bool View::SetPage(int pageIdx, bool doLayout)
     OnPageChange();
     DoRefresh();
 
-    return true;
+    return m_currentPage->LayoutDone();
 }
 
 bool View::HasNext(bool forward)

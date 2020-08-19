@@ -861,7 +861,11 @@ public:
     virtual int AlignSystemsEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
-    virtual int ValidatePlacement(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    /**
+     * Validate element placement according to the dimensions of the page. Stop as soon as first element that does
+     * not fit is found.
+     */
+    virtual int ValidatePlacement(FunctorParams *functorParams);
 
     ///@}
 

@@ -870,18 +870,4 @@ int System::CastOffSystemsEnd(FunctorParams *functorParams)
     return FUNCTOR_STOP;
 }
 
-int System::ValidatePlacement(FunctorParams* functorParams) 
-{
-    ValidatePlacementParams *params = dynamic_cast<ValidatePlacementParams *>(functorParams);
-
-    const int x = GetDrawingX();
-    const int y = params->m_pageContentHeight - GetDrawingY();
-    if ((params->m_pageWidth - x < 0) || (params->m_pageHeight - y < 0)) {
-        params->isValid = false;
-        return FUNCTOR_STOP;
-    }
-
-    return FUNCTOR_CONTINUE;
-}
-
 } // namespace vrv

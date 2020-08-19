@@ -1778,4 +1778,21 @@ int Object::FindPreviousChildByComparison(FunctorParams *functorparams)
     return FUNCTOR_CONTINUE;
 }
 
+int Object::ValidatePlacement(FunctorParams *functorParams)
+{
+    ValidatePlacementParams *params = dynamic_cast<ValidatePlacementParams *>(functorParams);
+
+    Object *measure = GetFirstAncestor(MEASURE);
+    if (!measure) return FUNCTOR_CONTINUE;
+
+    const int x = GetDrawingX();
+    const int y = params->m_pageContentHeight - GetDrawingY();
+    if ((params->m_pageWidth - x < 0) || (params->m_pageHeight - y < 0)) {
+        params->isValid = false;
+        return FUNCTOR_STOP;
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
 } // namespace vrv

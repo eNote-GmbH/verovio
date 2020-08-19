@@ -291,6 +291,12 @@ public:
     const char *GetCString();
     ///@}
 
+    /**
+     * @name Set page and run validation on it. This is used to find wheter
+     * all elements on the page are placed withing viewbox bounds.
+     */
+    bool ValidatePage(int pageNo);
+
 private:
     bool IsUTF16(const std::string &filename);
     bool LoadUTF16File(const std::string &filename);

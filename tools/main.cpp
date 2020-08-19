@@ -447,6 +447,15 @@ int main(int argc, char **argv)
         to = toolkit.GetPageCount() + 1;
     }
 
+    if (options->m_validateLayout.GetValue()) {
+        for (int i = from - 1; i < to - 1; ++i) {
+            const bool isPageLaidoutProperly = toolkit.ValidatePage(i);
+            std::cerr << "The page #" << i+1 << " has been laid out " << (isPageLaidoutProperly ? "without" : "with")
+                      << " errors." << std::endl;
+        }
+        return 0;
+    }
+
     if (outformat == "svg") {
         int p;
         for (p = from; p < to; ++p) {
