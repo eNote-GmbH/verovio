@@ -1663,7 +1663,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
     assert(measure);
 
     const pugi::xpath_node staffNode = node.select_node("staff");
-    const int staffNum = staffNode ? staffNode.node().text().as_int() + staffOffset : -1;
+    // const int staffNum = staffNode ? staffNode.node().text().as_int() + staffOffset : -1;
 
     const std::string placeStr = node.attribute("placement").as_string();
     const int offset = node.select_node("offset").node().text().as_int();
@@ -1794,7 +1794,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
 
     pugi::xpath_node_set words = node.select_nodes("direction-type/words");
     const bool containsWords = !words.empty();
-    bool containsDynamics = !node.select_single_node("direction-type/dynamics").node().empty();
+    bool containsDynamics = !node.select_node("direction-type/dynamics").node().empty();
 
     // Directive
     int defaultY = 0; // y position attribute, only for directives and dynamics
@@ -2371,33 +2371,39 @@ void MusicXmlInput::ReadMusicXmlNote(
 
     // tremolos
     pugi::xpath_node tremolo = notations.node().select_node("ornaments/tremolo");
-    int tremSlashNum = 0;
+    int tremSlashNum = -1;
     if (tremolo) {
         if (HasAttributeWithValue(tremolo.node(), "type", "start")) {
-            FTrem *fTrem = new FTrem();
             if (!isChord) {
+                FTrem *fTrem = new FTrem();
                 AddLayerElement(layer, fTrem);
                 m_elementStackMap.at(layer).push_back(fTrem);
+                int beamFloatNum = tremolo.node().text().as_int(); // number of floating beams
+                int beamAttachedNum = 0; // number of attached beams
+                while (beamStart && beamAttachedNum < 8) { // count number of (attached) beams, max 8
+                    std::ostringstream o;
+                    o << "beam[@number='" << ++beamAttachedNum + 1 << "'][text()='begin']";
+                    beamStart = node.select_node(o.str().c_str());
+                }
+                fTrem->SetBeams(beamFloatNum + beamAttachedNum);
+                fTrem->SetBeamsFloat(beamFloatNum);
             }
-            int beamFloatNum = tremolo.node().text().as_int(); // number of floating beams
-            int beamAttachedNum = 0; // number of attached beams
-            while (beamStart && beamAttachedNum < 8) { // count number of (attached) beams, max 8
-                std::ostringstream o;
-                o << "beam[@number='" << ++beamAttachedNum + 1 << "'][text()='begin']";
-                beamStart = node.select_node(o.str().c_str());
-            }
-            fTrem->SetBeams(beamFloatNum + beamAttachedNum);
-            fTrem->SetBeamsFloat(beamFloatNum);
         }
         else if (!HasAttributeWithValue(tremolo.node(), "type", "stop")) {
             // this is default tremolo type in MusicXML
-            BTrem *bTrem = new BTrem();
+            tremSlashNum = tremolo.node().text().as_int();
             if (!isChord) {
+                BTrem *bTrem = new BTrem();
                 AddLayerElement(layer, bTrem);
                 m_elementStackMap.at(layer).push_back(bTrem);
+                if (HasAttributeWithValue(tremolo.node(), "type", "unmeasured")) {
+                    bTrem->SetForm(bTremLog_FORM_unmeas);
+                    tremSlashNum = 0;
+                }
+                else {
+                    bTrem->SetForm(bTremLog_FORM_meas);
+                }
             }
-            tremSlashNum = tremolo.node().text().as_int();
-            // if (HasAttributeWithValue(tremolo.node(), "type", "unmeasured")) bTrem->SetForm(bTremLog_FORM_unmeas);
         }
     }
 
@@ -2552,8 +2558,12 @@ void MusicXmlInput::ReadMusicXmlNote(
                 if (dots > 0) chord->SetDots(dots);
                 chord->SetStemDir(stemDir);
                 if (stemText == "none") chord->SetStemVisible(BOOLEAN_false);
-                if (tremSlashNum != 0)
+                if (tremSlashNum > 0) {
                     chord->SetStemMod(chord->AttStems::StrToStemmodifier(std::to_string(tremSlashNum) + "slash"));
+                }
+                else if (tremSlashNum == 0) {
+                    chord->SetStemMod(STEMMODIFIER_z);
+                }
                 AddLayerElement(layer, chord, duration);
                 m_elementStackMap.at(layer).push_back(chord);
                 element = chord;
@@ -2608,8 +2618,12 @@ void MusicXmlInput::ReadMusicXmlNote(
                 note->SetStemLen(stemLen);
             }
             if (stemText == "none") note->SetStemVisible(BOOLEAN_false);
-            if (tremSlashNum != 0)
-                note->SetStemMod(note->AttStems::StrToStemmodifier(std::to_string(tremSlashNum) + "slash"));
+            if (tremSlashNum > 0) {
+                note->SetStemMod(chord->AttStems::StrToStemmodifier(std::to_string(tremSlashNum) + "slash"));
+            }
+            else if (tremSlashNum == 0) {
+                note->SetStemMod(STEMMODIFIER_z);
+            }
         }
 
         // verse / syl
@@ -3017,11 +3031,11 @@ void MusicXmlInput::ReadMusicXmlNote(
 
     // tremolo end
     if (tremolo) {
-        if (HasAttributeWithValue(tremolo.node(), "type", "single") && !nextIsChord) {
-            RemoveLastFromStack(BTREM, layer);
-        }
         if (HasAttributeWithValue(tremolo.node(), "type", "stop")) {
             RemoveLastFromStack(FTREM, layer);
+        }
+        else if (!HasAttributeWithValue(tremolo.node(), "type", "start") && !nextIsChord) {
+            RemoveLastFromStack(BTREM, layer);
         }
     }
 

@@ -117,7 +117,7 @@ public:
     ///@}
 
     /**
-     * Check if the note has leger lines.
+     * Check if the note has ledger lines.
      * If staff is passed, use it for getting the staff line number.
      * Otherwise, it will look for the Staff ancestor.
      * Set the value of ledger lines above or below.
@@ -278,6 +278,12 @@ private:
     TransPitch GetTransPitch();
 
     void UpdateFromTransPitch(const TransPitch &tp);
+
+    /**
+     * Return whether dots are overlapping with flag. Take into account flag height, its position as well
+     * as position of the note and position of the dots
+     */
+    bool IsDotOverlappingWithFlag(Doc *doc, const int staffSize, bool isDotShifted);
 
 public:
     //
