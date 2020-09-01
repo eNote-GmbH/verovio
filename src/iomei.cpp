@@ -3501,6 +3501,8 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
         m_doc->m_mdivScoreDef = *vrvScoreDef;
     }
 
+    parent->AddChild(vrvScoreDef);
+
     if (parent->Is(SCORE)) {
         parent->AddChild(vrvScoreDef);
         Object* mdivObject = parent->GetFirstAncestor(MDIV);
