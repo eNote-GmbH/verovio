@@ -23,6 +23,7 @@
 #include "arpeg.h"
 #include "artic.h"
 #include "beam.h"
+#include "beamspan.h"
 #include "beatrpt.h"
 #include "boundary.h"
 #include "bracketspan.h"
@@ -1191,6 +1192,18 @@ void MEIOutput::WriteArpeg(pugi::xml_node currentNode, Arpeg *arpeg)
     arpeg->WriteArpegLog(currentNode);
     arpeg->WriteArpegVis(currentNode);
     arpeg->WriteColor(currentNode);
+}
+
+void MEIOutput::WriteBeamSpan(pugi::xml_node currentNode, BeamSpan *beamSpan)
+{
+    assert(beamSpan);
+
+    WriteControlElement(currentNode, beamSpan);
+    WriteTimePointInterface(currentNode, beamSpan);
+    WriteTimeSpanningInterface(currentNode, beamSpan);
+    beamSpan->WriteColor(currentNode);
+    beamSpan->WriteBeamedWith(currentNode);
+    beamSpan->WriteBeamRend(currentNode);
 }
 
 void MEIOutput::WriteBracketSpan(pugi::xml_node currentNode, BracketSpan *bracketSpan)
@@ -4093,6 +4106,22 @@ bool MEIInput::ReadArpeg(Object *parent, pugi::xml_node arpeg)
 
     parent->AddChild(vrvArpeg);
     ReadUnsupportedAttr(arpeg, vrvArpeg);
+    return true;
+}
+
+bool MEIInput::ReadBeamSpan(Object *parent, pugi::xml_node beamSpan)
+{
+    BeamSpan *vrvBeamSpan = new BeamSpan();
+    ReadControlElement(beamSpan, vrvBeamSpan);
+
+    ReadTimePointInterface(beamSpan, vrvBeamSpan);
+    ReadTimeSpanningInterface(beamSpan, vrvBeamSpan);
+    vrvBeamSpan->ReadColor(beamSpan);
+    vrvBeamSpan->ReadBeamedWith(beamSpan);
+    vrvBeamSpan->ReadBeamRend(beamSpan);
+
+    parent->AddChild(vrvBeamSpan);
+    ReadUnsupportedAttr(beamSpan, vrvBeamSpan);
     return true;
 }
 
