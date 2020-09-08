@@ -338,7 +338,7 @@ int Note::CalcStemLenInThirdUnits(Staff *staff)
     }
 
     // Limit shortening with duration shorter than quarter not when not in a beam
-    if ((this->GetDrawingDur() > DUR_4) && !this->IsInBeam()) {
+    if ((GetDrawingDur() > DUR_4) && !IsInBeam() && !IsInBeamSpan()) {
         if (this->GetDrawingStemDir() == STEMDIRECTION_up) {
             shortening = std::min(4, shortening);
         }
@@ -774,7 +774,7 @@ int Note::CalcStem(FunctorParams *functorParams)
 
     // Stems have been calculated previously in Beam or FTrem - siblings becasue flags do not need to
     // be processed either
-    if (this->IsInBeam() || this->IsInFTrem()) {
+    if (IsInBeam() || IsInFTrem() || IsInBeamSpan()) {
         return FUNCTOR_SIBLINGS;
     }
 
@@ -927,8 +927,8 @@ int Note::CalcDots(FunctorParams *functorParams)
         assert(dots);
 
         // Stem up, shorter than 4th and not in beam
-        if ((this->GetDots() != 0) && (params->m_chordStemDir == STEMDIRECTION_up) && (this->GetDrawingDur() > DUR_4)
-            && !this->IsInBeam()) {
+        if ((GetDots() != 0) && (params->m_chordStemDir == STEMDIRECTION_up) && (GetDrawingDur() > DUR_4) && !IsInBeam()
+            && !IsInBeamSpan()) {
             // Shift according to the flag width if the top note is not flipped
             if ((this == chord->GetTopNote()) && !this->GetFlippedNotehead()) {
                 // HARDCODED
@@ -953,7 +953,7 @@ int Note::CalcDots(FunctorParams *functorParams)
         dotLocs->push_back(loc);
 
         // Stem up, shorter than 4th and not in beam
-        if ((GetDrawingStemDir() == STEMDIRECTION_up) && (!this->IsInBeam()) && (GetDrawingStemLen() < 3)
+        if ((GetDrawingStemDir() == STEMDIRECTION_up) && !IsInBeam() && !IsInBeamSpan() && (GetDrawingStemLen() < 3)
             && (IsDotOverlappingWithFlag(params->m_doc, staffSize, isDotShifted))) {
             // HARDCODED
             flagShift += params->m_doc->GetGlyphWidth(SMUFL_E240_flag8thUp, staffSize, drawingCueSize) * 0.8;
@@ -1054,8 +1054,8 @@ int Note::PrepareLayerElementParts(FunctorParams *functorParams)
         }
     }
 
-    if ((this->GetActualDur() > DUR_4) && !this->IsInBeam() && !this->IsInFTrem() && !this->IsChordTone()
-        && !this->IsMensuralDur()) {
+    if ((GetActualDur() > DUR_4) && !IsInBeam() && !IsInBeamSpan() && !IsInFTrem() && !IsChordTone()
+        && !IsMensuralDur()) {
         // We should have a stem at this stage
         assert(currentStem);
         if (!currentFlag) {

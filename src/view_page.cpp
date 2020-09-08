@@ -169,6 +169,7 @@ void View::DrawSystem(DeviceContext *dc, System *system)
     DrawSystemChildren(dc, system, system);
 
     DrawSystemList(dc, system, SYL);
+    DrawSystemList(dc, system, BEAMSPAN);
     DrawSystemList(dc, system, BRACKETSPAN);
     DrawSystemList(dc, system, DYNAM);
     DrawSystemList(dc, system, DIR);
@@ -195,6 +196,9 @@ void View::DrawSystemList(DeviceContext *dc, System *system, const ClassId class
     ArrayOfObjects::iterator iter;
 
     for (iter = drawingList->begin(); iter != drawingList->end(); ++iter) {
+        if ((*iter)->Is(classId) && (classId == BEAMSPAN)) {
+            DrawTimeSpanningElement(dc, *iter, system);
+        }
         if ((*iter)->Is(classId) && (classId == BRACKETSPAN)) {
             DrawTimeSpanningElement(dc, *iter, system);
         }

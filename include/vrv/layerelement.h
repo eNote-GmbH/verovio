@@ -120,6 +120,8 @@ public:
     Beam *IsInBeam();
     ///@}
 
+    bool IsInBeamSpan() const;
+
     /**
      * @name Get and set the layerN drawing value
      */

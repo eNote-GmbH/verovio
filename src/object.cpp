@@ -534,13 +534,14 @@ void Object::FindAllDescendantByComparison(
 }
 
 void Object::FindAllDescendantBetween(
-    ListOfObjects *objects, Comparison *comparison, Object *start, Object *end, bool clear)
+    ListOfObjects *objects, Comparison *comparison, Object *start, Object *end, bool clear, bool allChildren)
 {
     assert(objects);
     if (clear) objects->clear();
 
     Functor findAllBetween(&Object::FindAllBetween);
     FindAllBetweenParams findAllBetweenParams(comparison, objects, start, end);
+    findAllBetweenParams.m_includeChildren = allChildren;
     this->Process(&findAllBetween, &findAllBetweenParams);
 }
 
@@ -1184,6 +1185,7 @@ int Object::FindAllBetween(FunctorParams *functorParams)
     // evaluate by applying the Comparison operator()
     if ((*params->m_comparison)(this)) {
         params->m_elements->push_back(this);
+        if ((params->m_end != this) && !params->m_includeChildren) return FUNCTOR_SIBLINGS;
     }
 
     // We have reached the end of the range

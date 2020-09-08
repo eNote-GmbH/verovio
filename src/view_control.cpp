@@ -17,6 +17,7 @@
 
 #include "arpeg.h"
 #include "bboxdevicecontext.h"
+#include "beamspan.h"
 #include "bracketspan.h"
 #include "breath.h"
 #include "comparison.h"
@@ -72,7 +73,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
     assert(element);
 
     // For dir, dynam, fermata, and harm, we do not consider the @tstamp2 for rendering
-    if (element->Is({ BRACKETSPAN, FIGURE, GLISS, HAIRPIN, PHRASE, OCTAVE, SLUR, TIE })) {
+    if (element->Is({ BEAMSPAN, BRACKETSPAN, FIGURE, GLISS, HAIRPIN, PHRASE, OCTAVE, SLUR, TIE })) {
         // create placeholder
         dc->StartGraphic(element, "", element->GetUuid());
         dc->EndGraphic(element, this);
@@ -295,6 +296,10 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
         else if (element->Is(FIGURE)) {
             // cast to F check in DrawFConnector
             DrawFConnector(dc, dynamic_cast<F *>(element), x1, x2, *staffIter, spanningType, graphic);
+        }
+        else if (element->Is(BEAMSPAN)) {
+            // cast to BeamSpan check in DrawBeamSpan
+            DrawBeamSpan(dc, dynamic_cast<BeamSpan *>(element), measure);
         }
         else if (element->Is(BRACKETSPAN)) {
             // cast to BracketSpan check in DrawBracketSpan

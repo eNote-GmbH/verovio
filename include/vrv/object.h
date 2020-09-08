@@ -417,8 +417,8 @@ public:
      * Return all the objects matching the Comparison functor and being between start and end in the tree.
      * The start and end objects are included in the result set.
      */
-    void FindAllDescendantBetween(
-        ListOfObjects *objects, Comparison *comparison, Object *start, Object *end, bool clear = true);
+    void FindAllDescendantBetween(ListOfObjects *objects, Comparison *comparison, Object *start, Object *end,
+        bool clear = true, bool allChildren = true);
 
     /**
      * Give up ownership of the child at the idx position (NULL if not found)
