@@ -1005,6 +1005,7 @@ public:
      */
     ///@{
     virtual int PreparePlist(FunctorParams *functorParams);
+    virtual int ProcessPlist(FunctorParams *functorParams);
     ///@}
 
     /**
@@ -1168,6 +1169,14 @@ public:
      */
     ///@{
     virtual int ResolveMIDITies(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    ///@}
+
+    /**
+     * Get the list of referenced elements for the beamSpan as well as set referenced
+     * object for those elements to beamSpan containing them.
+     */
+    ///@{
+    virtual int ResolveBeamSpanElements(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
     /**

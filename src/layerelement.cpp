@@ -106,6 +106,7 @@ void LayerElement::Reset()
 
     m_crossStaff = NULL;
     m_crossLayer = NULL;
+    m_referencedElement = NULL;
 }
 
 LayerElement::~LayerElement() {}
@@ -121,6 +122,7 @@ void LayerElement::CloneReset()
 
     m_crossStaff = NULL;
     m_crossLayer = NULL;
+    m_referencedElement = NULL;
 }
 
 LayerElement *LayerElement::ThisOrSameasAsLink()
@@ -218,32 +220,7 @@ bool LayerElement::IsInBeamSpan() const
 {
     if (!this->Is({ CHORD, NOTE })) return false;
 
-    Measure *parentMeasure = vrv_cast<Measure *>(GetFirstAncestor(MEASURE));
-    if (!parentMeasure) return false;
-
-    Layer *parentLayer = vrv_cast<Layer *>(GetFirstAncestor(LAYER));
-    if (!parentLayer) return false;
-
-    // find all beamspans within current measure, stop processing if there are none
-    ClassIdComparison beamSpanId(BEAMSPAN);
-    ListOfObjects beamSpanElements;
-    parentMeasure->FindAllDescendantByComparison(&beamSpanElements, &beamSpanId);
-
-    if (beamSpanElements.empty()) return false;
-
-    // try to figure whether current element belongs to any of the beamSpans
-    for (auto object : beamSpanElements) {
-        BeamSpan *beamSpan = vrv_cast<BeamSpan *>(object);
-        if (!beamSpan) continue;
-
-        ClassIdsComparison classIds({ NOTE, CHORD });
-        ListOfObjects elements;
-        parentLayer->FindAllDescendantBetween(
-            &elements, &classIds, beamSpan->GetStart(), beamSpan->GetEnd(), true, false);
-        if (std::find(elements.begin(), elements.end(), this) != elements.end()) return true;
-    }
-
-    return false;
+    return m_referencedElement != NULL;
 }
 
 Staff *LayerElement::GetCrossStaff(Layer *&layer) const
