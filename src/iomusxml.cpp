@@ -2887,8 +2887,7 @@ void MusicXmlInput::ReadMusicXmlNote(
                     : DEP_Below;
             }
             const std::string smuflCode = GetOrnamentGlyphNumber(mordentFlags);
-            if (!smuflCode.empty())
-            {
+            if (!smuflCode.empty()) {
                 mordent->SetExternalsymbols(mordent, "glyph.num", smuflCode);
                 mordent->SetExternalsymbols(mordent, "glyph.auth", "smufl");
             }
@@ -2969,14 +2968,21 @@ void MusicXmlInput::ReadMusicXmlNote(
         // place
         turn->SetPlace(turn->AttPlacement::StrToStaffrel(xmlTurn.node().attribute("placement").as_string()));
         turn->SetForm(turnLog_FORM_upper);
-        if (std::string(xmlTurn.node().name()).find("inverted") != std::string::npos) {
+        if (!std::strncmp(xmlTurn.node().name(), "inverted", 8)) {
             turn->SetForm(turnLog_FORM_lower);
+            if (std::string(xmlTurn.node().name()).find("vertical") != std::string::npos) {
+                turn->SetType("vertical");
+                turn->SetExternalsymbols(turn, "glyph.auth", "smufl");
+                turn->SetExternalsymbols(turn, "glyph.num", "U+E56B");
+            }
         }
         if (!std::strncmp(xmlTurn.node().name(), "delayed", 7)) {
             turn->SetDelayed(BOOLEAN_true);
         }
         if (!std::strncmp(xmlTurn.node().name(), "vertical", 8)) {
             turn->SetType("vertical");
+            turn->SetExternalsymbols(turn, "glyph.auth", "smufl");
+            turn->SetExternalsymbols(turn, "glyph.num", "U+E56A");
         }
     }
 
@@ -3727,10 +3733,10 @@ void MusicXmlInput::ShapeFermata(Fermata *fermata, pugi::xml_node node)
 
 std::string MusicXmlInput::GetOrnamentGlyphNumber(int attributes) const
 {
-    static std::map<int, std::string> precomposedNames = { { APPR_Above | FORM_Inverted, "U+E5C6" },
-        { APPR_Below | FORM_Inverted, "U+E5B5" }, { APPR_Above | FORM_Normal, "U+E5C7" },
-        { APPR_Below | FORM_Normal, "U+E5B8" }, { FORM_Inverted | DEP_Above, "U+E5BB" },
-        { FORM_Inverted | DEP_Below, "U+E5C8" }
+    static std::map<int, std::string> precomposedNames = {
+        { APPR_Above | FORM_Inverted, "U+E5C6" }, { APPR_Below | FORM_Inverted, "U+E5B5" },
+        { APPR_Above | FORM_Normal, "U+E5C7" }, { APPR_Below | FORM_Normal, "U+E5B8" },
+        { FORM_Inverted | DEP_Above, "U+E5BB" }, { FORM_Inverted | DEP_Below, "U+E5C8" }
         // these values need to be matched with proper SMuFL codes first
         /*, { FORM_Normal | DEP_Above, "U+????" },
         { FORM_Normal | DEP_Below, "U+????" }, { APPR_Above | FORM_Normal | DEP_Above, "U+????" },
