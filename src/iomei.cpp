@@ -3979,91 +3979,92 @@ bool MEIInput::ReadMeasureChildren(Object *parent, pugi::xml_node parentNode)
     bool success = true;
     pugi::xml_node current;
     for (current = parentNode.first_child(); current; current = current.next_sibling()) {
+        const std::string currentName = current.name();
         if (!success) break;
         // editorial
-        else if (IsEditorialElementName(current.name())) {
+        else if (IsEditorialElementName(currentName)) {
             success = ReadEditorialElement(parent, current, EDITORIAL_MEASURE);
         }
         // content
-        else if (std::string(current.name()) == "anchoredText") {
+        else if (currentName == "anchoredText") {
             success = ReadAnchoredText(parent, current);
         }
-        else if (std::string(current.name()) == "arpeg") {
+        else if (currentName == "arpeg") {
             success = ReadArpeg(parent, current);
         }
-        else if (std::string(current.name()) == "beamSpan") {
+        else if (currentName == "beamSpan") {
             ReadBeamSpan(parent, current);
         }
-        else if (std::string(current.name()) == "bracketSpan") {
+        else if (currentName == "bracketSpan") {
             success = ReadBracketSpan(parent, current);
         }
-        else if (std::string(current.name()) == "breath") {
+        else if (currentName == "breath") {
             success = ReadBreath(parent, current);
         }
-        else if (std::string(current.name()) == "dir") {
+        else if (currentName == "dir") {
             success = ReadDir(parent, current);
         }
-        else if (std::string(current.name()) == "dynam") {
+        else if (currentName == "dynam") {
             success = ReadDynam(parent, current);
         }
-        else if (std::string(current.name()) == "fermata") {
+        else if (currentName == "fermata") {
             success = ReadFermata(parent, current);
         }
-        else if (std::string(current.name()) == "fing") {
+        else if (currentName == "fing") {
             success = ReadFing(parent, current);
         }
-        else if (std::string(current.name()) == "gliss") {
+        else if (currentName == "gliss") {
             success = ReadGliss(parent, current);
         }
-        else if (std::string(current.name()) == "hairpin") {
+        else if (currentName == "hairpin") {
             success = ReadHairpin(parent, current);
         }
-        else if (std::string(current.name()) == "harm") {
+        else if (currentName == "harm") {
             success = ReadHarm(parent, current);
         }
-        else if (std::string(current.name()) == "mNum") {
+        else if (currentName == "mNum") {
             success = ReadMNum(parent, current);
         }
-        else if (std::string(current.name()) == "mordent") {
+        else if (currentName == "mordent") {
             success = ReadMordent(parent, current);
         }
-        else if (std::string(current.name()) == "octave") {
+        else if (currentName == "octave") {
             success = ReadOctave(parent, current);
         }
-        else if (std::string(current.name()) == "pedal") {
+        else if (currentName == "pedal") {
             success = ReadPedal(parent, current);
         }
-        else if (std::string(current.name()) == "phrase") {
+        else if (currentName == "phrase") {
             success = ReadPhrase(parent, current);
         }
-        else if (std::string(current.name()) == "reh") {
+        else if (currentName == "reh") {
             success = ReadReh(parent, current);
         }
-        else if (std::string(current.name()) == "slur") {
+        else if (currentName == "slur") {
             success = ReadSlur(parent, current);
         }
-        else if (std::string(current.name()) == "staff") {
+        else if (currentName == "staff") {
             success = ReadStaff(parent, current);
         }
-        else if (std::string(current.name()) == "tempo") {
+        else if (currentName == "tempo") {
             success = ReadTempo(parent, current);
         }
-        else if (std::string(current.name()) == "tie") {
+        else if (currentName == "tie") {
             success = ReadTie(parent, current);
         }
-        else if (std::string(current.name()) == "trill") {
+        else if (currentName == "trill") {
             success = ReadTrill(parent, current);
         }
-        else if (std::string(current.name()) == "turn") {
+        else if (currentName == "turn") {
             success = ReadTurn(parent, current);
         }
-        else if (std::string(current.name()) == "tupletSpan") {
+        else if (currentName == "tupletSpan") {
             if (!ReadTupletSpanAsTuplet(dynamic_cast<Measure *>(parent), current)) {
                 LogWarning("<tupletSpan> is not readable as <tuplet> and will be ignored");
             }
         }
         // xml comment
-        else if (std::string(current.name()) == "") {
+        else if (currentName == "") {
             success = ReadXMLComment(parent, current);
         }
         else {
