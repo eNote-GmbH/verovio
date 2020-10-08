@@ -2,9 +2,8 @@
 stages:
   - build
   - build-toolkit
-  # - precache
-  # - build-toolkit
-  # - deploy
+  - build-viewer
+  - deploy-viewer
 
 variables:
   EMSCRIPTEN_REPOSITORY: "https://github.com/emscripten-core/emsdk.git"
@@ -58,62 +57,14 @@ build-toolkit:
     paths:
       - emscripten/build/verovio-toolkit.js*
 
-# precache:
-#   stage: precache
-#   image:
-#     name: rikorose/gcc-cmake
-#     entrypoint: [""]
-#   script:
-#     - ./travis/ci_precache.sh
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "develop"'
-#
-# .build-toolkit-template:
-#   stage: build-toolkit
-#   image:
-#     name: rikorose/gcc-cmake
-#     entrypoint: [""]
-#   script:
-#     - ./travis/ci_build-toolkit.sh $COMMAND
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "develop"'
-#
-# build-toolkit-nohumdrum:
-#   extends: .build-toolkit-template
-#   variables:
-#     COMMAND: nohumdrum
-#
-# build-toolkit-light:
-#   extends: .build-toolkit-template
-#   variables:
-#     COMMAND: light
-#
-# build-toolkit-wasm:
-#   extends: .build-toolkit-template
-#   variables:
-#     COMMAND: wasm
-#
-# build-toolkit-default:
-#   extends: .build-toolkit-template
-#   variables:
-#     COMMAND: default
-#
-# .deploy-template:
-#   stage: deploy
-#   image:
-#     name: rikorose/gcc-cmake
-#     entrypoint: [""]
-#   rules:
-#     - if: '$CI_COMMIT_BRANCH == "develop"'
-#
-# deploy-toolkit:
-#   extends: .deploy-template
-#   script:
-#     - ./travis/ci_deploy-toolkit.sh
-#
-# deploy-doxygen:
-#   extends: .deploy-template
-#   script:
-#     - apt update
-#     - apt install -y doxygen
-#     - ./travis/ci_deploy-doxygen.sh
+build-viewer:
+  stage: build-viewer
+  dependencies:
+  - build-toolkit
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
