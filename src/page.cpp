@@ -359,6 +359,10 @@ void Page::LayOutHorizontally()
     Functor alignMeasures(&Object::AlignMeasures);
     Functor alignMeasuresEnd(&Object::AlignMeasuresEnd);
     this->Process(&alignMeasures, &alignMeasuresParams, &alignMeasuresEnd);
+
+    FunctorDocParams resolveSpanningBeamSpansParams(doc);
+    Functor resolveSpanningBeamSpans(&Object::ResolveSpanningBeamSpans);
+    this->Process(&resolveSpanningBeamSpans, &resolveSpanningBeamSpansParams);
 }
 
 void Page::LayOutVertically()
