@@ -1186,7 +1186,7 @@ public:
      * drawn properly
      */
     ///@{
-    virtual int ResolveSpinningBeamSpans(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ResolveSpanningBeamSpans(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
     /**
