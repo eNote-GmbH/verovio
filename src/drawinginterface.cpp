@@ -18,6 +18,7 @@
 #include "layerelement.h"
 #include "note.h"
 #include "object.h"
+#include "staff.h"
 
 namespace vrv {
 
@@ -82,6 +83,7 @@ void BeamDrawingInterface::Reset()
     m_hasMultipleStemDir = false;
     m_cueSize = false;
     m_hasCrossStaffContent = false;
+    m_isSpanningElement = false;
     m_shortestDur = 0;
     m_notesStemDir = STEMDIRECTION_NONE;
     m_drawingPlace = BEAMPLACE_NONE;
@@ -162,7 +164,7 @@ void BeamDrawingInterface::InitCoords(ArrayOfObjects *childList, Staff *staff, d
         }
 
         Staff *staff = current->GetCrossStaff(layer);
-        if (staff != currentStaff) {
+        if (currentStaff && (staff != currentStaff) && (currentStaff->GetN() != staff->GetN())) {
             this->m_hasCrossStaffContent = true;
         }
         currentStaff = staff;
@@ -223,7 +225,7 @@ void BeamDrawingInterface::InitCoords(ArrayOfObjects *childList, Staff *staff, d
     }
 }
 
-bool BeamDrawingInterface::IsHorizontal()
+bool BeamDrawingInterface::IsHorizontal(const std::vector<int> &items)
 {
     if (this->IsRepeatedPattern()) {
         return true;
@@ -231,25 +233,7 @@ bool BeamDrawingInterface::IsHorizontal()
 
     if (HasOneStepHeight()) return true;
 
-    // if (m_drawingPlace == BEAMPLACE_mixed) return true;
-
-    if (m_drawingPlace == BEAMPLACE_NONE) return true;
-
-    int elementCount = (int)m_beamElementCoords.size();
-
-    std::vector<int> items;
-    items.reserve(m_beamElementCoords.size());
-
-    int i;
-    for (i = 0; i < elementCount; ++i) {
-        BeamElementCoord *coord = m_beamElementCoords.at(i);
-        if (!coord->m_stem || !coord->m_closestNote) continue;
-
-        items.push_back(coord->m_closestNote->GetDrawingY());
-    }
-    int itemCount = (int)items.size();
-
-    if (itemCount < 2) return true;
+    if ((m_drawingPlace == BEAMPLACE_NONE) || (items.size() < 2)) return true;
 
     const int first = items.front();
     const int last = items.back();
@@ -258,7 +242,7 @@ bool BeamDrawingInterface::IsHorizontal()
     if (first == last) return true;
 
     // Detect concave shapes
-    for (i = 1; i < itemCount - 1; ++i) {
+    for (int i = 1; i < items.size() - 1; ++i) {
         if (m_drawingPlace == BEAMPLACE_above) {
             if ((items.at(i) > first) && (items.at(i) > last)) return true;
         }

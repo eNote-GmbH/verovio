@@ -94,7 +94,7 @@ public:
      */
     void InitCoords(ArrayOfObjects *childList, Staff *staff, data_BEAMPLACE place);
 
-    bool IsHorizontal();
+    bool IsHorizontal(const std::vector<int>& items);
 
     bool IsRepeatedPattern();
 
@@ -117,6 +117,7 @@ public:
     bool m_hasMultipleStemDir;
     bool m_cueSize;
     bool m_hasCrossStaffContent;
+    bool m_isSpanningElement;
     int m_shortestDur;
     data_STEMDIRECTION m_notesStemDir;
     data_BEAMPLACE m_drawingPlace;
