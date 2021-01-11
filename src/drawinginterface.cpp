@@ -164,7 +164,7 @@ void BeamDrawingInterface::InitCoords(ArrayOfObjects *childList, Staff *staff, d
         }
 
         Staff *staff = current->GetCrossStaff(layer);
-        if (currentStaff && (staff != currentStaff) && (currentStaff->GetN() != staff->GetN())) {
+        if (currentStaff != staff) {
             this->m_hasCrossStaffContent = true;
         }
         currentStaff = staff;

@@ -118,7 +118,7 @@ private:
     void CalcSetValues();
 
     // Helper to check wheter beam fits within certain bounds
-    bool DoesBeamOverlap(int staffTop, int topOffset, int staffBottom, int bottomOffset);
+    bool DoesBeamOverlap(int staffTop, int topOffset, int staffBottom, int bottomOffset, bool isCrossStaff = false);
 
     // Helper to check mixed beam positioning compared to other elements (ledger lines, staff) and adjust it accordingly
     bool NeedToResetPosition(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface);
