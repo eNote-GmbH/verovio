@@ -583,6 +583,7 @@ public:
     OptionDbl m_subBracketThickness;
     OptionIntMap m_systemDivider;
     OptionInt m_systemMaxPerPage;
+    OptionString m_textFont;
     OptionDbl m_textEnclosureThickness;
     OptionDbl m_thickBarlineThickness;
     OptionDbl m_tieEndpointThickness;
