@@ -81,6 +81,9 @@ private:
     // Helper to calculate the longest stem length of the beam (which will be used uniformely)
     void CalcBeamStemLength(Staff *staff, data_BEAMPLACE place);
 
+    // Calculate positioning for the horizontal beams
+    void CalcHorizontalBeam(BeamDrawingInterface *beamInterface);
+
     // Helper to calculate relative position of the beam to for each of the coordinates
     void CalcMixedBeamPlace(Staff *staff);
 
