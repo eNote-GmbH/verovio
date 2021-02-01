@@ -225,7 +225,6 @@ public:
     void SetUuid(std::string uuid);
     void SwapUuid(Object *other);
     void ResetUuid();
-    static void SeedUuid(unsigned int seed = 0);
 
     /**
      * Methods for setting / getting comments
@@ -536,6 +535,14 @@ public:
     virtual void Process(Functor *functor, FunctorParams *functorParams, Functor *endFunctor = NULL,
         ArrayOfComparisons *filters = NULL, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
 
+    //----------------//
+    // Static methods //
+    //----------------//
+
+    static void SeedUuid(unsigned int seed = 0);
+
+    static bool sortByUlx(Object *a, Object *b);
+
     //----------//
     // Functors //
     //----------//
@@ -631,6 +638,15 @@ public:
     ///@{
     virtual int ConvertMarkupAnalytical(FunctorParams *) { return FUNCTOR_CONTINUE; }
     virtual int ConvertMarkupAnalyticalEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    ///@}
+
+    /**
+     * Convert markup of artic@artic multi value into distinct artic elements.
+     * See Doc::ConvertMarkupAnalyticalDoc
+     */
+    ///@{
+    virtual int ConvertMarkupArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ConvertMarkupArticEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
     /**
@@ -824,6 +840,11 @@ public:
      * Adjust the postion position of slurs.
      */
     virtual int AdjustSlurs(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Adjust the position the articulations.
+     */
+    virtual int AdjustArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Adjust the position the outside articulations with slur.
@@ -1205,8 +1226,6 @@ public:
      */
     virtual int Transpose(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
-    static bool sortByUlx(Object *a, Object *b);
-
 protected:
     //
 private:
@@ -1302,6 +1321,10 @@ private:
      * A flag indicating if the Object is a copy created by an expanded expansion element.
      */
     bool m_isExpansion;
+
+    //----------------//
+    // Static members //
+    //----------------//
 
     /**
      * A static counter for uuid generation.

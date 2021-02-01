@@ -26,7 +26,8 @@ class Clef : public LayerElement,
              public AttClefShape,
              public AttColor,
              public AttLineLoc,
-             public AttOctaveDisplacement {
+             public AttOctaveDisplacement,
+             public AttVisibility {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
@@ -51,6 +52,10 @@ public:
      * Return the offset of the clef
      */
     int GetClefLocOffset() const;
+
+    //----------------//
+    // Static methods //
+    //----------------//
 
     /**
      * Return a clef id based on the various parameters

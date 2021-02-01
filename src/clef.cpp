@@ -24,12 +24,13 @@ namespace vrv {
 // Clef
 //----------------------------------------------------------------------------
 
-Clef::Clef() : LayerElement("clef-"), AttClefShape(), AttColor(), AttLineLoc(), AttOctaveDisplacement()
+Clef::Clef() : LayerElement("clef-"), AttClefShape(), AttColor(), AttLineLoc(), AttOctaveDisplacement(), AttVisibility()
 {
     RegisterAttClass(ATT_CLEFSHAPE);
     RegisterAttClass(ATT_COLOR);
     RegisterAttClass(ATT_LINELOC);
     RegisterAttClass(ATT_OCTAVEDISPLACEMENT);
+    RegisterAttClass(ATT_VISIBILITY);
 
     Reset();
 }
@@ -43,6 +44,7 @@ void Clef::Reset()
     ResetColor();
     ResetLineLoc();
     ResetOctaveDisplacement();
+    ResetVisibility();
 }
 
 int Clef::GetClefLocOffset() const
@@ -71,6 +73,10 @@ int Clef::GetClefLocOffset() const
 
     return offset;
 }
+
+//----------------------------------------------------------------------------
+// Static methods for Clef
+//----------------------------------------------------------------------------
 
 int Clef::ClefId(data_CLEFSHAPE shape, char line, data_OCTAVE_DIS octaveDis, data_STAFFREL_basic place)
 {

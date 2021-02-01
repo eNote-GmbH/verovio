@@ -94,6 +94,10 @@ public:
     bool isSet() const { return m_isSet; }
 
 public:
+    //----------------//
+    // Static members //
+    //----------------//
+
     /**
      * Static maps used my OptionIntMap objects. Set in OptIntMap::Init
      */
@@ -612,6 +616,7 @@ public:
     OptionDbl m_defaultRightMargin;
     OptionDbl m_defaultTopMargin;
     //
+    OptionDbl m_bottomMarginArtic;
     OptionDbl m_bottomMarginHarm;
     OptionDbl m_bottomMarginPgHead;
     //
@@ -649,6 +654,7 @@ public:
     OptionDbl m_rightMarginRest;
     OptionDbl m_rightMarginRightBarLine;
     //
+    OptionDbl m_topMarginArtic;
     OptionDbl m_topMarginHarm;
 
     /**
