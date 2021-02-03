@@ -593,6 +593,7 @@ public:
     OptionDbl m_tieEndpointThickness;
     OptionDbl m_tieMidpointThickness;
     OptionDbl m_tupletBracketThickness;
+    OptionBool m_tupletNumHead;
 
     /**
      * Selectors
