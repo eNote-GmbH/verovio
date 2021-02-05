@@ -1179,13 +1179,21 @@ void Doc::ConvertMarkupDoc(bool permanent)
 {
     if (m_markup == MARKUP_DEFAULT) return;
 
-    LogMessage("Converting analytical markup...");
+    LogMessage("Converting markup...");
 
     if (m_markup & MARKUP_GRACE_ATTRIBUTE) {
     }
 
-    if ((m_markup & MARKUP_ANALYTICAL_FERMATA) || (m_markup & MARKUP_ANALYTICAL_TIE)) {
+    if (m_markup & MARKUP_ARTIC_MULTIVAL) {
+        LogMessage("Converting artic markup...");
+        ConvertMarkupArticParams convertMarkupArticParams;
+        Functor convertMarkupArtic(&Object::ConvertMarkupArtic);
+        Functor convertMarkupArticEnd(&Object::ConvertMarkupArticEnd);
+        this->Process(&convertMarkupArtic, &convertMarkupArticParams, &convertMarkupArticEnd);
+    }
 
+    if ((m_markup & MARKUP_ANALYTICAL_FERMATA) || (m_markup & MARKUP_ANALYTICAL_TIE)) {
+        LogMessage("Converting analytical markup...");
         /************ Prepare processing by staff/layer/verse ************/
 
         // We need to populate processing lists for processing the document by Layer (for matching @tie) and
@@ -1247,7 +1255,7 @@ void Doc::TransposeDoc()
         // Find the starting key tonic of the data to use in calculating the tranposition interval:
         // Set transposition by key tonic.
         // Detect the current key from the keysignature.
-        KeySig *keysig = dynamic_cast<KeySig *>(this->m_mdivScoreDef.FindDescendantByType(KEYSIG, 3));
+        KeySig *keysig = dynamic_cast<KeySig *>(this->m_mdivScoreDef.FindDescendantByType(KEYSIG));
         // If there is no keysignature, assume it is C.
         TransPitch currentKey = TransPitch(0, 0, 0);
         if (keysig && keysig->HasPname()) {
@@ -1630,6 +1638,8 @@ double Doc::GetRightMargin(const ClassId classId) const
 
 double Doc::GetBottomMargin(const ClassId classId) const
 {
+    if (classId == ARTIC) return m_options->m_bottomMarginArtic.GetValue();
+    // For these we also need to look at the scoreDef
     double margin = m_options->m_defaultBottomMargin.GetValue();
     if (classId == DYNAM) {
         margin = this->m_mdivScoreDef.HasDynamDist() ? this->m_mdivScoreDef.GetDynamDist() : margin;
@@ -1643,6 +1653,8 @@ double Doc::GetBottomMargin(const ClassId classId) const
 
 double Doc::GetTopMargin(const ClassId classId) const
 {
+    if (classId == ARTIC) return m_options->m_topMarginArtic.GetValue();
+    // For these we also need to look at the scoreDef
     double margin = m_options->m_defaultTopMargin.GetValue();
     if (classId == DYNAM) {
         margin = this->m_mdivScoreDef.HasDynamDist() ? this->m_mdivScoreDef.GetDynamDist() : margin;

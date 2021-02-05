@@ -473,6 +473,12 @@ std::string MusicXmlInput::GetWordsOrDynamicsText(const pugi::xml_node node) con
         }
         return dynamStr;
     }
+    if (IsElement(node, "coda")) {
+        return "\xF0\x9D\x84\x8C";
+    }
+    if (IsElement(node, "segno")) {
+        return "\xF0\x9D\x84\x8B";
+    }
     return std::string();
 }
 
@@ -542,7 +548,7 @@ void MusicXmlInput::PrintMetronome(pugi::xml_node metronome, Tempo *tempo)
 {
     std::string rawText;
     bool paren = false;
-    if (HasAttributeWithValue(metronome, "parentheses", "yes")) {
+    if (metronome.attribute("parentheses").as_bool()) {
         rawText = "(";
         paren = true;
     }
@@ -583,9 +589,9 @@ void MusicXmlInput::PrintMetronome(pugi::xml_node metronome, Tempo *tempo)
         const std::string mm = perminute.text().as_string();
         // Use the first floating-point number on the line to set @mm:
         std::string matches("0123456789");
-        size_t offset = mm.find_first_of(matches);
-        float mmval = std::stof(mm.substr(offset));
-        if (!isnan(mmval)) {
+        std::size_t offset = mm.find_first_of(matches);
+        if (offset < mm.length()) {
+            const float mmval = std::stof(mm.substr(offset));
             tempo->SetMm(mmval);
         }
         if (!mm.empty()) {
@@ -769,7 +775,7 @@ bool MusicXmlInput::ReadMusicXml(pugi::xml_node root)
             const std::string partId = xpathNode.node().attribute("id").as_string();
             std::string xpath = StringFormat("/score-partwise/part[@id='%s']/measure[1]", partId.c_str());
             pugi::xpath_node partFirstMeasure = root.select_node(xpath.c_str());
-            if (!partFirstMeasure.node().select_node("attributes")) {
+            if (!partFirstMeasure.node().child("attributes")) {
                 LogWarning("MusicXML import: Could not find the 'attributes' element in the first "
                            "measure of part '%s'",
                     partId.c_str());
@@ -1037,14 +1043,24 @@ void MusicXmlInput::ReadMusicXmlTitle(pugi::xml_node root)
     }
 
     // Convert rights into availability
-    pugi::xml_node availability = pubStmt.append_child("availability");
+    pugi::xpath_node_set rightsSet = root.select_nodes("/score-partwise/identification/rights");
+    if (!rightsSet.empty()) {
+        pugi::xml_node availability = pubStmt.append_child("availability");
+        for (pugi::xpath_node_set::const_iterator it = rightsSet.begin(); it != rightsSet.end(); ++it) {
+            pugi::xpath_node rights = *it;
+            availability.append_child("distributor")
+                .append_child(pugi::node_pcdata)
+                .set_value(rights.node().text().as_string());
+        }
+    }
 
-    pugi::xpath_node_set rightses = root.select_nodes("/score-partwise/identification/rights");
-    for (pugi::xpath_node_set::const_iterator it = rightses.begin(); it != rightses.end(); ++it) {
-        pugi::xpath_node rights = *it;
-        availability.append_child("distributor")
-            .append_child(pugi::node_pcdata)
-            .set_value(rights.node().text().as_string());
+    pugi::xpath_node_set dateSet = root.select_nodes("/score-partwise/identification/encoding/encoding-date");
+    for (pugi::xpath_node_set::const_iterator it = dateSet.begin(); it != dateSet.end(); ++it) {
+        pugi::xpath_node encodingDate = *it;
+        pugi::xml_node date = pubStmt.append_child("date");
+        date.text().set(encodingDate.node().text().as_string());
+        date.append_attribute("isodate").set_value(encodingDate.node().text().as_string());
+        date.append_attribute("type").set_value(encodingDate.node().name());
     }
 
     pugi::xml_node encodingDesc = meiHead.append_child("encodingDesc");
@@ -1099,7 +1115,12 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
         }
 
         // we do not want to read it again, just change the name
-        if (IsElement(*it, "attributes")) it->set_name("mei-read");
+        if (IsElement(*it, "attributes")) {
+            it->set_name("mei-read");
+        }
+        else {
+            continue;
+        }
 
         std::string xpath;
         // Create as many staffDef
@@ -1182,7 +1203,6 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
             }
             // add it if necessary
             if (clef) {
-                // Make it an attribute for now
                 staffDef->AddChild(clef);
             }
 
@@ -1222,9 +1242,15 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
                         keySig->AddChild(keyAccid);
                     }
                 }
-                if (key.node().select_node("mode")) {
-                    keySig->SetMode(
-                        keySig->AttKeySigLog::StrToMode(key.node().select_node("mode").node().text().as_string()));
+                if (key.node().child("mode")) {
+                    const std::string xmlMode = key.node().child("mode").text().as_string();
+                    if (std::strncmp(xmlMode.c_str(), "none", 4)) {
+                        keySig->SetMode(keySig->AttKeySigLog::StrToMode(xmlMode));
+                    }
+                }
+                if (key.node().attribute("id")) {
+                    if (!keySig) keySig = new KeySig();
+                    keySig->SetUuid(key.node().attribute("id").as_string());
                 }
             }
             // add it if necessary
@@ -1300,7 +1326,6 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
             }
             // add it if necessary
             if (meterSig) {
-                // Make it an attribute for now
                 staffDef->AddChild(meterSig);
             }
 
@@ -1648,9 +1673,9 @@ void MusicXmlInput::ReadMusicXmlAttributes(
             if (!keySig) keySig = new KeySig();
             keySig->SetUuid(key.node().attribute("id").as_string());
         }
+        if (keySig) keySig->SetVisible(ConvertWordToBool(key.node().attribute("print-object").as_string()));
         // Add it if necessary
         if (keySig) {
-            // Make it an attribute for now
             scoreDef->AddChild(keySig);
         }
 
@@ -1690,8 +1715,6 @@ void MusicXmlInput::ReadMusicXmlAttributes(
             }
             // add it if necessary
             if (meterSig) {
-                // Make it an attribute for now
-                meterSig->IsAttribute(true);
                 scoreDef->AddChild(meterSig);
             }
         }
@@ -1876,14 +1899,14 @@ void MusicXmlInput::ReadMusicXmlDirection(
     }
 
     // Coda
-    pugi::xml_node coda = typeNode.child("coda");
-    if (coda) {
+    pugi::xml_node xmlCoda = typeNode.child("coda");
+    if (xmlCoda) {
         Dir *dir = new Dir();
         dir->SetPlace(dir->AttPlacement::StrToStaffrel(placeStr.c_str()));
         dir->SetTstamp(timeStamp - 1.0);
         dir->SetType("coda");
         dir->SetStaff(dir->AttStaffIdent::StrToXsdPositiveIntegerList("1"));
-        if (coda.attribute("id")) dir->SetUuid(coda.attribute("id").as_string());
+        if (xmlCoda.attribute("id")) dir->SetUuid(xmlCoda.attribute("id").as_string());
         Rend *rend = new Rend;
         rend->SetFontname("VerovioText");
         rend->SetFontstyle(FONTSTYLE_normal);
@@ -1970,7 +1993,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
     // Directive
     int defaultY = 0; // y position attribute, only for directives and dynamics
     if (containsWords && !containsDynamics && !soundNode.attribute("tempo")) {
-        pugi::xpath_node_set words = node.select_nodes("direction-type/words");
+        pugi::xpath_node_set words = node.select_nodes("direction-type/*[self::words or self::coda or self::segno]");
         defaultY = words.first().node().attribute("default-y").as_int();
         std::string wordStr = words.first().node().text().as_string();
         if (wordStr.rfind("cresc", 0) == 0 || wordStr.rfind("dim", 0) == 0 || wordStr.rfind("decresc", 0) == 0) {
@@ -2287,14 +2310,14 @@ void MusicXmlInput::ReadMusicXmlDirection(
     }
 
     // Segno
-    pugi::xml_node segno = typeNode.child("segno");
-    if (segno) {
+    pugi::xml_node xmlSegno = typeNode.child("segno");
+    if (xmlSegno) {
         Dir *dir = new Dir();
         dir->SetPlace(dir->AttPlacement::StrToStaffrel(placeStr.c_str()));
         dir->SetTstamp(timeStamp - 1.0);
         dir->SetType("segno");
         dir->SetStaff(dir->AttStaffIdent::StrToXsdPositiveIntegerList("1"));
-        if (segno.attribute("id")) dir->SetUuid(segno.attribute("id").as_string());
+        if (xmlSegno.attribute("id")) dir->SetUuid(xmlSegno.attribute("id").as_string());
         Rend *rend = new Rend;
         rend->SetFontname("VerovioText");
         rend->SetFontstyle(FONTSTYLE_normal);
@@ -2330,7 +2353,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
     }
 
     // other cases
-    if (!containsWords && !containsDynamics && !coda && !bracket && !lead && !metronome && !segno && !xmlShift
+    if (!containsWords && !containsDynamics && !xmlCoda && !bracket && !lead && !metronome && !xmlSegno && !xmlShift
         && !xmlPedal && wedges.empty() && !dashes && !rehearsal) {
         LogWarning("MusicXML import: Unsupported direction-type '%s'", typeNode.first_child().name());
     }
@@ -2846,50 +2869,29 @@ void MusicXmlInput::ReadMusicXmlNote(
         // articulation
         std::vector<data_ARTICULATION> artics;
         for (pugi::xml_node articulations : notations.node().children("articulations")) {
-            if (notations.node().select_node("articulations/*[not(@placement)]")) {
+            for (pugi::xml_node articulation : articulations.children()) {
                 Artic *artic = new Artic();
-                for (pugi::xml_node articulation : articulations.children()) {
-                    artics.push_back(ConvertArticulations(articulation.name()));
-                    if (!std::strcmp(articulation.name(), "detached-legato")) {
-                        artics.push_back(ARTICULATION_stacc);
-                        artics.push_back(ARTICULATION_ten);
-                    }
+                artics.push_back(ConvertArticulations(articulation.name()));
+                if (!std::strcmp(articulation.name(), "detached-legato")) {
+                    // we need to split up this one
+                    artic->SetArtic(artics);
+                    artic->SetColor(articulation.attribute("color").as_string());
+                    artic->SetPlace(
+                        artic->AttPlacement::StrToStaffrel(articulation.attribute("placement").as_string()));
+                    element->AddChild(artic);
+                    artics.clear();
+                    artic = new Artic();
+                    artics.push_back(ARTICULATION_ten);
+                }
+                if (artics.back() == ARTICULATION_NONE) {
+                    delete artic;
+                    continue;
                 }
                 artic->SetArtic(artics);
+                artic->SetColor(articulation.attribute("color").as_string());
+                artic->SetPlace(artic->AttPlacement::StrToStaffrel(articulation.attribute("placement").as_string()));
                 element->AddChild(artic);
                 artics.clear();
-            }
-            else {
-                std::vector<data_ARTICULATION> articsAbove;
-                std::vector<data_ARTICULATION> articsBelow;
-                for (pugi::xml_node articulation : articulations.children()) {
-                    if (HasAttributeWithValue(articulation, "placement", "above")) {
-                        articsAbove.push_back(ConvertArticulations(articulation.name()));
-                        if (!std::strcmp(articulation.name(), "detached-legato")) {
-                            articsAbove.push_back(ARTICULATION_stacc);
-                            articsAbove.push_back(ARTICULATION_ten);
-                        }
-                    }
-                    else {
-                        articsBelow.push_back(ConvertArticulations(articulation.name()));
-                        if (!std::strcmp(articulation.name(), "detached-legato")) {
-                            articsBelow.push_back(ARTICULATION_stacc);
-                            articsBelow.push_back(ARTICULATION_ten);
-                        }
-                    }
-                }
-                if (!articsAbove.empty()) {
-                    Artic *artic = new Artic();
-                    artic->SetArtic(articsAbove);
-                    artic->SetPlace(STAFFREL_above);
-                    element->AddChild(artic);
-                }
-                if (!articsBelow.empty()) {
-                    Artic *artic = new Artic();
-                    artic->SetArtic(articsBelow);
-                    artic->SetPlace(STAFFREL_below);
-                    element->AddChild(artic);
-                }
             }
         }
 
@@ -2901,14 +2903,21 @@ void MusicXmlInput::ReadMusicXmlNote(
                 // set @tab.string and @tab.fret
             }
             else {
-                Artic *artic = new Artic();
                 for (pugi::xml_node articulation : technical.children()) {
+                    Artic *artic = new Artic();
                     artics.push_back(ConvertArticulations(articulation.name()));
+                    if (artics.back() == ARTICULATION_NONE) {
+                        delete artic;
+                        continue;
+                    }
+                    artic->SetArtic(artics);
+                    artic->SetColor(articulation.attribute("color").as_string());
+                    artic->SetPlace(
+                        artic->AttPlacement::StrToStaffrel(articulation.attribute("placement").as_string()));
+                    artic->SetType("technical");
+                    element->AddChild(artic);
+                    artics.clear();
                 }
-                artic->SetArtic(artics);
-                artic->SetType("technical");
-                element->AddChild(artic);
-                artics.clear();
             }
         }
 
@@ -3520,7 +3529,7 @@ data_ARTICULATION MusicXmlInput::ConvertArticulations(const std::string &value)
     static const std::map<std::string, data_ARTICULATION> Articulations2Id{
         // articulations
         { "accent", ARTICULATION_acc }, //
-        { "detached-legato", ARTICULATION_NONE }, //
+        { "detached-legato", ARTICULATION_stacc }, //
         { "doit", ARTICULATION_doit }, //
         { "falloff", ARTICULATION_fall }, //
         { "plop", ARTICULATION_plop }, //

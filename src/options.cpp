@@ -1002,6 +1002,10 @@ Options::Options()
     m_tupletBracketThickness.Init(0.2, 0.1, 0.8);
     this->Register(&m_tupletBracketThickness, "tupletBracketThickness", &m_generalLayout);
 
+    m_tupletNumHead.SetInfo("Tuplet number on head", "Placement of tuplet number on the side of the note head");
+    m_tupletNumHead.Init(false);
+    this->Register(&m_tupletNumHead, "tupletNumHead", &m_generalLayout);
+
     /********* selectors *********/
 
     m_selectors.SetLabel("Element selectors and processing", "3-selectors");
@@ -1062,6 +1066,10 @@ Options::Options()
     this->Register(&m_defaultTopMargin, "defaultTopMargin", &m_elementMargins);
 
     /// custom bottom
+
+    m_bottomMarginArtic.SetInfo("Bottom margin artic", "The margin for artic in MEI units");
+    m_bottomMarginArtic.Init(0.75, 0.0, 10.0);
+    this->Register(&m_bottomMarginArtic, "bottomMarginArtic", &m_elementMargins);
 
     m_bottomMarginHarm.SetInfo("Bottom margin harm", "The margin for harm in MEI units");
     m_bottomMarginHarm.Init(1.0, 0.0, 10.0);
@@ -1204,6 +1212,10 @@ Options::Options()
     this->Register(&m_rightMarginRightBarLine, "rightMarginRightBarLine", &m_elementMargins);
 
     /// custom top
+
+    m_topMarginArtic.SetInfo("Top margin artic", "The margin for artic in MEI units");
+    m_topMarginArtic.Init(0.75, 0.0, 10.0);
+    this->Register(&m_topMarginArtic, "topMarginArtic", &m_elementMargins);
 
     m_topMarginHarm.SetInfo("Top margin harm", "The margin for harm in MEI units");
     m_topMarginHarm.Init(1.0, 0.0, 10.0);
