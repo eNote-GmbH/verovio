@@ -4,6 +4,7 @@ stages:
   - build-toolkit
   - build-viewer
   - deploy-viewer
+  - deploy-editor
 
 variables:
   EMSCRIPTEN_REPOSITORY: "https://github.com/emscripten-core/emsdk.git"
@@ -45,7 +46,7 @@ build-toolkit:
       - emscripten/build/verovio-toolkit.js*
 
 bridge:
-  stage: deploy
+  stage: deploy-editor
   trigger:
     project: verovio/verovio-humdrum-viewer
     branch: ci-deployment-verovio-editor
