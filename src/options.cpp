@@ -751,6 +751,16 @@ Options::Options()
     m_svgHtml5.Init(false);
     this->Register(&m_svgHtml5, "svgHtml5", &m_general);
 
+    m_svgFormatRaw.SetInfo(
+        "Raw formatting for SVG output", "Writes SVG out with no line indenting or non-content newlines.");
+    m_svgFormatRaw.Init(false);
+    this->Register(&m_svgFormatRaw, "svgFormatRaw", &m_general);
+    
+    m_svgRemoveXlink.SetInfo(
+        "Remove xlink: from href attributes", "Removes the xlink: prefix on href attributes for compatibility with some newer browsers.");
+    m_svgRemoveXlink.Init(false);
+    this->Register(&m_svgRemoveXlink, "svgRemoveXlink", &m_general);
+
     m_unit.SetInfo("Unit", "The MEI unit (1⁄2 of the distance between the staff lines)");
     m_unit.Init(9, 6, 20, true);
     this->Register(&m_unit, "unit", &m_general);
@@ -806,6 +816,10 @@ Options::Options()
     m_font.SetInfo("Font", "Set the music font");
     m_font.Init("Leipzig");
     this->Register(&m_font, "font", &m_generalLayout);
+
+    m_clefChangeFactor.SetInfo("Clef change size", "Set the ratio of normal clefs to changing clefs");
+    m_clefChangeFactor.Init(0.66, 0.25, 1.0);
+    this->Register(&m_clefChangeFactor, "clefChangeFactor", &m_general);
 
     m_graceFactor.SetInfo("Grace factor", "The grace size ratio numerator");
     m_graceFactor.Init(0.75, 0.5, 1.0);
