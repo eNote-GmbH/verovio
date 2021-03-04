@@ -48,6 +48,9 @@ build-toolkit:
 
 bridge:
   stage: deploy-editor
+  only:
+    refs:
+      - enote-stage
   needs:
     - build-toolkit
   trigger:
