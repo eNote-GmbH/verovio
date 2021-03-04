@@ -9,7 +9,7 @@ variables:
 bridge:
   stage: deploy-editor
   trigger:
-    project: https://gitlab.gitlab.enote.com/verovio/verovio-humdrum-viewer
+    project: Verovio/verovio-humdrum-viewer
     branch: enote-develop
     strategy: depend
 
