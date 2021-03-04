@@ -41,7 +41,6 @@ build-toolkit:
     - source emsdk_env.sh
     - cd ../emscripten
     - ./buildToolkit -c -H -M
-    - echo "//Testing inside verovio toolkit" >> build/verovio-toolkit.js
   artifacts:
     paths:
       - emscripten/build/verovio-toolkit.js*
@@ -50,7 +49,7 @@ bridge:
   stage: deploy-editor
   only:
     refs:
-      - ci-deployment-verovio-editor
+      - enote-stage
   needs:
     - build-toolkit
   trigger:
