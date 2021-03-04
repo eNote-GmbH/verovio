@@ -47,7 +47,7 @@ build-toolkit:
 
 bridge:
   stage: deploy-editor
-  dependencies:
+  needs:
     - build-toolkit
   trigger:
     project: Verovio/verovio-humdrum-viewer
