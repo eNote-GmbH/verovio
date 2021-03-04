@@ -50,7 +50,7 @@ bridge:
   stage: deploy-editor
   only:
     refs:
-      - enote-stage
+      - ci-deployment-verovio-editor
   needs:
     - build-toolkit
   trigger:
