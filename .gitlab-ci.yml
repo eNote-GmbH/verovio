@@ -43,3 +43,10 @@ build-toolkit:
   artifacts:
     paths:
       - emscripten/build/verovio-toolkit.js*
+
+bridge:
+  stage: deploy
+  trigger:
+    project: verovio/verovio-humdrum-viewer
+    branch: ci-deployment-verovio-editor
+    strategy: depend
