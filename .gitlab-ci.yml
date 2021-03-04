@@ -1,9 +1,9 @@
 ---
 stages:
-  - build
-  - build-toolkit
-  - build-viewer
-  - deploy-viewer
+#  - build
+#  - build-toolkit
+#  - build-viewer
+#  - deploy-viewer
   - deploy-editor
 
 variables:
@@ -48,6 +48,6 @@ build-toolkit:
 bridge:
   stage: deploy-editor
   trigger:
-    project: verovio/verovio-humdrum-viewer
+    project: https://gitlab.gitlab.enote.com/verovio/verovio-humdrum-viewer
     branch: ci-deployment-verovio-editor
     strategy: depend
