@@ -10,5 +10,6 @@ bridge:
   stage: deploy-editor
   trigger:
     project: https://gitlab.gitlab.enote.com/verovio/verovio-humdrum-viewer
-    branch: ci-deployment-verovio-editor
+    branch: enote-develop
     strategy: depend
+
