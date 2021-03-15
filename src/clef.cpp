@@ -29,6 +29,7 @@ Clef::Clef() : LayerElement("clef-"), AttClefShape(), AttColor(), AttLineLoc(), 
 {
     RegisterAttClass(ATT_CLEFSHAPE);
     RegisterAttClass(ATT_COLOR);
+    RegisterAttClass(ATT_EXTSYM);
     RegisterAttClass(ATT_LINELOC);
     RegisterAttClass(ATT_OCTAVEDISPLACEMENT);
     RegisterAttClass(ATT_VISIBILITY);
@@ -43,6 +44,7 @@ void Clef::Reset()
     LayerElement::Reset();
     ResetClefShape();
     ResetColor();
+    ResetExtSym();
     ResetLineLoc();
     ResetOctaveDisplacement();
     ResetVisibility();
@@ -82,6 +84,60 @@ int Clef::GetClefLocOffset() const
 int Clef::ClefId(data_CLEFSHAPE shape, char line, data_OCTAVE_DIS octaveDis, data_STAFFREL_basic place)
 {
     return place << 24 | octaveDis << 16 | line << 8 | shape;
+}
+
+wchar_t Clef::GetClefGlyph() const
+{
+    // If there is glyph.num, prioritize it
+    if (HasGlyphNum()) {
+        wchar_t code = GetGlyphNum();
+        if (NULL != Resources::GetGlyph(code)) return code;
+    }
+    // If there is glyph.name (second priority)
+    else if (HasGlyphName()) {
+        wchar_t code = Resources::GetGlyphCode(GetGlyphName());
+        if (NULL != Resources::GetGlyph(code)) return code;
+    }
+
+    wchar_t code = 0;
+    // cmn clefs
+    int shapeOctaveDis = Clef::ClefId(this->GetShape(), 0, this->GetDis(), this->GetDisPlace());
+    // G clef
+    if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_G, 0, OCTAVE_DIS_NONE, STAFFREL_basic_NONE))
+        code = SMUFL_E050_gClef;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_G, 0, OCTAVE_DIS_8, STAFFREL_basic_below))
+        code = SMUFL_E052_gClef8vb;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_G, 0, OCTAVE_DIS_15, STAFFREL_basic_below))
+        code = SMUFL_E051_gClef15mb;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_G, 0, OCTAVE_DIS_8, STAFFREL_basic_above))
+        code = SMUFL_E053_gClef8va;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_G, 0, OCTAVE_DIS_15, STAFFREL_basic_above))
+        code = SMUFL_E054_gClef15ma;
+    // C clef
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_C, 0, OCTAVE_DIS_NONE, STAFFREL_basic_NONE))
+        code = SMUFL_E05C_cClef;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_C, 0, OCTAVE_DIS_8, STAFFREL_basic_below))
+        code = SMUFL_E05D_cClef8vb;
+    else if (this->GetShape() == CLEFSHAPE_C)
+        code = SMUFL_E05C_cClef;
+    // F clef
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_F, 0, OCTAVE_DIS_NONE, STAFFREL_basic_NONE))
+        code = SMUFL_E062_fClef;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_F, 0, OCTAVE_DIS_8, STAFFREL_basic_below))
+        code = SMUFL_E064_fClef8vb;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_F, 0, OCTAVE_DIS_15, STAFFREL_basic_below))
+        code = SMUFL_E063_fClef15mb;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_F, 0, OCTAVE_DIS_8, STAFFREL_basic_above))
+        code = SMUFL_E065_fClef8va;
+    else if (shapeOctaveDis == Clef::ClefId(CLEFSHAPE_F, 0, OCTAVE_DIS_15, STAFFREL_basic_above))
+        code = SMUFL_E066_fClef15ma;
+    else if (this->GetShape() == CLEFSHAPE_F)
+        code = SMUFL_E062_fClef;
+    // Perc clef
+    else if (this->GetShape() == CLEFSHAPE_perc)
+        code = SMUFL_E069_unpitchedPercussionClef1;
+
+    return code;
 }
 
 //----------------------------------------------------------------------------
