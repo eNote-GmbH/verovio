@@ -919,8 +919,15 @@ void View::DrawMeasure(DeviceContext *dc, Measure *measure, System *system)
         if (mnum) {
             // this should be an option
             Measure *systemStart = dynamic_cast<Measure *>(system->FindDescendantByType(MEASURE));
-            // Draw non-generated measure numbers, and system starting measure numbers > 1.
-            if ((measure == systemStart && measure->GetN() != "0" && measure->GetN() != "1") || !mnum->IsGenerated()) {
+
+            // Draw non-generated measure numbers
+            // If mnumInterval is 0, draw system starting measure numbers > 1,
+            // otherwise, draw every (mnumInterval)th measure number.
+            int mnumInterval = m_options->m_mnumInterval.GetValue();
+            if ((mnumInterval == 0 && measure == systemStart && measure->GetN() != "0" && measure->GetN() != "1")
+                || !mnum->IsGenerated()
+                || (mnumInterval >= 1 && (std::atoi(measure->GetN().c_str()) % mnumInterval == 0))
+            ) {
                 DrawMNum(dc, mnum, measure);
             }
         }
@@ -1483,6 +1490,17 @@ void View::DrawTextChildren(DeviceContext *dc, Object *parent, TextDrawingParams
 {
     assert(dc);
     assert(parent);
+
+    // For ControlElement, we need to set the positioner empty bounding box if no text
+    if (parent->IsControlElement()) {
+        if (!parent->GetChildCount() || !parent->HasNonEditorialContent()) {
+            ControlElement *controlElement = vrv_cast<ControlElement *>(parent);
+            assert(controlElement);
+            FloatingPositioner *positioner = controlElement->GetCurrentFloatingPositioner();
+            // With MNum drawn from DrawMeasure there will be no positioner
+            if (positioner) positioner->SetEmptyBB();
+        }
+    }
 
     for (auto current : *parent->GetChildren()) {
         if (current->IsTextElement()) {
