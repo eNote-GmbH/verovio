@@ -64,6 +64,11 @@ public:
      */
     wchar_t GetClefGlyph(data_NOTATIONTYPE) const;
 
+    /**
+     * Retrieves the appropriate SMuFL code for a data_CLEFSHAPE
+     */
+    wchar_t GetClefGlyph() const;
+
     //----------//
     // Functors //
     //----------//
