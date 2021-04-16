@@ -166,11 +166,6 @@ public:
     virtual int AdjustArtic(FunctorParams *functorParams);
 
     /**
-     * See Object::ConvertMarkupArtic
-     */
-    virtual int ConvertMarkupArticEnd(FunctorParams *functorParams);
-
-    /**
      * See Object::ConvertMarkupAnalytical
      */
     ///@{
@@ -212,7 +207,7 @@ protected:
     /**
      * Helper function for calculation of optimal locations for dots
      */
-    void CaltOptimalDots(Dots *dots, Staff* staff, const std::set<int> &noteLocations);
+    void CaltOptimalDots(Dots *dots, Staff *staff, const std::set<int> &noteLocations);
 
     /**
      * Clear the m_clusters vector and delete all the objects.
