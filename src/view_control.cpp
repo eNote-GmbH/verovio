@@ -524,14 +524,13 @@ void View::DrawHairpin(
     }
 
     // Store the full drawing length
-    if (spanningType == SPANNING_START_END) {
-        const auto [leftOverlap, rightOverlap]
-            = hairpin->GetBarlineOverlapAdjustment(m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize), x1, x2);
-        x1 += leftOverlap;
-        x2 -= rightOverlap;
+    const auto [leftOverlap, rightOverlap] = hairpin->GetBarlineOverlapAdjustment(
+        m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize), x1, x2, spanningType);
+    x1 += leftOverlap;
+    x2 -= rightOverlap;
 
-        hairpin->SetDrawingLength(x2 - x1);
-    }
+    hairpin->SetDrawingLength(x2 - x1);
+
 
     hairpinLog_FORM form = hairpin->GetForm();
 
@@ -772,7 +771,7 @@ void View::DrawPitchInflection(DeviceContext *dc, PitchInflection *pitchInflecti
     }
     else if (spanningType == SPANNING_END) {
         // We need to recalcultate the y1 when going up (we need a start note)
-        if (up and note1) {
+        if (up && note1) {
             // Make it relative to the current (end) staff
             y1 = staff->GetDrawingY() + note1->GetDrawingYRel();
         }

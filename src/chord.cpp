@@ -11,8 +11,8 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <functional>
 #include <iostream>
-#include <functional> 
 #include <numeric>
 
 //----------------------------------------------------------------------------
@@ -59,6 +59,8 @@ template <typename Iterator> std::set<int> CalculateDotLocations(Iterator begin,
 //----------------------------------------------------------------------------
 // Chord
 //----------------------------------------------------------------------------
+
+static ClassRegistrar<Chord> s_factory("chord", CHORD);
 
 Chord::Chord()
     : LayerElement("chord-")
@@ -449,8 +451,8 @@ void Chord::AdjustOverlappingLayers(Doc *doc, const std::vector<LayerElement *> 
     for (auto iter : *notes) {
         Note *note = vrv_cast<Note *>(iter);
         assert(note);
-        auto [overlap, isInUnison]
-            = note->CalcNoteHorizontalOverlap(doc, otherElements, true, isLowerPosition, expectedElementsInUnison > 0);
+        auto [overlap, isInUnison] = note->CalcElementHorizontalOverlap(
+            doc, otherElements, true, isLowerPosition, expectedElementsInUnison > 0);
         if (((margin >= 0) && (overlap > margin)) || ((margin <= 0) && (overlap < margin))) {
             margin = overlap;
         }
@@ -517,19 +519,6 @@ int Chord::ConvertMarkupAnalyticalEnd(FunctorParams *functorParams)
 
     assert(params->m_currentChord);
     params->m_currentChord = NULL;
-
-    return FUNCTOR_CONTINUE;
-}
-
-int Chord::ConvertMarkupArticEnd(FunctorParams *functorParams)
-{
-    ConvertMarkupArticParams *params = vrv_params_cast<ConvertMarkupArticParams *>(functorParams);
-    assert(params);
-
-    for (auto &artic : params->m_articsToConvert) {
-        artic->SplitMultival();
-    }
-    params->m_articsToConvert.clear();
 
     return FUNCTOR_CONTINUE;
 }
@@ -665,7 +654,7 @@ int Chord::CalcStem(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-void Chord::CaltOptimalDots(Dots *dots, Staff* staff, const std::set<int> &noteLocations)
+void Chord::CaltOptimalDots(Dots *dots, Staff *staff, const std::set<int> &noteLocations)
 {
     // calculate optimal dot locations both in normal and reverse orders
     std::set<int> forwardLocations = CalculateDotLocations(noteLocations.begin(), noteLocations.end(), false);
@@ -743,7 +732,7 @@ int Chord::CalcDots(FunctorParams *functorParams)
     assert(this->GetBottomNote());
 
     // Get note locations first
-    std::map<Staff*, std::set<int>> noteLocations;
+    std::map<Staff *, std::set<int> > noteLocations;
     for (rit = notes->rbegin(); rit != notes->rend(); ++rit) {
         Note *note = vrv_cast<Note *>(*rit);
         assert(note);
