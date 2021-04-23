@@ -266,6 +266,46 @@ std::wstring Note::GetTabFretString(data_NOTATIONTYPE notationType)
         }
         return fretStr;
     }
+    else if (notationType == NOTATIONTYPE_tab_lute_french) {
+        std::wstring fretStr;
+        const int fret = GetTabFret();
+        const int course = GetTabCourse();
+        if (course >= 11) {
+            // french tab uses number 4 ... for courses 11 ..., always open fret a.
+            // TODO need Baroque font SMUFL_xxxx_luteDiapason4, 5, 6 ... or somesuch.
+            //      Temporary kludge, use SMUFL_EBE4_luteItalianFret4 ... .
+            fretStr.push_back(SMUFL_EBE4_luteItalianFret4 + course - 11);
+        }
+        else {
+            // courses 8..10 use slashes followed by fret letter
+            if (course >= 8) {
+                // TODO need SMUFL_xxxx_luteDiapasonSlash or 3 glyphs "/", "//", "///".
+                //      Temporary kludge, use SMUFL_E101_noteheadSlashHorizontalEnds, doesn't
+                //      look right but serves as a place holder.
+                fretStr = std::wstring(course - 7, SMUFL_E101_noteheadSlashHorizontalEnds);
+            }
+
+            static const wchar_t letter[] = {
+                SMUFL_EBC0_luteFrenchFretA,
+                SMUFL_EBC1_luteFrenchFretB,
+                SMUFL_EBC2_luteFrenchFretC,
+                SMUFL_EBC3_luteFrenchFretD,
+                SMUFL_EBC4_luteFrenchFretE,
+                SMUFL_EBC5_luteFrenchFretF,
+                SMUFL_EBC6_luteFrenchFretG,
+                SMUFL_EBC7_luteFrenchFretH,
+                SMUFL_EBC8_luteFrenchFretI,
+                SMUFL_EBC9_luteFrenchFretK,
+                SMUFL_EBCA_luteFrenchFretL,
+                SMUFL_EBCB_luteFrenchFretM,
+                SMUFL_EBCC_luteFrenchFretN,
+            };
+
+            // TODO what if fret > 12?  Some tablatures use fret p.
+            if (fret >= 0 && fret < static_cast<int>(sizeof(letter) / sizeof(letter[0]))) fretStr += letter[fret];
+        }
+        return fretStr;
+    }
     else {
         std::string str = StringFormat("%d", this->GetTabFret());
         return UTF8to16(str);
@@ -354,17 +394,20 @@ Point Note::GetStemDownNW(Doc *doc, int staffSize, bool isCueSize)
     return p;
 }
 
-int Note::CalcStemLenInThirdUnits(Staff *staff)
+int Note::CalcStemLenInThirdUnits(Staff *staff, data_STEMDIRECTION stemDir)
 {
     assert(staff);
+
+    if ((stemDir != STEMDIRECTION_down) && (stemDir != STEMDIRECTION_up)) {
+        return 0;
+    }
 
     int baseStem = STANDARD_STEMLENGTH * 3;
 
     int shortening = 0;
 
-    int unitToLine = (this->GetDrawingStemDir() == STEMDIRECTION_up)
-        ? -this->GetDrawingLoc() + (staff->m_drawingLines - 1) * 2
-        : this->GetDrawingLoc();
+    int unitToLine = (stemDir == STEMDIRECTION_up) ? -this->GetDrawingLoc() + (staff->m_drawingLines - 1) * 2
+                                                   : this->GetDrawingLoc();
     if (unitToLine < 5) {
         switch (unitToLine) {
             case 4: shortening = 1; break;
@@ -378,7 +421,7 @@ int Note::CalcStemLenInThirdUnits(Staff *staff)
 
     // Limit shortening with duration shorter than quarter not when not in a beam
     if ((this->GetDrawingDur() > DUR_4) && !this->IsInBeam()) {
-        if (this->GetDrawingStemDir() == STEMDIRECTION_up) {
+        if (stemDir == STEMDIRECTION_up) {
             shortening = std::min(4, shortening);
         }
         else {
@@ -827,44 +870,68 @@ int Note::CalcChordNoteHeads(FunctorParams *functorParams)
     Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff);
 
-    // Nothing to do for notes that are not in a cluster
-    if (!this->m_cluster) return FUNCTOR_SIBLINGS;
+    bool mixedCue = false;
+    if (Chord *chord = this->IsChordTone(); chord != NULL) {
+        mixedCue = (chord->GetDrawingCueSize() != this->GetDrawingCueSize());
+    }
 
-    if (this->m_crossStaff) staff = this->m_crossStaff;
+    // Nothing to do for notes that are not in a cluster and without cue mixing
+    if (!m_cluster && !mixedCue) return FUNCTOR_SIBLINGS;
+
+    if (m_crossStaff) staff = m_crossStaff;
 
     int staffSize = staff->m_drawingStaffSize;
 
-    int radius = this->GetDrawingRadius(params->m_doc);
+    int diameter = 2 * this->GetDrawingRadius(params->m_doc);
+
+    // If chord consists partially of cue notes we may have to shift the noteheads
+    int cueShift = 0;
+    if (mixedCue && (this->GetDrawingStemDir() == STEMDIRECTION_up)) {
+        const double cueScaling = params->m_doc->GetCueScaling();
+        assert(cueScaling > 0.0);
+
+        if (this->GetDrawingCueSize()) {
+            // Note is cue and chord is not
+            cueShift = (1.0 / cueScaling - 1.0) * diameter; // shift to the right
+        }
+        else {
+            // Chord is cue and note is not
+            cueShift = (cueScaling - 1.0) * diameter; // shift to the left
+        }
+    }
 
     /************** notehead direction **************/
 
     bool flippedNotehead = false;
 
     // if the note is clustered, calculations are different
-    if (this->GetDrawingStemDir() == STEMDIRECTION_down) {
-        // stem down/even cluster = noteheads start on left (incorrect side)
-        if (this->m_cluster->size() % 2 == 0) {
-            flippedNotehead = (this->m_clusterPosition % 2 != 0);
+    if (m_cluster) {
+        if (this->GetDrawingStemDir() == STEMDIRECTION_down) {
+            // stem down/even cluster = noteheads start on left (incorrect side)
+            if (m_cluster->size() % 2 == 0) {
+                flippedNotehead = (m_clusterPosition % 2 != 0);
+            }
+            // else they start on normal side
+            else {
+                flippedNotehead = (m_clusterPosition % 2 == 0);
+            }
         }
-        // else they start on normal side
         else {
-            flippedNotehead = (this->m_clusterPosition % 2 == 0);
+            // flipped noteheads start on normal side no matter what
+            flippedNotehead = (m_clusterPosition % 2 == 0);
         }
-    }
-    else {
-        // flipped noteheads start on normal side no matter what
-        flippedNotehead = (this->m_clusterPosition % 2 == 0);
     }
 
     // positions notehead
     if (flippedNotehead) {
         if (this->GetDrawingStemDir() == STEMDIRECTION_up) {
-            this->SetDrawingXRel(2 * radius - params->m_doc->GetDrawingStemWidth(staffSize));
+            this->SetDrawingXRel(diameter - params->m_doc->GetDrawingStemWidth(staffSize));
         }
         else {
-            this->SetDrawingXRel(-2 * radius + params->m_doc->GetDrawingStemWidth(staffSize));
+            this->SetDrawingXRel(-diameter + params->m_doc->GetDrawingStemWidth(staffSize));
         }
     }
+    this->SetDrawingXRel(this->GetDrawingXRel() + cueShift);
 
     this->SetFlippedNotehead(flippedNotehead);
 
