@@ -30,7 +30,9 @@ class ScoreDefInterface : public Interface,
                           public AttLyricStyle,
                           public AttMeasureNumbers,
                           public AttMidiTempo,
-                          public AttMultinumMeasures {
+                          public AttMultinumMeasures,
+                          public AttSpacing,
+                          public AttSystems {
 public:
     /**
      * @name Constructors, destructors, reset methods

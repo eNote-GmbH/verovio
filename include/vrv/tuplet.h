@@ -45,6 +45,11 @@ public:
      * Add an element (a note or a rest) to a tuplet.
      * Only Note or Rest elements will be actually added to the beam.
      */
+    virtual bool IsSupportedChild(Object *object);
+
+    /**
+     * Overwritten method for tuplet
+     */
     virtual void AddChild(Object *object);
 
     /**
@@ -71,7 +76,7 @@ public:
      * Calculate the position of the bracket and the num looking at the stem direction or at the encoded values (if
      * any). Called in View::DrawTuplet the first time it is called (and not trough a dedicated CalcTuplet functor)
      */
-    void CalcDrawingBracketAndNumPos();
+    void CalcDrawingBracketAndNumPos(bool tupletNumHead);
 
     /**
      * Return the maximum and minimum X positions of the notes in the tuplets.

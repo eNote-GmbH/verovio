@@ -29,6 +29,7 @@ public:
      */
     ///@{
     Slur();
+    Slur(const std::string &classid);
     virtual ~Slur();
     virtual Object *Clone() const { return new Slur(*this); }
     virtual void Reset();
@@ -45,20 +46,15 @@ public:
     ///@}
 
     /**
-     * @name Getter, setter and checker for the drawing curve direction
+     * @name Getter, setter and checker for the drawing curve direction and cross-staff flag
      */
     ///@{
     curvature_CURVEDIR GetDrawingCurvedir() const { return m_drawingCurvedir; }
     void SetDrawingCurvedir(curvature_CURVEDIR curvedir) { m_drawingCurvedir = curvedir; }
     bool HasDrawingCurvedir() const { return (m_drawingCurvedir != curvature_CURVEDIR_NONE); }
+    void IsCrossStaff(bool isCrossStaff) { m_isCrossStaff = isCrossStaff; }
+    bool IsCrossStaff() const { return m_isCrossStaff; }
     ///@}
-
-    /**
-     * Check if the slur needs to be taken into account as overflow above or below in case of cross-staff end points.
-     * This methods assumes staff@n to be greater for the staff below.
-     */
-    void GetCrossStaffOverflows(
-        StaffAlignment *alignment, curvature_CURVEDIR cuvreDir, bool &skipAbove, bool &skipBelow);
 
     bool AdjustSlur(Doc *doc, FloatingCurvePositioner *curve, Staff *staff);
 
@@ -96,6 +92,13 @@ private:
      * document is cast-off.
      */
     curvature_CURVEDIR m_drawingCurvedir;
+
+    /**
+     * A flag indicating that the slur is cross-staff.
+     * This is not instantiated in Prepare::CrossStaff but in View::DrawSlurInitial
+     * When set, the slur needs to be Re-drawn and re-adjusted after the vertical adjustment of the staves
+     */
+    bool m_isCrossStaff;
 };
 
 } // namespace vrv

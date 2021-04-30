@@ -17,6 +17,7 @@ class Object;
 class FunctorParams;
 class LayerElement;
 class Measure;
+class StaffAlignment;
 
 //----------------------------------------------------------------------------
 // TimePointInterface
@@ -77,7 +78,7 @@ public:
     /**
      * Return a vector of staves looking at the @staff attribute or at the parent staff or the @startid
      */
-    std::vector<Staff *> GetTstampStaves(Measure *measure);
+    std::vector<Staff *> GetTstampStaves(Measure *measure, Object *object);
 
     //-----------------//
     // Pseudo functors //
@@ -178,6 +179,14 @@ public:
      *
      */
     void SetUuidStr();
+
+    /**
+     * Check if the slur or tie needs to be taken into account as overflow above or below in case of cross-staff end
+     * points. This methods assumes staff@n to be greater for the staff below.
+     */
+
+    void GetCrossStaffOverflows(
+        StaffAlignment *alignment, curvature_CURVEDIR cuvreDir, bool &skipAbove, bool &skipBelow);
 
     //-----------------//
     // Pseudo functors //

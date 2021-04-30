@@ -43,7 +43,7 @@ public:
      */
     ///@{
     EditorialElement();
-    EditorialElement(std::string classid);
+    EditorialElement(const std::string &classid);
     virtual ~EditorialElement();
     virtual void Reset();
     virtual ClassId GetClassId() const { return EDITORIAL_ELEMENT; }
@@ -53,12 +53,17 @@ public:
      * @name Add children to an editorial element.
      */
     ///@{
-    virtual void AddChild(Object *object);
+    virtual bool IsSupportedChild(Object *object);
     ///@}
 
     //----------//
     // Functors //
     //----------//
+
+    /**
+     * See Object::ConvertMarkupArtic
+     */
+    virtual int ConvertMarkupArticEnd(FunctorParams *functorParams);
 
     /**
      * See Object::ConvertToPageBased

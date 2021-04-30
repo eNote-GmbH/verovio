@@ -4,7 +4,7 @@ This document sets out the methods and practices for contributing to the Verovio
 
 ## Contributor License Agreement
 
-In order to contribute the the project you need to sign and send us a [Contributor License Agreement](http://docs.rism-ch.org/verovio-cla.pdf) (CLA). However, following a generally accepted practice, very small contributions (below 20 lines of code) will be accepted without signing the CLA.
+In order to contribute the the project you need to sign and send us a [Contributor License Agreement](https://rism.digital/resources/verovio-cla.pdf) (CLA). However, following a generally accepted practice, very small contributions (below 20 lines of code) will be accepted without signing the CLA.
 
 ## How to contribute
 
@@ -18,6 +18,16 @@ Please use the "Pull Request" mechanism for proposing contributions to the code 
  4. When you're ready to provide your changes "upstream," you can open a pull request to the `rism-ch/verovio:develop` branch. **NB:** You will want to make sure you're proposing a merge to `develop` and not `master`.
  5. We will then review your submission. If you are asked to make changes, you can push these changes to your original branch and the pull request will be automatically updated.
  6. Once the changes have gone through our review process, we will merge your changes into our repository. You may then delete your dedicated branch.
+ 
+### Making Pull Requests
+
+When you make a Pull Request (PR), please make sure that:
+
+* the PR solves an issue previously raised with a reference to the issue number,
+* for issues labelled as 'feature request', the PR always includes a minimal test MEI file illustrating the new feature and the implemented rendering,
+* for issues labelled as 'enhancement', the PR always includes the rendering before and after that changes, and a minimal test MEI file if it is not available elswhere.
+
+## Changes to the website or to the tutorial
  
 For proposing changes to the `verovio:gh-pages` branch of Verovio (e.g., its website), follow the same workflow but make the pull request to the `rism-ch/verovio:gh-pages-develop` branch.
 

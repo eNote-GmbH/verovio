@@ -76,7 +76,7 @@ Measure *LinkingInterface::GetNextMeasure()
 
 int LinkingInterface::InterfacePrepareLinking(FunctorParams *functorParams, Object *object)
 {
-    PrepareLinkingParams *params = dynamic_cast<PrepareLinkingParams *>(functorParams);
+    PrepareLinkingParams *params = vrv_params_cast<PrepareLinkingParams *>(functorParams);
     assert(params);
 
     // This should not happen?
@@ -87,10 +87,10 @@ int LinkingInterface::InterfacePrepareLinking(FunctorParams *functorParams, Obje
     this->SetUuidStr();
 
     if (!m_nextUuid.empty()) {
-        params->m_nextUuidPairs.push_back(std::make_pair(this, m_nextUuid));
+        params->m_nextUuidPairs.insert({ m_nextUuid, this });
     }
     if (!m_sameasUuid.empty()) {
-        params->m_sameasUuidPairs.push_back(std::make_pair(this, m_sameasUuid));
+        params->m_sameasUuidPairs.insert({ m_sameasUuid, this });
     }
 
     return FUNCTOR_CONTINUE;
@@ -98,7 +98,7 @@ int LinkingInterface::InterfacePrepareLinking(FunctorParams *functorParams, Obje
 
 int LinkingInterface::InterfaceFillStaffCurrentTimeSpanning(FunctorParams *functorParams, Object *object)
 {
-    FillStaffCurrentTimeSpanningParams *params = dynamic_cast<FillStaffCurrentTimeSpanningParams *>(functorParams);
+    FillStaffCurrentTimeSpanningParams *params = vrv_params_cast<FillStaffCurrentTimeSpanningParams *>(functorParams);
     assert(params);
 
     // Only Dir and Dynam can be spanning with @next (extender)

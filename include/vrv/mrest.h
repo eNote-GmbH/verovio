@@ -23,6 +23,7 @@ namespace vrv {
  */
 class MRest : public LayerElement,
               public PositionInterface,
+              public AttColor,
               public AttCue,
               public AttFermataPresent,
               public AttVisibility {
@@ -52,9 +53,9 @@ public:
     //----------//
 
     /**
-     * See Object::ConvertAnalyticalMarkup
+     * See Object::ConvertMarkupAnalytical
      */
-    virtual int ConvertAnalyticalMarkup(FunctorParams *functorParams);
+    virtual int ConvertMarkupAnalytical(FunctorParams *functorParams);
 
     /**
      * See Object::ResetDrawing

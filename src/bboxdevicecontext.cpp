@@ -45,7 +45,7 @@ BBoxDeviceContext::BBoxDeviceContext(View *view, int width, int height, unsigned
 
 BBoxDeviceContext::~BBoxDeviceContext() {}
 
-void BBoxDeviceContext::StartGraphic(Object *object, std::string gClass, std::string gId, bool prepend)
+void BBoxDeviceContext::StartGraphic(Object *object, std::string gClass, std::string gId, bool primary, bool prepend)
 {
     // add the object object
     object->BoundingBox::ResetBoundingBox();
@@ -213,7 +213,7 @@ void BBoxDeviceContext::DrawRectangle(int x, int y, int width, int height)
     DrawRoundedRectangle(x, y, width, height, 0);
 }
 
-void BBoxDeviceContext::DrawRoundedRectangle(int x, int y, int width, int height, double radius)
+void BBoxDeviceContext::DrawRoundedRectangle(int x, int y, int width, int height, int radius)
 {
     // avoid negative heights or widths
     if (height < 0) {
@@ -273,36 +273,52 @@ void BBoxDeviceContext::MoveTextTo(int x, int y, data_HORIZONTALALIGNMENT alignm
 void BBoxDeviceContext::MoveTextVerticallyTo(int y)
 {
     assert(m_drawingText);
-    m_textY = y;
+    // Because this is used only for smaller sup-script / supercript it seems
+    // better not to change the y position for the BBoxDeviceContext because
+    // otherwise it moves the full bounding box - to be improve / double checked
+    // m_textY = y;
 }
 
-void BBoxDeviceContext::DrawText(const std::string &text, const std::wstring wtext, int x, int y)
+void BBoxDeviceContext::DrawText(const std::string &text, const std::wstring wtext, int x, int y, int width, int height)
 {
     assert(m_fontStack.top());
 
-    if ((x != VRV_UNSET) && (y != VRV_UNSET)) {
+    if ((x != 0) && (y != 0) && (x != VRV_UNSET) && (y != VRV_UNSET) && (width != 0) && (height != 0)
+        && (width != VRV_UNSET) && (height != VRV_UNSET)) {
         m_textX = x;
         m_textY = y;
-        m_textWidth = 0;
-        m_textHeight = 0;
+        m_textWidth = width;
+        m_textHeight = height;
         m_textAscent = 0;
         m_textDescent = 0;
+        UpdateBB(m_textX, m_textY, m_textX + m_textWidth, m_textY + m_textHeight);
     }
 
-    TextExtend extend;
-    GetTextExtent(wtext, &extend, true);
-    m_textWidth += extend.m_width;
-    // keep that maximum values for ascent and descent
-    m_textAscent = std::max(m_textAscent, extend.m_ascent);
-    m_textDescent = std::max(m_textDescent, extend.m_descent);
-    m_textHeight = m_textAscent + m_textDescent;
-    if (m_textAlignment == HORIZONTALALIGNMENT_right) {
-        m_textX -= extend.m_width;
+    else {
+        if ((x != VRV_UNSET) && (y != VRV_UNSET)) {
+            m_textX = x;
+            m_textY = y;
+            m_textWidth = 0;
+            m_textHeight = 0;
+            m_textAscent = 0;
+            m_textDescent = 0;
+        }
+
+        TextExtend extend;
+        GetTextExtent(wtext, &extend, true);
+        m_textWidth += extend.m_width;
+        // keep that maximum values for ascent and descent
+        m_textAscent = std::max(m_textAscent, extend.m_ascent);
+        m_textDescent = std::max(m_textDescent, extend.m_descent);
+        m_textHeight = m_textAscent + m_textDescent;
+        if (m_textAlignment == HORIZONTALALIGNMENT_right) {
+            m_textX -= extend.m_width;
+        }
+        else if (m_textAlignment == HORIZONTALALIGNMENT_center) {
+            m_textX -= (extend.m_width / 2);
+        }
+        UpdateBB(m_textX, m_textY + m_textDescent, m_textX + m_textWidth, m_textY - m_textAscent);
     }
-    else if (m_textAlignment == HORIZONTALALIGNMENT_center) {
-        m_textX -= (extend.m_width / 2);
-    }
-    UpdateBB(m_textX, m_textY + m_textDescent, m_textX + m_textWidth, m_textY - m_textAscent);
 }
 
 void BBoxDeviceContext::DrawRotatedText(const std::string &text, int x, int y, double angle)

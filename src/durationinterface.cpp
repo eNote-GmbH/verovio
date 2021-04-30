@@ -33,6 +33,7 @@ DurationInterface::DurationInterface()
     , AttBeamSecondary()
     , AttDurationGestural()
     , AttDurationLogical()
+    , AttDurationQuality()
     , AttDurationRatio()
     , AttFermataPresent()
     , AttStaffIdent()
@@ -41,6 +42,7 @@ DurationInterface::DurationInterface()
     RegisterInterfaceAttClass(ATT_BEAMSECONDARY);
     RegisterInterfaceAttClass(ATT_DURATIONGESTURAL);
     RegisterInterfaceAttClass(ATT_DURATIONLOGICAL);
+    RegisterInterfaceAttClass(ATT_DURATIONQUALITY);
     RegisterInterfaceAttClass(ATT_DURATIONRATIO);
     RegisterInterfaceAttClass(ATT_FERMATAPRESENT);
     RegisterInterfaceAttClass(ATT_STAFFIDENT);
@@ -56,19 +58,20 @@ void DurationInterface::Reset()
     ResetBeamSecondary();
     ResetDurationGestural();
     ResetDurationLogical();
+    ResetDurationQuality();
     ResetDurationRatio();
     ResetFermataPresent();
     ResetStaffIdent();
 }
 
-double DurationInterface::GetInterfaceAlignmentDuration(int num, int numbase)
+double DurationInterface::GetInterfaceAlignmentDuration(int num, int numBase)
 {
     int noteDur = this->GetDurGes() != DURATION_NONE ? this->GetActualDurGes() : this->GetActualDur();
 
     if (this->HasNum()) num *= this->GetNum();
-    if (this->HasNumbase()) numbase *= this->GetNumbase();
+    if (this->HasNumbase()) numBase *= this->GetNumbase();
 
-    double duration = DUR_MAX / pow(2.0, (double)(noteDur - 2.0)) * numbase / num;
+    double duration = DUR_MAX / pow(2.0, (double)(noteDur - 2.0)) * numBase / num;
 
     int noteDots = (this->HasDotsGes()) ? this->GetDotsGes() : this->GetDots();
     if (noteDots != -1) {
@@ -78,7 +81,7 @@ double DurationInterface::GetInterfaceAlignmentDuration(int num, int numbase)
     return duration;
 }
 
-double DurationInterface::GetInterfaceAlignmentMensuralDuration(int num, int numbase, Mensur *currentMensur)
+double DurationInterface::GetInterfaceAlignmentMensuralDuration(int num, int numBase, Mensur *currentMensur)
 {
     int noteDur = this->GetDurGes() != DURATION_NONE ? this->GetActualDurGes() : this->GetActualDur();
 
@@ -87,10 +90,41 @@ double DurationInterface::GetInterfaceAlignmentMensuralDuration(int num, int num
         return DUR_MENSURAL_REF;
     }
 
-    if (this->HasNum()) num *= this->GetNum();
-    if (this->HasNumbase()) numbase *= this->GetNumbase();
+    if (this->HasNum() || this->HasNumbase()) {
+        if (this->HasNum()) num *= this->GetNum();
+        if (this->HasNumbase()) numBase *= this->GetNumbase();
+    }
+    // perfecta in imperfect mensuration (two perfectas in the place of the original three imperfectas)
+    else if (this->GetDurQuality() == DURQUALITY_mensural_perfecta) {
+        if (((this->GetDur() == DURATION_longa) && (currentMensur->GetModusminor() == MODUSMINOR_2))
+            || ((this->GetDur() == DURATION_brevis) && (currentMensur->GetTempus() == TEMPUS_2))
+            || ((this->GetDur() == DURATION_semibrevis) && (currentMensur->GetProlatio() == PROLATIO_2))
+            || (this->GetDur() == DURATION_minima) || (this->GetDur() == DURATION_semiminima)
+            || (this->GetDur() == DURATION_fusa) || (this->GetDur() == DURATION_semifusa)) {
+            num *= 2;
+            numBase *= 3;
+        }
+    }
+    // imperfecta in perfect mensuration (three imperfectas in the place of the two orignal perfectas)
+    else if (this->GetDurQuality() == DURQUALITY_mensural_imperfecta) {
+        if (((this->GetDur() == DURATION_longa) && (currentMensur->GetModusminor() != MODUSMINOR_2))
+            || ((this->GetDur() == DURATION_brevis) && (currentMensur->GetTempus() != TEMPUS_2))
+            || ((this->GetDur() == DURATION_semibrevis) && (currentMensur->GetProlatio() != PROLATIO_2))) {
+            num *= 3;
+            numBase *= 2;
+        }
+    }
+    // altera, maior, or duplex
+    else if (this->HasDurQuality()
+        && (this->GetDurQuality() == DURQUALITY_mensural_altera || this->GetDurQuality() == DURQUALITY_mensural_maior
+            || this->GetDurQuality() == DURQUALITY_mensural_duplex)) {
+        num *= 1;
+        numBase *= 2;
+    } // Any other case (minor, perfecta in tempus perfectum, and imperfecta in tempus imperfectum) follows the
+      // mensuration and has no @num and @numbase attributes
+
     if (currentMensur->HasNum()) num *= currentMensur->GetNum();
-    if (currentMensur->HasNumbase()) numbase *= currentMensur->GetNumbase();
+    if (currentMensur->HasNumbase()) numBase *= currentMensur->GetNumbase();
 
     double ratio = 0.0;
     double duration = (double)DUR_MENSURAL_REF;
@@ -106,7 +140,7 @@ double DurationInterface::GetInterfaceAlignmentMensuralDuration(int num, int num
             duration /= (double)abs(currentMensur->GetTempus()) * (double)abs(currentMensur->GetProlatio()) * ratio;
             break;
     }
-    duration *= (double)numbase / (double)num;
+    duration *= (double)numBase / (double)num;
     // LogDebug("Duration %d; %d/%d; Alignement %f; Ratio %f", noteDur, num, numbase, duration, ratio);
     duration = durRound(duration);
     return duration;
@@ -160,7 +194,7 @@ int DurationInterface::GetNoteOrChordDur(LayerElement *element)
         return this->GetActualDur();
     }
     else if (element->Is(NOTE)) {
-        Note *note = dynamic_cast<Note *>(element);
+        Note *note = vrv_cast<Note *>(element);
         assert(note);
         Chord *chord = note->IsChordTone();
         if (chord && !this->HasDur())
@@ -171,7 +205,7 @@ int DurationInterface::GetNoteOrChordDur(LayerElement *element)
     return this->GetActualDur();
 }
 
-bool DurationInterface::IsMensural()
+bool DurationInterface::IsMensuralDur()
 {
     // maxima (-1) is a mensural only value
     if (this->GetDur() == DURATION_maxima) return true;

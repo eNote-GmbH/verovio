@@ -29,6 +29,8 @@ View::View()
     m_doc = NULL;
     m_options = NULL;
     m_pageIdx = 0;
+    m_tieThicknessCoeficient = 0.0;
+    m_slurThicknessCoeficient = 0.0;
 
     m_currentColour = AxNONE;
     m_currentElement = NULL;
@@ -70,7 +72,7 @@ void View::SetPage(int pageIdx, bool doLayout)
     m_currentPage = m_doc->SetDrawingPage(pageIdx);
 
     if (doLayout) {
-        m_doc->SetCurrentScoreDefDoc();
+        m_doc->ScoreDefSetCurrentDoc();
         // if we once deal with multiple views, it would be better
         // to redo the layout only when necessary?
         if (m_doc->GetType() == Transcription || m_doc->GetType() == Facs)
@@ -126,7 +128,7 @@ int View::ToDeviceContextY(int i)
         return 0;
     }
 
-    return (m_doc->m_drawingPageHeight - i); // flipped
+    return (m_doc->m_drawingPageContentHeight - i); // flipped
 }
 
 /** y value in the Logical world  */
@@ -136,7 +138,7 @@ int View::ToLogicalY(int i)
         return 0;
     }
 
-    return m_doc->m_drawingPageHeight - i; // flipped
+    return m_doc->m_drawingPageContentHeight - i; // flipped
 }
 
 Point View::ToDeviceContext(Point p)

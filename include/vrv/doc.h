@@ -52,9 +52,9 @@ public:
     /**
      * Add a page to the document
      */
-    virtual void AddChild(Object *object);
+    virtual bool IsSupportedChild(Object *object);
 
-    /*
+    /**
      * Clear the content of the document.
      */
     virtual void Reset();
@@ -163,6 +163,7 @@ public:
     int GetTextGlyphAdvX(wchar_t code, FontInfo *font, bool graceSize) const;
     int GetTextGlyphDescender(wchar_t code, FontInfo *font, bool graceSize) const;
     int GetTextLineHeight(FontInfo *font, bool graceSize) const;
+    int GetTextXHeight(FontInfo *font, bool graceSize) const;
     ///@}
 
     /**
@@ -220,12 +221,22 @@ public:
      * It uses the MusObject::SetPageScoreDef functor method for parsing the file.
      * This will be done only if m_currentScoreDefDone is false or force is true.
      */
-    void SetCurrentScoreDefDoc(bool force = false);
+    void ScoreDefSetCurrentDoc(bool force = false);
+
+    /**
+     * Check whether we need to optimize score based on the condense option
+     */
+    bool ScoreDefNeedsOptimization();
 
     /**
      * Optimize the scoreDef once the document is cast-off.
      */
-    void OptimizeScoreDefDoc();
+    void ScoreDefOptimizeDoc();
+
+    /**
+     * Set the GrpSym start / end for each System once ScoreDef is set and (if necessary) optimized
+     */
+    void ScoreDefSetGrpSymDoc();
 
     /**
      * Prepare the document for drawing.
@@ -239,6 +250,26 @@ public:
      * Starting from a single system, create and fill pages and systems.
      */
     void CastOffDoc();
+
+    /**
+     * Casts off the entire document, only using the document's system breaks
+     * if they would be close to the end in the normal document.
+     */
+    void CastOffSmartDoc();
+
+    /**
+     * Casts off the entire document, using the document's line breaks,
+     * but adding its own page breaks.
+     */
+    void CastOffLineDoc();
+
+    /**
+     * Casts off the entire document, with options for obeying breaks.
+     * @param useSb - true to use the sb from the document.
+     * @param usePb - true to use the pb from the document.
+     * @param smart - true to sometimes use encoded sb and pb.
+     */
+    void CastOffDocBase(bool useSb, bool usePb, bool smart = false);
 
     /**
      * Casts off the running elements (headers and footer)
@@ -291,7 +322,7 @@ public:
      * By default, the element are used only for the rendering and not preserved in the MEI output
      * Permanent conversion discard analytical markup and elements will be preserved in the MEI output.
      */
-    void ConvertAnalyticalMarkupDoc(bool permanent = false);
+    void ConvertMarkupDoc(bool permanent = false);
 
     /**
      * Transpose the content of the doc.
@@ -343,9 +374,11 @@ public:
     int GetAdjustedDrawingPageHeight() const;
 
     /**
-     * Setter for analytical markup flag
+     * Setter for markup flag. See corresponding enum in vrvdef.h
+     * Set when reading the file to indicate what markup conversion needs to be applied.
+     * See Doc::ConvertMarkupDoc
      */
-    void SetAnalyticalMarkup(bool hasAnalyticalMarkup) { m_hasAnalyticalMarkup = hasAnalyticalMarkup; }
+    void SetMarkup(int markup) { m_markup |= markup; }
 
     /**
      * @name Setter for and getter for mensural only flag
@@ -404,14 +437,18 @@ public:
      * Holds the top scoreDef.
      * In a standard MEI file, this is the <scoreDef> encoded before the first <section>.
      */
-    ScoreDef m_scoreDef;
+    ScoreDef m_mdivScoreDef;
 
     /** The current page height */
     int m_drawingPageHeight;
     /** The current page width */
     int m_drawingPageWidth;
+    /** The current page content height (without margings) */
+    int m_drawingPageContentHeight;
+    /** The current page content width (without margins) */
+    int m_drawingPageContentWidth;
     /** The current page bottom margin */
-    int m_drawingPageMarginBot;
+    int m_drawingPageMarginBottom;
     /** The current page left margin */
     int m_drawingPageMarginLeft;
     /** The current page right margin */
@@ -423,7 +460,10 @@ public:
     /** the current beam maximal slope */
     float m_drawingBeamMaxSlope;
 
-    /** Record notation type for document */
+    /**
+     * Record notation type for document.
+     * (This should be improved by storing a vector of all notation types of the document for cases mixing notations)
+     */
     data_NOTATIONTYPE m_notationType;
 
     /** An expansion map that contains  */
@@ -474,7 +514,7 @@ private:
 
     /**
      * A flag to indicate whether the currentScoreDef has been set or not.
-     * If yes, SetCurrentScoreDef will not parse the document (again) unless
+     * If yes, ScoreDefSetCurrent will not parse the document (again) unless
      * the force parameter is set.
      */
     bool m_currentScoreDefDone;
@@ -495,9 +535,9 @@ private:
     /**
      * A flag to indicate whereas the document contains analytical markup to be converted.
      * This is currently limited to @fermata and @tie. Other attribute markup (@accid and @artic)
-     * is converted during the import in MeiInput.
+     * is converted during the import in MEIInput.
      */
-    bool m_hasAnalyticalMarkup;
+    int m_markup;
 
     /**
      * A flag to indicate whereas to document contains only mensural music.

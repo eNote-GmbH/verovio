@@ -9,6 +9,8 @@
 #define __VRV_PEDAL_H__
 
 #include "atts_cmn.h"
+#include "atts_externalsymbols.h"
+#include "atts_visual.h"
 #include "controlelement.h"
 #include "timeinterface.h"
 
@@ -22,9 +24,11 @@ namespace vrv {
  * This class models the MEI <pedal> element.
  */
 class Pedal : public ControlElement,
-              public TimePointInterface,
+              public TimeSpanningInterface,
               public AttColor,
+              public AttExtSym,
               public AttPedalLog,
+              public AttPedalVis,
               public AttPlacement,
               public AttVerticalGroup {
 public:
@@ -46,7 +50,21 @@ public:
      */
     ///@{
     virtual TimePointInterface *GetTimePointInterface() { return dynamic_cast<TimePointInterface *>(this); }
+    virtual TimeSpanningInterface *GetTimeSpanningInterface() { return dynamic_cast<TimeSpanningInterface *>(this); }
     ////@}
+
+    /**
+     * @name Setter and getter of the bounce flag
+     */
+    ///@{
+    bool EndsWithBounce() const { return m_endsWithBounce; }
+    void EndsWithBounce(bool endsWithBounce) { m_endsWithBounce = endsWithBounce; }
+    ///@}
+
+    /**
+     * Get the SMuFL glyph for the pedal based on function or glyph.num
+     */
+    wchar_t GetPedalGlyph() const;
 
     //----------//
     // Functors //
@@ -62,14 +80,11 @@ public:
      */
     virtual int GenerateMIDI(FunctorParams *functorParams);
 
-protected:
-    //
 private:
-    //
-public:
-    //
-private:
-    //
+    /**
+     * Flag indicating if following pedal mark is a bounce
+     */
+    bool m_endsWithBounce;
 };
 
 } // namespace vrv

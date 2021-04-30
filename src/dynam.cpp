@@ -38,11 +38,17 @@ Dynam::Dynam()
     , TextDirInterface()
     , TimeSpanningInterface()
     , AttExtender()
+    , AttLineRendBase()
+    , AttMidiValue()
+    , AttMidiValue2()
     , AttVerticalGroup()
 {
     RegisterInterface(TextDirInterface::GetAttClasses(), TextDirInterface::IsInterface());
     RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
     RegisterAttClass(ATT_EXTENDER);
+    RegisterAttClass(ATT_LINERENDBASE);
+    RegisterAttClass(ATT_MIDIVALUE);
+    RegisterAttClass(ATT_MIDIVALUE2);
     RegisterAttClass(ATT_VERTICALGROUP);
 
     Reset();
@@ -56,10 +62,11 @@ void Dynam::Reset()
     TextDirInterface::Reset();
     TimeSpanningInterface::Reset();
     ResetExtender();
+    ResetLineRendBase();
     ResetVerticalGroup();
 }
 
-void Dynam::AddChild(Object *child)
+bool Dynam::IsSupportedChild(Object *child)
 {
     if (child->Is({ REND, LB, TEXT })) {
         assert(dynamic_cast<TextElement *>(child));
@@ -68,13 +75,9 @@ void Dynam::AddChild(Object *child)
         assert(dynamic_cast<EditorialElement *>(child));
     }
     else {
-        LogError("Adding '%s' to a '%s'", child->GetClassName().c_str(), this->GetClassName().c_str());
-        assert(false);
+        return false;
     }
-
-    child->SetParent(this);
-    m_children.push_back(child);
-    Modify();
+    return true;
 }
 
 bool Dynam::IsSymbolOnly()
@@ -238,7 +241,7 @@ std::wstring Dynam::GetSymbolStr(const std::wstring &str)
 
 int Dynam::PrepareFloatingGrps(FunctorParams *functorParams)
 {
-    PrepareFloatingGrpsParams *params = dynamic_cast<PrepareFloatingGrpsParams *>(functorParams);
+    PrepareFloatingGrpsParams *params = vrv_params_cast<PrepareFloatingGrpsParams *>(functorParams);
     assert(params);
 
     if (this->HasVgrp()) {

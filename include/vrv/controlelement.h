@@ -31,7 +31,7 @@ public:
      */
     ///@{
     ControlElement();
-    ControlElement(std::string classid);
+    ControlElement(const std::string &classid);
     virtual ~ControlElement();
     virtual void Reset();
     virtual ClassId GetClassId() const { return CONTROL_ELEMENT; }
@@ -48,6 +48,13 @@ public:
      * Check if the ControlElement has a Rend child and return its @halign equivalent (if any)
      */
     data_HORIZONTALALIGNMENT GetChildRendAlignment();
+
+    /**
+     * Check if the ControlElement applies at a point where there is more than on layer.
+     * Returns that placement accordingly - otherwise return the default passed as parameter.
+     * Applied only for trill, mordent, and turn elements.
+     */
+    data_STAFFREL GetLayerPlace(data_STAFFREL defaultValue);
 
     //----------//
     // Functors //

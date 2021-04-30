@@ -31,23 +31,23 @@ public:
     {
         m_doc = doc;
         m_view = view;
-        m_editInfo = "";
+        m_editInfo.reset();
     }
     virtual ~EditorToolkit() {}
 
     /**
      * In child classes, this parses the provided editor action and then performs the correct action.
      */
-    virtual bool ParseEditorAction(const std::string &json_editorAction, bool isChain = false) = 0;
+    virtual bool ParseEditorAction(const std::string &json_editorAction) = 0;
     /**
      * Get information on the last editor function used
      */
-    virtual std::string EditInfo() { return m_editInfo; }
+    virtual std::string EditInfo() { return m_editInfo.json(); }
 
 protected:
     Doc *m_doc;
     View *m_view;
-    std::string m_editInfo;
+    jsonxx::Object m_editInfo;
 };
 } // namespace vrv
 

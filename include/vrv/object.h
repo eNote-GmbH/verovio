@@ -25,7 +25,7 @@ namespace vrv {
 class Doc;
 class DurationInterface;
 class EditorialElement;
-class FileOutputStream;
+class Output;
 class Functor;
 class FunctorParams;
 class LinkingInterface;
@@ -58,7 +58,7 @@ public:
      */
     ///@{
     Object();
-    Object(std::string classid);
+    Object(const std::string &classid);
     virtual ~Object();
     virtual ClassId GetClassId() const;
     virtual std::string GetClassName() const { return "[MISSING]"; }
@@ -221,15 +221,20 @@ public:
      */
     virtual void CloneReset();
 
-    std::string GetUuid() const { return m_uuid; }
+    const std::string &GetUuid() const { return m_uuid; }
     void SetUuid(std::string uuid);
     void SwapUuid(Object *other);
     void ResetUuid();
-    static void SeedUuid(unsigned int seed = 0);
 
+    /**
+     * Methods for setting / getting comments
+     */
     std::string GetComment() const { return m_comment; }
     void SetComment(std::string comment) { m_comment = comment; }
     bool HasComment() { return !m_comment.empty(); }
+    std::string GetClosingComment() const { return m_closingComment; }
+    void SetClosingComment(std::string endComment) { m_closingComment = endComment; }
+    bool HasClosingComment() { return !m_closingComment.empty(); }
 
     /**
      * @name Children count, with or without a ClassId.
@@ -249,9 +254,15 @@ public:
     Object *GetChild(int idx, const ClassId classId);
 
     /**
-     * Return a cont pointer to the children
+     * Return a const pointer to the children
      */
-    const ArrayOfObjects *GetChildren() { return &m_children; }
+    virtual const ArrayOfObjects *GetChildren(bool docChildren = true) const { return &m_children; }
+
+    /**
+     * Return a pointer to the children that allows modification.
+     * This method should be all only in AddChild overrides methods
+     */
+    ArrayOfObjects *GetChildrenForModification() { return &m_children; }
 
     /**
      * Fill an array of pairs with all attributes and their values.
@@ -281,8 +292,8 @@ public:
      * Returns NULL is not found
      */
     ///@{
-    Object *GetNext(Object *child, const ClassId classId = UNSPECIFIED);
-    Object *GetPrevious(Object *child, const ClassId classId = UNSPECIFIED);
+    Object *GetNext(const Object *child, const ClassId classId = UNSPECIFIED);
+    Object *GetPrevious(const Object *child, const ClassId classId = UNSPECIFIED);
     ///@}
 
     /**
@@ -308,8 +319,14 @@ public:
     void ResetParent() { m_parent = NULL; }
 
     /**
-     * Base method for adding children.
+     * Base method for checking if a child can be added.
      * The method has to be overridden.
+     */
+    virtual bool IsSupportedChild(Object *object);
+
+    /**
+     * Base method for adding children.
+     * The method can be overridden.
      */
     virtual void AddChild(Object *object);
 
@@ -392,7 +409,7 @@ public:
      * Return all the objects matching the Comparison functor
      * Deepness allow to limit the depth search (EditorialElements are not count)
      */
-    void FindAllDescendantByComparison(ArrayOfObjects *objects, Comparison *comparison, int deepness = UNLIMITED_DEPTH,
+    void FindAllDescendantByComparison(ListOfObjects *objects, Comparison *comparison, int deepness = UNLIMITED_DEPTH,
         bool direction = FORWARD, bool clear = true);
 
     /**
@@ -400,7 +417,7 @@ public:
      * The start and end objects are included in the result set.
      */
     void FindAllDescendantBetween(
-        ArrayOfObjects *objects, Comparison *comparison, Object *start, Object *end, bool clear = true);
+        ListOfObjects *objects, Comparison *comparison, Object *start, Object *end, bool clear = true);
 
     /**
      * Give up ownership of the child at the idx position (NULL if not found)
@@ -445,6 +462,11 @@ public:
     Object *GetLastAncestorNot(const ClassId classId, int maxSteps = -1);
 
     /**
+     * Return the first child that is NOT of the specified type.
+     */
+    Object *GetFirstChildNot(const ClassId classId);
+
+    /**
      * Fill the list of all the children LayerElement.
      * This is used for navigating in a Layer (See Layer::GetPrevious and Layer::GetNext).
      */
@@ -482,12 +504,29 @@ public:
     bool HasEditorialContent();
 
     /**
+     * Return true if the object contains anything that is not editorial content
+     */
+    bool HasNonEditorialContent();
+
+    /**
      * Saves the object (and its children) using the specified output stream.
      * Creates functors that will parse the tree.
      */
-    virtual int Save(FileOutputStream *output);
+    virtual int Save(Output *output);
+
+    /**
+     * Sort the child elements using std::stable_sort
+     */
+    template <class Compare> void StableSort(Compare comp)
+    {
+        std::stable_sort(m_children.begin(), m_children.end(), comp);
+    }
 
     virtual void ReorderByXPos();
+
+    Object *FindNextChild(Comparison *comp, Object *start);
+
+    Object *FindPreviousChild(Comparison *comp, Object *start);
     /**
      * Main method that processes functors.
      * For each object, it will call the functor.
@@ -497,9 +536,19 @@ public:
      * This is the generic way for parsing the tree, e.g., for extracting one single staff or layer.
      * Deepness specifies how many child levels should be processed. UNLIMITED_DEPTH means no
      * limit (EditorialElement objects do not count).
+     * skipFirst does not call the functor or endFunctor on the first (calling) level
      */
     virtual void Process(Functor *functor, FunctorParams *functorParams, Functor *endFunctor = NULL,
-        ArrayOfComparisons *filters = NULL, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
+        ArrayOfComparisons *filters = NULL, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD,
+        bool skipFirst = false);
+
+    //----------------//
+    // Static methods //
+    //----------------//
+
+    static void SeedUuid(unsigned int seed = 0);
+
+    static bool sortByUlx(Object *a, Object *b);
 
     //----------//
     // Functors //
@@ -540,9 +589,19 @@ public:
     virtual int FindAllBetween(FunctorParams *functorParams);
 
     /**
+     * Find a all Object to which another object points to in the data.
+     */
+    virtual int FindAllReferencedObjects(FunctorParams *functorParams);
+
+    /**
      * Look if the time / duration passed as parameter overlap with a space in the alignment references
      */
     virtual int LayerCountInTimeSpan(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Look for all the layer elements that overlap with the time / duration within certain layer passed as parameter
+     */
+    virtual int LayerElementsInTimeSpan(FunctorParams *functorParams) { return FUNCTOR_CONTINUE; }
 
     /**
      * Retrieve the layer elements spanned by two points
@@ -581,11 +640,20 @@ public:
 
     /**
      * Convert analytical markup (@fermata, @tie) to elements.
-     * See Doc::ConvertAnalyticalMarkupDoc
+     * See Doc::ConvertMarkupAnalyticalDoc
      */
     ///@{
-    virtual int ConvertAnalyticalMarkup(FunctorParams *) { return FUNCTOR_CONTINUE; }
-    virtual int ConvertAnalyticalMarkupEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ConvertMarkupAnalytical(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ConvertMarkupAnalyticalEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    ///@}
+
+    /**
+     * Convert markup of artic@artic multi value into distinct artic elements.
+     * See Doc::ConvertMarkupAnalyticalDoc
+     */
+    ///@{
+    virtual int ConvertMarkupArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ConvertMarkupArticEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
     /**
@@ -670,6 +738,11 @@ public:
     ///@}
 
     /**
+     * Adjust the spacing for clef changes.
+     */
+    virtual int AdjustClefChanges(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
      * Adjust the position the outside articulations.
      */
     virtual int AdjustLayers(FunctorParams *) { return FUNCTOR_CONTINUE; }
@@ -696,6 +769,11 @@ public:
      * Adjust the x position of accidental.
      */
     virtual int AdjustAccidX(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Adjust the x position of accidental.
+     */
+    virtual int AdjustTempo(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * @name Adjust the x position of a right barline in order to make sure the is no text content
@@ -751,6 +829,11 @@ public:
     ///@}
 
     /**
+     * Set the note position for each note in ligature
+     */
+    virtual int CalcLigatureNotePos(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
      * Set the note head flipped positions and calc the ledger lines
      */
     virtual int CalcLedgerLines(FunctorParams *) { return FUNCTOR_CONTINUE; }
@@ -761,9 +844,24 @@ public:
     virtual int CalcArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
+     * Calculate the vertical position adjustment for the beam if it overlaps with layer elements
+     */
+    virtual int AdjustBeams(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Apply position adjustment that has been calculated previously
+     */
+    virtual int AdjustBeamsEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
      * Adjust the postion position of slurs.
      */
     virtual int AdjustSlurs(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Adjust the position the articulations.
+     */
+    virtual int AdjustArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Adjust the position the outside articulations with slur.
@@ -780,9 +878,14 @@ public:
     ///@}
 
     /**
-     * Adjust the position of all floating positionner, staff by staff.
+     * Adjust the position of all floating positionners, staff by staff.
      */
     virtual int AdjustFloatingPositioners(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Adjust the position of floating positionners placed between staves
+     */
+    virtual int AdjustFloatingPositionersBetween(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Adjust the position of all floating positionner that are grouped, staff by staff.
@@ -798,6 +901,11 @@ public:
      * Calculate the y position of tuplet brackets and num
      */
     virtual int AdjustTupletsY(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Calculate the y relative position of tupletNum based on overlaps with other elements
+     */
+    virtual int AdjustTupletNumOverlap(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Adjust the position of the StaffAlignment.
@@ -859,15 +967,15 @@ public:
      * It also includes a scoreDef for each measure where a change occured before.
      * A change can be either a scoreDef before or a clef, meterSig, etc. within the previous measure.
      */
-    virtual int SetCurrentScoreDef(FunctorParams *functorParams);
+    virtual int ScoreDefSetCurrent(FunctorParams *functorParams);
 
     /**
      * Optimize the scoreDef for each system.
      * For automatic breaks, looks for staves with only mRests.
      */
     ///@{
-    virtual int OptimizeScoreDef(FunctorParams *) { return FUNCTOR_CONTINUE; }
-    virtual int OptimizeScoreDefEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ScoreDefOptimize(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ScoreDefOptimizeEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
 
     /**
@@ -878,7 +986,7 @@ public:
     /**
      * Unset the initial scoreDef of each system and measure
      */
-    virtual int UnsetCurrentScoreDef(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int ScoreDefUnsetCurrent(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Set drawing flags for the StaffDef for indicating whether clefs, keysigs, etc. need
@@ -907,6 +1015,16 @@ public:
     virtual int PrepareCrossStaff(FunctorParams *) { return FUNCTOR_CONTINUE; }
     virtual int PrepareCrossStaffEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
     ///@}
+
+    /**
+     * Prepare group symbol starting and ending staffDefs for drawing
+     */
+    virtual int ScoreDefSetGrpSym(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Associate LayerElement with @facs to the appropriate zone
+     */
+    virtual int PrepareFacsimile(FunctorParams *functorParams);
 
     /**
      * Match linking element (e.g, @next).
@@ -1012,6 +1130,13 @@ public:
      */
     virtual int ResetDrawing(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
+    /**
+     * Go through all layer elements of the layer and return next/previous element relative to the specified
+     * layer element. It will search recursively through children elements until note, chord or ftrem is found.
+     * It can be used to look in neighboring layers for the similar search, but only first element will be checked.
+     */
+    virtual int GetRelativeLayerElement(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
     ///@}
 
     /**
@@ -1109,17 +1234,14 @@ public:
      */
     virtual int ReorderByXPos(FunctorParams *);
 
-    /**
-     * Associate child objects with zones.
-     */
-    virtual int SetChildZones(FunctorParams *);
+    virtual int FindNextChildByComparison(FunctorParams *);
+
+    virtual int FindPreviousChildByComparison(FunctorParams *);
 
     /**
      * Transpose the content.
      */
     virtual int Transpose(FunctorParams *) { return FUNCTOR_CONTINUE; }
-
-    static bool sortByUlx(Object *a, Object *b);
 
 protected:
     //
@@ -1132,7 +1254,7 @@ private:
     /**
      * Initialisation method taking a uuid prefix argument.
      */
-    void Init(std::string);
+    void Init(const std::string &);
 
 public:
     /**
@@ -1142,13 +1264,14 @@ public:
     ArrayOfStrAttr m_unsupported;
 
 protected:
+    //
+private:
     /**
      * A vector of child objects.
      * Unless SetAsReferenceObject is set or with detached and relinquished, the children are own by it.
      */
     ArrayOfObjects m_children;
 
-private:
     /**
      * A pointer to the parent object;
      */
@@ -1197,10 +1320,13 @@ private:
     std::vector<InterfaceId> m_interfaces;
 
     /**
-     * A string for storing a comment to be printed immediately before
-     * the object when printing an MEI element.
+     * String for storing a comments attached to the object when printing an MEI element.
+     * m_comment is to be printed immediately before the element
+     * m_closingComment is to be printed before the closing tag of the element
      */
     std::string m_comment;
+    std::string m_closingComment;
+    ///@}
 
     /**
      * A flag indicating if the Object represents an attribute in the original MEI.
@@ -1212,6 +1338,10 @@ private:
      * A flag indicating if the Object is a copy created by an expanded expansion element.
      */
     bool m_isExpansion;
+
+    //----------------//
+    // Static members //
+    //----------------//
 
     /**
      * A static counter for uuid generation.

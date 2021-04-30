@@ -6,12 +6,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "vrv.h"
-#include <iostream>
 
 //----------------------------------------------------------------------------
 
 #include <assert.h>
 #include <cmath>
+#include <iostream>
 #include <sstream>
 #include <stdarg.h>
 #include <stdio.h>
@@ -48,7 +48,7 @@
 #include "pugixml.hpp"
 #include "unchecked.h"
 
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
@@ -60,9 +60,12 @@ namespace vrv {
 // Static members with some default values
 //----------------------------------------------------------------------------
 
-std::string Resources::m_path = "/usr/local/share/verovio";
-std::map<wchar_t, Glyph> Resources::m_font;
-std::map<wchar_t, Glyph> Resources::m_textFont;
+std::string Resources::s_path = "/usr/local/share/verovio";
+Resources::GlyphTextMap Resources::s_textFont;
+Resources::GlyphMap Resources::s_font;
+Resources::StyleAttributes Resources::s_currentStyle;
+const Resources::StyleAttributes Resources::k_defaultStyle{ data_FONTWEIGHT::FONTWEIGHT_normal,
+    data_FONTSTYLE::FONTSTYLE_normal };
 
 //----------------------------------------------------------------------------
 // Font related methods
@@ -76,37 +79,90 @@ bool Resources::InitFonts()
     // The Leipzig as the default font
     if (!LoadFont("Leipzig")) LogError("Leipzig font could not be loaded.");
 
-    if (m_font.size() < SMUFL_COUNT) {
-        LogError("Expected %d default SMUFL glyphs but could load only %d.", SMUFL_COUNT, m_font.size());
+    if (s_font.size() < SMUFL_COUNT) {
+        LogError("Expected %d default SMUFL glyphs but could load only %d.", SMUFL_COUNT, s_font.size());
         return false;
     }
 
-    if (!InitTextFont("Times") || !InitTextFont("VerovioText-1.0")) {
-        LogError("Text font could not be initialized.");
-        return false;
+    struct TextFontInfo_type {
+        const StyleAttributes m_style;
+        const std::string m_fileName;
+        bool m_isMandatory;
+    };
+
+    static const TextFontInfo_type textFontInfos[] = { { k_defaultStyle, "Times", true },
+        { k_defaultStyle, "VerovioText-1.0", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "Times-bold", false },
+        { { FONTWEIGHT_bold, FONTSTYLE_normal }, "VerovioText-1.0", false },
+        { { FONTWEIGHT_bold, FONTSTYLE_italic }, "Times-bold-italic", false },
+        { { FONTWEIGHT_bold, FONTSTYLE_italic }, "VerovioText-1.0", false },
+        { { FONTWEIGHT_normal, FONTSTYLE_italic }, "Times-italic", false },
+        { { FONTWEIGHT_normal, FONTSTYLE_italic }, "VerovioText-1.0", false } };
+
+    for (const auto &textFontInfo : textFontInfos) {
+        if (!InitTextFont(textFontInfo.m_fileName, textFontInfo.m_style) && textFontInfo.m_isMandatory) {
+            LogError("Text font could not be initialized.");
+            return false;
+        }
     }
+
+    s_currentStyle = k_defaultStyle;
 
     return true;
 }
 
-bool Resources::SetFont(std::string fontName)
+bool Resources::SetFont(const std::string &fontName)
 {
     return LoadFont(fontName);
 }
 
 Glyph *Resources::GetGlyph(wchar_t smuflCode)
 {
-    if (!m_font.count(smuflCode)) return NULL;
-    return &m_font[smuflCode];
+    if (!s_font.count(smuflCode)) return NULL;
+    return &s_font[smuflCode];
+}
+
+Glyph *Resources::GetGlyph(const std::string &smuflName)
+{
+    wchar_t code = GetGlyphCode(smuflName);
+    if (code == 0) return NULL;
+    return GetGlyph(code);
+}
+
+wchar_t Resources::GetGlyphCode(const std::string &smuflName)
+{
+    if (!s_smuflNames.count(smuflName)) return 0;
+    return s_smuflNames.at(smuflName);
+}
+
+void Resources::SelectTextFont(data_FONTWEIGHT fontWeight, data_FONTSTYLE fontStyle)
+{
+    if (fontWeight == FONTWEIGHT_NONE) {
+        fontWeight = FONTWEIGHT_normal;
+    }
+
+    if (fontStyle == FONTSTYLE_NONE) {
+        fontStyle = FONTSTYLE_normal;
+    }
+
+    s_currentStyle = std::make_pair(fontWeight, fontStyle);
+    if (s_textFont.count(s_currentStyle) == 0) {
+        LogWarning("Text font for style (%d, %d) is not loaded. Use default", fontWeight, fontStyle);
+        s_currentStyle = k_defaultStyle;
+    }
 }
 
 Glyph *Resources::GetTextGlyph(wchar_t code)
 {
-    if (!m_textFont.count(code)) return NULL;
-    return &m_textFont[code];
+    GlyphMap *currentMap = &s_textFont[s_textFont.count(s_currentStyle) != 0 ? s_currentStyle : k_defaultStyle];
+
+    if (currentMap->count(code) == 0) {
+        return NULL;
+    }
+
+    return &currentMap->at(code);
 }
 
-bool Resources::LoadFont(std::string fontName)
+bool Resources::LoadFont(const std::string &fontName)
 {
     ::DIR *dir;
     dirent *pdir;
@@ -132,7 +188,7 @@ bool Resources::LoadFont(std::string fontName)
             std::string codeStr = pdir->d_name;
             codeStr = codeStr.substr(0, 4);
             Glyph glyph(Resources::GetPath() + "/" + fontName + "/" + pdir->d_name, codeStr);
-            m_font[smuflCode] = glyph;
+            s_font[smuflCode] = glyph;
         }
     }
 
@@ -158,11 +214,11 @@ bool Resources::LoadFont(std::string fontName)
         Glyph *glyph = NULL;
         if (current.attribute("c")) {
             wchar_t smuflCode = (wchar_t)strtol(current.attribute("c").value(), NULL, 16);
-            if (!m_font.count(smuflCode)) {
+            if (!s_font.count(smuflCode)) {
                 LogWarning("Glyph with code '%d' not found.", smuflCode);
                 continue;
             }
-            glyph = &m_font[smuflCode];
+            glyph = &s_font[smuflCode];
             if (glyph->GetUnitsPerEm() != unitsPerEm * 10) {
                 LogWarning("Glyph and bounding box units-per-em for code '%d' miss-match (bounding box: %d)", smuflCode,
                     unitsPerEm);
@@ -194,7 +250,7 @@ bool Resources::LoadFont(std::string fontName)
     return true;
 }
 
-bool Resources::InitTextFont(std::string fontName)
+bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes &style)
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;
@@ -214,6 +270,10 @@ bool Resources::InitTextFont(std::string fontName)
     }
     int unitsPerEm = atoi(root.attribute("units-per-em").value());
     pugi::xml_node current;
+    if (s_textFont.count(style) == 0) {
+        s_textFont[style] = GlyphMap{};
+    }
+    GlyphMap &currentMap = s_textFont.at(style);
     for (current = root.child("g"); current; current = current.next_sibling("g")) {
         if (current.attribute("c")) {
             wchar_t code = (wchar_t)strtol(current.attribute("c").value(), NULL, 16);
@@ -228,10 +288,10 @@ bool Resources::InitTextFont(std::string fontName)
             if (current.attribute("h")) height = atof(current.attribute("h").value());
             glyph.SetBoundingBox(x, y, width, height);
             if (current.attribute("h-a-x")) glyph.SetHorizAdvX(atof(current.attribute("h-a-x").value()));
-            if (m_textFont.count(code) > 0) {
+            if (currentMap.count(code) > 0) {
                 LogDebug("Redefining %d with %s", code, fontName.c_str());
             }
-            m_textFont[code] = glyph;
+            currentMap[code] = glyph;
         }
     }
     return true;
@@ -243,12 +303,14 @@ bool Resources::InitTextFont(std::string fontName)
 
 /** Global for LogElapsedTimeXXX functions (debugging purposes) */
 struct timeval start;
-/** For disabling log */
-bool noLog = false;
 
-#ifdef EMSCRIPTEN
+/** For disabling log */
+bool logging = true;
+
+/** By default log to stderr or JS console */
+bool loggingToBuffer = false;
+
 std::vector<std::string> logBuffer;
-#endif
 
 void LogElapsedTimeStart()
 {
@@ -267,92 +329,83 @@ void LogElapsedTimeEnd(const char *msg)
 
 void LogDebug(const char *fmt, ...)
 {
-    if (noLog) return;
-#if defined(DEBUG)
-#ifdef EMSCRIPTEN
+    if (!logging) return;
+
     std::string s;
     va_list args;
     va_start(args, fmt);
     s = "[Debug] " + StringFormatVariable(fmt, args) + "\n";
-    AppendLogBuffer(true, s, CONSOLE_LOG);
+    LogString(s, CONSOLE_DEBUG);
     va_end(args);
-#else
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "[Debug] ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-#endif
-#endif
 }
 
 void LogError(const char *fmt, ...)
 {
-    if (noLog) return;
-#ifdef EMSCRIPTEN
+    if (!logging) return;
+
     std::string s;
     va_list args;
     va_start(args, fmt);
     s = "[Error] " + StringFormatVariable(fmt, args) + "\n";
-    AppendLogBuffer(true, s, CONSOLE_ERROR);
+    LogString(s, CONSOLE_ERROR);
     va_end(args);
-#else
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "[Error] ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-#endif
 }
 
 void LogMessage(const char *fmt, ...)
 {
-    if (noLog) return;
-#ifdef EMSCRIPTEN
+    if (!logging) return;
+
     std::string s;
     va_list args;
     va_start(args, fmt);
     s = "[Message] " + StringFormatVariable(fmt, args) + "\n";
-    AppendLogBuffer(true, s, CONSOLE_INFO);
+    LogString(s, CONSOLE_INFO);
     va_end(args);
-#else
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "[Message] ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-#endif
 }
 
 void LogWarning(const char *fmt, ...)
 {
-    if (noLog) return;
-#ifdef EMSCRIPTEN
+    if (!logging) return;
+
     std::string s;
     va_list args;
     va_start(args, fmt);
     s = "[Warning] " + StringFormatVariable(fmt, args) + "\n";
-    AppendLogBuffer(true, s, CONSOLE_WARN);
+    LogString(s, CONSOLE_WARN);
     va_end(args);
-#else
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "[Warning] ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-#endif
 }
 
-void DisableLog()
+void EnableLog(bool value)
 {
-    noLog = true;
+    logging = value;
 }
 
-#ifdef EMSCRIPTEN
+void EnableLogToBuffer(bool value)
+{
+    loggingToBuffer = value;
+}
+
+void LogString(std::string message, consoleLogLevel level)
+{
+    if (loggingToBuffer) {
+        if (LogBufferContains(message)) return;
+        logBuffer.push_back(message);
+    }
+    else {
+#ifdef __EMSCRIPTEN__
+        switch (level) {
+            case CONSOLE_DEBUG: EM_ASM_ARGS({ console.debug(UTF8ToString($0)); }, message.c_str()); break;
+            case CONSOLE_ERROR: EM_ASM_ARGS({ console.error(UTF8ToString($0)); }, message.c_str()); break;
+            case CONSOLE_WARN: EM_ASM_ARGS({ console.warn(UTF8ToString($0)); }, message.c_str()); break;
+            case CONSOLE_INFO: EM_ASM_ARGS({ console.info(UTF8ToString($0)); }, message.c_str()); break;
+            default: EM_ASM_ARGS({ console.log(UTF8ToString($0)); }, message.c_str()); break;
+        }
+#else
+        fputs(message.c_str(), stderr);
+#endif
+    }
+}
+
 bool LogBufferContains(const std::string &s)
 {
     std::vector<std::string>::iterator iter = logBuffer.begin();
@@ -362,21 +415,6 @@ bool LogBufferContains(const std::string &s)
     }
     return false;
 }
-
-void AppendLogBuffer(bool checkDuplicate, std::string message, consoleLogLevel level)
-{
-    if (checkDuplicate && LogBufferContains(message)) return;
-    logBuffer.push_back(message);
-
-    switch (level) {
-        case CONSOLE_ERROR: EM_ASM_ARGS({ console.error(UTF8ToString($0)); }, message.c_str()); break;
-        case CONSOLE_WARN: EM_ASM_ARGS({ console.warn(UTF8ToString($0)); }, message.c_str()); break;
-        case CONSOLE_INFO: EM_ASM_ARGS({ console.info(UTF8ToString($0)); }, message.c_str()); break;
-        default: EM_ASM_ARGS({ console.log(UTF8ToString($0)); }, message.c_str()); break;
-    }
-}
-
-#endif
 
 bool Check(Object *object)
 {
@@ -498,9 +536,16 @@ std::string GetVersion()
 
  */
 
+// See also https://stackoverflow.com/questions/180947/base64-decode-snippet-in-c
+
 static const std::string base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                        "abcdefghijklmnopqrstuvwxyz"
                                        "0123456789+/";
+
+static inline bool isBase64(unsigned char c)
+{
+    return (isalnum(c) || (c == '+') || (c == '/'));
+}
 
 std::string Base64Encode(unsigned char const *bytesToEncode, unsigned int inLen)
 {
@@ -533,6 +578,53 @@ std::string Base64Encode(unsigned char const *bytesToEncode, unsigned int inLen)
         for (int j = 0; (j < i + 1); j++) ret += base64Chars[charArray4[j]];
 
         while ((i++ < 3)) ret += '=';
+    }
+
+    return ret;
+}
+
+std::vector<unsigned char> Base64Decode(std::string const &encodedString)
+{
+    int inLen = (int)encodedString.size();
+    int i = 0;
+    int j = 0;
+    int in_ = 0;
+    unsigned char charArray4[4], charArray3[3];
+    std::vector<unsigned char> ret;
+
+    while (inLen-- && (encodedString[in_] != '=') && isBase64(encodedString[in_])) {
+        charArray4[i++] = encodedString[in_];
+        in_++;
+        if (i == 4) {
+            for (i = 0; i < 4; i++) {
+                charArray4[i] = base64Chars.find(charArray4[i]);
+            }
+
+            charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
+            charArray3[1] = ((charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
+            charArray3[2] = ((charArray4[2] & 0x3) << 6) + charArray4[3];
+
+            for (i = 0; (i < 3); i++) {
+                ret.push_back(charArray3[i]);
+            }
+            i = 0;
+        }
+    }
+
+    if (i) {
+        for (j = i; j < 4; j++) {
+            charArray4[j] = 0;
+        }
+
+        for (j = 0; j < 4; j++) {
+            charArray4[j] = base64Chars.find(charArray4[j]);
+        }
+
+        charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
+        charArray3[1] = ((charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
+        charArray3[2] = ((charArray4[2] & 0x3) << 6) + charArray4[3];
+
+        for (j = 0; (j < i - 1); j++) ret.push_back(charArray3[j]);
     }
 
     return ret;

@@ -56,7 +56,7 @@ public:
     /**
      * Add an element (a keyAccid) to a keySig.
      */
-    virtual void AddChild(Object *object);
+    virtual bool IsSupportedChild(Object *object);
 
     /** Accid number getter */
     int GetAccidCount();
@@ -76,13 +76,17 @@ public:
      */
     std::wstring GetKeyAccidStrAt(int pos, data_ACCIDENTAL_WRITTEN &accid, data_PITCHNAME &pname);
 
+    int GetFifthsInt();
+
+    //----------------//
+    // Static methods //
+    //----------------//
+
     /**
      * Static methods for calculating position;
      */
     static data_PITCHNAME GetAccidPnameAt(data_ACCIDENTAL_WRITTEN alterationType, int pos);
     static int GetOctave(data_ACCIDENTAL_WRITTEN alterationType, data_PITCHNAME pitch, Clef *clef);
-
-    int GetFifthsInt();
 
     //----------//
     // Functors //
@@ -109,6 +113,10 @@ public:
      */
     data_ACCIDENTAL_WRITTEN m_drawingCancelAccidType;
     char m_drawingCancelAccidCount;
+
+    //----------------//
+    // Static members //
+    //----------------//
 
     static data_PITCHNAME s_pnameForFlats[];
     static data_PITCHNAME s_pnameForSharps[];

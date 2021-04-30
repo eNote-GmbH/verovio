@@ -56,17 +56,34 @@ public:
      * Add an element (text, rend. etc.) to a tempo.
      * Only supported elements will be actually added to the child list.
      */
-    virtual void AddChild(Object *object);
+    virtual bool IsSupportedChild(Object *object);
+
+    /**
+     * @name Get the X drawing position
+     */
+    ///@{
+    int GetDrawingXRelativeToStaff(int staffN);
 
     //----------//
     // Functors //
     //----------//
+
+    /**
+     * See Object::AdjustTempoX
+     */
+    virtual int AdjustTempo(FunctorParams *functorParams);
+
+    /**
+     * See Object::ResetDrawing
+     */
+    virtual int ResetDrawing(FunctorParams *functorParams);
 
 private:
     //
 public:
     //
 private:
+    std::map<int, int> m_drawingXRels;
 };
 
 } // namespace vrv

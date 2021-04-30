@@ -515,7 +515,7 @@ int BoundingBox::Intersects(FloatingCurvePositioner *curve, Accessor type, int m
 {
     assert(curve);
     assert(curve->GetObject());
-    assert(curve->GetObject()->Is({ SLUR, TIE }));
+    assert(curve->GetObject()->Is({ PHRASE, SLUR, TIE }));
 
     // for lisability
     Point points[4];
@@ -698,6 +698,13 @@ Point BoundingBox::CalcPositionAfterRotation(Point point, float alpha, Point cen
     return point;
 }
 
+double BoundingBox::CalcSlope(Point const &p1, Point const &p2)
+{
+    if ((p1.y == p2.y) || (p1.x == p2.x)) return 0.0;
+
+    return (double)(p2.y - p1.y) / (double)(p2.x - p1.x);
+}
+
 /*
 int BoundingBox::CalcBezierAtPosition(const Point bezier[4], int x) {
 
@@ -726,6 +733,41 @@ int BoundingBox::CalcBezierAtPosition(const Point bezier[4], int x)
     return p.y;
 }
 
+void BoundingBox::CalcLinearInterpolation(Point &dest, const Point &a, const Point &b, double t)
+{
+    dest.x = a.x + (b.x - a.x) * t;
+    dest.y = a.y + (b.y - a.y) * t;
+}
+
+Point BoundingBox::CalcPointAtBezier(const Point bezier[4], double t)
+{
+    Point p1, p2, p3, p4, p5;
+    CalcLinearInterpolation(p1, bezier[0], bezier[1], t);
+    CalcLinearInterpolation(p2, bezier[1], bezier[2], t);
+    CalcLinearInterpolation(p3, bezier[2], bezier[3], t);
+    CalcLinearInterpolation(p4, p1, p2, t);
+    CalcLinearInterpolation(p5, p2, p3, t);
+    Point midPoint;
+    CalcLinearInterpolation(midPoint, p4, p5, t); // middle point on the bezier-curve
+    return midPoint;
+}
+
+double BoundingBox::GetBezierThicknessCoeficient(
+    const Point bezier[4], int currentThickness, double angle, int penWidth)
+{
+    Point top[4], bottom[4];
+    CalcThickBezier(bezier, currentThickness, angle, top, bottom);
+
+    Point topMidpoint = CalcPointAtBezier(top, 0.5);
+    Point bottomMidpoint = CalcPointAtBezier(bottom, 0.5);
+
+    int actualThickness = sqrt((topMidpoint.x - bottomMidpoint.x) * (topMidpoint.x - bottomMidpoint.x)
+        + (topMidpoint.y - bottomMidpoint.y) * (topMidpoint.y - bottomMidpoint.y));
+    double adjustedThickness = currentThickness - penWidth;
+    if (adjustedThickness < 0) adjustedThickness = 0;
+    return adjustedThickness / actualThickness;
+}
+
 Point BoundingBox::CalcDeCasteljau(const Point bezier[4], double t)
 {
     Point p;
@@ -745,8 +787,8 @@ void BoundingBox::CalcThickBezier(
 
     Point c1Rotated = bezier[1];
     Point c2Rotated = bezier[2];
-    c1Rotated.y += thickness / 2;
-    c2Rotated.y += thickness / 2;
+    c1Rotated.y += thickness * 0.5;
+    c2Rotated.y += thickness * 0.5;
     if (angle != 0.0) {
         c1Rotated = BoundingBox::CalcPositionAfterRotation(c1Rotated, angle, bezier[1]);
         c2Rotated = BoundingBox::CalcPositionAfterRotation(c2Rotated, angle, bezier[2]);
@@ -762,8 +804,8 @@ void BoundingBox::CalcThickBezier(
 
     c1Rotated = bezier[1];
     c2Rotated = bezier[2];
-    c1Rotated.y -= thickness / 2;
-    c2Rotated.y -= thickness / 2;
+    c1Rotated.y -= thickness * 0.5;
+    c2Rotated.y -= thickness * 0.5;
     if (angle != 0.0) {
         c1Rotated = BoundingBox::CalcPositionAfterRotation(c1Rotated, angle, bezier[1]);
         c2Rotated = BoundingBox::CalcPositionAfterRotation(c2Rotated, angle, bezier[2]);

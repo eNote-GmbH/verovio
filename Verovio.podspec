@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name           = 'Verovio'
-  s.version        = '2.5.0'
+  s.version        = '3.3.0'
   s.license        = { :type => 'LGPL' }
   s.homepage       = 'https://www.verovio.org/index.xhtml'
   s.authors        = { 'Contributors List' => 'https://github.com/rism-ch/verovio/graphs/contributors' }
@@ -20,10 +20,10 @@ Pod::Spec.new do |s|
                           'libmei/{atts_mensural,atts_midi,atts_neumes,atts_pagebased,atts_shared}.{h}',
                           'libmei/{atts_visual,atttypes}.{h}'
   s.resources      = 'data'
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '10.0'
   s.osx.deployment_target = '10.13'
-  s.xcconfig = {
-      "CLANG_CXX_LANGUAGE_STANDARD" => "gnu++14",
+  s.pod_target_xcconfig = {
+      "CLANG_CXX_LANGUAGE_STANDARD" => "c++17",
       "CLANG_CXX_LIBRARY" => "libc++",
       "GCC_C_LANGUAGE_STANDARD" => "gnu11",
       "GCC_DYNAMIC_NO_PIC" => "NO",
@@ -34,9 +34,8 @@ Pod::Spec.new do |s|
       "ENABLE_STRICT_OBJC_MSGSEND" => "YES",
       "MTL_FAST_MATH" => "YES",
       "SUPPORTS_UIKITFORMAC" => "NO",
-      "MTL_ENABLE_DEBUG_INFO" => "NO"
+      "MTL_ENABLE_DEBUG_INFO" => "NO",
+      "PRODUCT_BUNDLE_IDENTIFIER" => "com.rism.VerovioFramework"
     }
-  s.info_plist = {
-    'CFBundleIdentifier' => 'com.rism.VerovioFramework'
-  }
 end
+

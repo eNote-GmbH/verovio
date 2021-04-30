@@ -26,6 +26,7 @@ enum FileFormat {
     AUTO,
     MEI,
     HUMDRUM,
+    HUMMEI,
     PAE,
     ABC,
     DARMS,
@@ -37,6 +38,12 @@ enum FileFormat {
     MIDI,
     TIMEMAP
 };
+
+void SetDefaultResourcePath(const std::string &path);
+
+// Implementation in vrv.cpp but defined here to be available in SWIG bindings
+void EnableLog(bool value);
+void EnableLogToBuffer(bool value);
 
 //----------------------------------------------------------------------------
 // Toolkit
@@ -66,19 +73,31 @@ public:
     bool SetResourcePath(const std::string &path);
 
     /**
-     * Load a file with the specified type.
+     * Load a file and call Toolkit::LoadData
+     * Previously convert UTF16 files to UTF8 or extract files from MusicXML compressed files.
      */
     bool LoadFile(const std::string &filename);
 
     /**
-     * Load a string data with the specified type.
+     * Load a string data with the type previously specified in the options.
+     * Auto-detect if nothing was previously specified.
      */
     bool LoadData(const std::string &data);
 
     /**
+     * Load a MusicXML compressed file passed as base64 encoded string.
+     */
+    bool LoadZipDataBase64(const std::string &data);
+
+    /**
+     * Load a MusicXML compressed file passed as a buffer of bytes.
+     */
+    bool LoadZipDataBuffer(const unsigned char *data, int length);
+
+    /**
      * Save an MEI file.
      */
-    bool SaveFile(const std::string &filename);
+    bool SaveFile(const std::string &filename, const std::string &jsonOptions);
 
     /**
      * @name Getter and setter for options as JSON string
@@ -86,7 +105,7 @@ public:
     ///@{
     std::string GetOptions(bool defaultValues) const;
     std::string GetAvailableOptions() const;
-    bool SetOptions(const std::string &json_options);
+    bool SetOptions(const std::string &jsonOptions);
     ///@}
 
     /**
@@ -154,6 +173,17 @@ public:
     std::string RenderToMIDI();
 
     /**
+     * Export the content to a Plaine and Easie file.
+     */
+    bool RenderToPAEFile(const std::string &filename);
+
+    /**
+     * Render the content to Plaine and Easie.
+     * Only the top staff / layer is exported.
+     */
+    std::string RenderToPAE();
+
+    /**
      * Creates a timemap file, and return it as a JSON string.
      */
     std::string RenderToTimemap();
@@ -173,9 +203,12 @@ public:
 
     /**
      * Get the MEI as a string.
-     * Get all the pages unless a page number (1-based) is specified
+     * Options (JSON) can be:
+     * pageNo: integer; (1-based), all pages if none (or 0) specified
+     * scoreBased: true|false; true by default
+     * (noXmlIds: true|false; false by default - remove all @xml:id not used in the data - not implemented)
      */
-    std::string GetMEI(int pageNo = 0, bool scoreBased = true);
+    std::string GetMEI(const std::string &jsonOptions);
 
     /**
      * Return element attributes as a JSON string
@@ -227,6 +260,14 @@ public:
     std::string GetMIDIValuesForElement(const std::string &xmlId);
 
     /**
+     * Return a JSON object string with the following key values for a given note:
+     * scoreTimeOnset, scoreTimeOffset, scoreTimeTiedDuration,
+     * realTimeOnsetMilliseconds, realTimeOffsetMilliseconds, realTimeTiedDurationMilliseconds.
+     * Returns 0 if no element is found.
+     */
+    std::string GetTimesForElement(const std::string &xmlId);
+
+    /**
      * @name Set and get the scale
      */
     ///@{
@@ -261,14 +302,6 @@ public:
     ///@}
 
     /**
-     * @name Set and get the xPath query for selecting <app> (if any)
-     */
-    ///@{
-    void SetScoreBasedMei(bool scoreBasedMei) { m_scoreBasedMei = scoreBasedMei; }
-    bool GetScoreBasedMei() { return m_scoreBasedMei; }
-    ///@}
-
-    /**
      * @name Get the pages for a loaded file
      */
     ///@{
@@ -285,21 +318,24 @@ public:
     const char *GetCString();
     ///@}
 
+protected:
 private:
     bool IsUTF16(const std::string &filename);
     bool LoadUTF16File(const std::string &filename);
+    bool IsZip(const std::string &filename);
+    bool LoadZipFile(const std::string &filename);
+    bool LoadZipData(const std::vector<unsigned char> &bytes);
+    void GetClassIds(const std::vector<std::string> &classStrings, std::vector<ClassId> &classIds);
 
 public:
-    //
+    static std::map<std::string, ClassId> s_MEItoClassIdMap;
+
 private:
     Doc m_doc;
     View m_view;
     int m_scale;
     FileFormat m_inputFrom;
     FileFormat m_outputTo;
-    bool m_scoreBasedMei;
-
-    static char *m_humdrumBuffer;
 
     Options *m_options;
 
@@ -309,6 +345,12 @@ private:
     char *m_cString;
 
     EditorToolkit *m_editorToolkit;
+
+    //----------------//
+    // Static members //
+    //----------------//
+
+    static char *m_humdrumBuffer;
 };
 
 } // namespace vrv

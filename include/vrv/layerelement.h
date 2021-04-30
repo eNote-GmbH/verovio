@@ -8,6 +8,10 @@
 #ifndef __VRV_LAYER_ELEMENT_H__
 #define __VRV_LAYER_ELEMENT_H__
 
+#include <set>
+
+//----------------------------------------------------------------------------
+
 #include "atts_shared.h"
 #include "facsimileinterface.h"
 #include "linkinginterface.h"
@@ -18,10 +22,12 @@ namespace vrv {
 class Alignment;
 class Beam;
 class BeamElementCoord;
+class FTrem;
 class Layer;
 class Mensur;
 class MeterSig;
 class Staff;
+class StaffAlignment;
 
 //----------------------------------------------------------------------------
 // LayerElement
@@ -43,7 +49,7 @@ public:
      */
     ///@{
     LayerElement();
-    LayerElement(std::string classid);
+    LayerElement(const std::string &classid);
     virtual ~LayerElement();
     virtual void Reset();
     virtual ClassId GetClassId() const { return LAYER_ELEMENT; }
@@ -105,8 +111,8 @@ public:
     bool GetDrawingCueSize();
     /** Return true if the element is a note within a ligature */
     bool IsInLigature() const;
-    /** Return true if the element is a note or a chord within a fTrem */
-    bool IsInFTrem();
+    /** Return the FTrem parten if the element is a note or a chord within a fTrem */
+    FTrem *IsInFTrem();
     /**
      * Return the beam parent if in beam
      * Look if the note or rest is in a beam.
@@ -151,17 +157,16 @@ public:
      * Returns the drawing top and bottom taking into accound stem, etc.
      * We pass the doc as parameter in order to have access to the current drawing parameters.
      * withArtic specifies if the articulation sign needs to be taken into account or not.
-     * articPartType indicates if the inside or outside artic part has to be taken into account (inside is taken
+     * articType indicates if the inside or outside artic part has to be taken into account (inside is taken
      * into account in any case)
      */
-    int GetDrawingTop(Doc *doc, int staffSize, bool withArtic = true, ArticPartType articPartType = ARTIC_PART_INSIDE);
-    int GetDrawingBottom(
-        Doc *doc, int staffSize, bool withArtic = true, ArticPartType articPartType = ARTIC_PART_INSIDE);
+    int GetDrawingTop(Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE);
+    int GetDrawingBottom(Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE);
 
     /**
      * Return the drawing radius for notes and chords
      */
-    int GetDrawingRadius(Doc *doc);
+    int GetDrawingRadius(Doc *doc, bool isInLigature = false);
 
     /**
      * Alignment getter
@@ -174,6 +179,18 @@ public:
      * Return NULL if there is no cross-staff in the element or a parent.
      */
     Staff *GetCrossStaff(Layer *&layer) const;
+
+    /**
+     * Retrieve the direction of a cross-staff situation
+     */
+    data_STAFFREL_basic GetCrossStaffRel();
+
+    /**
+     * Get the StaffAlignment for which overflows need to be calculated against.
+     * Set to NULL when the overflow needs to be ignored (e.g., for something between the staves in
+     * cross-staff situations.)
+     */
+    void GetOverflowStaffAlignments(StaffAlignment *&above, StaffAlignment *&below);
 
     /**
      * @name Setter and getter for the Alignment the grace note is pointing to (NULL by default)
@@ -194,12 +211,31 @@ public:
      * Returns the duration if the content of the layer element with a @sameas attribute.
      * Used only on beam, tuplet or ftrem have.
      */
+    double GetSameAsContentAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true,
+        data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn);
+
     double GetContentAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true,
         data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn);
+
+    /**
+     * Get zone bounds using child elements with facsimile information.
+     * Returns true if bounds can be constructed, false otherwise.
+     */
+    bool GenerateZoneBounds(int *ulx, int *uly, int *lrx, int *lry);
+
+    /**
+     * Helper to adjust overlaping layers for notes, chords, stems, etc.
+     */
+    virtual void AdjustOverlappingLayers(Doc *doc, const std::vector<LayerElement *> &otherElements, bool &isUnison) {}
 
     //----------//
     // Functors //
     //----------//
+
+    /**
+     * See Object::AdjustBeams
+     */
+    virtual int AdjustBeams(FunctorParams *);
 
     /**
      * See Object::ResetHorizontalAlignment
@@ -232,6 +268,11 @@ public:
     ///@{
     virtual int AdjustGraceXPos(FunctorParams *functorParams);
     ///@}
+
+    /**
+     * See Object::AdjustTupletNumOverlap
+     */
+    virtual int AdjustTupletNumOverlap(FunctorParams *functorParams);
 
     /**
      * See Object::AdjustXPos
@@ -287,6 +328,11 @@ public:
     virtual int LayerCountInTimeSpan(FunctorParams *functorParams);
 
     /**
+     * See Object::LayerElementsInTimeSpan
+     */
+    virtual int LayerElementsInTimeSpan(FunctorParams *functorParams);
+
+    /**
      * See Object::CalcOnsetOffset
      */
     ///@{
@@ -317,16 +363,17 @@ public:
      */
     virtual int ResetDrawing(FunctorParams *functorParams);
 
+    /**
+     * See Object::GetRelativeLayerElement
+     */
+    virtual int GetRelativeLayerElement(FunctorParams *functorParams);
+
 private:
-    int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticPartType type);
+    int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticType type);
 
 public:
     /** Absolute position X. This is used for facsimile (transcription) encoding */
     int m_xAbs;
-    /**
-     * This stores a pointer to the corresponding BeamElementCoord(currentDur > DUR_4)
-     */
-    BeamElementCoord *m_beamElementCoord;
     /**
      * This stores a pointer to the cross-staff (if any) and the appropriate layer
      * See Object::PrepareCrossStaff
@@ -358,6 +405,15 @@ protected:
      * The cached drawing cue size set by PrepareDarwingCueSize
      */
     bool m_drawingCueSize;
+
+    /**
+     * Helper to figure whether two chords are in fully in unison based on the locations of the notes.
+     * This function assumes that two chords are already in unison and checks whether chords can overlap with
+     * their unison notes or if they should be placed separately.
+     * Returns true if all elements can safely overlap.
+     */
+    virtual int CountElementsInUnison(
+        const std::set<int> &firstChord, const std::set<int> &secondChord, data_STEMDIRECTION stemDirection);
 
 private:
     /**

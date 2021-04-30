@@ -29,7 +29,6 @@ class Mensur : public LayerElement,
                public AttCue,
                public AttDurationRatio,
                public AttMensuralShared,
-               public AttMensurLog,
                public AttMensurVis,
                public AttSlashCount,
                public AttStaffLoc {
@@ -65,6 +64,10 @@ public:
 private:
     //
 public:
+    //----------------//
+    // Static members //
+    //----------------//
+
     /**
      * Static member for setting a value from a controller.
      * Used for example in SetValue

@@ -33,13 +33,28 @@ namespace vrv {
 // Version
 //----------------------------------------------------------------------------
 
-#define VERSION_MAJOR 2
-#define VERSION_MINOR 5
+#define VERSION_MAJOR 3
+#define VERSION_MINOR 3
 #define VERSION_REVISION 0
 // Adds "-dev" in the version number - should be set to false for releases
 #define VERSION_DEV false
 
-enum MEIVersion { MEI_UNDEFINED = 0, MEI_2013, MEI_3_0_0, MEI_4_0_0, MEI_4_0_1 };
+enum MEIVersion { MEI_UNDEFINED = 0, MEI_2013, MEI_3_0_0, MEI_4_0_0, MEI_4_0_1, MEI_5_0_0_dev };
+
+//----------------------------------------------------------------------------
+// Cast redefinition
+//----------------------------------------------------------------------------
+
+// Can be changed between static and dynamic for debug purposes
+#ifdef VRV_DYNAMIC_CAST
+// To be used for all cases where type is cheched through Object::m_type
+#define vrv_cast dynamic_cast
+// To be used for all FunctorParams casts within Functors
+#define vrv_params_cast dynamic_cast
+#else
+#define vrv_cast static_cast
+#define vrv_params_cast static_cast
+#endif
 
 //----------------------------------------------------------------------------
 // Default midi values
@@ -73,6 +88,7 @@ enum ClassId {
     DOC,
     FACSIMILE,
     FB,
+    GRPSYM,
     GRACE_ALIGNER,
     INSTRDEF,
     KEYSIG_ATTR,
@@ -144,12 +160,16 @@ enum ClassId {
     DIR,
     DYNAM,
     FERMATA,
+    FING,
+    GLISS,
     HAIRPIN,
     HARM,
     MORDENT,
     MNUM,
     OCTAVE,
     PEDAL,
+    PHRASE,
+    REH,
     SLUR,
     TEMPO,
     TIE,
@@ -160,7 +180,6 @@ enum ClassId {
     LAYER_ELEMENT,
     ACCID,
     ARTIC,
-    ARTIC_PART,
     BARLINE,
     BARLINE_ATTR_LEFT,
     BARLINE_ATTR_RIGHT,
@@ -184,11 +203,13 @@ enum ClassId {
     MREST,
     MRPT,
     MRPT2,
+    MSPACE,
     MULTIREST,
     MULTIRPT,
     NC,
     NOTE,
     NEUME,
+    PLICA,
     PROPORT,
     REST,
     SPACE,
@@ -274,6 +295,8 @@ class TimeSpanningInterface;
 
 typedef std::vector<Object *> ArrayOfObjects;
 
+typedef std::list<Object *> ListOfObjects;
+
 typedef std::vector<Comparison *> ArrayOfComparisons;
 
 typedef std::vector<Note *> ChordCluster;
@@ -286,17 +309,17 @@ typedef std::vector<BeamElementCoord *> ArrayOfBeamElementCoords;
 
 typedef std::vector<std::pair<int, int> > ArrayOfIntPairs;
 
-typedef std::vector<std::pair<LinkingInterface *, std::string> > ArrayOfLinkingInterfaceUuidPairs;
+typedef std::multimap<std::string, LinkingInterface *> MapOfLinkingInterfaceUuidPairs;
 
 typedef std::vector<std::pair<PlistInterface *, std::string> > ArrayOfPlistInterfaceUuidPairs;
 
 typedef std::vector<CurveSpannedElement *> ArrayOfCurveSpannedElements;
 
-typedef std::vector<std::pair<Object *, data_MEASUREBEAT> > ArrayOfObjectBeatPairs;
+typedef std::list<std::pair<Object *, data_MEASUREBEAT> > ListOfObjectBeatPairs;
 
-typedef std::vector<std::pair<TimePointInterface *, ClassId> > ArrayOfPointingInterClassIdPairs;
+typedef std::list<std::pair<TimePointInterface *, ClassId> > ListOfPointingInterClassIdPairs;
 
-typedef std::vector<std::pair<TimeSpanningInterface *, ClassId> > ArrayOfSpanningInterClassIdPairs;
+typedef std::list<std::pair<TimeSpanningInterface *, ClassId> > ListOfSpanningInterClassIdPairs;
 
 typedef std::vector<FloatingPositioner *> ArrayOfFloatingPositioners;
 
@@ -482,10 +505,10 @@ enum { SPANNING_START_END = 0, SPANNING_START, SPANNING_END, SPANNING_MIDDLE };
 enum ElementScoreDefRole { SCOREDEF_NONE = 0, SCOREDEF_SYSTEM, SCOREDEF_INTERMEDIATE, SCOREDEF_CAUTIONARY };
 
 //----------------------------------------------------------------------------
-// Artic part types
+// Artic types
 //----------------------------------------------------------------------------
 
-enum ArticPartType { ARTIC_PART_INSIDE = 0, ARTIC_PART_OUTSIDE };
+enum ArticType { ARTIC_INSIDE = 0, ARTIC_OUTSIDE };
 
 //----------------------------------------------------------------------------
 // Visibility optimization
@@ -507,6 +530,32 @@ enum {
     POSITION_TOP = 0,
     POSITION_MIDDLE = 3,
     POSITION_BOTTOM = 6,
+};
+
+//----------------------------------------------------------------------------
+// Ligature shape bitfields
+//----------------------------------------------------------------------------
+
+enum {
+    LIGATURE_DEFAULT = 0,
+    LIGATURE_STEM_LEFT_UP = 1,
+    LIGATURE_STEM_LEFT_DOWN = 2,
+    LIGATURE_STEM_RIGHT_UP = 4,
+    LIGATURE_STEM_RIGHT_DOWN = 8,
+    LIGATURE_OBLIQUE = 16,
+    LIGATURE_STACKED = 32
+};
+
+//----------------------------------------------------------------------------
+// Analytical markup bitfields
+//----------------------------------------------------------------------------
+
+enum {
+    MARKUP_DEFAULT = 0,
+    MARKUP_ANALYTICAL_TIE = 1,
+    MARKUP_ANALYTICAL_FERMATA = 2,
+    MARKUP_GRACE_ATTRIBUTE = 4,
+    MARKUP_ARTIC_MULTIVAL = 8
 };
 
 //----------------------------------------------------------------------------

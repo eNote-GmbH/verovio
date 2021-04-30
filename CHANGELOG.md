@@ -1,26 +1,124 @@
 # Changelog
 
+## [3.3.0] - 2021-02-25
+* Support for `@glyph.name`
+* Support for `accid@glyph.num` and `@glyph.name`
+* Support for MusicXML compressed files
+* Improved consistency of logging functions across bindings
+* Improved PyPI packages for Linux (@rettinghaus and @musicEnfanthen)
+* Function loadZipDataBase64 and loadZipDataBuffer (JS) for loading MusicXML compressed files
+* Function enableLog(bool) to enable or disable logging
+* Function enableLogToBuffer(bool) to enable logging to a buffer instead of the stderr or the JS console
+* Option --clef-change-factor for adjusting clef change size (default is .66) (@rettinghaus)
+* Option --svg-format-raw for raw SVG output without indentation and line breaks
+* New clefs, notehead parentheses and slashes glyphs (Leipzig 5.2.50) (@rettinghaus)
+* Fix interpretation of perfecta for smaller note values in mensural notation (@martha-thomae)
+* Fixes in the MusicXML importer (@eNote-GmBH)
+
+## [3.2.0] - 2021-02-08
+* Support for `clef@visible` (@rettinghaus)
+* Support for `artic@glyph.num`
+* Support for arabic accidentals
+* Improved default rest positioning
+* Improved automatic cross staff rest positioning (@eNote-GmbH)
+* Improved cross-staff spacing
+* Improved slurs
+* Improved positioning of ornaments with multiple layers
+* Improved articulations in normal and cross-staff contexts
+* Improved spacing of clef changes
+* Improved timestamp events alignments by avoiding extra-space to be added
+* Improved horizontal alignment of tempo indications (@eNote-GmbH)
+* Embedding of Leland font from MuseScore
+* Method Toolkit::GetTimesForElement for accessing score times (@wergo)
+* Option for sometimes using encoded breaks, at configurable threshold (`--breaks smart` and `--breaks-smart-sb`) (@earboxer)
+* Options --top-margin-artic and --bottom-margin-artic for articulation margins
+* Option --tuplet-num-head for placing tuplet numbers on the side of the notehead
+
+## [3.1.0] - 2021-01-12
+* Support for "old style" multiple measure rests (@rettinghaus)
+* Support for `note@vel` and `dynamics@val` in MusicXML import (@earboxer)
+* Support for `multiRest@loc` (@rettinghaus)
+* Support for `mNum@fontsize` (@rettinghaus)
+* Support for `accidental-mark` in MusicXML import (@rettinghaus)
+* Support for double-stemmed beams (@eNote-GmbH)
+* Improved barline rendition (@rettinghaus)
+* Improved cross-staff notation with multiple layers
+* Python Package Index (PyPI) distribution (@musicEnfanthen and @alastair)
+* Option --footer extended with 'always' value to show footer with --adjust-page-height
+
+## [3.0.2] - 2020-11-17
+* Add missing default footer file
+
+## [3.0.1] - 2020-10-22
+* Fix bug with mensural notation notes
+
+## [3.0.0] - 2020-10-05
+* Support for buzz roll tremolos (@rettinghaus)
+* Support for `Sprechgesang` stems (@rettinghaus)
+* Support for `<phrase>`
+* Support (limited) for preserving XML comments in the MEI output
+* Support for `hairpin@opening` (@rettinghaus)
+* Support for `@dynam.dist` and `@harm.dist` (@rettinghaus)
+* Support for pedal lines (@rettinghaus)
+* Options for controlling output tabs (--output-indent and --output-indent-tab)
+* Option to remove ids in the MEI output (--remove-ids) to be passed to GetMEI with the JS toolkit
+* Fix tremolo tuplets (@rettinghaus)
+
+## [2.7.2] - 2020-07-23
+* Fix bug with memory in beams (@valeriyvan)
+
+## [2.7.1] - 2020-05-22
+* Fix bug with mensural clefs not displaying
+
+## [2.7.0] - 2020-05-13
+* Support for `@pname.ges` and `@pnum` in MIDI output (@rettinghaus)
+* Support for `@xml:space` in MusicXML import (@rettinghaus)
+* Support for `staffDef@lines.visible` (@rettinghaus)
+* Support for gliss (@rettinghaus)
+* Improved bTrem handling (@rettinghaus)
+* Improved trill support (@rettinghaus)
+* Option for using encoded line breaks, but automatic page breaks (--breaks=line) (@earboxer)
+* Support for `trill@extender` (@rettinghaus)
+* Support for `note@head.visible` (@rettinghaus)
+* Improved spacing with crossing voices (@rettinghaus)
+* Complete beam refactoring
+* Support for mSpace elements (@rettinghaus)
+* Improved header in MusicXML import (@rettinghaus)
+* Improved header generation with additional names (@earboxer)
+* Fix tremolo beaming (@rettinghaus)
+
+## [2.6.0] - 2020-03-11
+* Support for Plaine and Easie output (limited features)
+* Support for lyrics on chords (@rettinghaus)
+* Support for `scoreDef@system.leftline` (@rettinghaus)
+* Support for reh elements (@rettinghaus)
+* Improved extender lines in MusicXML import (@rettinghaus)
+* Improved backup handling in MusicXML import (@wergo)
+* Options for adjusting page width (--adjust-page-width) (@palgranum)
+* Fix overlapping group symbols (@rettinghaus)
+* Fix bug with choice and mdiv (@rettinghaus)
+* Fix tempo placement (@rettinghaus)
+* Fix Leipzig font validation issues
+
 ## [2.5.0] - 2020-02-03
 * Support for expansion implementation with --expand option (@wergo)
+* Adjust stem length with double-stemmed writing
 * Option for forcing first page to be condensed (--condense-first-page)
 * Option for forcing pages qwith tempo to be condensed (--condense-tempo-pages)
 * Option for forcing encoded layout rendering to be condensed (--condense-encoded)
 
 ### Changed
-* Single file buundle for WASM build
+* Single file bundle for WASM build
 * Options --format and --type deprecated (use --from and --to instead)
 
 ## [2.4.0] - 2020-01-15
-* Support for short and tick barlines  with `measure@bar.len` and `measure@bar.place` (@earboxer)
+* Support for short and tick barlines with `measure@bar.len` and `measure@bar.place` (@earboxer)
 * Support for dashed and dotted slurs and ties (@earboxer and @napulen)
 * Option to use xml entities for SMuFL charachters (--outputSmuflXmlEntities)
 * Options for controlling system divider display (--systemDivider "none|left|left-right")
 * Fix coloring of ties and slurs (@rettinghaus)
 * Fix bug with tuplet number placement (@rettinghaus)
 * LibMEI output generated from MEI 4.0.1
-
-## [2.3.5] - 2020-01-09
-* Fix bug with NPM versionning
 
 ## [2.3.4] - 2020-01-03
 * Fix bug with NPM build (allow access to verovio.module and use wasm)

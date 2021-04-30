@@ -76,7 +76,7 @@ public:
      * Add an element (a note or a rest) to a syllable.
      * Only syl or neume will be added.
      */
-    virtual void AddChild(Object *object);
+    virtual bool IsSupportedChild(Object *object);
 
     virtual int GetPosition(LayerElement *element);
     virtual bool IsLastInNeume(LayerElement *element);
@@ -93,6 +93,10 @@ public:
 private:
     //
 public:
+    //----------------//
+    // Static members //
+    //----------------//
+
     /**
      * String keys come from the contours of neume groupings as defined in MEI4
      */

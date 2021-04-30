@@ -18,6 +18,7 @@
 #include "layerelement.h"
 #include "measure.h"
 #include "staff.h"
+#include "verticalaligner.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -102,13 +103,30 @@ bool TimePointInterface::IsOnStaff(int n)
     return false;
 }
 
-std::vector<Staff *> TimePointInterface::GetTstampStaves(Measure *measure)
+std::vector<Staff *> TimePointInterface::GetTstampStaves(Measure *measure, Object *object)
 {
+    assert(measure);
+    assert(object);
+
     std::vector<Staff *> staves;
     std::vector<int>::iterator iter;
     std::vector<int> staffList;
     if (this->HasStaff()) {
-        staffList = this->GetStaff();
+        bool isInBetween = false;
+        // limit between support to some elements?
+        if (object->Is({ DYNAM, DIR, HAIRPIN, TEMPO })) {
+            AttPlacement *att = dynamic_cast<AttPlacement *>(object);
+            assert(att);
+            isInBetween = (att->GetPlace() == STAFFREL_between);
+        }
+        if (isInBetween) {
+            assert(this->GetStaff().size() > 0);
+            // With @place="between" we use only the first staff value
+            staffList.push_back(this->GetStaff().front());
+        }
+        else {
+            staffList = this->GetStaff();
+        }
     }
     else if (m_start && !m_start->Is(TIMESTAMP_ATTR)) {
         Staff *staff = dynamic_cast<Staff *>(m_start->GetFirstAncestor(STAFF));
@@ -195,13 +213,84 @@ bool TimeSpanningInterface::IsSpanningMeasures()
     return (this->GetStartMeasure() != this->GetEndMeasure());
 }
 
+void TimeSpanningInterface::GetCrossStaffOverflows(
+    StaffAlignment *alignment, curvature_CURVEDIR cuvreDir, bool &skipAbove, bool &skipBelow)
+{
+    assert(alignment);
+
+    if (!this->GetStart() || !this->GetEnd() || !alignment->GetStaff()) return;
+
+    Layer *layer = NULL;
+
+    // If the starting point is a chord we need to select the appropriate extreme staff
+    Staff *startStaff = NULL;
+    if (this->GetStart()->Is(CHORD)) {
+        Chord *chord = vrv_cast<Chord *>(this->GetStart());
+        assert(chord);
+        // First check if the chord itself is cross-staff
+        startStaff = chord->GetCrossStaff(layer);
+        if (!startStaff) {
+            // If not look at its content
+            Staff *staffAbove = NULL;
+            Staff *staffBelow = NULL;
+            chord->GetCrossStaffExtremes(staffAbove, staffBelow);
+            startStaff = (cuvreDir == curvature_CURVEDIR_above) ? staffAbove : staffBelow;
+        }
+    }
+    else {
+        startStaff = this->GetStart()->GetCrossStaff(layer);
+    }
+
+    // Same for the end point
+    Staff *endStaff = NULL;
+    if (this->GetEnd()->Is(CHORD)) {
+        Chord *chord = vrv_cast<Chord *>(this->GetEnd());
+        assert(chord);
+        // First check if the chord itself is cross-staff
+        endStaff = chord->GetCrossStaff(layer);
+        if (!endStaff) {
+            // If not look at its content
+            Staff *staffAbove = NULL;
+            Staff *staffBelow = NULL;
+            chord->GetCrossStaffExtremes(staffAbove, staffBelow);
+            endStaff = (cuvreDir == curvature_CURVEDIR_above) ? staffAbove : staffBelow;
+        }
+    }
+    else {
+        endStaff = this->GetEnd()->GetCrossStaff(layer);
+    }
+
+    // No cross-staff endpoints, check if the slur itself crosses staves
+    if (!startStaff) {
+        startStaff = dynamic_cast<Staff *>(this->GetStart()->GetFirstAncestor(STAFF));
+    }
+    if (!endStaff) {
+        endStaff = dynamic_cast<Staff *>(this->GetEnd()->GetFirstAncestor(STAFF));
+    }
+
+    // This happens with slurs starting or ending with a timestamp
+    if (!endStaff) {
+        endStaff = startStaff;
+    }
+    else if (!startStaff) {
+        startStaff = endStaff;
+    }
+    assert(startStaff && endStaff);
+
+    if (startStaff && (startStaff->GetN() < alignment->GetStaff()->GetN())) skipAbove = true;
+    if (endStaff && (endStaff->GetN() < alignment->GetStaff()->GetN())) skipAbove = true;
+
+    if (startStaff && (startStaff->GetN() > alignment->GetStaff()->GetN())) skipBelow = true;
+    if (endStaff && (endStaff->GetN() > alignment->GetStaff()->GetN())) skipBelow = true;
+}
+
 //----------------------------------------------------------------------------
 // Interface pseudo functor (redirected)
 //----------------------------------------------------------------------------
 
 int TimePointInterface::InterfacePrepareTimestamps(FunctorParams *functorParams, Object *object)
 {
-    PrepareTimestampsParams *params = dynamic_cast<PrepareTimestampsParams *>(functorParams);
+    PrepareTimestampsParams *params = vrv_params_cast<PrepareTimestampsParams *>(functorParams);
     assert(params);
 
     // First we check if the object has already a mapped @startid (it should not)
@@ -230,7 +319,7 @@ int TimePointInterface::InterfaceResetDrawing(FunctorParams *functorParams, Obje
 
 int TimePointInterface::InterfacePrepareTimePointing(FunctorParams *functorParams, Object *object)
 {
-    PrepareTimePointingParams *params = dynamic_cast<PrepareTimePointingParams *>(functorParams);
+    PrepareTimePointingParams *params = vrv_params_cast<PrepareTimePointingParams *>(functorParams);
     assert(params);
 
     if (!this->HasStartid()) return FUNCTOR_CONTINUE;
@@ -243,7 +332,7 @@ int TimePointInterface::InterfacePrepareTimePointing(FunctorParams *functorParam
 
 int TimeSpanningInterface::InterfacePrepareTimeSpanning(FunctorParams *functorParams, Object *object)
 {
-    PrepareTimeSpanningParams *params = dynamic_cast<PrepareTimeSpanningParams *>(functorParams);
+    PrepareTimeSpanningParams *params = vrv_params_cast<PrepareTimeSpanningParams *>(functorParams);
     assert(params);
 
     if (!this->HasStartid() && !this->HasEndid()) {
@@ -262,7 +351,7 @@ int TimeSpanningInterface::InterfacePrepareTimeSpanning(FunctorParams *functorPa
 
 int TimeSpanningInterface::InterfacePrepareTimestamps(FunctorParams *functorParams, Object *object)
 {
-    PrepareTimestampsParams *params = dynamic_cast<PrepareTimestampsParams *>(functorParams);
+    PrepareTimestampsParams *params = vrv_params_cast<PrepareTimestampsParams *>(functorParams);
     assert(params);
 
     // First we check if the object has already a mapped @endid (it should not)
@@ -290,7 +379,7 @@ int TimeSpanningInterface::InterfacePrepareTimestamps(FunctorParams *functorPara
 
 int TimeSpanningInterface::InterfaceFillStaffCurrentTimeSpanning(FunctorParams *functorParams, Object *object)
 {
-    FillStaffCurrentTimeSpanningParams *params = dynamic_cast<FillStaffCurrentTimeSpanningParams *>(functorParams);
+    FillStaffCurrentTimeSpanningParams *params = vrv_params_cast<FillStaffCurrentTimeSpanningParams *>(functorParams);
     assert(params);
 
     if (this->IsSpanningMeasures()) {

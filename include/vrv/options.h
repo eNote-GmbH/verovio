@@ -20,6 +20,7 @@
 
 #include "attalternates.h"
 #include "atttypes.h"
+#include "jsonxx.h"
 
 //----------------------------------------------------------------------------
 
@@ -41,37 +42,26 @@ class OptionGrp;
 
 // the space between each lyric line in units
 #define TEMP_LYRIC_LINE_SPACE 5.0
-
 // the key signature spacing factor
 #define TEMP_KEYSIG_STEP 0.4
 // the key signature spacing factor for natural (usually slighly larger)
 #define TEMP_KEYSIG_NATURAL_STEP 0.6
 
-/* Options parameters for mensural notation */
-// Ratios of mensural notehead, accidental, aug. dot size to CMN for the same staff size
-#define TEMP_MNOTEHEAD_SIZE_FACTOR 1.0
-#define TEMP_MACCID_SIZE_FACTOR 1.0
-#define TEMP_MAUGDOT_SIZE_FACTOR 1.0
-// Width of the minima diamond relative to its height
-#define TEMP_MINIMA_WIDTH_FACTOR 1.0
-// Relative size of figures in proportions
-#define PROPRT_SIZE_FACTOR 1.0
-// Linewidth for staff lines in mensural notation, rel. to "normal" width of staff lines */
-#define MENSURAL_LINEWIDTH_FACTOR 1.0
-
 //----------------------------------------------------------------------------
 // Option defines
 //----------------------------------------------------------------------------
 
-enum option_BREAKS { BREAKS_none = 0, BREAKS_auto, BREAKS_encoded };
+enum option_BREAKS { BREAKS_none = 0, BREAKS_auto, BREAKS_line, BREAKS_smart, BREAKS_encoded };
 
-enum option_FOOTER { FOOTER_none = 0, FOOTER_auto, FOOTER_encoded };
+enum option_CONDENSE { CONDENSE_none = 0, CONDENSE_auto, CONDENSE_all, CONDENSE_encoded };
+
+enum option_FOOTER { FOOTER_none = 0, FOOTER_auto, FOOTER_encoded, FOOTER_always };
 
 enum option_HEADER { HEADER_none = 0, HEADER_auto, HEADER_encoded };
 
 enum option_MEASURENUMBER { MEASURENUMBER_system = 0, MEASURENUMBER_interval };
 
-enum option_SYSTEMDIVIDER { SYSTEMDIVIDER_none = 0, SYSTEMDIVIDER_left, SYSTEMDIVIDER_left_right };
+enum option_SYSTEMDIVIDER { SYSTEMDIVIDER_none = 0, SYSTEMDIVIDER_auto, SYSTEMDIVIDER_left, SYSTEMDIVIDER_left_right };
 
 //----------------------------------------------------------------------------
 // Option
@@ -83,29 +73,36 @@ enum option_SYSTEMDIVIDER { SYSTEMDIVIDER_none = 0, SYSTEMDIVIDER_left, SYSTEMDI
 class Option {
 public:
     // constructors and destructors
-    Option() {}
+    Option() : m_isSet(false) {}
     virtual ~Option() {}
     virtual void CopyTo(Option *option);
 
-    void SetKey(std::string key) { m_key = key; }
+    void SetKey(const std::string &key) { m_key = key; }
     std::string GetKey() const { return m_key; }
 
     virtual bool SetValueBool(bool value);
     virtual bool SetValueDbl(double value);
     virtual bool SetValueArray(const std::vector<std::string> &values);
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
-    void SetInfo(std::string title, std::string description);
+    void SetInfo(const std::string &title, const std::string &description);
     std::string GetTitle() const { return m_title; }
     std::string GetDescription() const { return m_description; }
 
+    bool isSet() const { return m_isSet; }
+
 public:
+    //----------------//
+    // Static members //
+    //----------------//
+
     /**
      * Static maps used my OptionIntMap objects. Set in OptIntMap::Init
      */
     static std::map<int, std::string> s_breaks;
+    static std::map<int, std::string> s_condense;
     static std::map<int, std::string> s_footer;
     static std::map<int, std::string> s_header;
     static std::map<int, std::string> s_measureNumber;
@@ -114,6 +111,7 @@ public:
 protected:
     std::string m_title;
     std::string m_description;
+    bool m_isSet;
 
 private:
     std::string m_key;
@@ -136,7 +134,7 @@ public:
 
     virtual bool SetValueBool(bool value);
     virtual bool SetValueDbl(double value);
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -169,7 +167,7 @@ public:
     void Init(double defaultValue, double minValue, double maxValue);
 
     virtual bool SetValueDbl(double value);
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -206,7 +204,7 @@ public:
     void Init(int defaultValue, int minValue, int maxValue, bool definitionFactor = false);
 
     virtual bool SetValueDbl(double value);
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -242,9 +240,9 @@ public:
     OptionString() {}
     virtual ~OptionString() {}
     virtual void CopyTo(Option *option);
-    void Init(std::string defaultValue);
+    void Init(const std::string &defaultValue);
 
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const { return m_value; }
     virtual std::string GetDefaultStrValue() const { return m_defaultValue; }
 
@@ -276,7 +274,7 @@ public:
     void Init();
 
     virtual bool SetValueArray(const std::vector<std::string> &values);
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -308,7 +306,7 @@ public:
     virtual void CopyTo(Option *option);
     void Init(int defaultValue, std::map<int, std::string> *values);
 
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -345,7 +343,7 @@ public:
     // Alternate type style cannot have a restricted list of possible values
     void Init(data_STAFFREL defaultValue);
 
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -378,7 +376,7 @@ public:
     virtual void CopyTo(Option *option);
     void Init(data_STAFFREL_basic defaultValue, const std::vector<data_STAFFREL_basic> &values);
 
-    virtual bool SetValue(std::string value);
+    virtual bool SetValue(const std::string &value);
     virtual std::string GetStrValue() const;
     virtual std::string GetDefaultStrValue() const;
 
@@ -393,6 +391,39 @@ private:
     std::vector<data_STAFFREL_basic> m_values;
     data_STAFFREL_basic m_value;
     data_STAFFREL_basic m_defaultValue;
+};
+
+//----------------------------------------------------------------------------
+// OptionJson
+//----------------------------------------------------------------------------
+
+/**
+ * This class is for Json input params
+ */
+
+class OptionJson : public Option {
+    using JsonPath = std::vector<std::reference_wrapper<jsonxx::Value> >;
+
+public:
+    //
+    OptionJson() = default;
+    virtual ~OptionJson() = default;
+    virtual void Init(const std::string &defaultValue);
+
+    virtual bool SetValue(const std::string &jsonFilePath);
+    // virtual std::string GetStrValue() const;
+
+    int GetIntValue(const std::vector<std::string> &jsonNodePath, bool getDefault = false) const;
+    double GetDoubleValue(const std::vector<std::string> &jsonNodePath, bool getDefault = false) const;
+    //
+    bool UpdateNodeValue(const std::vector<std::string> &jsonNodePath, const std::string &value);
+    //
+protected:
+    JsonPath StringPath2NodePath(const jsonxx::Object &obj, const std::vector<std::string> &jsonNodePath) const;
+    //
+private:
+    jsonxx::Object m_values;
+    jsonxx::Object m_defaultValues;
 };
 
 //----------------------------------------------------------------------------
@@ -448,8 +479,11 @@ public:
 
     std::vector<OptionGrp *> *GetGrps() { return &m_grps; }
 
+    // post processing of parameters
+    void Sync();
+
 private:
-    void Register(Option *option, std::string key, OptionGrp *grp);
+    void Register(Option *option, const std::string &key, OptionGrp *grp);
 
 public:
     /**
@@ -462,14 +496,14 @@ public:
     OptionGrp m_general;
 
     OptionBool m_adjustPageHeight;
+    OptionBool m_adjustPageWidth;
     OptionIntMap m_breaks;
-    OptionBool m_condenseEncoded;
+    OptionDbl m_breaksSmartSb;
+    OptionIntMap m_condense;
     OptionBool m_condenseFirstPage;
     OptionBool m_condenseTempoPages;
     OptionBool m_evenNoteSpacing;
     OptionBool m_humType;
-    OptionBool m_justifyIncludeLastPage;
-    OptionBool m_justifySystemsOnly;
     OptionBool m_justifyVertically;
     OptionBool m_landscape;
     OptionBool m_mensuralToMeasure;
@@ -480,6 +514,8 @@ public:
     OptionIntMap m_header;
     OptionBool m_noJustification;
     OptionBool m_openControlEvents;
+    OptionInt m_outputIndent;
+    OptionBool m_outputIndentTab;
     OptionBool m_outputSmuflXmlEntities;
     OptionInt m_pageHeight;
     OptionInt m_pageMarginBottom;
@@ -488,41 +524,61 @@ public:
     OptionInt m_pageMarginTop;
     OptionInt m_pageWidth;
     OptionString m_expand;
+    OptionBool m_shrinkToFit;
     OptionBool m_svgBoundingBoxes;
     OptionBool m_svgViewBox;
+    OptionBool m_svgHtml5;
+    OptionBool m_svgFormatRaw;
     OptionInt m_unit;
     OptionBool m_useFacsimile;
     OptionBool m_usePgFooterForAll;
     OptionBool m_usePgHeaderForAll;
+    OptionBool m_useBraceGlyph;
 
     /**
      * General layout
      */
     OptionGrp m_generalLayout;
 
+    OptionDbl m_barLineSeparation;
     OptionDbl m_barLineWidth;
     OptionInt m_beamMaxSlope;
     OptionInt m_beamMinSlope;
+    OptionDbl m_bracketThickness;
+    OptionDbl m_clefChangeFactor;
+    OptionJson m_engravingDefaults;
     OptionString m_font;
     OptionDbl m_graceFactor;
     OptionBool m_graceRhythmAlign;
     OptionBool m_graceRightAlign;
     OptionDbl m_hairpinSize;
+    OptionDbl m_hairpinThickness;
+    OptionDbl m_justificationBraceGroup;
+    OptionDbl m_justificationBracketGroup;
+    OptionDbl m_justificationStaff;
+    OptionDbl m_justificationSystem;
+    OptionDbl m_ledgerLineThickness;
+    OptionDbl m_ledgerLineExtension;
     OptionDbl m_lyricHyphenLength;
-    OptionDbl m_lyricHyphenWidth;
+    OptionDbl m_lyricLineThickness;
     OptionBool m_lyricNoStartHyphen;
     OptionDbl m_lyricSize;
     OptionDbl m_lyricTopMinMargin;
     OptionDbl m_lyricWordSpace;
     OptionInt m_measureMinWidth;
     OptionIntMap m_measureNumber;
+    OptionDbl m_repeatBarLineDotSeparation;
+    OptionDbl m_repeatEndingLineThickness;
     OptionInt m_slurControlPoints;
     OptionInt m_slurCurveFactor;
     OptionInt m_slurHeightFactor;
     OptionDbl m_slurMaxHeight;
     OptionInt m_slurMaxSlope;
     OptionDbl m_slurMinHeight;
-    OptionDbl m_slurThickness;
+    OptionDbl m_slurEndpointThickness;
+    OptionDbl m_slurMidpointThickness;
+    OptionInt m_spacingBraceGroup;
+    OptionInt m_spacingBracketGroup;
     OptionBool m_spacingDurDetection;
     OptionDbl m_spacingLinear;
     OptionDbl m_spacingNonLinear;
@@ -530,8 +586,15 @@ public:
     OptionInt m_spacingSystem;
     OptionDbl m_staffLineWidth;
     OptionDbl m_stemWidth;
+    OptionDbl m_subBracketThickness;
     OptionIntMap m_systemDivider;
-    OptionDbl m_tieThickness;
+    OptionInt m_systemMaxPerPage;
+    OptionDbl m_textEnclosureThickness;
+    OptionDbl m_thickBarlineThickness;
+    OptionDbl m_tieEndpointThickness;
+    OptionDbl m_tieMidpointThickness;
+    OptionDbl m_tupletBracketThickness;
+    OptionBool m_tupletNumHead;
 
     /**
      * Selectors
@@ -555,7 +618,9 @@ public:
     OptionDbl m_defaultRightMargin;
     OptionDbl m_defaultTopMargin;
     //
+    OptionDbl m_bottomMarginArtic;
     OptionDbl m_bottomMarginHarm;
+    OptionDbl m_bottomMarginPgHead;
     //
     OptionDbl m_leftMarginAccid;
     OptionDbl m_leftMarginBarLine;
@@ -591,7 +656,17 @@ public:
     OptionDbl m_rightMarginRest;
     OptionDbl m_rightMarginRightBarLine;
     //
+    OptionDbl m_topMarginArtic;
     OptionDbl m_topMarginHarm;
+
+    /**
+     * Deprecated options
+     */
+    OptionGrp m_deprecated;
+
+    OptionBool m_condenseEncoded;
+    OptionDbl m_slurThickness;
+    OptionDbl m_tieThickness;
 
 private:
     /** The array of style parameters */

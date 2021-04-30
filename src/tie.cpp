@@ -73,7 +73,7 @@ int Tie::ResolveMIDITies(FunctorParams *)
 
 int Tie::FindSpannedLayerElements(FunctorParams *functorParams)
 {
-    FindSpannedLayerElementsParams *params = dynamic_cast<FindSpannedLayerElementsParams *>(functorParams);
+    FindSpannedLayerElementsParams *params = vrv_params_cast<FindSpannedLayerElementsParams *>(functorParams);
     assert(params);
 
     FloatingPositioner *positioner = params->m_slur->GetCorrespFloatingPositioner(this);
@@ -114,9 +114,9 @@ int Tie::FindSpannedLayerElements(FunctorParams *functorParams)
     else if (this->GetDrawingX() > params->m_maxPos) {
         return FUNCTOR_STOP;
     }
-    */
 
     return FUNCTOR_CONTINUE;
+    */
 }
 
 } // namespace vrv
