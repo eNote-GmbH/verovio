@@ -92,5 +92,11 @@ Release/
 
 # Fonts
 fonts/tmp/
+
+# Python 
 /venv/
 .idea/
+/dist/
+CMakeFiles/
+CMakeCache.txt
+/bindings/python/verovio_wrap.cxx
