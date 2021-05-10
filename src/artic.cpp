@@ -183,10 +183,10 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, const data_STAFFREL &place
             case ARTICULATION_acc: return SMUFL_E4A0_articAccentAbove;
             case ARTICULATION_stacc: return SMUFL_E4A2_articStaccatoAbove;
             case ARTICULATION_ten: return SMUFL_E4A4_articTenutoAbove;
-            case ARTICULATION_stacciss: return SMUFL_E4A8_articStaccatissimoWedgeAbove;
+            case ARTICULATION_stacciss: return SMUFL_E4A6_articStaccatissimoAbove;
             case ARTICULATION_marc: return SMUFL_E4AC_articMarcatoAbove;
             // case ARTICULATION_marc_stacc: return SMUFL_E4AE_articMarcatoStaccatoAbove;
-            case ARTICULATION_spicc: return SMUFL_E4A6_articStaccatissimoAbove;
+            case ARTICULATION_spicc: return SMUFL_E4A8_articStaccatissimoWedgeAbove;
             // case ARTICULATION_doit;
             // case ARTICULATION_scoop;
             // case ARTICULATION_rip;
@@ -223,11 +223,11 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, const data_STAFFREL &place
             case ARTICULATION_acc: return SMUFL_E4A1_articAccentBelow;
             case ARTICULATION_stacc: return SMUFL_E4A3_articStaccatoBelow;
             case ARTICULATION_ten: return SMUFL_E4A5_articTenutoBelow;
-            case ARTICULATION_stacciss: return SMUFL_E4A9_articStaccatissimoWedgeBelow;
+            case ARTICULATION_stacciss: return SMUFL_E4A7_articStaccatissimoBelow;
             case ARTICULATION_marc: return SMUFL_E4AD_articMarcatoBelow;
             // Removed in MEI 4.0
             // case ARTICULATION_marc_stacc: return SMUFL_E4AF_articMarcatoStaccatoBelow;
-            case ARTICULATION_spicc: return SMUFL_E4A7_articStaccatissimoBelow;
+            case ARTICULATION_spicc: return SMUFL_E4A9_articStaccatissimoWedgeBelow;
             //
             case ARTICULATION_dnbow: return SMUFL_E611_stringsDownBowTurned;
             case ARTICULATION_upbow: return SMUFL_E613_stringsUpBowTurned;
