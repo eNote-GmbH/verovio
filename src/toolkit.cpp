@@ -986,14 +986,14 @@ bool Toolkit::SetOption(const std::string &option, const std::string &value)
 
     // Reset fonts if necessary
     if (ok) {
-        if (option == "font") {
-            if (!Resources::SetMusicFont(m_options->m_font.GetValue())) {
-                LogWarning("Font '%s' could not be loaded", m_options->m_font.GetValue().c_str());
+        if (opt == &m_options->m_font) {
+            if (!Resources::SetMusicFont(value)) {
+                LogWarning("Font '%s' could not be loaded", value.c_str());
             }
         }
-        else if (option == "textFont") {
-            if (!Resources::SetTextFont(m_options->m_textFont.GetValue())) {
-                LogWarning("Font '%s' could not be loaded", m_options->m_textFont.GetValue().c_str());
+        else if (opt == &m_options->m_textFont) {
+            if (!Resources::SetTextFont(value)) {
+                LogWarning("Font '%s' could not be loaded", value.c_str());
             }
         }
     }
