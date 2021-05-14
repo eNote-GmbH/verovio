@@ -385,21 +385,9 @@ int main(int argc, char **argv)
     }
 
     // Load the music font from the resource directory
-    if (!vrv::Resources::InitFonts()) {
-        std::cerr << "The music font could not be loaded; please check the contents of the resource directory."
+    if (!vrv::Resources::InitFonts(options->m_font.GetValue(), options->m_textFont.GetValue())) {
+        std::cerr << "Fonts could not be initialized successfully; please check the contents of the resource directory."
                   << std::endl;
-        exit(1);
-    }
-
-    // Load a specified music font
-    if (!vrv::Resources::SetMusicFont(options->m_font.GetValue())) {
-        std::cerr << "Font '" << options->m_font.GetValue() << "' could not be loaded." << std::endl;
-        exit(1);
-    }
-
-    // Load a specified text font
-    if (!vrv::Resources::SetTextFont(options->m_textFont.GetValue())) {
-        std::cerr << "Font '" << options->m_textFont.GetValue() << "' could not be loaded." << std::endl;
         exit(1);
     }
 

@@ -144,9 +144,9 @@ public:
     static std::string GetPath() { return s_path; }
     static void SetPath(const std::string &path) { s_path = path; }
     /** Init the SMufL music and text fonts */
-    static bool InitFonts();
-    /** Init the text font (bounding boxes and ASCII only) */
-    static bool InitTextFont(const std::string &fontName, const StyleAttributes &style);
+    static bool InitFonts(const std::string &musicFont, const std::string &textFont);
+    /** Load the text font (bounding boxes and ASCII only) */
+    static bool LoadTextFont(const std::string &fontName, const StyleAttributes &style);
     /** Select a particular music font */
     static bool SetMusicFont(const std::string &fontName);
     /** Select a particular text font */
