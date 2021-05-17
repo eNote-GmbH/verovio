@@ -90,13 +90,13 @@ bool Resources::InitFonts(const std::string &musicFont, const std::string &textF
     }
 
     if (!SetMusicFont(musicFont)) {
-        std::cerr << "Font '" << musicFont << "' could not be loaded." << std::endl;
-        exit(1);
+        LogError("Font '%s' could not be loaded.", musicFont.c_str());
+        return false;
     }
 
     if (!SetTextFont(textFont)) {
-        std::cerr << "Font '" << textFont << "' could not be loaded." << std::endl;
-        exit(1);
+        LogError("Font '%s' could not be loaded.", textFont.c_str());
+        return false;
     }
 
     s_currentStyle = k_defaultStyle;

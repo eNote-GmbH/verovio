@@ -102,7 +102,6 @@ bool Toolkit::SetResourcePath(const std::string &path)
 {
     Resources::SetPath(path);
     return Resources::InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
-    ;
 }
 
 bool Toolkit::SetScale(int scale)
