@@ -107,22 +107,6 @@ public:
      */
     std::string GetVersion();
 
-    /**
-     * Cancel the layout process
-     *
-     * This aborts (shortcuts) all subsequent calls to the toolkit instance.
-     *
-     * Should be called from another thread.
-     */
-    void Cancel();
-
-    /**
-     * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
-     *
-     * May be called from another thread.
-     */
-    void Continue();
-
     ///@}
 
     /**
@@ -549,6 +533,26 @@ public:
      * @internal They are marked with \@ingroup nodoc
      */
     ///@{
+
+    /**
+     * Cancel the layout process
+     *
+     * This aborts (shortcuts) subsequent calls to the toolkit instance.
+     *
+     * Should be called from another thread.
+     *
+     * @ingroup nodoc
+     */
+    void Cancel();
+
+    /**
+     * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
+     *
+     * May be called from another thread.
+     *
+     * @ingroup nodoc
+     */
+    void Continue();
 
     /**
      * Render the page to the deviceContext
