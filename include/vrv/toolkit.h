@@ -107,6 +107,22 @@ public:
      */
     std::string GetVersion();
 
+    /**
+     * Cancel the layout process
+     *
+     * This aborts (shortcuts) all subsequent calls to the toolkit instance.
+     *
+     * Should be called from another thread.
+     */
+    void Cancel();
+
+    /**
+     * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
+     *
+     * May be called from another thread.
+     */
+    void Continue();
+
     ///@}
 
     /**
