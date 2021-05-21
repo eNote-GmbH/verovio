@@ -857,6 +857,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         return;
     }
 
+    if (this->AbortRequested()) {
+        return;
+    }
+
     this->ScoreDefSetCurrentDoc();
 
     Page *contentPage = this->SetDrawingPage(0);
@@ -888,6 +892,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         contentSystem->Process(&castOffSystems, &castOffSystemsParams, &castOffSystemsEnd);
     }
     delete contentSystem;
+
+    if (this->AbortRequested()) {
+        return;
+    }
 
     bool optimize = ScoreDefNeedsOptimization();
     // Reset the scoreDef at the beginning of each system
