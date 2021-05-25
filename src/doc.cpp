@@ -871,6 +871,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
     assert(contentPage);
     contentPage->LayOutHorizontally();
 
+    if (this->AbortRequested()) {
+        return;
+    }
+
     System *contentSystem = vrv_cast<System *>(contentPage->DetachChild(0));
     assert(contentSystem);
 
