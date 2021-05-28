@@ -278,6 +278,10 @@ void Page::LayOutHorizontally()
         this->Process(&calcLigatureNotePos, &calcLigatureNotePosParams);
     }
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     CalcStemParams calcStemParams(doc);
     Functor calcStem(&Object::CalcStem);
     this->Process(&calcStem, &calcStemParams);
@@ -302,6 +306,10 @@ void Page::LayOutHorizontally()
     // Do not do the layout in this view - otherwise we will loop...
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
+
+    if (doc->AbortRequested()) {
+        return;
+    }
 
     // Adjust the position of outside articulations
     AdjustArticParams adjustArticParams(doc);
@@ -437,6 +445,10 @@ void Page::LayOutVertically()
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     // Adjust the position of outside articulations with slurs end and start positions
     FunctorDocParams adjustArticWithSlursParams(doc);
     Functor adjustArticWithSlurs(&Object::AdjustArticWithSlurs);
@@ -473,6 +485,10 @@ void Page::LayOutVertically()
     Functor setOverflowBBoxes(&Object::SetOverflowBBoxes);
     Functor setOverflowBBoxesEnd(&Object::SetOverflowBBoxesEnd);
     this->Process(&setOverflowBBoxes, &setOverflowBBoxesParams, &setOverflowBBoxesEnd);
+
+    if (doc->AbortRequested()) {
+        return;
+    }
 
     // Adjust the positioners of floating elements (slurs, hairpin, dynam, etc)
     Functor adjustFloatingPositioners(&Object::AdjustFloatingPositioners);
@@ -581,8 +597,8 @@ void Page::JustifyVertically()
             Page *penultimatePage = dynamic_cast<Page *>(pages->GetPrevious(this));
             assert(penultimatePage);
 
-            if (penultimatePage->m_drawingJustifiableHeight < this->m_drawingJustifiableHeight) {
-                this->m_drawingJustifiableHeight = penultimatePage->m_drawingJustifiableHeight;
+            if (penultimatePage->m_drawingJustifiableHeight < m_drawingJustifiableHeight) {
+                m_drawingJustifiableHeight = penultimatePage->m_drawingJustifiableHeight;
             }
 
             const int maxSystemsPerPage = doc->GetOptions()->m_systemMaxPerPage.GetValue();
@@ -599,8 +615,8 @@ void Page::JustifyVertically()
     // Justify Y position
     Functor justifyY(&Object::JustifyY);
     JustifyYParams justifyYParams(&justifyY, doc);
-    justifyYParams.m_justificationSum = this->m_justificationSum;
-    justifyYParams.m_spaceToDistribute = this->m_drawingJustifiableHeight;
+    justifyYParams.m_justificationSum = m_justificationSum;
+    justifyYParams.m_spaceToDistribute = m_drawingJustifiableHeight;
     this->Process(&justifyY, &justifyYParams);
 }
 
@@ -714,12 +730,12 @@ int Page::ApplyPPUFactor(FunctorParams *functorParams)
     assert(params);
 
     params->m_page = this;
-    this->m_pageWidth /= params->m_page->GetPPUFactor();
-    this->m_pageHeight /= params->m_page->GetPPUFactor();
-    this->m_pageMarginBottom /= params->m_page->GetPPUFactor();
-    this->m_pageMarginLeft /= params->m_page->GetPPUFactor();
-    this->m_pageMarginRight /= params->m_page->GetPPUFactor();
-    this->m_pageMarginTop /= params->m_page->GetPPUFactor();
+    m_pageWidth /= params->m_page->GetPPUFactor();
+    m_pageHeight /= params->m_page->GetPPUFactor();
+    m_pageMarginBottom /= params->m_page->GetPPUFactor();
+    m_pageMarginLeft /= params->m_page->GetPPUFactor();
+    m_pageMarginRight /= params->m_page->GetPPUFactor();
+    m_pageMarginTop /= params->m_page->GetPPUFactor();
 
     return FUNCTOR_CONTINUE;
 }
@@ -793,12 +809,12 @@ int Page::AlignSystemsEnd(FunctorParams *functorParams)
     AlignSystemsParams *params = vrv_params_cast<AlignSystemsParams *>(functorParams);
     assert(params);
 
-    this->m_drawingJustifiableHeight = params->m_shift;
-    this->m_justificationSum = params->m_justificationSum;
+    m_drawingJustifiableHeight = params->m_shift;
+    m_justificationSum = params->m_justificationSum;
 
     RunningElement *footer = this->GetFooter();
     if (footer) {
-        this->m_drawingJustifiableHeight -= footer->GetTotalHeight();
+        m_drawingJustifiableHeight -= footer->GetTotalHeight();
 
         // Move it up below the last system
         if (params->m_doc->GetOptions()->m_adjustPageHeight.GetValue()) {

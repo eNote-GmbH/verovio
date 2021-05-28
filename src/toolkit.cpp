@@ -10,6 +10,7 @@
 //----------------------------------------------------------------------------
 
 #include <assert.h>
+#include <regex>
 
 //----------------------------------------------------------------------------
 
@@ -43,7 +44,10 @@
 #include "checked.h"
 #include "jsonxx.h"
 #include "unchecked.h"
+
+#ifndef NO_MXL_SUPPORT
 #include "zip_file.hpp"
+#endif /* NO_MXL_SUPPORT */
 
 namespace vrv {
 
@@ -224,53 +228,13 @@ FileFormat Toolkit::IdentifyInputFrom(const std::string &data)
         // <score-timewise> == root node for time-wise organization of MusicXML data
         // <opus> == root node for multi-movement/work organization of MusicXML data
 
-        if (initial.find("<mei ") != std::string::npos) {
+        if (std::regex_search(initial, std::regex("<(mei|music|pages)[\\s\\n>]"))) {
             return MEI;
         }
-        if (initial.find("<mei>") != std::string::npos) {
-            return MEI;
-        }
-        if (initial.find("<music>") != std::string::npos) {
-            return MEI;
-        }
-        if (initial.find("<music ") != std::string::npos) {
-            return MEI;
-        }
-        if (initial.find("<pages>") != std::string::npos) {
-            return MEI;
-        }
-        if (initial.find("<pages ") != std::string::npos) {
-            return MEI;
-        }
-        if (initial.find("<score-partwise>") != std::string::npos) {
+        if (std::regex_search(initial, std::regex("<(!DOCTYPE )?(score-partwise|opus|score-timewise)[\\s\\n>]"))) {
             return musicxmlDefault;
         }
-        if (initial.find("<score-timewise>") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<opus>") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<score-partwise ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<score-timewise ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<opus ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<!DOCTYPE score-partwise ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<!DOCTYPE score-timewise ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-        if (initial.find("<!DOCTYPE opus ") != std::string::npos) {
-            return musicxmlDefault;
-        }
-
-        std::cerr << "Warning: Trying to load unknown XML data which cannot be identified." << std::endl;
+        LogWarning("Warning: Trying to load unknown XML data which cannot be identified.");
         return UNKNOWN;
     }
     if (initial.find("\n!!") != std::string::npos) {
@@ -405,6 +369,7 @@ bool Toolkit::LoadZipFile(const std::string &filename)
 
 bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
 {
+#ifndef NO_MXL_SUPPORT
     miniz_cpp::zip_file file(bytes);
 
     std::string filename;
@@ -430,6 +395,10 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
         LogError("No file to load found in the archive");
         return false;
     }
+#else
+    LogError("MXL import is not supported in this build.");
+    return false;
+#endif
 }
 
 bool Toolkit::LoadZipDataBase64(const std::string &data)
@@ -575,7 +544,7 @@ bool Toolkit::LoadData(const std::string &data)
     }
 
     else if (inputFormat == MEIHUM) {
-        // This is the indirect converter from MusicXML to MEI using iohumdrum:
+        // This is the indirect converter from MEI to MEI using iohumdrum:
         hum::Tool_mei2hum converter;
         pugi::xml_document xmlfile;
         xmlfile.load_string(data.c_str());
@@ -836,6 +805,7 @@ std::string Toolkit::GetOptions(bool defaultValues) const
         const OptionInt *optInt = dynamic_cast<const OptionInt *>(iter->second);
         const OptionBool *optBool = dynamic_cast<const OptionBool *>(iter->second);
         const OptionArray *optArray = dynamic_cast<const OptionArray *>(iter->second);
+        const OptionJson *optJson = dynamic_cast<const OptionJson *>(iter->second);
 
         if (optDbl) {
             double dblValue = (defaultValues) ? optDbl->GetDefault() : optDbl->GetValue();
@@ -859,6 +829,12 @@ std::string Toolkit::GetOptions(bool defaultValues) const
                 values << (*strIter);
             }
             o << iter->first << values;
+        }
+        else if (optJson) {
+            // Reading json from file is not supported in toolkit
+            if (optJson->GetSource() == JsonSource::String) {
+                o << iter->first << optJson->GetValue(defaultValues);
+            }
         }
         else {
             std::string stringValue
@@ -888,6 +864,10 @@ std::string Toolkit::GetAvailableOptions() const
         const std::vector<Option *> *options = optionGrp->GetOptions();
 
         for (auto const &option : *options) {
+            // Reading json from file is not supported in toolkit
+            const OptionJson *optJson = dynamic_cast<const OptionJson *>(option);
+            if (optJson && (optJson->GetSource() == JsonSource::FilePath)) continue;
+
             opts << option->GetKey() << option->ToJson();
         }
 
@@ -976,10 +956,19 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
             }
             opt->SetValueArray(strValues);
         }
+        else if (json.has<jsonxx::Object>(iter->first)) {
+            const OptionJson *optJson = dynamic_cast<OptionJson *>(opt);
+            if (optJson && (optJson->GetSource() == JsonSource::String)) {
+                const jsonxx::Object value = json.get<jsonxx::Object>(iter->first);
+                opt->SetValue(value.json());
+            }
+        }
         else {
             LogError("Unsupported type for option '%s'", iter->first.c_str());
         }
     }
+
+    m_options->Sync();
 
     // Forcing font to be reset. Warning: SetOption("font") as a single option will not work.
     // This needs to be fixed
@@ -1094,6 +1083,16 @@ std::string Toolkit::GetVersion()
     return vrv::GetVersion();
 }
 
+void Toolkit::Cancel()
+{
+    m_doc.SetAbortMode(true);
+}
+
+void Toolkit::Continue()
+{
+    m_doc.SetAbortMode(false);
+}
+
 void Toolkit::ResetLogBuffer()
 {
     logBuffer.clear();
@@ -1139,6 +1138,10 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
     if (pageNo > GetPageCount()) {
         LogWarning("Page %d does not exist", pageNo);
         return false;
+    }
+
+    if (m_doc.AbortRequested()) {
+        return true;
     }
 
     // Page number is one-based - correct it to 0-based first
@@ -1267,6 +1270,10 @@ void Toolkit::GetHumdrum(std::ostream &output)
 
 std::string Toolkit::RenderToMIDI()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1284,6 +1291,10 @@ std::string Toolkit::RenderToMIDI()
 
 std::string Toolkit::RenderToPAE()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     if (GetPageCount() == 0) {
@@ -1301,6 +1312,10 @@ std::string Toolkit::RenderToPAE()
 
 bool Toolkit::RenderToPAEFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     std::string outputString = this->RenderToPAE();
@@ -1316,6 +1331,10 @@ bool Toolkit::RenderToPAEFile(const std::string &filename)
 
 std::string Toolkit::RenderToTimemap()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     std::string output;
@@ -1369,6 +1388,10 @@ std::string Toolkit::GetElementsAtTime(int millisec)
 
 bool Toolkit::RenderToMIDIFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1382,6 +1405,10 @@ bool Toolkit::RenderToMIDIFile(const std::string &filename)
 
 bool Toolkit::RenderToTimemapFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     std::string outputString;

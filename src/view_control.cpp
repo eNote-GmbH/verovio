@@ -637,7 +637,9 @@ void View::DrawOctave(
 
     if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_END)) {
         if (octave->HasEndid()) {
-            x2 += (m_doc->GetGlyphWidth(SMUFL_E0A2_noteheadWhole, staff->m_drawingStaffSize, false) / 2);
+            if (octave->GetEnd()->HasContentBB()) {
+                x2 += octave->GetEnd()->GetContentX2();
+            }
         }
     }
 
@@ -648,30 +650,58 @@ void View::DrawOctave(
     else
         dc->StartGraphic(octave, "", octave->GetUuid(), false);
 
+    const bool altSymbols = m_doc->GetOptions()->m_octaveAlternativeSymbols.GetValue();
     int code = SMUFL_E511_ottavaAlta;
     if (disPlace == STAFFREL_basic_above) {
         switch (dis) {
             // here we could use other glyphs depending on the style
-            case OCTAVE_DIS_8: code = SMUFL_E510_ottava; break;
-            case OCTAVE_DIS_15: code = SMUFL_E514_quindicesima; break;
-            case OCTAVE_DIS_22: code = SMUFL_E517_ventiduesima; break;
+            case OCTAVE_DIS_8: {
+                code = altSymbols ? SMUFL_E511_ottavaAlta : SMUFL_E510_ottava;
+                break;
+            }
+            case OCTAVE_DIS_15: {
+                code = altSymbols ? SMUFL_E515_quindicesimaAlta : SMUFL_E514_quindicesima;
+                break;
+            }
+            case OCTAVE_DIS_22: {
+                code = altSymbols ? SMUFL_E518_ventiduesimaAlta : SMUFL_E517_ventiduesima;
+                break;
+            }
             default: break;
         }
     }
     else {
         switch (dis) {
             // ditto
-            case OCTAVE_DIS_8: code = SMUFL_E510_ottava; break;
-            case OCTAVE_DIS_15: code = SMUFL_E514_quindicesima; break;
-            case OCTAVE_DIS_22: code = SMUFL_E517_ventiduesima; break;
+            case OCTAVE_DIS_8: {
+                code = altSymbols ? SMUFL_E51C_ottavaBassaVb : SMUFL_E510_ottava;
+                break;
+            }
+            case OCTAVE_DIS_15: {
+                code = altSymbols ? SMUFL_E51D_quindicesimaBassaMb : SMUFL_E514_quindicesima;
+                break;
+            }
+            case OCTAVE_DIS_22: {
+                code = altSymbols ? SMUFL_E51E_ventiduesimaBassaMb : SMUFL_E517_ventiduesima;
+                break;
+            }
             default: break;
         }
     }
     std::wstring str;
     str.push_back(code);
 
+    dc->SetFont(m_doc->GetDrawingSmuflFont(staff->m_drawingStaffSize, false));
+    TextExtend extend;
+    dc->GetSmuflTextExtent(str, &extend);
+    const int yCode = (disPlace == STAFFREL_basic_above) ? y1 - extend.m_height : y1;
+    const int octaveX = altSymbols ? x1 - extend.m_width / 2 : x1 - extend.m_width;
+    DrawSmuflCode(dc, octaveX, yCode, code, staff->m_drawingStaffSize, false);
+    dc->ResetFont();
+
     if (octave->GetExtender() != BOOLEAN_false) {
-        int lineWidth = m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+        int lineWidth
+            = m_doc->GetOptions()->m_octaveLineThickness.GetValue() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
         if (octave->HasLwidth()) {
             if (octave->GetLwidth().GetType() == LINEWIDTHTYPE_lineWidthTerm) {
                 if (octave->GetLwidth().GetLineWithTerm() == LINEWIDTHTERM_narrow) {
@@ -691,36 +721,43 @@ void View::DrawOctave(
                 }
             }
         }
-        dc->SetFont(m_doc->GetDrawingSmuflFont(staff->m_drawingStaffSize, false));
-        TextExtend extend;
-        dc->GetSmuflTextExtent(str, &extend);
-        const int yCode = (disPlace == STAFFREL_basic_above) ? y1 - extend.m_height : y1;
-        DrawSmuflCode(dc, x1 - extend.m_width, yCode, code, staff->m_drawingStaffSize, false);
-        dc->ResetFont();
 
-        if (octave->GetLendsym() != LINESTARTENDSYMBOL_none)
-            y2 += (disPlace == STAFFREL_basic_above) ? -extend.m_height : extend.m_height;
         // adjust is to avoid the figure to touch the line
         x1 += m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
-
-        if (octave->HasLform()) {
-            if (octave->GetLform() == LINEFORM_solid) {
-                extend.m_height *= 0;
-            }
-        }
+        if (altSymbols) x1 += extend.m_width / 2;
+        y2 += (disPlace == STAFFREL_basic_above) ? -extend.m_height : extend.m_height;
+        int lineShift = (disPlace == STAFFREL_basic_above) ? -lineWidth / 2 : lineWidth / 2;
 
         dc->SetPen(m_currentColour, lineWidth, AxSOLID, extend.m_height / 3);
         dc->SetBrush(m_currentColour, AxSOLID);
-
-        dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1), ToDeviceContextX(x2), ToDeviceContextY(y1));
-        // draw the ending vertical line if not the end of the system
-        if (spanningType == SPANNING_END || spanningType == SPANNING_START_END) {
-            dc->DrawLine(ToDeviceContextX(x2), ToDeviceContextY(y1 + lineWidth / 2), ToDeviceContextX(x2),
-                ToDeviceContextY(y2 + lineWidth / 2));
+        int dotShift = 0;
+        if (octave->HasLform()) {
+            if (octave->GetLform() == LINEFORM_solid) {
+                dc->SetPen(m_currentColour, lineWidth, AxSOLID, 0);
+                dc->SetBrush(m_currentColour, AxSOLID);
+            }
+            else if (octave->GetLform() == LINEFORM_dotted) {
+                dc->SetPen(m_currentColour, lineWidth, AxDOT, lineWidth, 1);
+                dc->SetBrush(m_currentColour, AxSOLID);
+                dotShift = lineShift;
+            }
         }
 
-        dc->ResetPen();
-        dc->ResetBrush();
+        if (x1 > x2) {
+            // make sure we have a minimal extender line
+            x2 = x1 + extend.m_height / 4;
+        }
+        dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1 + lineShift), ToDeviceContextX(x2),
+            ToDeviceContextY(y1 + lineShift));
+
+        if (octave->GetLendsym() != LINESTARTENDSYMBOL_none) {
+            x2 += lineWidth / 2;
+            // draw the ending vertical line if not the end of the system
+            if (spanningType == SPANNING_END || spanningType == SPANNING_START_END) {
+                dc->DrawLine(
+                    ToDeviceContextX(x2), ToDeviceContextY(y1 + dotShift), ToDeviceContextX(x2), ToDeviceContextY(y2));
+            }
+        }
     }
 
     if (graphic)
@@ -1100,9 +1137,8 @@ void View::DrawFConnector(DeviceContext *dc, F *f, int x1, int x2, Staff *staff,
         // nothing to adjust
     }
 
-    // Because Syl is not a ControlElement (FloatingElement) with FloatingPositioner we need to instantiate a temporary
-    // object
-    // in order not to reset the Syl bounding box.
+    // Because Syl is not a ControlElement (FloatingElement) with FloatingPositioner we need to instantiate a
+    // temporary object in order not to reset the Syl bounding box.
     F fConnector;
     if (graphic) {
         dc->ResumeGraphic(graphic, graphic->GetUuid());
@@ -1134,7 +1170,10 @@ void View::DrawSylConnector(
     if (!syl->GetStart() || !syl->GetEnd()) return;
 
     int y = staff->GetDrawingY() + GetSylYRel(syl->m_drawingVerse, staff);
-    TextExtend extend;
+
+    // Invalid bounding boxes might occur for empty syllables without text child
+    if (!syl->HasContentHorizontalBB()) return;
+    if (syl->m_nextWordSyl && !syl->m_nextWordSyl->HasContentHorizontalBB()) return;
 
     // The both correspond to the current system, which means no system break in-between (simple case)
     if (spanningType == SPANNING_START_END) {
@@ -1172,9 +1211,8 @@ void View::DrawSylConnector(
         // nothing to adjust
     }
 
-    // Because Syl is not a ControlElement (FloatingElement) with FloatingPositioner we need to instantiate a temporary
-    // object
-    // in order not to reset the Syl bounding box.
+    // Because Syl is not a ControlElement (FloatingElement) with FloatingPositioner we need to instantiate a
+    // temporary object in order not to reset the Syl bounding box.
     Syl sylConnector;
     if (graphic) {
         dc->ResumeGraphic(graphic, graphic->GetUuid());
@@ -1264,8 +1302,8 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     // We cannot draw without a top and bottom note
     if (!topNote || !bottomNote) return;
 
-    int top = topNote->GetDrawingY();
-    int bottom = bottomNote->GetDrawingY();
+    const int top = topNote->GetDrawingY();
+    const int bottom = bottomNote->GetDrawingY();
 
     // We arbitrarily look at the top note
     Staff *staff = vrv_cast<Staff *>(topNote->GetFirstAncestor(STAFF));
@@ -1283,19 +1321,18 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     int length = top - bottom;
     // We add - substract a unit in order to have the line going to the edge
     length += m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
-    int y = bottom - m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-    int x = arpeg->GetDrawingX();
-    int angle = -90;
+    const int x = arpeg->GetDrawingX();
+    const int y = bottom - m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+    const int angle = -90;
 
+    wchar_t startGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
     wchar_t fillGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
     wchar_t endGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAD_wiggleArpeggiatoUpArrow : 0;
 
     if (arpeg->GetOrder() == arpegLog_ORDER_down) {
-        y = top + m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-        x -= m_doc->GetGlyphWidth(SMUFL_EAAA_wiggleArpeggiatoDown, staff->m_drawingStaffSize, drawingCueSize) / 2;
+        startGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAE_wiggleArpeggiatoDownArrow : 0;
         fillGlyph = SMUFL_EAAA_wiggleArpeggiatoDown;
-        endGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAE_wiggleArpeggiatoDownArrow : 0;
-        angle = 90;
+        endGlyph = SMUFL_EAAA_wiggleArpeggiatoDown;
     }
 
     if (arpeg->GetArrowShape() == LINESTARTENDSYMBOL_none) endGlyph = 0;
@@ -1307,7 +1344,7 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     // Smufl glyphs are horizontal - Rotate them counter clockwise
     dc->RotateGraphic(Point(ToDeviceContextX(x), ToDeviceContextY(y)), angle);
 
-    DrawSmuflLine(dc, orig, length, staff->m_drawingStaffSize, drawingCueSize, fillGlyph, 0, endGlyph);
+    DrawSmuflLine(dc, orig, length, staff->m_drawingStaffSize, drawingCueSize, fillGlyph, startGlyph, endGlyph);
 
     dc->EndGraphic(arpeg, this);
 }
@@ -1859,7 +1896,7 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
         }
         else if (mordent->HasAccidupper()) {
             double mordentHeight = m_doc->GetGlyphHeight(code, (*staffIter)->m_drawingStaffSize, false);
-            int accid = Accid::GetAccidGlyph(mordent->GetAccidupper());
+            wchar_t accid = Accid::GetAccidGlyph(mordent->GetAccidupper());
             std::wstring accidStr;
             accidStr.push_back(accid);
             dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));

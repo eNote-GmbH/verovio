@@ -8,6 +8,10 @@
 #ifndef __VRV_DOC_H__
 #define __VRV_DOC_H__
 
+#include <atomic>
+
+//----------------------------------------------------------------------------
+
 #include "devicecontextbase.h"
 #include "expansionmap.h"
 #include "facsimile.h"
@@ -69,6 +73,14 @@ public:
      */
     Options *GetOptions() const { return m_options; }
     void SetOptions(Options *options) { (*m_options) = *options; };
+
+    /**
+     * @name Access the abort flag
+     */
+    ///@{
+    void SetAbortMode(bool value) { m_abort = value; };
+    bool AbortRequested() const { return m_abort; };
+    ///@}
 
     /**
      * Generate a document scoreDef when none is provided.
@@ -219,8 +231,8 @@ public:
      */
     bool ExportTimemap(std::string &output);
     void PrepareJsonTimemap(std::string &output, std::map<double, double> &realTimeToScoreTime,
-        std::map<double, std::vector<std::string> > &realTimeToOnElements,
-        std::map<double, std::vector<std::string> > &realTimeToOffElements, std::map<double, int> &realTimeToTempo);
+        std::map<double, std::vector<std::string>> &realTimeToOnElements,
+        std::map<double, std::vector<std::string>> &realTimeToOffElements, std::map<double, int> &realTimeToTempo);
 
     /**
      * Set the initial scoreDef of each page.
@@ -316,13 +328,6 @@ public:
      * Reverse of ConvertToCastOffMensuralDoc()
      */
     void ConvertToUnCastOffMensuralDoc();
-
-    /**
-     * Convert scoreDef / staffDef attributes (clef.*, key.*, meter.*, etc.) to corresponding elements
-     * By default, the element are used only for the rendering and not preserved in the MEI output
-     * Permanent conversion discard analytical markup and elements will be preserved in the MEI output.
-     */
-    void ConvertScoreDefMarkupDoc(bool permanent = false);
 
     /**
      * Convert analytical encoding (@fermata, @tie) to correpsonding elements
@@ -489,6 +494,11 @@ private:
      * This could be saved somewhere as preferences (todo).
      */
     Options *m_options;
+
+    /**
+     * Abort flag which triggers the cancellation of layout from another thread
+     */
+    std::atomic_bool m_abort;
 
     /*
      * The following values are set in the Doc::SetDrawingPage.

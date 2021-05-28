@@ -33,14 +33,17 @@ std::map<int, std::string> Option::s_footer
 std::map<int, std::string> Option::s_header
     = { { HEADER_none, "none" }, { HEADER_auto, "auto" }, { HEADER_encoded, "encoded" } };
 
+std::map<int, std::string> Option::s_multiRestStyle = { { MULTIRESTSTYLE_auto, "auto" },
+    { MULTIRESTSTYLE_default, "default" }, { MULTIRESTSTYLE_block, "block" }, { MULTIRESTSTYLE_symbols, "symbols" } };
+
 std::map<int, std::string> Option::s_systemDivider = { { SYSTEMDIVIDER_none, "none" }, { SYSTEMDIVIDER_auto, "auto" },
     { SYSTEMDIVIDER_left, "left" }, { SYSTEMDIVIDER_left_right, "left-right" } };
 
 constexpr const char *engravingDefaults
-    = "{'engravingDefaults':{'thinBarlineThickness':0.15,'lyricLineThickness':0.125,"
+    = "{'thinBarlineThickness':0.15,'lyricLineThickness':0.125,"
       "'slurMidpointThickness':0.3,'staffLineThickness':0.075,'stemThickness':0.1,'tieMidpointThickness':0.25,"
-      "'hairpinThickness':0.1,'thickBarlineThickness':0.5,'tupletBracketThickness':0.1,'subBracketThickness':0.5,"
-      "'bracketThickness':0.5,'repeatEndingLineThickness':0.15, 'textEnclosureThickness': 0.2}}";
+      "'hairpinThickness':0.1,'thickBarlineThickness':0.5,'tupletBracketThickness':0.1,'subBracketThickness':0.1,"
+      "'bracketThickness':0.5,'repeatEndingLineThickness':0.075,'textEnclosureThickness':0.1}";
 
 //----------------------------------------------------------------------------
 // Option
@@ -588,30 +591,92 @@ std::string OptionStaffrel::GetDefaultStrValue() const
 // OptionJson
 //----------------------------------------------------------------------------
 
-void OptionJson::Init(const std::string &defaultValue)
+void OptionJson::CopyTo(Option *option)
 {
-    m_defaultValues.parse(defaultValue);
+    OptionJson *child = dynamic_cast<OptionJson *>(option);
+    assert(child);
+    *child = *this;
+}
+
+void OptionJson::Init(JsonSource source, const std::string &defaultValue)
+{
+    m_source = source;
+    ReadJson(m_defaultValues, defaultValue);
     m_isSet = false;
 }
 
-bool OptionJson::SetValue(const std::string &jsonFilePath)
+JsonSource OptionJson::GetSource() const
 {
-    std::ifstream in(jsonFilePath.c_str());
-    if (!in.is_open()) {
-        return false;
+    return m_source;
+}
+
+jsonxx::Object OptionJson::GetValue(bool getDefault) const
+{
+    return getDefault ? m_defaultValues : m_values;
+}
+
+bool OptionJson::SetValue(const std::string &value)
+{
+    bool ok = ReadJson(m_values, value);
+    if (ok) {
+        m_isSet = true;
+    }
+    else {
+        if (m_source == JsonSource::String) {
+            LogError("Input json is not valid or contains errors");
+        }
+        else {
+            // Input is file path
+            if (value.empty()) {
+                ok = true;
+            }
+            else {
+                LogError("Input file '%s' is not valid or contains errors", value.c_str());
+            }
+        }
+    }
+    return ok;
+}
+
+std::string OptionJson::GetStrValue() const
+{
+    return m_values.json();
+}
+
+std::string OptionJson::GetDefaultStrValue() const
+{
+    return m_defaultValues.json();
+}
+
+bool OptionJson::ReadJson(jsonxx::Object &output, const std::string &input) const
+{
+    bool ok = false;
+    jsonxx::Object content;
+    if (m_source == JsonSource::String) {
+        ok = content.parse(input);
+    }
+    else {
+        // Input is file path
+        std::ifstream in(input.c_str());
+        if (!in.is_open()) {
+            return false;
+        }
+        ok = content.parse(in);
+        in.close();
     }
 
-    jsonxx::Object newValues;
-    if (!newValues.parse(in)) {
-        LogError("Input file '%s' is not valid or contains errors", jsonFilePath.c_str());
-        return false;
+    if (ok) {
+        output = content;
     }
+    return ok;
+}
 
-    m_values = newValues;
-    m_isSet = true;
+bool OptionJson::HasValue(const std::vector<std::string> &jsonNodePath) const
+{
+    const JsonPath valPath = StringPath2NodePath(m_values, jsonNodePath);
+    const JsonPath defPath = StringPath2NodePath(m_defaultValues, jsonNodePath);
 
-    in.close();
-    return true;
+    return (valPath.size() == jsonNodePath.size()) || (defPath.size() == jsonNodePath.size());
 }
 
 int OptionJson::GetIntValue(const std::vector<std::string> &jsonNodePath, bool getDefault) const
@@ -866,7 +931,7 @@ Options::Options()
     this->Register(&m_outputIndentTab, "outputIndentTab", &m_general);
 
     m_outputSmuflXmlEntities.SetInfo(
-        "Output SMuFL XML entities", "Output SMuFL charachters as XML entities instead of byte codes");
+        "Output SMuFL XML entities", "Output SMuFL characters as XML entities instead of hex byte codes ");
     m_outputSmuflXmlEntities.Init(false);
     this->Register(&m_outputSmuflXmlEntities, "outputSmuflXmlEntities", &m_general);
 
@@ -980,10 +1045,14 @@ Options::Options()
     m_dynamDist.Init(1.0, 0.5, 16.0);
     this->Register(&m_dynamDist, "dynamDist", &m_generalLayout);
 
-    m_engravingDefaults.SetInfo(
-        "Engraving defaults", "Path to json file describing defaults for engraving SMuFL elements");
-    m_engravingDefaults.Init(engravingDefaults);
+    m_engravingDefaults.SetInfo("Engraving defaults", "Json describing defaults for engraving SMuFL elements");
+    m_engravingDefaults.Init(JsonSource::String, engravingDefaults);
     this->Register(&m_engravingDefaults, "engravingDefaults", &m_generalLayout);
+
+    m_engravingDefaultsFile.SetInfo(
+        "Engraving defaults file", "Path to json file describing defaults for engraving SMuFL elements");
+    m_engravingDefaultsFile.Init(JsonSource::FilePath, "");
+    this->Register(&m_engravingDefaultsFile, "engravingDefaultsFile", &m_generalLayout);
 
     m_font.SetInfo("Font", "Set the music font");
     m_font.Init("Leipzig");
@@ -991,7 +1060,7 @@ Options::Options()
 
     m_clefChangeFactor.SetInfo("Clef change size", "Set the ratio of normal clefs to changing clefs");
     m_clefChangeFactor.Init(0.66, 0.25, 1.0);
-    this->Register(&m_clefChangeFactor, "clefChangeFactor", &m_general);
+    this->Register(&m_clefChangeFactor, "clefChangeFactor", &m_generalLayout);
 
     m_graceFactor.SetInfo("Grace factor", "The grace size ratio numerator");
     m_graceFactor.Init(0.75, 0.5, 1.0);
@@ -1031,7 +1100,7 @@ Options::Options()
     this->Register(&m_justificationBracketGroup, "justificationBracketGroup", &m_generalLayout);
 
     m_justificationBraceGroup.SetInfo(
-        "Spacing brace group justification", "Space between staves inside a braced group ijustification");
+        "Spacing brace group justification", "Space between staves inside a braced group justification");
     m_justificationBraceGroup.Init(1., 0., 10.);
     this->Register(&m_justificationBraceGroup, "justificationBraceGroup", &m_generalLayout);
 
@@ -1076,13 +1145,25 @@ Options::Options()
     m_mnumInterval.Init(0, 0, 64, false);
     this->Register(&m_mnumInterval, "mnumInterval", &m_generalLayout);
 
+    m_multiRestStyle.SetInfo("Multi rest style", "Rendering style of multiple measure rests");
+    m_multiRestStyle.Init(MULTIRESTSTYLE_auto, &Option::s_multiRestStyle);
+    this->Register(&m_multiRestStyle, "multiRestStyle", &m_generalLayout);
+
     m_repeatBarLineDotSeparation.SetInfo("Repeat barline dot separation",
         "The default horizontal distance between the dots and the inner barline of a repeat barline");
     m_repeatBarLineDotSeparation.Init(0.30, 0.10, 1.00);
     this->Register(&m_repeatBarLineDotSeparation, "repeatBarLineDotSeparation", &m_generalLayout);
 
+    m_octaveAlternativeSymbols.SetInfo("Alternative octave symbols", "Use alternative symbols for displaying octaves");
+    m_octaveAlternativeSymbols.Init(false);
+    this->Register(&m_octaveAlternativeSymbols, "octaveAlternativeSymbols", &m_generalLayout);
+
+    m_octaveLineThickness.SetInfo("Octave line thickness", "The thickness of the line used for an octave line");
+    m_octaveLineThickness.Init(0.20, 0.10, 1.00);
+    this->Register(&m_octaveLineThickness, "octaveLineThickness", &m_generalLayout);
+
     m_repeatEndingLineThickness.SetInfo("Repeat ending line thickness", "Repeat and ending line thickness");
-    m_repeatEndingLineThickness.Init(0.15, 0.1, 2.0);
+    m_repeatEndingLineThickness.Init(0.15, 0.10, 2.0);
     this->Register(&m_repeatEndingLineThickness, "repeatEndingLineThickness", &m_generalLayout);
 
     m_slurControlPoints.SetInfo(
@@ -1471,9 +1552,9 @@ Options::~Options() {}
 
 void Options::Sync()
 {
-    if (!m_engravingDefaults.IsSet()) return;
+    if (!m_engravingDefaults.IsSet() && !m_engravingDefaultsFile.IsSet()) return;
     // override default or passed engravingDefaults with explicitly set values
-    std::list<std::pair<std::string, OptionDbl *> > engravingDefaults = {
+    std::list<std::pair<std::string, OptionDbl *>> engravingDefaults = {
         { "staffLineThickness", &m_staffLineWidth }, //
         { "stemThickness", &m_stemWidth }, //
         { "legerLineThickness", &m_ledgerLineThickness }, //
@@ -1489,17 +1570,25 @@ void Options::Sync()
         { "bracketThickness", &m_bracketThickness }, //
         { "subBracketThickness", &m_subBracketThickness }, //
         { "hairpinThickness", &m_hairpinThickness }, //
+        { "octaveLineThickness", &m_octaveLineThickness }, //
         { "repeatEndingLineThickness", &m_repeatEndingLineThickness }, //
         { "lyricLineThickness", &m_lyricLineThickness }, //
         { "tupletBracketThickness", &m_tupletBracketThickness }, //
         { "textEnclosureThickness", &m_textEnclosureThickness } //
     };
 
-    for (auto &pair : engravingDefaults) {
+    for (const auto &pair : engravingDefaults) {
         if (pair.second->IsSet()) continue;
 
-        const double jsonValue = m_engravingDefaults.GetDoubleValue({ "engravingDefaults", pair.first });
-        pair.second->SetValueDbl(jsonValue * 2);
+        const std::vector<std::string> jsonNodePath = { pair.first };
+        if (m_engravingDefaultsFile.HasValue(jsonNodePath)) {
+            const double jsonValue = m_engravingDefaultsFile.GetDoubleValue(jsonNodePath);
+            pair.second->SetValueDbl(jsonValue * 2.0); // convert from staff spaces to MEI units
+        }
+        else if (m_engravingDefaults.HasValue(jsonNodePath)) {
+            const double jsonValue = m_engravingDefaults.GetDoubleValue(jsonNodePath);
+            pair.second->SetValueDbl(jsonValue * 2.0); // convert from staff spaces to MEI units
+        }
     }
 }
 

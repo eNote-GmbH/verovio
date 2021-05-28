@@ -204,7 +204,7 @@ void Staff::AdjustDrawingStaffSize()
             assert(zone);
             int yDiff
                 = zone->GetLry() - zone->GetUly() - (zone->GetLrx() - zone->GetUlx()) * tan(abs(rotate) * M_PI / 180.0);
-            this->m_drawingStaffSize = 100 * yDiff / (doc->GetOptions()->m_unit.GetValue() * 2 * (m_drawingLines - 1));
+            m_drawingStaffSize = 100 * yDiff / (doc->GetOptions()->m_unit.GetValue() * 2 * (m_drawingLines - 1));
         }
     }
 }
@@ -222,25 +222,24 @@ bool Staff::DrawingIsVisible()
 
 bool Staff::IsMensural()
 {
-    bool isMensural = (this->m_drawingNotationType == NOTATIONTYPE_mensural
-        || this->m_drawingNotationType == NOTATIONTYPE_mensural_white
-        || this->m_drawingNotationType == NOTATIONTYPE_mensural_black);
+    bool isMensural
+        = (m_drawingNotationType == NOTATIONTYPE_mensural || m_drawingNotationType == NOTATIONTYPE_mensural_white
+            || m_drawingNotationType == NOTATIONTYPE_mensural_black);
     return isMensural;
 }
 
 bool Staff::IsNeume()
 {
-    bool isNeume = (this->m_drawingNotationType == NOTATIONTYPE_neume);
+    bool isNeume = (m_drawingNotationType == NOTATIONTYPE_neume);
     return isNeume;
 }
 
 bool Staff::IsTablature()
 {
-    bool isTablature
-        = (this->m_drawingNotationType == NOTATIONTYPE_tab || this->m_drawingNotationType == NOTATIONTYPE_tab_guitar
-            || this->m_drawingNotationType == NOTATIONTYPE_tab_lute_italian
-            || this->m_drawingNotationType == NOTATIONTYPE_tab_lute_french
-            || this->m_drawingNotationType == NOTATIONTYPE_tab_lute_german);
+    bool isTablature = (m_drawingNotationType == NOTATIONTYPE_tab || m_drawingNotationType == NOTATIONTYPE_tab_guitar
+        || m_drawingNotationType == NOTATIONTYPE_tab_lute_italian
+        || m_drawingNotationType == NOTATIONTYPE_tab_lute_french
+        || m_drawingNotationType == NOTATIONTYPE_tab_lute_german);
     return isTablature;
 }
 
@@ -249,8 +248,8 @@ int Staff::CalcPitchPosYRel(Doc *doc, int loc)
     assert(doc);
 
     // the staff loc offset is based on the number of lines: 0 with 1 line, 2 with 2, etc
-    int staffLocOffset = (this->m_drawingLines - 1) * 2;
-    return (loc - staffLocOffset) * doc->GetDrawingUnit(this->m_drawingStaffSize);
+    int staffLocOffset = (m_drawingLines - 1) * 2;
+    return (loc - staffLocOffset) * doc->GetDrawingUnit(m_drawingStaffSize);
 }
 
 void Staff::AddLedgerLineAbove(int count, int left, int right, bool cueSize)
@@ -304,7 +303,7 @@ bool Staff::IsOnStaffLine(int y, Doc *doc)
 {
     assert(doc);
 
-    return ((y - this->GetDrawingY()) % (2 * doc->GetDrawingUnit(this->m_drawingStaffSize)) == 0);
+    return ((y - this->GetDrawingY()) % (2 * doc->GetDrawingUnit(m_drawingStaffSize)) == 0);
 }
 
 int Staff::GetNearestInterStaffPosition(int y, Doc *doc, data_STAFFREL place)
@@ -312,14 +311,14 @@ int Staff::GetNearestInterStaffPosition(int y, Doc *doc, data_STAFFREL place)
     assert(doc);
 
     int yPos = y - this->GetDrawingY();
-    int distance = yPos % doc->GetDrawingUnit(this->m_drawingStaffSize);
+    int distance = yPos % doc->GetDrawingUnit(m_drawingStaffSize);
     if (place == STAFFREL_above) {
-        if (distance > 0) distance = doc->GetDrawingUnit(this->m_drawingStaffSize) - distance;
-        return y - distance + doc->GetDrawingUnit(this->m_drawingStaffSize);
+        if (distance > 0) distance = doc->GetDrawingUnit(m_drawingStaffSize) - distance;
+        return y - distance + doc->GetDrawingUnit(m_drawingStaffSize);
     }
     else {
-        if (distance < 0) distance = doc->GetDrawingUnit(this->m_drawingStaffSize) + distance;
-        return y - distance - doc->GetDrawingUnit(this->m_drawingStaffSize);
+        if (distance < 0) distance = doc->GetDrawingUnit(m_drawingStaffSize) + distance;
+        return y - distance - doc->GetDrawingUnit(m_drawingStaffSize);
     }
 }
 
@@ -343,7 +342,7 @@ void LedgerLine::AddDash(int left, int right)
 {
     assert(left < right);
 
-    std::list<std::pair<int, int> >::iterator iter;
+    std::list<std::pair<int, int>>::iterator iter;
 
     // First add the dash
     for (iter = m_dashes.begin(); iter != m_dashes.end(); ++iter) {
@@ -352,7 +351,7 @@ void LedgerLine::AddDash(int left, int right)
     m_dashes.insert(iter, std::make_pair(left, right));
 
     // Merge overlapping dashes
-    std::list<std::pair<int, int> >::iterator previous = m_dashes.begin();
+    std::list<std::pair<int, int>>::iterator previous = m_dashes.begin();
     iter = m_dashes.begin();
     ++iter;
     while (iter != m_dashes.end()) {
@@ -463,10 +462,10 @@ int Staff::AlignHorizontally(FunctorParams *functorParams)
     AlignHorizontallyParams *params = vrv_params_cast<AlignHorizontallyParams *>(functorParams);
     assert(params);
 
-    assert(this->m_drawingStaffDef);
+    assert(m_drawingStaffDef);
 
-    if (this->m_drawingStaffDef->HasNotationtype()) {
-        params->m_notationType = this->m_drawingStaffDef->GetNotationtype();
+    if (m_drawingStaffDef->HasNotationtype()) {
+        params->m_notationType = m_drawingStaffDef->GetNotationtype();
     }
     else {
         params->m_notationType = NOTATIONTYPE_cmn;
@@ -531,7 +530,7 @@ int Staff::FillStaffCurrentTimeSpanning(FunctorParams *functorParams)
 
 int Staff::ResetDrawing(FunctorParams *functorParams)
 {
-    this->m_timeSpanningElements.clear();
+    m_timeSpanningElements.clear();
     ClearLedgerLines();
     return FUNCTOR_CONTINUE;
 }
@@ -564,10 +563,10 @@ int Staff::CalcOnsetOffset(FunctorParams *functorParams)
     CalcOnsetOffsetParams *params = vrv_params_cast<CalcOnsetOffsetParams *>(functorParams);
     assert(params);
 
-    assert(this->m_drawingStaffDef);
+    assert(m_drawingStaffDef);
 
-    if (this->m_drawingStaffDef->HasNotationtype()) {
-        params->m_notationType = this->m_drawingStaffDef->GetNotationtype();
+    if (m_drawingStaffDef->HasNotationtype()) {
+        params->m_notationType = m_drawingStaffDef->GetNotationtype();
     }
     else {
         params->m_notationType = NOTATIONTYPE_cmn;
@@ -632,7 +631,17 @@ int Staff::AdjustSylSpacing(FunctorParams *functorParams)
     assert(params);
 
     // Set the staff size for this pass
-    params->m_staffSize = this->m_drawingStaffSize;
+    params->m_staffSize = m_drawingStaffSize;
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Staff::GenerateMIDI(FunctorParams *functorParams)
+{
+    GenerateMIDIParams *params = vrv_params_cast<GenerateMIDIParams *>(functorParams);
+    assert(params);
+
+    params->m_expandedNotes.clear();
 
     return FUNCTOR_CONTINUE;
 }

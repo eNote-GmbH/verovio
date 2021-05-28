@@ -29,7 +29,7 @@
 namespace vrv {
 
 typedef std::map<RestLayer,
-    std::map<RestAccidental, std::map<RestLayerPlace, std::map<RestNotePlace, std::map<int, int> > > > >
+    std::map<RestAccidental, std::map<RestLayerPlace, std::map<RestNotePlace, std::map<int, int>>>>>
     RestOffsets;
 
 RestOffsets g_defaultRests{
@@ -435,7 +435,7 @@ int Rest::GetFirstRelativeElementLocation(Staff *currentStaff, Layer *currentLay
     return VRV_UNSET;
 }
 
-std::pair<int, RestAccidental> Rest::GetElementLocation(Object *object, Layer *layer, bool isTopLayer)
+std::pair<int, RestAccidental> Rest::GetElementLocation(Object *object, Layer *layer, bool isTopLayer) const
 {
     if (object->Is(NOTE)) {
         Note *note = vrv_cast<Note *>(object);
@@ -453,7 +453,7 @@ std::pair<int, RestAccidental> Rest::GetElementLocation(Object *object, Layer *l
             (accid && accid->GetAccid() != 0) ? MeiAccidentalToRestAccidental(accid->GetAccid()) : RA_none };
     }
     if (object->Is(FTREM)) {
-        std::vector<std::pair<int, RestAccidental> > btremElements;
+        std::vector<std::pair<int, RestAccidental>> btremElements;
         for (int i = 0; i < object->GetChildCount(); ++i) {
             btremElements.emplace_back(GetElementLocation(object->GetChild(i), layer, isTopLayer));
         }
@@ -578,7 +578,7 @@ int Rest::CalcDots(FunctorParams *functorParams)
     Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff);
 
-    if (this->m_crossStaff) staff = this->m_crossStaff;
+    if (m_crossStaff) staff = m_crossStaff;
 
     bool drawingCueSize = this->GetDrawingCueSize();
     int staffSize = staff->m_drawingStaffSize;
