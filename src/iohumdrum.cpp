@@ -868,7 +868,7 @@ void HumdrumInput::checkForBreak(hum::HumdrumFile &infile, int line)
     if (linebreaki > 0) {
         hum::HTp token = infile[linebreaki].token(0);
         Sb *sb = new Sb;
-        this->m_hasLayoutInformation = true;
+        m_hasLayoutInformation = true;
         setLocationId(sb, token);
         m_sections.back()->AddChild(sb);
         // Maybe allow other types of line breaks here, but
@@ -880,7 +880,7 @@ void HumdrumInput::checkForBreak(hum::HumdrumFile &infile, int line)
     else if (pagebreaki > 0) {
         hum::HTp token = infile[pagebreaki].token(0);
         Pb *pb = new Pb;
-        this->m_hasLayoutInformation = true;
+        m_hasLayoutInformation = true;
         setLocationId(pb, token);
         m_sections.back()->AddChild(pb);
         // Maybe allow other types of line breaks here, but
@@ -5449,7 +5449,7 @@ void HumdrumInput::setTimeSig(
                 // hide time signature
                 vrvmeter->SetForm(METERFORM_invis);
             }
-            vrvmeter->SetCount(top * 2);
+            vrvmeter->SetCount({ top * 2 });
             vrvmeter->SetUnit(1);
         }
         else {
@@ -5458,7 +5458,7 @@ void HumdrumInput::setTimeSig(
                 // a time signature will be shown.
                 vrvmeter->SetForm(METERFORM_invis);
             }
-            vrvmeter->SetCount(top);
+            vrvmeter->SetCount({ top });
             vrvmeter->SetUnit(bot);
         }
     }
@@ -5973,7 +5973,7 @@ void HumdrumInput::checkForLayoutBreak(int line)
     if (!group.empty()) {
         std::string tstring = removeCommas(group);
         Sb *sb = new Sb;
-        this->m_hasLayoutInformation = true;
+        m_hasLayoutInformation = true;
         if (m_currentending) {
             m_currentending->AddChild(sb);
         }
@@ -5990,7 +5990,7 @@ void HumdrumInput::checkForLayoutBreak(int line)
         std::string tstring = removeCommas(group);
         // Pb *pb = new Pb;
         Sb *pb = new Sb;
-        this->m_hasLayoutInformation = true;
+        m_hasLayoutInformation = true;
         if (m_currentending) {
             m_currentending->AddChild(pb);
         }
@@ -14764,7 +14764,7 @@ void HumdrumInput::insertMeterSigElement(
         setLocationId(msig, tsig);
     }
     appendElement(elements, pointers, msig);
-    msig->SetCount(count);
+    msig->SetCount({ count });
     if (unit > 0) {
         msig->SetUnit(unit);
     }
@@ -15166,7 +15166,7 @@ void HumdrumInput::setTimeSig(ELEMENT element, hum::HTp timesigtok, hum::HTp met
             count = stoi(matches[1]);
             unit = stoi(matches[2]);
             MeterSig *vrvmetersig = getMeterSig(element);
-            vrvmetersig->SetCount(count);
+            vrvmetersig->SetCount({ count });
             vrvmetersig->SetUnit(unit);
         }
         else if (metersigtok && (metersigtok->find('C') == std::string::npos)
@@ -15176,7 +15176,7 @@ void HumdrumInput::setTimeSig(ELEMENT element, hum::HTp timesigtok, hum::HTp met
             count = stoi(matches[1]);
             unit = stoi(matches[2]);
             MeterSig *vrvmetersig = getMeterSig(element);
-            vrvmetersig->SetCount(count);
+            vrvmetersig->SetCount({ count });
             vrvmetersig->SetUnit(unit);
         }
         else {
@@ -15186,7 +15186,7 @@ void HumdrumInput::setTimeSig(ELEMENT element, hum::HTp timesigtok, hum::HTp met
             unit = stoi(matches[2]);
             MeterSig *vrvmetersig = getMeterSig(element);
             vrvmetersig->SetForm(METERFORM_invis);
-            vrvmetersig->SetCount(count);
+            vrvmetersig->SetCount({ count });
             vrvmetersig->SetUnit(unit);
         }
         if (metersigtok) {
@@ -22478,7 +22478,7 @@ void HumdrumInput::setupMeiDocument()
         // breaks encoded in the file to be activated, so adding a
         // dummy page break here:
         Pb *pb = new Pb;
-        this->m_hasLayoutInformation = true;
+        m_hasLayoutInformation = true;
         section->AddChild(pb);
     }
 }
@@ -24155,8 +24155,6 @@ void HumdrumInput::importVerovioOptions(Doc *doc)
 
 void HumdrumInput::finalizeDocument(Doc *doc)
 {
-
-    doc->ConvertScoreDefMarkupDoc();
     doc->ExpandExpansions();
     doc->ConvertToPageBasedDoc();
     doc->ConvertMarkupDoc();
