@@ -8,6 +8,10 @@
 #ifndef __VRV_DOC_H__
 #define __VRV_DOC_H__
 
+#include <atomic>
+
+//----------------------------------------------------------------------------
+
 #include "devicecontextbase.h"
 #include "expansionmap.h"
 #include "facsimile.h"
@@ -69,6 +73,14 @@ public:
      */
     Options *GetOptions() const { return m_options; }
     void SetOptions(Options *options) { (*m_options) = *options; };
+
+    /**
+     * @name Access the abort flag
+     */
+    ///@{
+    void SetAbortMode(bool value) { m_abort = value; };
+    bool AbortRequested() const { return m_abort; };
+    ///@}
 
     /**
      * Generate a document scoreDef when none is provided.
@@ -482,6 +494,11 @@ private:
      * This could be saved somewhere as preferences (todo).
      */
     Options *m_options;
+
+    /**
+     * Abort flag which triggers the cancellation of layout from another thread
+     */
+    std::atomic_bool m_abort;
 
     /*
      * The following values are set in the Doc::SetDrawingPage.

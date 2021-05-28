@@ -1083,6 +1083,16 @@ std::string Toolkit::GetVersion()
     return vrv::GetVersion();
 }
 
+void Toolkit::Cancel()
+{
+    m_doc.SetAbortMode(true);
+}
+
+void Toolkit::Continue()
+{
+    m_doc.SetAbortMode(false);
+}
+
 void Toolkit::ResetLogBuffer()
 {
     logBuffer.clear();
@@ -1128,6 +1138,10 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
     if (pageNo > GetPageCount()) {
         LogWarning("Page %d does not exist", pageNo);
         return false;
+    }
+
+    if (m_doc.AbortRequested()) {
+        return true;
     }
 
     // Page number is one-based - correct it to 0-based first
@@ -1256,6 +1270,10 @@ void Toolkit::GetHumdrum(std::ostream &output)
 
 std::string Toolkit::RenderToMIDI()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1273,6 +1291,10 @@ std::string Toolkit::RenderToMIDI()
 
 std::string Toolkit::RenderToPAE()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     if (GetPageCount() == 0) {
@@ -1290,6 +1312,10 @@ std::string Toolkit::RenderToPAE()
 
 bool Toolkit::RenderToPAEFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     std::string outputString = this->RenderToPAE();
@@ -1305,6 +1331,10 @@ bool Toolkit::RenderToPAEFile(const std::string &filename)
 
 std::string Toolkit::RenderToTimemap()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     std::string output;
@@ -1358,6 +1388,10 @@ std::string Toolkit::GetElementsAtTime(int millisec)
 
 bool Toolkit::RenderToMIDIFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1371,6 +1405,10 @@ bool Toolkit::RenderToMIDIFile(const std::string &filename)
 
 bool Toolkit::RenderToTimemapFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     std::string outputString;

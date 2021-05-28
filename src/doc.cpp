@@ -74,6 +74,8 @@ Doc::Doc() : Object("doc-")
 {
     m_options = new Options();
 
+    m_abort = false;
+
     Reset();
 }
 
@@ -486,6 +488,10 @@ void Doc::PrepareJsonTimemap(std::string &output, std::map<double, double> &real
 
 void Doc::PrepareDrawing()
 {
+    if (this->AbortRequested()) {
+        return;
+    }
+
     if (m_drawingPreparationDone) {
         Functor resetDrawing(&Object::ResetDrawing);
         this->Process(&resetDrawing, NULL);
@@ -855,11 +861,19 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         return;
     }
 
+    if (this->AbortRequested()) {
+        return;
+    }
+
     this->ScoreDefSetCurrentDoc();
 
     Page *contentPage = this->SetDrawingPage(0);
     assert(contentPage);
     contentPage->LayOutHorizontally();
+
+    if (this->AbortRequested()) {
+        return;
+    }
 
     System *contentSystem = vrv_cast<System *>(contentPage->DetachChild(0));
     assert(contentSystem);
@@ -886,6 +900,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         contentSystem->Process(&castOffSystems, &castOffSystemsParams, &castOffSystemsEnd);
     }
     delete contentSystem;
+
+    if (this->AbortRequested()) {
+        return;
+    }
 
     bool optimize = ScoreDefNeedsOptimization();
     // Reset the scoreDef at the beginning of each system
