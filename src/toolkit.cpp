@@ -968,8 +968,11 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
         }
     }
 
+<<<<<<< HEAD
     m_options->Sync();
 
+=======
+>>>>>>> develop-fixPythonSegfault
     // Reset fonts
     if (!Resources::SetMusicFont(m_options->m_font.GetValue())) {
         LogWarning("Font '%s' could not be loaded", m_options->m_font.GetValue().c_str());
