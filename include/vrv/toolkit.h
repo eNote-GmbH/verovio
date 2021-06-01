@@ -543,7 +543,7 @@ public:
      *
      * @ingroup nodoc
      */
-    void Cancel();
+    void CancelLayout();
 
     /**
      * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
@@ -552,7 +552,7 @@ public:
      *
      * @ingroup nodoc
      */
-    void Continue();
+    void ContinueLayout();
 
     /**
      * Render the page to the deviceContext
