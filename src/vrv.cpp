@@ -71,7 +71,7 @@ const Resources::StyleAttributes Resources::k_defaultStyle{ data_FONTWEIGHT::FON
 // Font related methods
 //----------------------------------------------------------------------------
 
-bool Resources::InitFonts()
+bool Resources::InitFonts(const std::string &musicFont, const std::string &textFont)
 {
     // We will need to rethink this for adding the option to add custom fonts
     // Font Bravura first since it is expected to have always all symbols
@@ -86,6 +86,16 @@ bool Resources::InitFonts()
 
     if (!SetTextFont("VerovioText-1.0", false)) {
         LogError("Text font could not be initialized.");
+        return false;
+    }
+
+    if (!SetMusicFont(musicFont)) {
+        LogError("Font '%s' could not be loaded.", musicFont.c_str());
+        return false;
+    }
+
+    if (!SetTextFont(textFont)) {
+        LogError("Font '%s' could not be loaded.", textFont.c_str());
         return false;
     }
 
@@ -107,14 +117,14 @@ bool Resources::SetTextFont(const std::string &fontName, const bool usePostfixes
         bool m_isMandatory;
     };
 
-    static const TextFontInfo_type textFontInfos[] = {
-        { k_defaultStyle, "", true },
-        { { FONTWEIGHT_bold, FONTSTYLE_normal }, "-bold", false },
-        { { FONTWEIGHT_bold, FONTSTYLE_italic }, "-bold-italic", false },
-        { { FONTWEIGHT_normal, FONTSTYLE_italic }, "-italic", false } };
+    static const TextFontInfo_type textFontInfos[]
+        = { { k_defaultStyle, "", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "-bold", false },
+              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "-bold-italic", false },
+              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "-italic", false } };
 
     for (const auto &textFontInfo : textFontInfos) {
-        const bool success = InitTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
+        const bool success
+            = LoadTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
         if (!success && textFontInfo.m_isMandatory) {
             return false;
         }
@@ -258,7 +268,7 @@ bool Resources::LoadFont(const std::string &fontName)
     return true;
 }
 
-bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes &style)
+bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes &style)
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;
@@ -296,9 +306,6 @@ bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes 
             if (current.attribute("h")) height = atof(current.attribute("h").value());
             glyph.SetBoundingBox(x, y, width, height);
             if (current.attribute("h-a-x")) glyph.SetHorizAdvX(atof(current.attribute("h-a-x").value()));
-            if (currentMap.count(code) > 0) {
-                LogDebug("Redefining %d with %s", code, fontName.c_str());
-            }
             currentMap[code] = glyph;
         }
     }
