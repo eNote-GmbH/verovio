@@ -1083,12 +1083,12 @@ std::string Toolkit::GetVersion()
     return vrv::GetVersion();
 }
 
-void Toolkit::Cancel()
+void Toolkit::CancelLayout()
 {
     m_doc.SetAbortMode(true);
 }
 
-void Toolkit::Continue()
+void Toolkit::ContinueLayout()
 {
     m_doc.SetAbortMode(false);
 }
