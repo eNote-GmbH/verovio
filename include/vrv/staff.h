@@ -155,6 +155,11 @@ public:
      */
     virtual void SetFromFacsimile(Doc *doc);
 
+    /**
+     * Set beam adjustment for the corresponding staff alignment
+     */
+    void SetAlignmentBeamAdjustment(int adjust);
+
     //----------//
     // Functors //
     //----------//

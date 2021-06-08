@@ -256,6 +256,8 @@ StaffAlignment::StaffAlignment() : Object()
     m_overflowBelow = 0;
     m_staffHeight = 0;
     m_overlap = 0;
+
+    m_beamAdjust = 0;
 }
 
 StaffAlignment::~StaffAlignment()
@@ -490,6 +492,9 @@ int StaffAlignment::CalcMinimumRequiredSpacing(const Doc *doc) const
 
     // Add a margin
     overflowSum += doc->GetBottomMargin(STAFF) * doc->GetDrawingUnit(GetStaffSize());
+    if (const int adjust = prevAlignment->GetBeamAdjust()) {
+        overflowSum += adjust;
+    }
 
     return overflowSum;
 }
