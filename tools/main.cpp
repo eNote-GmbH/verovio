@@ -153,7 +153,6 @@ void display_option(vrv::Option *option)
                   << "\"; other values: " << optIntMap->GetStrValuesAsStr(true) << ")";
     }
     std::cout << std::endl;
-    
 }
 
 void display_version()
@@ -176,15 +175,15 @@ void display_usage()
 
     // Options with both short and long forms
     vrv::Options options;
-    
+
     std::cout << "Options (marked as * are repeatable)" << std::endl;
     const std::vector<vrv::Option *> *baseOptions = options.GetBaseOptions();
-    
+
     // All other option groups
     for (auto const &option : *baseOptions) {
         display_option(option);
     }
-    
+
     std::vector<vrv::OptionGrp *> *grps = options.GetGrps();
 
     for (auto const &grp : *grps) {
@@ -223,21 +222,13 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    static struct option base_options[]
-        = { { "all-pages", no_argument, 0, 'a' },
-            { "from", required_argument, 0, 'f' },
-            { "help", no_argument, 0, 'h' },
-            { "outfile", required_argument, 0, 'o' },
-            { "page", required_argument, 0, 'p' },
-            { "resources", required_argument, 0, 'r' },
-            { "scale", required_argument, 0, 's' },
-            { "to", required_argument, 0, 't' },
-            { "version", no_argument, 0, 'v' },
-            { "xml-id-seed", required_argument, 0, 'x' },
-            // standard input - long options only or - as filename
-            { "stdin", no_argument, 0, 'z' },
-            { 0, 0, 0, 0 }
-        };
+    static struct option base_options[] = { { "all-pages", no_argument, 0, 'a' }, { "from", required_argument, 0, 'f' },
+        { "help", no_argument, 0, 'h' }, { "outfile", required_argument, 0, 'o' },
+        { "page", required_argument, 0, 'p' }, { "resources", required_argument, 0, 'r' },
+        { "scale", required_argument, 0, 's' }, { "to", required_argument, 0, 't' }, { "version", no_argument, 0, 'v' },
+        { "xml-id-seed", required_argument, 0, 'x' },
+        // standard input - long options only or - as filename
+        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 } };
 
     int baseSize = sizeof(base_options) / sizeof(option);
 
@@ -287,7 +278,7 @@ int main(int argc, char **argv)
                 key = long_options[option_index].name;
                 opt = params->at(toCamelCase(key));
                 optBool = dynamic_cast<vrv::OptionBool *>(opt);
-                
+
                 // Handle deprecated options
                 /*
                 if (key == "condense-encoded") {
@@ -340,16 +331,22 @@ int main(int argc, char **argv)
             case 'v': show_version = 1; break;
 
             case 'x': vrv::Object::SeedUuid(atoi(optarg)); break;
-                
+
             case 'z':
                 if (!strcmp(long_options[option_index].name, "stdin")) {
                     infile = "-";
                 }
                 break;
 
-            case 'h': display_usage(); exit(0); break;
+            case 'h':
+                display_usage();
+                exit(0);
+                break;
 
-            case '?': display_usage(); exit(1); break;
+            case '?':
+                display_usage();
+                exit(1);
+                break;
 
             default: break;
         }
@@ -385,27 +382,16 @@ int main(int argc, char **argv)
     }
 
     // Load the music font from the resource directory
-    if (!vrv::Resources::InitFonts()) {
-        std::cerr << "The music font could not be loaded; please check the contents of the resource directory."
+    if (!vrv::Resources::InitFonts(options->m_font.GetValue(), options->m_textFont.GetValue())) {
+        std::cerr << "Fonts could not be initialized successfully; please check the contents of the resource directory."
                   << std::endl;
-        exit(1);
-    }
-
-    // Load a specified music font
-    if (!vrv::Resources::SetMusicFont(options->m_font.GetValue())) {
-        std::cerr << "Font '" << options->m_font.GetValue() << "' could not be loaded." << std::endl;
-        exit(1);
-    }
-
-    // Load a specified text font
-    if (!vrv::Resources::SetTextFont(options->m_textFont.GetValue())) {
-        std::cerr << "Font '" << options->m_textFont.GetValue() << "' could not be loaded." << std::endl;
         exit(1);
     }
 
     if ((outformat != "svg") && (outformat != "mei") && (outformat != "midi") && (outformat != "timemap")
         && (outformat != "humdrum") && (outformat != "hum") && (outformat != "pae") && (outformat != "pb-mei")) {
-        std::cerr << "Output format (" << outformat << ") can only be 'mei', 'pb-mei', 'svg', 'midi', 'humdrum' or 'pae'." << std::endl;
+        std::cerr << "Output format (" << outformat
+                  << ") can only be 'mei', 'pb-mei', 'svg', 'midi', 'humdrum' or 'pae'." << std::endl;
         exit(1);
     }
 
@@ -420,7 +406,7 @@ int main(int argc, char **argv)
         outfile = removeExtension(infile);
     }
     else if (outfile == "-") {
-        //vrv::EnableLog(false);
+        // vrv::EnableLog(false);
         std_output = true;
     }
     else {
@@ -561,7 +547,8 @@ int main(int argc, char **argv)
             }
         }
         else {
-            std::string params = vrv::StringFormat("{'scoreBased': %s, 'pageNo': %d, 'removeIds': %s}", scoreBased, page, removeIds);
+            std::string params
+                = vrv::StringFormat("{'scoreBased': %s, 'pageNo': %d, 'removeIds': %s}", scoreBased, page, removeIds);
             if (std_output) {
                 std::cout << toolkit.GetMEI(params);
             }

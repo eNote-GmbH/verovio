@@ -340,8 +340,6 @@ void LedgerLine::Reset()
 
 void LedgerLine::AddDash(int left, int right)
 {
-    assert(left < right);
-
     std::list<std::pair<int, int>>::iterator iter;
 
     // First add the dash

@@ -406,12 +406,7 @@ void MusicXmlInput::FillSpace(Layer *layer, int dur)
 
 void MusicXmlInput::GenerateUuid(pugi::xml_node node)
 {
-    int nr = std::rand();
-    char str[17];
-    // I do not want to use a stream for doing this!
-    snprintf(str, 17, "%016d", nr);
-
-    std::string uuid = StringFormat("%s-%s", node.name(), str).c_str();
+    std::string uuid = StringFormat("%s-%s", node.name(), Object::GenerateRandUuid().c_str()).c_str();
     std::transform(uuid.begin(), uuid.end(), uuid.begin(), ::tolower);
     node.append_attribute("xml:id").set_value(uuid.c_str());
 }
@@ -1169,14 +1164,20 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
             std::string xpath = StringFormat("clef[@number='%d']", i + 1);
             pugi::xpath_node clef = it->select_node(xpath.c_str());
             // if not, look at a common one
-            if (!clef) clef = it->select_node("clef");
+            if (!clef) {
+                clef = it->select_node("clef[not(@number)]");
+                if (nbStaves > 1) clef.node().remove_attribute("id");
+            }
             Clef *meiClef = ConvertClef(clef.node());
             if (meiClef) staffDef->AddChild(meiClef);
 
             // key sig
             xpath = StringFormat("key[@number='%d']", i + 1);
             pugi::xpath_node key = it->select_node(xpath.c_str());
-            if (!key) key = it->select_node("key");
+            if (!key) {
+                key = it->select_node("key[not(@number)]");
+                if (nbStaves > 1) key.node().remove_attribute("id");
+            }
             if (key) {
                 KeySig *meiKey = ConvertKey(key.node());
                 staffDef->AddChild(meiKey);
@@ -1211,11 +1212,15 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
             xpath = StringFormat("time[@number='%d']", i + 1);
             time = it->select_node(xpath.c_str());
             if (!time) {
-                time = it->select_node("time");
+                time = it->select_node("time[not(@number)]");
+                if (nbStaves > 1) time.node().remove_attribute("id");
             }
             if (time) {
                 if (!meterSig) meterSig = new MeterSig();
                 std::string symbol = time.node().attribute("symbol").as_string();
+                if (time.node().attribute("id")) {
+                    meterSig->SetUuid(time.node().attribute("id").as_string());
+                }
                 if (!symbol.empty()) {
                     if (symbol == "cut" || symbol == "common")
                         meterSig->SetSym(meterSig->AttMeterSigVis::StrToMetersign(symbol.c_str()));
@@ -1224,21 +1229,24 @@ int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(pugi::xml_node node, Sta
                     else
                         meterSig->SetForm(METERFORM_norm);
                 }
-                if (time.node().child("senza-misura")) {
-                    meterSig->SetForm(METERFORM_invis);
-                }
                 if (time.node().select_nodes("beats").size() > 1) {
                     LogWarning("MusicXML import: Compound meter signatures are not supported");
                 }
-                pugi::xpath_node beats = time.node().select_node("beats");
-                if (beats.node().text()) {
-                    m_meterCount = meterSig->AttMeterSigLog::StrToSummandList(beats.node().text().as_string());
-                    meterSig->SetCount(m_meterCount);
-                }
+                pugi::xml_node beats = time.node().child("beats");
                 pugi::xml_node beatType = time.node().child("beat-type");
-                if (beatType.text()) {
+                if (beats) {
+                    m_meterCount = meterSig->AttMeterSigLog::StrToSummandList(beats.text().as_string());
+                    meterSig->SetCount(m_meterCount);
                     m_meterUnit = beatType.text().as_int();
                     meterSig->SetUnit(m_meterUnit);
+                }
+                else if (time.node().child("senza-misura")) {
+                    if (time.node().child("senza-misura").text()) {
+                        meterSig->SetSym(METERSIGN_open);
+                    }
+                    else {
+                        meterSig->SetForm(METERFORM_invis);
+                    }
                 }
             }
             // add it if necessary
@@ -1584,10 +1592,12 @@ void MusicXmlInput::ReadMusicXmlAttributes(
         }
 
         if (time) {
-            MeterSig *meterSig = NULL;
+            MeterSig *meterSig = new MeterSig();
+            if (time.attribute("id")) {
+                meterSig->SetUuid(time.attribute("id").as_string());
+            }
             std::string symbol = time.attribute("symbol").as_string();
             if (!symbol.empty()) {
-                if (!meterSig) meterSig = new MeterSig();
                 if (symbol == "cut" || symbol == "common")
                     meterSig->SetSym(meterSig->AttMeterSigVis::StrToMetersign(symbol.c_str()));
                 else if (symbol == "single-number")
@@ -1595,25 +1605,26 @@ void MusicXmlInput::ReadMusicXmlAttributes(
                 else
                     meterSig->SetForm(METERFORM_norm);
             }
-            if (time.select_nodes("beats").size() > 1) {
-                LogWarning("MusicXML import: Compound meter signatures are not supported");
-            }
-            pugi::xpath_node beats = time.select_node("beats");
-            if (beats.node().text()) {
-                if (!meterSig) meterSig = new MeterSig();
-                m_meterCount = meterSig->AttMeterSigLog::StrToSummandList(beats.node().text().as_string());
+            pugi::xml_node beats = time.child("beats");
+            pugi::xml_node beatType = time.child("beat-type");
+            if (beats) {
+                m_meterCount = meterSig->AttMeterSigLog::StrToSummandList(beats.text().as_string());
                 meterSig->SetCount(m_meterCount);
-            }
-            pugi::xpath_node beatType = time.select_node("beat-type");
-            if (beatType.node().text()) {
-                if (!meterSig) meterSig = new MeterSig();
-                m_meterUnit = beatType.node().text().as_int();
+                m_meterUnit = beatType.text().as_int();
                 meterSig->SetUnit(m_meterUnit);
+                if (time.select_nodes("beats").size() > 1) {
+                    LogWarning("MusicXML import: Compound meter signatures are not supported");
+                }
             }
-            // add it if necessary
-            if (meterSig) {
-                scoreDef->AddChild(meterSig);
+            else if (time.child("senza-misura")) {
+                if (time.child("senza-misura").text()) {
+                    meterSig->SetSym(METERSIGN_open);
+                }
+                else {
+                    meterSig->SetForm(METERFORM_invis);
+                }
             }
+            scoreDef->AddChild(meterSig);
         }
 
         if (divisions) {
@@ -1896,12 +1907,13 @@ void MusicXmlInput::ReadMusicXmlDirection(
 
     pugi::xpath_node_set words = node.select_nodes("direction-type/words");
     const bool containsWords = !words.empty();
-    bool containsDynamics = !node.select_node("direction-type/dynamics|direction-type/sound[@dynamics]").node().empty();
-    bool containsTempo = !node.select_node("direction-type/metronome|direction-type/sound[@tempo]").node().empty();
+    bool containsDynamics
+        = !node.select_node("direction-type/dynamics").node().empty() or soundNode.attribute("dynamics");
+    bool containsTempo = !node.select_node("direction-type/metronome").node().empty() or soundNode.attribute("tempo");
 
     // Directive
     int defaultY = 0; // y position attribute, only for directives and dynamics
-    if (containsWords && !containsTempo && !containsDynamics && !soundNode.attribute("tempo")) {
+    if (containsWords && !containsTempo && !containsDynamics) {
         pugi::xpath_node_set words = node.select_nodes("direction-type/*[self::words or self::coda or self::segno]");
         defaultY = words.first().node().attribute("default-y").as_int();
         std::string wordStr = words.first().node().text().as_string();
