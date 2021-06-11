@@ -21,6 +21,7 @@
 #include "bracketspan.h"
 #include "breath.h"
 #include "btrem.h"
+#include "caesura.h"
 #include "chord.h"
 #include "clef.h"
 #include "comparison.h"
@@ -2727,6 +2728,7 @@ void MusicXmlInput::ReadMusicXmlNote(
                     // std::string textColor = textNode.attribute("color").as_string();
                     std::string textStyle = textNode.attribute("font-style").as_string();
                     std::string textWeight = textNode.attribute("font-weight").as_string();
+                    int lineThrough = textNode.attribute("line-through").as_int();
                     std::string lang = textNode.attribute("xml:lang").as_string();
                     std::string textStr = textNode.text().as_string();
                     Syl *syl = new Syl();
@@ -2762,7 +2764,14 @@ void MusicXmlInput::ReadMusicXmlNote(
 
                     Text *text = new Text();
                     text->SetText(UTF8to16(textStr));
-                    syl->AddChild(text);
+                    if (lineThrough){
+                        Rend *rend = new Rend();
+                        rend->AddChild(text);
+                        rend->SetRend(TEXTRENDITION_line_through);
+                        syl->AddChild(rend);
+                    } else {
+                        syl->AddChild(text);
+                    }
                     verse->AddChild(syl);
                 }
             }
@@ -2913,6 +2922,18 @@ void MusicXmlInput::ReadMusicXmlNote(
             breath->AttPlacementRelStaff::StrToStaffrel(xmlBreath.node().attribute("placement").as_string()));
         breath->SetColor(xmlBreath.node().attribute("color").as_string());
         breath->SetTstamp((double)(m_durTotal) * (double)m_meterUnit / (double)(4 * m_ppq) + 1.0);
+    }
+
+    // caesura
+    pugi::xpath_node xmlCaesura = notations.node().select_node("articulations/caesura");
+    if (xmlCaesura) {
+        Caesura *caesura = new Caesura();
+        m_controlElements.push_back(std::make_pair(measureNum, caesura));
+        caesura->SetStaff(staff->AttNInteger::StrToXsdPositiveIntegerList(std::to_string(staff->GetN())));
+        caesura->SetPlace(
+            caesura->AttPlacementRelStaff::StrToStaffrel(xmlCaesura.node().attribute("placement").as_string()));
+        caesura->SetColor(xmlCaesura.node().attribute("color").as_string());
+        caesura->SetTstamp((double)(m_durTotal) * (double)m_meterUnit / (double)(4 * m_ppq) + 1.0);
     }
 
     // dynamics
