@@ -568,7 +568,7 @@ bool HumdrumInput::convertHumdrum()
     importVerovioOptions(m_doc);
 
     if (GetOutputFormat() == "humdrum") {
-        // allow for filtering within toolkit.
+        // Allow for filtering within toolkit.
         return true;
     }
     if (m_infiles.getCount() == 0) {
@@ -863,6 +863,12 @@ void HumdrumInput::checkForBreak(hum::HumdrumFile &infile, int line)
 
     if ((linebreaki == -1) && (pagebreaki == -1)) {
         return;
+    }
+
+    // force pagebreaks to linkebreaks for now (see https://github.com/rism-digital/verovio/issues/2034)
+    if (pagebreaki > 0) {
+        linebreaki = pagebreaki;
+        pagebreaki = -1;
     }
 
     if (linebreaki > 0) {
@@ -2061,19 +2067,22 @@ void HumdrumInput::prepareVerses()
     std::vector<humaux::StaffStateVariables> &ss = m_staffstates;
     // ss[*].verse should already be set to false.
 
-    std::vector<hum::HTp> &kern = m_staffstarts;
+    std::vector<hum::HTp> &staffstarts = m_staffstarts;
 
-    if (kern.size() == 0) {
+    if (staffstarts.size() == 0) {
         return;
     }
 
-    hum::HumdrumLine &line = *kern[0]->getLine();
+    hum::HumdrumLine &line = *staffstarts[0]->getLine();
     int field;
 
-    for (i = 0; i < (int)kern.size(); ++i) {
-        field = kern[i]->getFieldIndex();
+    for (i = 0; i < (int)staffstarts.size(); ++i) {
+        field = staffstarts[i]->getFieldIndex();
         for (j = field + 1; j < line.getFieldCount(); ++j) {
             if (line.token(j)->isKern()) {
+                break;
+            }
+            if (line.token(j)->isMens()) {
                 break;
             }
             else if (line.token(j)->isDataType("**text")) {
@@ -8779,63 +8788,7 @@ bool HumdrumInput::fillContentsOfLayer(int track, int startline, int endline, in
         }
         if (layerdata[i]->isBarline() && (!layerdata[i]->allSameBarlineStyle())) {
             // display a barline local to the staff
-
-            BarLine *barline = new BarLine;
-            setLocationId(barline, layerdata[i]);
-
-            if (layerdata[i]->compare(0, 2, "==") == 0) {
-                barline->SetForm(BARRENDITION_end);
-            }
-            else if (layerdata[i]->find(":|!|:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptboth);
-            }
-            else if (layerdata[i]->find(":!!:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptboth);
-            }
-            else if (layerdata[i]->find(":||:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptboth);
-            }
-            else if (layerdata[i]->find(":!:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptboth);
-            }
-            else if (layerdata[i]->find(":|:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptboth);
-            }
-            else if (layerdata[i]->find(":|") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptend);
-            }
-            else if (layerdata[i]->find(":!") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptend);
-            }
-            else if (layerdata[i]->find("!:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptstart);
-            }
-            else if (layerdata[i]->find("|:") != std::string::npos) {
-                barline->SetForm(BARRENDITION_rptstart);
-            }
-            else if (layerdata[i]->find("||") != std::string::npos) {
-                barline->SetForm(BARRENDITION_dbl);
-            }
-            else if (layerdata[i]->find("-") != std::string::npos) {
-                barline->SetForm(BARRENDITION_invis);
-            }
-            else if (layerdata[i]->find("..") != std::string::npos) {
-                barline->SetForm(BARRENDITION_dbldotted);
-            }
-            else if (layerdata[i]->find(".") != std::string::npos) {
-                barline->SetForm(BARRENDITION_dotted);
-            }
-            else if (layerdata[i]->find("::") != std::string::npos) {
-                barline->SetForm(BARRENDITION_dbldashed);
-            }
-            else if (layerdata[i]->find(":") != std::string::npos) {
-                barline->SetForm(BARRENDITION_dashed);
-            }
-            else {
-                barline->SetForm(BARRENDITION_single);
-            }
-
-            appendElement(elements, pointers, barline);
+            addBarLineElement(layerdata[i], elements, pointers);
         }
         if (!layerdata[i]->isData()) {
             continue;
@@ -9252,7 +9205,77 @@ bool HumdrumInput::fillContentsOfLayer(int track, int startline, int endline, in
         processDirections(layerdata.back(), staffindex);
     }
 
+    if (m_mens && (layerdata.size() > 0) && layerdata.back()->isBarline()) {
+        // add barLine in mensural music
+        addBarLineElement(layerdata.back(), elements, pointers);
+    }
+
     return true;
+}
+
+//////////////////////////////
+//
+// HumdrumInput::addBarLineElement --
+//
+
+void HumdrumInput::addBarLineElement(hum::HTp bartok, std::vector<std::string> &elements, std::vector<void *> &pointers)
+{
+    BarLine *barline = new BarLine;
+    setLocationId(barline, bartok);
+
+    if (bartok->compare(0, 2, "==") == 0) {
+        barline->SetForm(BARRENDITION_end);
+    }
+    else if (bartok->find(":|!|:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptboth);
+    }
+    else if (bartok->find(":!!:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptboth);
+    }
+    else if (bartok->find(":||:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptboth);
+    }
+    else if (bartok->find(":!:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptboth);
+    }
+    else if (bartok->find(":|:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptboth);
+    }
+    else if (bartok->find(":|") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptend);
+    }
+    else if (bartok->find(":!") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptend);
+    }
+    else if (bartok->find("!:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptstart);
+    }
+    else if (bartok->find("|:") != std::string::npos) {
+        barline->SetForm(BARRENDITION_rptstart);
+    }
+    else if (bartok->find("||") != std::string::npos) {
+        barline->SetForm(BARRENDITION_dbl);
+    }
+    else if (bartok->find("-") != std::string::npos) {
+        barline->SetForm(BARRENDITION_invis);
+    }
+    else if (bartok->find("..") != std::string::npos) {
+        barline->SetForm(BARRENDITION_dbldotted);
+    }
+    else if (bartok->find(".") != std::string::npos) {
+        barline->SetForm(BARRENDITION_dotted);
+    }
+    else if (bartok->find("::") != std::string::npos) {
+        barline->SetForm(BARRENDITION_dbldashed);
+    }
+    else if (bartok->find(":") != std::string::npos) {
+        barline->SetForm(BARRENDITION_dashed);
+    }
+    else {
+        barline->SetForm(BARRENDITION_single);
+    }
+
+    appendElement(elements, pointers, barline);
 }
 
 //////////////////////////////
@@ -19395,7 +19418,15 @@ template <class ELEMENT> void HumdrumInput::convertVerses(ELEMENT element, hum::
     int startfield = token->getFieldIndex() + 1;
     for (int i = startfield; i < line.getFieldCount(); ++i) {
         std::string exinterp = line.token(i)->getDataType();
+
         if (line.token(i)->isKern() || (exinterp.find("kern") != std::string::npos)) {
+            ttrack = line.token(i)->getTrack();
+            if (ttrack != track) {
+                break;
+            }
+        }
+
+        if (line.token(i)->isMens() || (exinterp.find("mens") != std::string::npos)) {
             ttrack = line.token(i)->getTrack();
             if (ttrack != track) {
                 break;
