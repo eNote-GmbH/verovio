@@ -1658,6 +1658,7 @@ void MEIOutput::WriteClef(pugi::xml_node currentNode, Clef *clef)
     clef->WriteExtSym(currentNode);
     clef->WriteLineLoc(currentNode);
     clef->WriteOctaveDisplacement(currentNode);
+    clef->WriteStaffIdent(currentNode);
     clef->WriteVisibility(currentNode);
 }
 
@@ -5066,6 +5067,7 @@ bool MEIInput::ReadClef(Object *parent, pugi::xml_node clef)
     vrvClef->ReadExtSym(clef);
     vrvClef->ReadLineLoc(clef);
     vrvClef->ReadOctaveDisplacement(clef);
+    vrvClef->ReadStaffIdent(clef);
     vrvClef->ReadVisibility(clef);
 
     parent->AddChild(vrvClef);

@@ -153,7 +153,12 @@ int PitchInterface::CalcLoc(
         if (note->HasLoc()) {
             return note->GetLoc();
         }
-        return PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), layer->GetClefLocOffset(crossStaffElement));
+        int offset = layer->GetClefLocOffset(crossStaffElement);
+        Layer *parentLayer = vrv_cast<Layer *>(layerElement->GetFirstAncestor(LAYER));
+        if (parentLayer != layer) {
+            offset = parentLayer->GetCrossStaffClefLocOffset(layerElement, offset);
+        }
+        return PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), offset);
     }
     else if (layerElement->Is(CUSTOS)) {
         Custos *custos = vrv_cast<Custos *>(layerElement);

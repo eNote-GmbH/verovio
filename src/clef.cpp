@@ -16,6 +16,7 @@
 #include "comparison.h"
 #include "doc.h"
 #include "functorparams.h"
+#include "layer.h"
 #include "scoredefinterface.h"
 #include "staff.h"
 
@@ -27,13 +28,21 @@ namespace vrv {
 
 static const ClassRegistrar<Clef> s_factory("clef", CLEF);
 
-Clef::Clef() : LayerElement("clef-"), AttClefShape(), AttColor(), AttLineLoc(), AttOctaveDisplacement(), AttVisibility()
+Clef::Clef()
+    : LayerElement("clef-")
+    , AttClefShape()
+    , AttColor()
+    , AttLineLoc()
+    , AttOctaveDisplacement()
+    , AttStaffIdent()
+    , AttVisibility()
 {
     RegisterAttClass(ATT_CLEFSHAPE);
     RegisterAttClass(ATT_COLOR);
     RegisterAttClass(ATT_EXTSYM);
     RegisterAttClass(ATT_LINELOC);
     RegisterAttClass(ATT_OCTAVEDISPLACEMENT);
+    RegisterAttClass(ATT_STAFFIDENT);
     RegisterAttClass(ATT_VISIBILITY);
 
     Reset();
@@ -49,6 +58,7 @@ void Clef::Reset()
     ResetExtSym();
     ResetLineLoc();
     ResetOctaveDisplacement();
+    ResetStaffIdent();
     ResetVisibility();
 }
 
@@ -239,7 +249,7 @@ int Clef::AdjustClefChanges(FunctorParams *functorParams)
     std::vector<int> ns;
     // -1 for barline attributes that need to be taken into account each time
     ns.push_back(BARLINE_REFERENCES);
-    ns.push_back(staff->GetN());
+    ns.push_back(m_crossStaff? m_crossStaff->GetN() : staff->GetN());
     AttNIntegerAnyComparison matchStaff(ALIGNMENT_REFERENCE, ns);
 
     // Look if we have a grace aligner just after the clef.
