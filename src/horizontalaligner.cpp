@@ -555,7 +555,7 @@ bool Alignment::AddLayerElementRef(LayerElement *element)
     return alignmentRef->HasMultipleLayer();
 }
 
-bool Alignment::IsOfType(const std::vector<AlignmentType> &types)
+bool Alignment::IsOfType(const std::vector<AlignmentType> &types) const
 {
     return (std::find(types.begin(), types.end(), m_type) != types.end());
 }
@@ -608,6 +608,11 @@ GraceAligner *Alignment::GetGraceAligner(int id)
 bool Alignment::HasGraceAligner(int id) const
 {
     return (m_graceAligners.count(id) == 1);
+}
+
+bool Alignment::PerfomBoundingBoxAlignment() const
+{
+    return this->IsOfType({ ALIGNMENT_ACCID, ALIGNMENT_DOT, ALIGNMENT_DEFAULT });
 }
 
 AlignmentReference *Alignment::GetReferenceWithElement(LayerElement *element, int staffN)
@@ -1108,12 +1113,20 @@ int Alignment::AdjustDotsEnd(FunctorParams *functorParams)
         // multimap of overlapping dots with other elements
         std::multimap<LayerElement *, LayerElement *> overlapElements;
 
-        // Try to find which dots can be groupped together. To achieve this, find layer elements that collide with these
+        // Try to find which dots can be grouped together. To achieve this, find layer elements that collide with these
         // dots. Then find if their parents (note/chord) have dots - if they do then we can group these dots together,
         // otherwise they should be kept separate
         for (auto dot : params->m_dots) {
+            // A third staff size will be used as required margin
+            const Staff *staff
+                = vrv_cast<Staff *>(dot->m_crossStaff ? dot->m_crossStaff : dot->GetFirstAncestor(STAFF));
+            assert(staff);
+            const int staffSize = staff->m_drawingStaffSize;
+            const int thirdUnit = params->m_doc->GetDrawingUnit(staffSize) / 3;
+
             for (LayerElement *element : params->m_elements) {
-                if (dot->HorizontalSelfOverlap(element, 30) && dot->VerticalSelfOverlap(element, 60)) {
+                if (dot->HorizontalSelfOverlap(element, thirdUnit)
+                    && dot->VerticalSelfOverlap(element, 2 * thirdUnit)) {
                     if (element->Is({ CHORD, NOTE })) {
                         if (dynamic_cast<AttAugmentDots *>(element)->GetDots() <= 0) continue;
                         overlapElements.emplace(dot, element);

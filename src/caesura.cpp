@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        breath.cpp
-// Author:      Klaus Rettinghaus
-// Created:     2017
+// Name:        caesura.cpp
+// Author:      Klaus Rettinghaus, Thomas Weber
+// Created:     2021
 // Copyright (c) Authors and others. All rights reserved.
 /////////////////////////////////////////////////////////////////////////////
 
-#include "breath.h"
+#include "caesura.h"
 
 //----------------------------------------------------------------------------
 
@@ -18,12 +18,12 @@
 namespace vrv {
 
 //----------------------------------------------------------------------------
-// Breath
+// Caesura
 //----------------------------------------------------------------------------
 
-static const ClassRegistrar<Breath> s_factory("breath", BREATH);
+static const ClassRegistrar<Caesura> s_factory("caesura", CAESURA);
 
-Breath::Breath() : ControlElement("breath-"), TimePointInterface(), AttColor(), AttPlacementRelStaff()
+Caesura::Caesura() : ControlElement("caesura-"), TimePointInterface(), AttColor(), AttPlacementRelStaff()
 {
     RegisterInterface(TimePointInterface::GetAttClasses(), TimePointInterface::IsInterface());
     RegisterAttClass(ATT_COLOR);
@@ -32,9 +32,9 @@ Breath::Breath() : ControlElement("breath-"), TimePointInterface(), AttColor(), 
     Reset();
 }
 
-Breath::~Breath() {}
+Caesura::~Caesura() {}
 
-void Breath::Reset()
+void Caesura::Reset()
 {
     ControlElement::Reset();
     TimePointInterface::Reset();

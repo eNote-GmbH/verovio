@@ -1,7 +1,7 @@
 //
 // Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
 // Creation Date: Sat Aug  8 12:24:49 PDT 2015
-// Last Modified: Thu May 20 08:48:54 PDT 2021
+// Last Modified: Mon Jun 21 10:09:00 PDT 2021
 // Filename:      humlib.h
 // URL:           https://github.com/craigsapp/humlib/blob/master/include/humlib.h
 // Syntax:        C++11
@@ -4253,6 +4253,8 @@ class GridMeasure : public std::list<GridSlice*> {
 		                             int part, int staff, int voice, int maxstaff);
 		GridSlice*   addClefToken   (const std::string& tok, HumNum timestamp,
 		                             int part, int staff, int voice, int maxstaff);
+		GridSlice*   addBarlineToken(const std::string& tok, HumNum timestamp,
+		                             int part, int staff, int voice, int maxstaff);
 		GridSlice*   addTransposeToken(const std::string& tok, HumNum timestamp,
 		                             int part, int staff, int voice, int maxstaff);
 		GridSlice*   addLabelToken  (const std::string& tok, HumNum timestamp,
@@ -4469,19 +4471,20 @@ class HumGrid : public std::vector<GridMeasure*> {
 		HumGrid(void);
 		~HumGrid();
 		void enableRecipSpine           (void);
-		bool transferTokens             (HumdrumFile& outfile, int startbarnum = 0);
+		bool transferTokens             (HumdrumFile& outfile, int startbarnum = 0, const string& interp = "**kern");
 		int  getHarmonyCount            (int partindex);
 		int  getDynamicsCount           (int partindex);
 		int  getFiguredBassCount        (int partindex);
+		int  getXmlidCount              (int partindex);
 		int  getVerseCount              (int partindex, int staffindex);
-		int  getXmlidCount              (int partindex, int staffindex);
 		bool hasDynamics                (int partindex);
+		bool hasXmlids                  (int partindex);
 		bool hasFiguredBass             (int partindex);
 		void setDynamicsPresent         (int partindex);
+		void setXmlidsPresent           (int partindex);
 		void setFiguredBassPresent      (int partindex);
 		void setHarmonyPresent          (int partindex);
 		void setVerseCount              (int partindex, int staffindex, int count);
-		void setXmlidCount              (int partindex, int staffindex, int count);
 		void reportVerseCount           (int partindex, int staffindex, int count);
 		void reportXmlidCount           (int partindex, int staffindex, int count);
 		void setHarmonyCount            (int partindex, int count);
@@ -4506,7 +4509,7 @@ class HumGrid : public std::vector<GridMeasure*> {
 
 	protected:
 		void calculateGridDurations        (void);
-		void insertExclusiveInterpretationLine (HumdrumFile& outfile);
+		void insertExclusiveInterpretationLine (HumdrumFile& outfile, const string& interp);
 		void insertDataTerminationLine     (HumdrumFile& outfile);
 		void appendMeasureLine             (HumdrumFile& outfile,
 		                                    GridSlice& slice);
@@ -4570,10 +4573,10 @@ class HumGrid : public std::vector<GridMeasure*> {
 	private:
 		std::vector<GridSlice*>       m_allslices;
 		std::vector<std::vector<int>> m_verseCount;
-		std::vector<std::vector<int>> m_xmlidCount;
 		std::vector<int>              m_harmonyCount;
 		bool                          m_pickup;
 		std::vector<bool>             m_dynamics;
+		std::vector<bool>             m_xmlids;
 		std::vector<bool>             m_figured_bass;
 		std::vector<bool>             m_harmony;
 
@@ -4697,9 +4700,11 @@ class MxmlEvent {
 		std::vector<std::pair<int, xml_node>>&  getTexts           (void);
 		std::vector<std::pair<int, xml_node>>&  getTempos          (void);
 		void               setDynamics        (xml_node node);
+		void               setBracket         (xml_node node);
 		void               setHairpinEnding   (xml_node node);
 		void               addFiguredBass     (xml_node node);
 		std::vector<xml_node> getDynamics     (void);
+		std::vector<xml_node> getBrackets     (void);
 		xml_node           getHairpinEnding   (void);
 		int                getFiguredBassCount(void);
 		xml_node           getFiguredBass     (int index);
@@ -4727,6 +4732,7 @@ class MxmlEvent {
 		std::vector<xml_node> m_dynamics;   // dynamics <direction> starting just before note
 		xml_node          m_hairpin_ending; // hairpin <direction> starting just after note and before new measure
 		std::vector<xml_node>  m_figured_bass; // fb starting just before note
+		std::vector<xml_node>  m_brackets;  // brackets to start/end before/after note
 		std::vector<std::pair<int, xml_node>>  m_text;   // text <direction> starting just before note
 		std::vector<std::pair<int, xml_node>>  m_tempo;   // tempo starting just before note
 
@@ -5825,7 +5831,6 @@ class Tool_composite : public HumTool {
 		void        analyzeLineGroups    (HumdrumFile& infile);
 		void        analyzeLineGroup     (HumdrumFile& infile, int line, const std::string& target);
 		void        printGroupAssignments(HumdrumFile& infile);
-		std::string getGroup             (std::vector<std::vector<std::string>>& current, int spine, int subspine);
 		int         getGroupNoteType     (HumdrumFile& infile, int line, const std::string& group);
 		void        getGroupDurations    (std::vector<std::vector<HumNum>>& groupdurs,
 		                                  std::vector<std::vector<int>>& groupstates, HumdrumFile& infile);
@@ -5864,6 +5869,7 @@ class Tool_composite : public HumTool {
 		                                  HumdrumFile& infile, int direction);
 		void        processCoincidenceInterpretation(HumdrumFile& infile, HTp token);
 		bool        hasPipeRdf           (HumdrumFile& infile);
+		void        extractGroup         (HumdrumFile& infile, const string &target);
 
 	private:
 		std::string m_pitch     = "eR";   // pitch to display for composite rhythm
@@ -5876,11 +5882,14 @@ class Tool_composite : public HumTool {
 		bool        m_upQ       = false;  // force stem up
 		bool        m_hasGroupsQ = false; // used with -M, -N option
 		bool        m_nestQ     = false;  // used with --nest option
+		bool        m_onlyQ     = false;  // used with --only option
+		std::string m_only;               // used with --only option
 		bool        m_coincidenceQ = false; // used with -c option
 		bool        m_assignedGroups = false;
 		bool        m_suppressCMarkQ = false; // used with -c option when -M -m -N and -n not present
 		std::string m_togetherInScore;    // used with -n option
 		std::string m_together;           // used with -m option
+		bool        m_coincideDisplayQ = true; // used with m_together and m_togetherInScore
 
 };
 
@@ -6925,6 +6934,7 @@ class Tool_mei2hum : public HumTool {
 		void   parseBareSyl          (xml_node syl, GridStaff* staff);
 		string getChildAccidGes      (vector<xml_node>& children);
 		string getChildAccidVis      (vector<xml_node>& children);
+		void   parseBarline          (xml_node barLine, HumNum starttime);
 
 		// static functions
 		static string accidToKern(const string& accid);
@@ -6934,6 +6944,7 @@ class Tool_mei2hum : public HumTool {
 		bool           m_stemsQ = false;
 		bool           m_recipQ = false;
 		bool           m_placeQ = false;
+		bool           m_xmlidQ = false;
 
 		mei_scoreDef   m_scoreDef;    // for keeping track of key/meter/clef etc.
 		int            m_staffcount;  // number of staves in score.
@@ -6956,11 +6967,15 @@ class Tool_mei2hum : public HumTool {
 		vector<HumNum> m_measureDuration;
 		vector<bool>   m_hasDynamics;
 		vector<bool>   m_hasHarm;
+		vector<bool>   m_hasXmlids;
 		const int      m_maxstaff = 1000;
 
 		bool           m_fermata = false;     // set priority of note/fermata over note@fermata
 		vector<grace_info> m_gracenotes;      // buffer for storing grace notes
 		HumNum			m_gracetime = 0;       // performance time of buffered grace notes
+		bool           m_mensuralQ = false;
+
+		HTp            lastNote = NULL;
 
 		vector<hairpin_info> m_hairpins;
 
@@ -7710,6 +7725,8 @@ class Tool_musicxml2hum : public HumTool {
 		                        int staffindex, int voiceindex, MxmlEvent* event);
 		void addTempo          (GridSlice* slice, GridMeasure* measure, int partindex,
 		                        int staffindex, int voiceindex, pugi::xml_node node);
+		void addBrackets       (GridSlice* slice, GridMeasure* measure, MxmlEvent* event, HumNum nowtime,
+		                        int partindex);
 		int         getHarmonyOffset(pugi::xml_node hnode);
 		std::string getHarmonyString(pugi::xml_node hnode);
 		std::string getDynamicString(pugi::xml_node element);
@@ -7761,6 +7778,8 @@ class Tool_musicxml2hum : public HumTool {
 		std::string m_systemDecoration;
 
 		std::vector<std::vector<pugi::xml_node>> m_current_dynamic;
+		std::vector<std::vector<pugi::xml_node>> m_current_brackets;
+		std::map<int, string> m_bracket_type_buffer;
 		std::vector<std::vector<pugi::xml_node>> m_used_hairpins;
 		std::vector<pugi::xml_node> m_current_figured_bass;
 		std::vector<std::pair<int, pugi::xml_node>> m_current_text;
@@ -8242,6 +8261,7 @@ class Tool_satb2gs : public HumTool {
 		void    printHeaderLine    (HumdrumFile& infile, int line,
 		                            std::vector<std::vector<int>>& tracks);
 		bool    validateHeader     (HumdrumFile& infile);
+		vector<HTp> getClefs       (HumdrumFile& infile, int line);
 
 };
 
