@@ -468,6 +468,8 @@ int Staff::AlignHorizontally(FunctorParams *functorParams)
     else {
         params->m_notationType = NOTATIONTYPE_cmn;
     }
+    Measure *parentMeasure = vrv_cast<Measure *>(GetFirstAncestor(MEASURE));
+    if (parentMeasure) m_drawingStaffDef->AlternateCurrentMeterSig(parentMeasure);
 
     return FUNCTOR_CONTINUE;
 }
