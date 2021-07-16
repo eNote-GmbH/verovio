@@ -211,7 +211,8 @@ void Page::LayOutTranscription(bool force)
 
     FunctorDocParams calcLedgerLinesParams(doc);
     Functor calcLedgerLines(&Object::CalcLedgerLines);
-    this->Process(&calcLedgerLines, &calcLedgerLinesParams);
+    Functor calcLedgerLinesEnd(&Object::CalcLedgerLinesEnd);
+    this->Process(&calcLedgerLines, &calcLedgerLinesParams, &calcLedgerLinesEnd);
 
     m_layoutDone = true;
 }
@@ -433,7 +434,8 @@ void Page::LayOutVertically()
 
     FunctorDocParams calcLedgerLinesParams(doc);
     Functor calcLedgerLines(&Object::CalcLedgerLines);
-    this->Process(&calcLedgerLines, &calcLedgerLinesParams);
+    Functor calcLedgerLinesEnd(&Object::CalcLedgerLinesEnd);
+    this->Process(&calcLedgerLines, &calcLedgerLinesParams, &calcLedgerLinesEnd);
 
     // Align the content of the page using system aligners
     // After this:

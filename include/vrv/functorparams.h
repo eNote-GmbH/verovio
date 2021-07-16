@@ -957,14 +957,14 @@ public:
         m_currentRealTimeSeconds = 0.0;
         m_maxCurrentScoreTime = 0.0;
         m_maxCurrentRealTimeSeconds = 0.0;
-        m_currentTempo = 120;
+        m_currentTempo = 120.0;
         m_tempoAdjustment = 1.0;
     }
     double m_currentScoreTime;
     double m_currentRealTimeSeconds;
     double m_maxCurrentScoreTime;
     double m_maxCurrentRealTimeSeconds;
-    int m_currentTempo;
+    double m_currentTempo;
     double m_tempoAdjustment;
 };
 
@@ -990,14 +990,14 @@ public:
         m_currentMensur = NULL;
         m_currentMeterSig = NULL;
         m_notationType = NOTATIONTYPE_cmn;
-        m_currentTempo = 120;
+        m_currentTempo = 120.0;
     }
     double m_currentScoreTime;
     double m_currentRealTimeSeconds;
     Mensur *m_currentMensur;
     MeterSig *m_currentMeterSig;
     data_NOTATIONTYPE m_notationType;
-    int m_currentTempo;
+    double m_currentTempo;
 };
 
 //----------------------------------------------------------------------------
@@ -1437,26 +1437,21 @@ public:
  * member 2: the maximum position
  * member 3: the timespanning interface
  * member 4: the class Ids to keep
- * member 5: the slur for finding ties (too specific, to be refactored)
- * member 6: the ties we need to consider (too specific, to be refactored)
  **/
 
 class FindSpannedLayerElementsParams : public FunctorParams {
 public:
-    FindSpannedLayerElementsParams(TimeSpanningInterface *interface, Slur *slur)
+    FindSpannedLayerElementsParams(TimeSpanningInterface *interface)
     {
         m_interface = interface;
         m_minPos = 0;
         m_maxPos = 0;
-        m_slur = slur;
     }
     std::vector<LayerElement *> m_elements;
     int m_minPos;
     int m_maxPos;
     TimeSpanningInterface *m_interface;
     std::vector<ClassId> m_classIds;
-    Slur *m_slur;
-    std::vector<FloatingPositioner *> m_ties;
 };
 
 //----------------------------------------------------------------------------
@@ -1478,7 +1473,7 @@ using MIDINoteSequence = std::list<MIDINote>;
  * member 1: int: the midi track number
  * member 3: double: the score time from the start of the music to the start of the current measure
  * member 4: int: the semi tone transposition for the current track
- * member 5: int with the current tempo
+ * member 5: double with the current tempo
  * member 6: expanded notes due to ornaments and tremolandi
  **/
 
@@ -1491,7 +1486,7 @@ public:
         m_midiTrack = 1;
         m_totalTime = 0.0;
         m_transSemi = 0;
-        m_currentTempo = 120;
+        m_currentTempo = 120.0;
         m_functor = functor;
     }
     smf::MidiFile *m_midiFile;
@@ -1499,7 +1494,7 @@ public:
     int m_midiTrack;
     double m_totalTime;
     int m_transSemi;
-    int m_currentTempo;
+    double m_currentTempo;
     std::map<Note *, MIDINoteSequence> m_expandedNotes;
     Functor *m_functor;
 };
@@ -1524,16 +1519,16 @@ public:
     {
         m_scoreTimeOffset = 0.0;
         m_realTimeOffsetMilliseconds = 0;
-        m_currentTempo = 120;
+        m_currentTempo = 120.0;
         m_functor = functor;
     }
     std::map<double, double> realTimeToScoreTime;
     std::map<double, std::vector<std::string>> realTimeToOnElements;
     std::map<double, std::vector<std::string>> realTimeToOffElements;
-    std::map<double, int> realTimeToTempo;
+    std::map<double, double> realTimeToTempo;
     double m_scoreTimeOffset;
     double m_realTimeOffsetMilliseconds;
-    int m_currentTempo;
+    double m_currentTempo;
     Functor *m_functor;
 };
 
