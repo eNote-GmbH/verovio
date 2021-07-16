@@ -302,11 +302,14 @@ void MusicXmlInput::InsertClefToLayer(Staff *staff, Layer *layer, Clef *clef, in
                     otherLayer->InsertAfter(layerElement, clefToAdd);
                     m_layerTimes.at(otherLayer).emplace(actualScoreOnSet, clefToAdd);
                 }
-                else if (layerElement->GetParent()->Is(BEAM)) {
-                    layerElement->GetParent()->InsertAfter(layerElement, clefToAdd);
-                }
-                else if (layerElement->GetParent()->Is({ CHORD, FTREM })) {
-                    otherLayer->InsertAfter(layerElement->GetParent(), clefToAdd);
+                else {
+                    Object *parent = layerElement->GetParent();
+                    if (parent->Is({ CHORD, FTREM })) {
+                        parent->GetParent()->InsertAfter(parent, clefToAdd);
+                    }
+                    else {
+                        parent->InsertAfter(layerElement, clefToAdd);
+                    }
                 }
             }
         }
@@ -369,7 +372,9 @@ void MusicXmlInput::AddLayerElement(Layer *layer, LayerElement *element, int dur
         m_elementStackMap.at(layer).back()->AddChild(element);
     }
     m_layerEndTimes[layer] = m_durTotal + duration;
-    m_layerTimes[layer].emplace(m_durTotal + duration, element);
+    if (!element->Is({ BEAM, TUPLET })) {
+        m_layerTimes[layer].emplace(m_durTotal + duration, element);
+    }
 }
 
 Layer *MusicXmlInput::SelectLayer(pugi::xml_node node, Measure *measure)
@@ -697,7 +702,7 @@ void MusicXmlInput::PrintMetronome(pugi::xml_node metronome, Tempo *tempo)
                 std::string matches("0123456789");
                 std::size_t offset = iter->second.find_first_of(matches);
                 if (offset < iter->second.length()) {
-                    const float mmval = std::stof(iter->second.substr(offset));
+                    const double mmval = std::stod(iter->second.substr(offset));
                     tempo->SetMm(mmval);
                 }
                 if (!iter->second.empty()) {
@@ -806,7 +811,7 @@ bool MusicXmlInput::ReadMusicXml(pugi::xml_node root)
     m_octDis.push_back(0);
 
     pugi::xpath_node scoreMidiBpm = root.select_node("/score-partwise/part[1]/measure[1]/sound[@tempo][1]");
-    if (scoreMidiBpm) m_doc->m_mdivScoreDef.SetMidiBpm(scoreMidiBpm.node().attribute("tempo").as_int());
+    if (scoreMidiBpm) m_doc->m_mdivScoreDef.SetMidiBpm(scoreMidiBpm.node().attribute("tempo").as_double());
 
     pugi::xpath_node_set partListChildren = root.select_nodes("/score-partwise/part-list/*");
     for (pugi::xpath_node_set::const_iterator it = partListChildren.begin(); it != partListChildren.end(); ++it) {
@@ -2298,7 +2303,7 @@ void MusicXmlInput::ReadMusicXmlDirection(
         if (words.size() != 0) TextRendition(words, tempo);
         if (metronome) PrintMetronome(metronome.node(), tempo);
         if (soundNode.attribute("tempo")) {
-            tempo->SetMidiBpm(round(soundNode.attribute("tempo").as_float()));
+            tempo->SetMidiBpm(soundNode.attribute("tempo").as_double());
         }
         tempo->SetTstamp(timeStamp);
         if (staffNode) {
@@ -3458,7 +3463,8 @@ void MusicXmlInput::ReadMusicXmlBeamStart(const pugi::xml_node &node, const pugi
     m_elementStackMap.at(layer).push_back(beam);
 }
 
-void MusicXmlInput::ReadMusicXmlTies(const pugi::xml_node &node, Layer *layer, Note *note, const std::string &measureNum)
+void MusicXmlInput::ReadMusicXmlTies(
+    const pugi::xml_node &node, Layer *layer, Note *note, const std::string &measureNum)
 {
     pugi::xpath_node xmlTie = node.select_node("tied");
     if (!xmlTie) return;
