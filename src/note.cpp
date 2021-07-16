@@ -1098,7 +1098,7 @@ int Note::CalcLedgerLines(FunctorParams *functorParams)
     }
 
     if (left > right) return FUNCTOR_CONTINUE;
-    
+
     if (linesAbove > 0) {
         staff->AddLedgerLineAbove(linesAbove, left, right, extension, drawingCueSize);
     }
