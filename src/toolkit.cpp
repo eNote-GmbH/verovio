@@ -1025,7 +1025,7 @@ void Toolkit::ResetOptions()
         [](const MapOfStrOptions::value_type &opt) { opt.second->Reset(); });
 
     // Set the (default) font
-    Resources::SetFont(m_options->m_font.GetValue());
+    Resources::SetMusicFont(m_options->m_font.GetValue());
 }
 
 std::string Toolkit::GetElementAttr(const std::string &xmlId)
