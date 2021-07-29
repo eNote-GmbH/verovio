@@ -391,13 +391,12 @@ void SvgDeviceContext::StartPage()
     m_vrvTextFont = false;
 
     // default styles
-    std::string defaultFontDefinition {"g.page-margin{font-family:" + m_defaultFontName + ";} " +
+    std::string defaultFontDefinition{ "g.page-margin{font-family:" + m_defaultFontName + ";} " +
         //"g.page-margin{background: pink;} "
         //"g.bounding-box{stroke:red; stroke-width:10} "
         //"g.content-bounding-box{stroke:blue; stroke-width:10} "
         "g.reh, g.tempo{font-weight:bold;} g.dir, g.dynam, "
-        "g.mNum{font-style:italic;} g.label{font-weight:normal;}"
-    };
+        "g.mNum{font-style:italic;} g.label{font-weight:normal;}" };
 
     if (this->UseGlobalStyling()) {
         m_currentNode = m_currentNode.append_child("style");
@@ -857,8 +856,8 @@ void SvgDeviceContext::DrawText(const std::string &text, const std::wstring wtex
     textChild.append_attribute("class") = "text";
     textChild.append_child(pugi::node_pcdata).set_value(svgText.c_str());
 
-    if ((x != 0) && (y != 0) && (x != VRV_UNSET) && (y != VRV_UNSET)
-        && (width != 0) && (height != 0) && (width != VRV_UNSET) && (height != VRV_UNSET)) {
+    if ((x != 0) && (y != 0) && (x != VRV_UNSET) && (y != VRV_UNSET) && (width != 0) && (height != 0)
+        && (width != VRV_UNSET) && (height != VRV_UNSET)) {
         pugi::xml_node g = m_currentNode.parent().parent();
         pugi::xml_node rectChild = g.append_child("rect");
         rectChild.append_attribute("class") = "sylTextRect";
