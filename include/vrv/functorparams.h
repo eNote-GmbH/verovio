@@ -492,17 +492,20 @@ public:
 
 /**
  * member 0: a pointer to the previous staff alignment
- * member 1: a pointer to the functor for passing it to the system aligner
+ * member 1: the doc
+ * member 2: a pointer to the functor for passing it to the system aligner
  **/
 
 class AdjustStaffOverlapParams : public FunctorParams {
 public:
-    AdjustStaffOverlapParams(Functor *functor)
+    AdjustStaffOverlapParams(Doc *doc, Functor *functor)
     {
         m_previous = NULL;
+        m_doc = doc;
         m_functor = functor;
     }
     StaffAlignment *m_previous;
+    Doc *m_doc;
     Functor *m_functor;
 };
 
@@ -2116,7 +2119,9 @@ public:
  * member 3: the previous measure (for setting cautionary scoreDef)
  * member 4: the current system (for setting the system scoreDef)
  * member 5: the flag indicating whereas full labels have to be drawn
- * member 6: the doc
+ * member 6: the flag indicating that the scoreDef restarts (draw brace and label)
+ * member 7: the flag indicating is we already have a measure in the system
+ * member 8: the doc
  **/
 
 class ScoreDefSetCurrentParams : public FunctorParams {
@@ -2129,6 +2134,8 @@ public:
         m_previousMeasure = NULL;
         m_currentSystem = NULL;
         m_drawLabels = false;
+        m_restart = false;
+        m_hasMeasure = false;
         m_doc = doc;
     }
     ScoreDef *m_currentScoreDef;
@@ -2137,6 +2144,8 @@ public:
     Measure *m_previousMeasure;
     System *m_currentSystem;
     bool m_drawLabels;
+    bool m_restart;
+    bool m_hasMeasure;
     Doc *m_doc;
 };
 
