@@ -193,7 +193,7 @@ bool Slur::AdjustSlurPosition(
 
     // If curve is cross staff and shifts are larger than current height of the control points - adjust control point
     // height to make sure that slur bends around the overlapping elements
-    if (curve->IsCrossStaff() && !isNotAdjustable) {
+    if ((curve->IsCrossStaff() || GetStart()->IsGraceNote()) && !isNotAdjustable) {
         if ((maxShiftLeft > bezierCurve.GetLeftControlHeight())
             || (maxShiftRight > bezierCurve.GetRightControlHeight())) {
             if ((bezierCurve.c1.x < bezierCurve.p1.x) || (bezierCurve.c2.x > bezierCurve.p2.x)) return true;
