@@ -13,6 +13,9 @@
 
 namespace vrv {
 
+class Doc;
+class Staff;
+
 //----------------------------------------------------------------------------
 // Slur
 //----------------------------------------------------------------------------
@@ -74,6 +77,9 @@ public:
     void GetControlPoints(BezierCurve &curve, curvature_CURVEDIR curveDir, bool ignoreAngle = false);
     void GetSpannedPointPositions(Doc *doc, const ArrayOfCurveSpannedElements *spannedElements, Point p1, float angle,
         curvature_CURVEDIR curveDir, int staffSize);
+
+    std::tuple<int, int, int, int> AdjustCoordinates(Doc *doc, Staff *staff, std::tuple<int, int, int, int> coordinates,
+        int spanningType, curvature_CURVEDIR drawingCurveDir);
 
     //----------//
     // Functors //
