@@ -413,9 +413,9 @@ float View::CalcInitialSlur(
     /************** angle **************/
 
     const ArrayOfCurveSpannedElements *spannedElements = curve->GetSpannedElements();
-    bool dontAdjustAngle = curve->IsCrossStaff();
+    bool dontAdjustAngle = curve->IsCrossStaff() || slur->GetStart()->IsGraceNote();
     // If slur is cross-staff (where we don't want to adjust angle) but x distance is too small - adjust angle anyway
-    if ((bezier.p2.x - bezier.p1.x) != 0 && (curve->IsCrossStaff() || slur->GetStart()->IsGraceNote())) {
+    if ((bezier.p2.x - bezier.p1.x) != 0 && curve->IsCrossStaff()) {
         dontAdjustAngle = std::abs((bezier.p2.y - bezier.p1.y) / (bezier.p2.x - bezier.p1.x)) < 4;
     }
 

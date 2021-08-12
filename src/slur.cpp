@@ -193,7 +193,7 @@ bool Slur::AdjustSlurPosition(
 
     // If curve is cross staff and shifts are larger than current height of the control points - adjust control point
     // height to make sure that slur bends around the overlapping elements
-    if ((curve->IsCrossStaff() || GetStart()->IsGraceNote()) && !isNotAdjustable) {
+    if (curve->IsCrossStaff() && !isNotAdjustable) {
         if ((maxShiftLeft > bezierCurve.GetLeftControlHeight())
             || (maxShiftRight > bezierCurve.GetRightControlHeight())) {
             if ((bezierCurve.c1.x < bezierCurve.p1.x) || (bezierCurve.c2.x > bezierCurve.p2.x)) return true;
@@ -554,8 +554,9 @@ std::tuple<int, int, int, int> Slur::AdjustCoordinates(Doc *doc, Staff *staff,
                 y1 = GetStart()->GetDrawingTop(doc, staff->m_drawingStaffSize);
             }
             // same but in beam - adjust the x too
-            else if (((parentBeam = GetStart()->IsInBeam()) && !parentBeam->IsLastIn(parentBeam, GetStart()))
-                || ((parentFTrem = GetStart()->IsInFTrem()) && !parentFTrem->IsLastIn(parentFTrem, GetStart()))) {
+            else if (((parentBeam = GetEnd()->IsInBeam()) && !parentBeam->IsFirstIn(parentBeam, GetEnd()))
+                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))
+                || isGraceToNoteSlur) {
                 y1 = GetStart()->GetDrawingTop(doc, staff->m_drawingStaffSize);
                 x1 += startRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
             }
@@ -580,10 +581,11 @@ std::tuple<int, int, int, int> Slur::AdjustCoordinates(Doc *doc, Staff *staff,
                 y1 = GetStart()->GetDrawingBottom(doc, staff->m_drawingStaffSize);
             }
             // same but in beam
-            else if (((parentBeam = GetStart()->IsInBeam()) && !parentBeam->IsLastIn(parentBeam, GetStart()))
-                || ((parentFTrem = GetStart()->IsInFTrem()) && !parentFTrem->IsLastIn(parentFTrem, GetStart()))) {
+            else if (((parentBeam = GetEnd()->IsInBeam()) && !parentBeam->IsFirstIn(parentBeam, GetEnd()))
+                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))
+                || isGraceToNoteSlur) {
                 y1 = GetStart()->GetDrawingBottom(doc, staff->m_drawingStaffSize);
-                x1 -= startRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                x1 -= startRadius + doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
             }
             // P(_)
             else {
@@ -617,9 +619,16 @@ std::tuple<int, int, int, int> Slur::AdjustCoordinates(Doc *doc, Staff *staff,
             }
             // same but in beam - adjust the x too
             else if (((parentBeam = GetEnd()->IsInBeam()) && !parentBeam->IsFirstIn(parentBeam, GetEnd()))
-                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))) {
-                y2 = GetEnd()->GetDrawingTop(doc, staff->m_drawingStaffSize);
-                x2 += endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))
+                || isGraceToNoteSlur) {
+                if (isGraceToNoteSlur && (parentBeam || parentFTrem)) {
+                    y2 = y1;
+                    x2 -= endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                }
+                else {
+                    y2 = GetEnd()->GetDrawingTop(doc, staff->m_drawingStaffSize);
+                    x2 += endRadius + doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                }
             }
             // (^)d
             else {
@@ -633,19 +642,8 @@ std::tuple<int, int, int, int> Slur::AdjustCoordinates(Doc *doc, Staff *staff,
             }
         }
         else {
-            if (isGraceToNoteSlur) {
-                if (endNote) {
-                    y2 = endNote->GetDrawingY();
-                    // Shorten the slur but only if the stem is going down
-                    if (endStemDir == STEMDIRECTION_down) x2 -= doc->GetDrawingUnit(staff->m_drawingStaffSize) * 2;
-                    isShortSlur = true;
-                }
-                else {
-                    y2 = y1;
-                }
-            }
             // (_)d
-            else if (endStemDir == STEMDIRECTION_up || endStemLen == 0) {
+            if (endStemDir == STEMDIRECTION_up || endStemLen == 0) {
                 y2 = GetEnd()->GetDrawingBottom(doc, staff->m_drawingStaffSize);
             }
             // P(_)P
@@ -654,10 +652,16 @@ std::tuple<int, int, int, int> Slur::AdjustCoordinates(Doc *doc, Staff *staff,
             }
             // same but in beam
             else if (((parentBeam = GetEnd()->IsInBeam()) && !parentBeam->IsFirstIn(parentBeam, GetEnd()))
-                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))) {
-                y2 = GetEnd()->GetDrawingBottom(doc, staff->m_drawingStaffSize);
-                //
-                x2 -= endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                || ((parentFTrem = GetEnd()->IsInFTrem()) && !parentFTrem->IsFirstIn(parentFTrem, GetEnd()))
+                || isGraceToNoteSlur) {
+                if (isGraceToNoteSlur && (parentBeam || parentFTrem)) {
+                    y2 = y1;
+                    x2 -= endRadius + doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                }
+                else {
+                    y2 = GetEnd()->GetDrawingBottom(doc, staff->m_drawingStaffSize);
+                    x2 -= endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                }
             }
             // (_)P
             else {
