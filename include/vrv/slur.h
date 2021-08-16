@@ -14,6 +14,7 @@
 namespace vrv {
 
 class Doc;
+class Layer;
 class Staff;
 
 //----------------------------------------------------------------------------
@@ -57,6 +58,12 @@ public:
     bool HasDrawingCurvedir() const { return (m_drawingCurvedir != curvature_CURVEDIR_NONE); }
     ///@}
 
+    /**
+     * Adjust starting coordinates for the slurs depending on the curve direction and spanning type of the slur
+     */
+    std::tuple<int, int, int, int> AdjustCoordinates(Doc *doc, Staff *staff, std::tuple<int, int, int, int> coordinates,
+        int spanningType, curvature_CURVEDIR drawingCurveDir);
+
     bool AdjustSlur(Doc *doc, FloatingCurvePositioner *curve, Staff *staff);
 
     int AdjustSlurCurve(Doc *doc, const ArrayOfCurveSpannedElements *spannedElements, BezierCurve &bezierCurve,
@@ -75,11 +82,15 @@ public:
 
     float GetAdjustedSlurAngle(Doc *doc, Point &p1, Point &p2, curvature_CURVEDIR curveDir, bool withPoints);
     void GetControlPoints(BezierCurve &curve, curvature_CURVEDIR curveDir, bool ignoreAngle = false);
+
+    /**
+     * Get preferred curve direction based on number of conditions: presence of other layers, stem direction, etc.
+     */
+    curvature_CURVEDIR GetPreferredCurveDirection(
+        Doc *doc, Layer *layer, LayerElement *layerElement, data_STEMDIRECTION noteStemDir, bool isAboveStaffCenter);
+
     void GetSpannedPointPositions(Doc *doc, const ArrayOfCurveSpannedElements *spannedElements, Point p1, float angle,
         curvature_CURVEDIR curveDir, int staffSize);
-
-    std::tuple<int, int, int, int> AdjustCoordinates(Doc *doc, Staff *staff, std::tuple<int, int, int, int> coordinates,
-        int spanningType, curvature_CURVEDIR drawingCurveDir);
 
     //----------//
     // Functors //
@@ -91,7 +102,9 @@ public:
     virtual int ResetDrawing(FunctorParams *functorParams);
 
 private:
-    //
+    // Helper function to determine curve direction for the slurs that start at grace note
+    curvature_CURVEDIR GetGraceCurveDirection(Doc *doc);
+
 public:
     //
 private:
