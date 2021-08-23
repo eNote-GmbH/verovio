@@ -98,8 +98,7 @@ private:
 
     // Helper function to find angle/distance towards points, that have the biggest impact on the curvature
     template <typename Iterator, typename Comparator = std::less_equal<>>
-    std::pair<double, double> CaclulateCurveAngleAndDistance(
-        Iterator begin, Iterator end, Comparator comp, int xDistance, bool isReverseOrder);
+    std::pair<double, double> CalculateAngleAndDistance(Iterator begin, Iterator end, Comparator comp, int xDistance);
 
 public:
     //

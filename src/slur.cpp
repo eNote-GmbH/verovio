@@ -11,7 +11,9 @@
 
 #include <assert.h>
 #include <cmath>
+#include <iterator>
 #include <math.h>
+#include <type_traits>
 
 //----------------------------------------------------------------------------
 
@@ -24,6 +26,14 @@
 #include "vrv.h"
 
 namespace vrv {
+
+template <typename Iter> struct is_reverse_iterator : std::false_type {
+};
+
+template <typename Iter>
+struct is_reverse_iterator<std::reverse_iterator<Iter>>
+    : std::integral_constant<bool, !is_reverse_iterator<Iter>::value> {
+};
 
 //----------------------------------------------------------------------------
 // Slur
@@ -276,11 +286,11 @@ bool Slur::AdjustSlurPosition(
 }
 
 template <typename Iterator, typename Comparator>
-std::pair<double, double> Slur::CaclulateCurveAngleAndDistance(
-    Iterator begin, Iterator end, Comparator comp, int xDistance, bool isReverseOrder)
+std::pair<double, double> Slur::CalculateAngleAndDistance(Iterator begin, Iterator end, Comparator comp, int xDistance)
 {
     double largestAngle = 0.0;
     double largestDistance = 0.0;
+    const bool isReverseOrder = is_reverse_iterator<Iterator>::value;
     // calculate distance and angles from all elements to the corresponding end of slur - start of the slur if iterator
     // to begin is used, and end of slur, if reverse iterator is used
     for (auto iter = std::next(begin); (iter != end)
@@ -321,16 +331,17 @@ void Slur::AdjustSlurControlPoints(
 
     // slurs curving above
     if (sign > 0) {
-        std::tie(leftAngle, leftDistance) = this->CaclulateCurveAngleAndDistance(
-            points.begin(), points.end(), std::greater_equal{}, xDistance, false);
-        std::tie(rightAngle, rightDistance) = this->CaclulateCurveAngleAndDistance(points.rbegin(), points.rend(), std::less_equal{}, xDistance, true);
+        std::tie(leftAngle, leftDistance)
+            = this->CalculateAngleAndDistance(points.begin(), points.end(), std::greater_equal{}, xDistance);
+        std::tie(rightAngle, rightDistance)
+            = this->CalculateAngleAndDistance(points.rbegin(), points.rend(), std::less_equal{}, xDistance);
     }
     // slurs curving below
     else {
         std::tie(leftAngle, leftDistance)
-            = this->CaclulateCurveAngleAndDistance(points.begin(), points.end(), std::less_equal{}, xDistance, false);
-        std::tie(rightAngle, rightDistance) = this->CaclulateCurveAngleAndDistance(
-            points.rbegin(), points.rend(), std::greater_equal{}, xDistance, true);
+            = this->CalculateAngleAndDistance(points.begin(), points.end(), std::less_equal{}, xDistance);
+        std::tie(rightAngle, rightDistance)
+            = this->CalculateAngleAndDistance(points.rbegin(), points.rend(), std::greater_equal{}, xDistance);
     }
 
     if (leftAngle < 0.08) {
@@ -339,7 +350,7 @@ void Slur::AdjustSlurControlPoints(
     double leftAdjust = std::abs(leftAngle);
     leftAngle -= 2 * leftAdjust;
 
-    if (std::fmod(rightAngle, M_PI) > M_PI - 0.08) {
+    if (std::fmod(std::abs(rightAngle), M_PI) > M_PI - 0.08) {
         rightAngle = 0.0;
     }
     double rightAdjust = rightAngle < 0 ? M_PI + rightAngle : std::abs(rightAngle);    
@@ -350,7 +361,7 @@ void Slur::AdjustSlurControlPoints(
     // overlap. Also, apply tension to the calculation, which increases depending on the steepness of the angle. If
     // angle is 0.0 it would mean that corresponding side does not need ajustmentes.
     if (leftAngle != 0.0) {
-        const double xTension = 0.8;
+        const double xTension = 0.5;
         const double yTension = 1.5 + std::abs(std::sin(leftAngle));
         const int adjustedC1X = points.begin()->x + leftDistance * xTension * std::abs(std::cos(leftAngle));
         const int adjustedC1Y = points.begin()->y + sign * leftDistance * yTension * std::abs(std::sin(leftAngle));
@@ -358,7 +369,7 @@ void Slur::AdjustSlurControlPoints(
         bezierCurve.c1.y = adjustedC1Y;
     }
     if (rightAngle != 0.0) {
-        const double xTension = 0.8;
+        const double xTension = 0.5;
         const double yTension = 1.5 + std::abs(std::sin(rightAngle));
         const int adjustedC2X = points.rbegin()->x - rightDistance * xTension * std::abs(std::cos(rightAngle));
         const int adjustedC2Y = points.rbegin()->y + sign * rightDistance * yTension * std::abs(std::sin(rightAngle));
