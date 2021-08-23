@@ -276,6 +276,9 @@ bool Slur::AdjustSlurPosition(
                 maxShiftLeft /= 4;
             }
         }
+        else {
+            return AlterSlurPosition(doc, curve, bezierCurve);
+        }
         bezierCurve.p1.y += (curve->GetDir() == curvature_CURVEDIR_above) ? maxShiftLeft : -maxShiftLeft;
         bezierCurve.p2.y += (curve->GetDir() == curvature_CURVEDIR_above) ? maxShiftRight : -maxShiftRight;
 
@@ -344,16 +347,19 @@ void Slur::AdjustSlurControlPoints(
             = this->CalculateAngleAndDistance(points.rbegin(), points.rend(), std::greater_equal{}, xDistance);
     }
 
-    if (leftAngle < 0.08) {
+    // Adjust angles for better curves and element avoidance. Additionaly, ignore angles that are too small to avoid
+    // weird slur curvatures
+    // <
+    if (std::abs(leftAngle) < 0.08) {
         leftAngle = 0.0;
     }
-    double leftAdjust = std::abs(leftAngle);
+    const double leftAdjust = std::abs(leftAngle);
     leftAngle -= 2 * leftAdjust;
-
+    // >
     if (std::fmod(std::abs(rightAngle), M_PI) > M_PI - 0.08) {
         rightAngle = 0.0;
     }
-    double rightAdjust = rightAngle < 0 ? M_PI + rightAngle : std::abs(rightAngle);    
+    const double rightAdjust = rightAngle < 0 ? M_PI + rightAngle : std::abs(rightAngle);
     rightAngle -= 2 * rightAdjust;
 
     // Calculate new control points for left and right side of the slur if they have angles. To calculate X/Y positions
@@ -363,18 +369,18 @@ void Slur::AdjustSlurControlPoints(
     if (leftAngle != 0.0) {
         const double xTension = 0.5;
         const double yTension = 1.5 + std::abs(std::sin(leftAngle));
-        const int adjustedC1X = points.begin()->x + leftDistance * xTension * std::abs(std::cos(leftAngle));
-        const int adjustedC1Y = points.begin()->y + sign * leftDistance * yTension * std::abs(std::sin(leftAngle));
-        bezierCurve.c1.x = adjustedC1X;
-        bezierCurve.c1.y = adjustedC1Y;
+        const int adjustedLeftOffset = leftDistance * xTension * std::abs(std::cos(leftAngle));
+        const int adjustedLeftHeight = leftDistance * yTension * std::abs(std::sin(leftAngle));
+        bezierCurve.SetLeftControlPointOffset(adjustedLeftOffset);
+        bezierCurve.SetLeftControlHeight(adjustedLeftHeight);
     }
     if (rightAngle != 0.0) {
         const double xTension = 0.5;
         const double yTension = 1.5 + std::abs(std::sin(rightAngle));
-        const int adjustedC2X = points.rbegin()->x - rightDistance * xTension * std::abs(std::cos(rightAngle));
-        const int adjustedC2Y = points.rbegin()->y + sign * rightDistance * yTension * std::abs(std::sin(rightAngle));
-        bezierCurve.c2.x = adjustedC2X;
-        bezierCurve.c2.y = adjustedC2Y;
+        const int adjustedRightOffset = rightDistance * xTension * std::abs(std::cos(rightAngle));
+        const int adjustedRightHeight = rightDistance * yTension * std::abs(std::sin(rightAngle));
+        bezierCurve.SetRightControlPointOffset(adjustedRightOffset);
+        bezierCurve.SetRightControlHeight(adjustedRightHeight);
     }
 }
 
@@ -387,13 +393,14 @@ bool Slur::AlterSlurPosition(Doc *doc, FloatingCurvePositioner *curve, BezierCur
     points.insert(bezierCurve.p1);
     points.insert(bezierCurve.p2);
 
+    // Get coordinates of all spanned elements that are within the range of (startX; endX)
     for (auto spannedElement : *spannedElements) {
         const int y = curve->GetDir() == curvature_CURVEDIR_above ? spannedElement->m_boundingBox->GetContentTop()
-                                                            : spannedElement->m_boundingBox->GetContentBottom();
+                                                                  : spannedElement->m_boundingBox->GetContentBottom();
         const int x = spannedElement->m_boundingBox->GetDrawingX();
         if (x > points.begin()->x && x < points.rbegin()->x) {
             points.insert(Point(spannedElement->m_boundingBox->GetDrawingX(), y));
-        }     
+        }
     }
 
     this->AdjustSlurControlPoints(points, curve->GetDir(), bezierCurve);

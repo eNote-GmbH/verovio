@@ -647,11 +647,8 @@ float View::CalcInitialSlur(
         dontAdjustAngle = std::abs((bezier.p2.y - bezier.p1.y) / (bezier.p2.x - bezier.p1.x)) < 4;
     }
 
-    const float nonAdjustedAngle
+    const float slurAngle
         = (bezier.p2 == bezier.p1) ? 0 : atan2(bezier.p2.y - bezier.p1.y, bezier.p2.x - bezier.p1.x);
-    const float slurAngle = dontAdjustAngle
-        ? nonAdjustedAngle
-        : slur->GetAdjustedSlurAngle(m_doc, bezier.p1, bezier.p2, curveDir, (spannedElements->size() > 0));
     bezier.p2 = BoundingBox::CalcPositionAfterRotation(bezier.p2, -slurAngle, bezier.p1);
 
     /************** control points **************/
