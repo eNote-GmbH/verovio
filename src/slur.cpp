@@ -275,6 +275,121 @@ bool Slur::AdjustSlurPosition(
     }
 }
 
+template <typename Iterator, typename Comparator>
+std::pair<double, double> Slur::CaclulateCurveAngleAndDistance(
+    Iterator begin, Iterator end, Comparator comp, int xDistance, bool isReverseOrder)
+{
+    double largestAngle = 0.0;
+    double largestDistance = 0.0;
+    // calculate distance and angles from all elements to the corresponding end of slur - start of the slur if iterator
+    // to begin is used, and end of slur, if reverse iterator is used
+    for (auto iter = std::next(begin); (iter != end)
+         && (!isReverseOrder ? (iter->x <= begin->x + xDistance * 0.5) : (iter->x >= begin->x - xDistance * 0.5));
+         ++iter) {
+        const int xDiff = iter->x - begin->x;
+        const int yDiff = iter->y - begin->y;
+        const double distance = std::sqrt(xDiff * xDiff + yDiff * yDiff);
+        const double angle = std::atan2(yDiff, xDiff);
+
+        // There are two different cases for slurs that have above/below curvature, resulting in 4 total cases:
+        // 1. angles (-pi; 0] - items in first half of "below" curve
+        // 2. angles [0; pi) - items in first half of "above" curve
+        // 3. angles (-2pi; pi] - items in second half of "below" curve
+        // 4. angles [pi; 2pi) - items in second half of "above" curve
+        // Depending on this, we either want to compare if element is lesser than 0 or otherwise. For angles in second
+        // half of the slur, some non-overlapping elements are going to have angle that satisfies first condition
+        // comp(angle, largestAngle) but actually is invalid angle (since it's not overlapping). For that reason, we
+        // need to reverse comparison in second part, comparing whether 0 is lesser/greater than angle value, and not
+        // vice versa.
+        if ((largestAngle == 0.0 || comp(angle, largestAngle)) && (isReverseOrder ? comp(0, angle) : comp(angle, 0))) {
+            largestAngle = angle;
+            largestDistance = distance;
+        }
+    }
+
+    return { largestAngle, largestDistance };
+}
+
+template <typename Comparator>
+void Slur::AdjustSlurControlPoints(
+    const std::set<Point, Comparator> &points, curvature_CURVEDIR curveDirection, BezierCurve &bezierCurve)
+{
+    // horizontal length of the slur
+    const int xDistance = points.rbegin()->x - points.begin()->x;
+    const int sign = curveDirection == curvature_CURVEDIR_above ? 1 : -1;
+    double leftAngle = 0.0, leftDistance = 0.0, rightAngle = 0.0, rightDistance = 0.0;
+
+    // slurs curving above
+    if (sign > 0) {
+        std::tie(leftAngle, leftDistance) = this->CaclulateCurveAngleAndDistance(
+            points.begin(), points.end(), std::greater_equal{}, xDistance, false);
+        std::tie(rightAngle, rightDistance) = this->CaclulateCurveAngleAndDistance(points.rbegin(), points.rend(), std::less_equal{}, xDistance, true);
+    }
+    // slurs curving below
+    else {
+        std::tie(leftAngle, leftDistance)
+            = this->CaclulateCurveAngleAndDistance(points.begin(), points.end(), std::less_equal{}, xDistance, false);
+        std::tie(rightAngle, rightDistance) = this->CaclulateCurveAngleAndDistance(
+            points.rbegin(), points.rend(), std::greater_equal{}, xDistance, true);
+    }
+
+    if (leftAngle < 0.08) {
+        leftAngle = 0.0;
+    }
+    double leftAdjust = std::abs(leftAngle);
+    leftAngle -= 2 * leftAdjust;
+
+    if (std::fmod(rightAngle, M_PI) > M_PI - 0.08) {
+        rightAngle = 0.0;
+    }
+    double rightAdjust = rightAngle < 0 ? M_PI + rightAngle : std::abs(rightAngle);    
+    rightAngle -= 2 * rightAdjust;
+
+    // Calculate new control points for left and right side of the slur if they have angles. To calculate X/Y positions
+    // for the new control point, take into consideration angle and distance to the element that has the largest
+    // overlap. Also, apply tension to the calculation, which increases depending on the steepness of the angle. If
+    // angle is 0.0 it would mean that corresponding side does not need ajustmentes.
+    if (leftAngle != 0.0) {
+        const double xTension = 0.8;
+        const double yTension = 1.5 + std::abs(std::sin(leftAngle));
+        const int adjustedC1X = points.begin()->x + leftDistance * xTension * std::abs(std::cos(leftAngle));
+        const int adjustedC1Y = points.begin()->y + sign * leftDistance * yTension * std::abs(std::sin(leftAngle));
+        bezierCurve.c1.x = adjustedC1X;
+        bezierCurve.c1.y = adjustedC1Y;
+    }
+    if (rightAngle != 0.0) {
+        const double xTension = 0.8;
+        const double yTension = 1.5 + std::abs(std::sin(rightAngle));
+        const int adjustedC2X = points.rbegin()->x - rightDistance * xTension * std::abs(std::cos(rightAngle));
+        const int adjustedC2Y = points.rbegin()->y + sign * rightDistance * yTension * std::abs(std::sin(rightAngle));
+        bezierCurve.c2.x = adjustedC2X;
+        bezierCurve.c2.y = adjustedC2Y;
+    }
+}
+
+bool Slur::AlterSlurPosition(Doc *doc, FloatingCurvePositioner *curve, BezierCurve &bezierCurve)
+{
+    const ArrayOfCurveSpannedElements *spannedElements = curve->GetSpannedElements();
+
+    auto xCompare = [](const Point a, const Point &b) { return a.x < b.x; };
+    std::set<Point, decltype(xCompare)> points(xCompare);
+    points.insert(bezierCurve.p1);
+    points.insert(bezierCurve.p2);
+
+    for (auto spannedElement : *spannedElements) {
+        const int y = curve->GetDir() == curvature_CURVEDIR_above ? spannedElement->m_boundingBox->GetContentTop()
+                                                            : spannedElement->m_boundingBox->GetContentBottom();
+        const int x = spannedElement->m_boundingBox->GetDrawingX();
+        if (x > points.begin()->x && x < points.rbegin()->x) {
+            points.insert(Point(spannedElement->m_boundingBox->GetDrawingX(), y));
+        }     
+    }
+
+    this->AdjustSlurControlPoints(points, curve->GetDir(), bezierCurve);
+
+    return true;
+}
+
 std::pair<int, int> Slur::CalculateAdjustedSlurShift(FloatingCurvePositioner *curve, const BezierCurve &bezierCurve,
     int margin, bool forceBothSides, bool &isNotAdjustable)
 {

@@ -64,6 +64,12 @@ public:
      */
     bool AdjustSlurPosition(
         Doc *doc, FloatingCurvePositioner *curve, BezierCurve &bezierCurve, float &angle, bool forceBothSides);
+
+    /**
+     * Change slur position by calcualting angles/distances to overlapping elements from both sides of the slur
+     */
+    bool AlterSlurPosition(Doc *doc, FloatingCurvePositioner *curve, BezierCurve &bezierCurve);
+
     /**
      * Calculate slur left/right maximum shifts required for slur not to overlap with other objects
      */
@@ -85,7 +91,16 @@ public:
     virtual int ResetDrawing(FunctorParams *functorParams);
 
 private:
-    //
+    // Helper function to adjust control points of the slur with regards to X/Y coordintates of slur spanned elements
+    template <typename Comparator>
+    void AdjustSlurControlPoints(
+        const std::set<Point, Comparator> &points, curvature_CURVEDIR curveDirection, BezierCurve &bezierCurve);
+
+    // Helper function to find angle/distance towards points, that have the biggest impact on the curvature
+    template <typename Iterator, typename Comparator = std::less_equal<>>
+    std::pair<double, double> CaclulateCurveAngleAndDistance(
+        Iterator begin, Iterator end, Comparator comp, int xDistance, bool isReverseOrder);
+
 public:
     //
 private:
