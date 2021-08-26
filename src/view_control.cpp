@@ -245,9 +245,11 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
     }
 
     // Overwrite the spanningType for open ended control events
-    // We can identify them because they end on a right barline attribute
-    if ((spanningType == SPANNING_START_END) && end->Is(BARLINE_ATTR_RIGHT)) {
-        spanningType = SPANNING_START;
+    // We can identify them because they end on a right barline
+    if ((spanningType == SPANNING_START_END) && end->Is(BARLINE)) {
+        if (vrv_cast<BarLine *>(end)->GetPosition() == BarLinePosition::Right) {
+            spanningType = SPANNING_START;
+        }
     }
 
     int startRadius = 0;
@@ -2234,7 +2236,16 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
     dc->StartGraphic(turn, "", turn->GetUuid());
 
     int x = turn->GetStart()->GetDrawingX() + turn->GetStart()->GetDrawingRadius(m_doc);
-    if (turn->GetDelayed() == BOOLEAN_true && !turn->HasTstamp()) LogWarning("delayed turns not supported");
+
+    if (turn->m_drawingEndElement) {
+        // Get the parent system of the start and end element
+        LayerElement *end = turn->m_drawingEndElement;
+        Object *parentSystem1 = turn->GetStart()->GetFirstAncestor(SYSTEM);
+        Object *parentSystem2 = end->GetFirstAncestor(SYSTEM);
+        // We have a system break, use the measure right bar line instead
+        if (parentSystem1 != parentSystem2) end = measure->GetRightBarLine();
+        x += ((end->GetDrawingX() - x) / 2);
+    }
 
     // set norm as default
     int code = turn->GetTurnGlyph();

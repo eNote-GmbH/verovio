@@ -41,7 +41,7 @@ namespace vrv {
 
 static const ClassRegistrar<Staff> s_factory("staff", STAFF);
 
-Staff::Staff(int n) : Object("staff-"), FacsimileInterface(), AttNInteger(), AttTyped(), AttVisibility()
+Staff::Staff(int n) : Object(STAFF, "staff-"), FacsimileInterface(), AttNInteger(), AttTyped(), AttVisibility()
 {
     RegisterAttClass(ATT_NINTEGER);
     RegisterAttClass(ATT_TYPED);
@@ -610,7 +610,7 @@ int Staff::PrepareRpt(FunctorParams *functorParams)
     }
 
     // This is happening only for the first staff element of the staff @n
-    if (StaffDef *staffDef = params->m_currentScoreDef->GetStaffDef(this->GetN())) {
+    if (StaffDef *staffDef = params->m_doc->GetCurrentScoreDef()->GetStaffDef(this->GetN())) {
         if ((staffDef->HasMultiNumber()) && (staffDef->GetMultiNumber() == BOOLEAN_false)) {
             // Set it just in case, but stopping the functor should do it for this staff @n
             params->m_multiNumber = BOOLEAN_false;

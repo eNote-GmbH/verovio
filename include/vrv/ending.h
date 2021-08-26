@@ -9,7 +9,7 @@
 #define __VRV_ENDING_H__
 
 #include "atts_shared.h"
-#include "boundary.h"
+#include "systemboundary.h"
 #include "systemelement.h"
 
 namespace vrv {
@@ -37,7 +37,6 @@ public:
     virtual Object *Clone() const { return new Ending(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Ending"; }
-    virtual ClassId GetClassId() const { return ENDING; }
     ///@}
 
     /**
@@ -52,8 +51,10 @@ public:
     /**
      * See Object::ConvertToPageBased
      */
+    ///@{
     virtual int ConvertToPageBased(FunctorParams *functorParams);
     virtual int ConvertToPageBasedEnd(FunctorParams *functorParams);
+    ///@}
 
     /**
      * See Object::PrepareBoundaries

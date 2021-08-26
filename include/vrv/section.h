@@ -10,7 +10,7 @@
 
 #include "atts_shared.h"
 #include "atts_visual.h"
-#include "boundary.h"
+#include "systemboundary.h"
 #include "systemelement.h"
 
 namespace vrv {
@@ -37,7 +37,6 @@ public:
     virtual Object *Clone() const { return new Section(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Section"; }
-    virtual ClassId GetClassId() const { return SECTION; }
     ///@}
 
     /**

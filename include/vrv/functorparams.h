@@ -10,6 +10,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "doc.h"
 #include "vrvdef.h"
 
 namespace smf {
@@ -30,6 +31,7 @@ class Dynam;
 class Ending;
 class Output;
 class Facsimile;
+class FeatureExtractor;
 class Functor;
 class Hairpin;
 class Harm;
@@ -57,6 +59,7 @@ class System;
 class SystemAligner;
 class Transposer;
 class TupletNum;
+class Turn;
 class Verse;
 
 //----------------------------------------------------------------------------
@@ -184,8 +187,11 @@ public:
  * member 0: the beam that should be adjusted
  * member 1: y coordinate of the beam left side
  * member 2: y coordinate of the beam right side
- * member 3: overlap margin that beam needs to be displaced by
- * member 4: the Doc
+ * member 3: x coordinate of the beam left side (starting point)
+ * member 4: slope of the beam
+ * member 5: overlap margin that beam needs to be displaced by
+ * member 6: the Doc
+ * member 7: the flag indicating whether element from different layer is being processed
  **/
 
 class AdjustBeamParams : public FunctorParams {
@@ -195,6 +201,8 @@ public:
         m_beam = NULL;
         m_y1 = 0;
         m_y2 = 0;
+        m_x1 = 0;
+        m_beamSlope = 0.0;
         m_directionBias = 0;
         m_overlapMargin = 0;
         m_doc = doc;
@@ -204,6 +212,8 @@ public:
     Object *m_beam;
     int m_y1;
     int m_y2;
+    int m_x1;
+    double m_beamSlope;
     int m_directionBias;
     int m_overlapMargin;
     Doc *m_doc;
@@ -313,8 +323,8 @@ public:
         m_doc = doc;
         m_functor = functor;
         m_functorEnd = functorEnd;
+        m_staffNs = staffNs;
     }
-
     int m_graceMaxPos;
     int m_graceUpcomingMaxPos;
     int m_graceCumulatedXShift;
@@ -677,12 +687,13 @@ public:
  * member 7: the upcoming bounding boxes (to be used in the next aligner)
  * member 8: list of types to include
  * member 9: list of types to exclude
- * member 10: list of tie endpoints for the current measure
- * member 11: the Doc
- * member 12: the Functor for redirection to the MeasureAligner
- * member 13: the end Functor for redirection
- * member 14: current aligner that is being processed
- * member 15: preceeding aligner that was handled before
+ * member 10: flag to indicate whether only right bar line positions should be considered
+ * member 11: list of tie endpoints for the current measure
+ * member 12: the Doc
+ * member 13: the Functor for redirection to the MeasureAligner
+ * member 14: the end Functor for redirection
+ * member 15: current aligner that is being processed
+ * member 16: preceeding aligner that was handled before
  **/
 
 class AdjustXPosParams : public FunctorParams {
@@ -695,6 +706,7 @@ public:
         m_staffN = 0;
         m_staffNs = staffNs;
         m_staffSize = 100;
+        m_rightBarLinesOnly = false;
         m_doc = doc;
         m_functor = functor;
         m_functorEnd = functorEnd;
@@ -712,6 +724,7 @@ public:
     std::vector<BoundingBox *> m_upcomingBoundingBoxes;
     std::vector<ClassId> m_includes;
     std::vector<ClassId> m_excludes;
+    bool m_rightBarLinesOnly;
     std::vector<std::pair<LayerElement *, LayerElement *>> m_measureTieEndpoints;
     Doc *m_doc;
     Functor *m_functor;
@@ -1080,13 +1093,12 @@ public:
 
 class CastOffEncodingParams : public FunctorParams {
 public:
-    CastOffEncodingParams(
-        Doc *doc, Page *currentPage, System *currentSystem, System *contentSystem, bool usePages = true)
+    CastOffEncodingParams(Doc *doc, Page *currentPage, bool usePages = true)
     {
         m_doc = doc;
         m_currentPage = currentPage;
-        m_currentSystem = currentSystem;
-        m_contentSystem = contentSystem;
+        m_currentSystem = NULL;
+        m_contentSystem = NULL;
         m_usePages = usePages;
     }
     Doc *m_doc;
@@ -1107,6 +1119,7 @@ public:
  * member 3: the cummulated shift (m_drawingYRel of the first system of the current page)
  * members 4-8: the page heights
  * member 9: a pointer to the leftover system (last system with only one measure)
+ * member 10: the current pending elements (Mdiv, Score) to be place at the beginning of a page
  **/
 
 class CastOffPagesParams : public FunctorParams {
@@ -1134,6 +1147,7 @@ public:
     int m_pgHead2Height;
     int m_pgFoot2Height;
     System *m_leftoverSystem;
+    ArrayOfObjects m_pendingPageElements;
 };
 
 //----------------------------------------------------------------------------
@@ -1147,7 +1161,7 @@ public:
  * member 3: the cummulated shift (m_drawingXRel of the first measure of the current system)
  * member 4: the system width
  * member 5: the current scoreDef width
- * member 6: the current pending objects (ScoreDef, Endings, etc.) to be place at the beginning of a system
+ * member 6: the current pending elements (ScoreDef, Endings, etc.) to be place at the beginning of a system
  * member 7: the doc
  * member 8: whether to smartly use encoded system breaks
  * member 9: a pointer to the leftover system (last system with only one measure)
@@ -1155,11 +1169,11 @@ public:
 
 class CastOffSystemsParams : public FunctorParams {
 public:
-    CastOffSystemsParams(System *contentSystem, Page *page, System *currentSystem, Doc *doc, bool smart)
+    CastOffSystemsParams(Page *page, Doc *doc, bool smart)
     {
-        m_contentSystem = contentSystem;
         m_page = page;
-        m_currentSystem = currentSystem;
+        m_contentSystem = NULL;
+        m_currentSystem = NULL;
         m_shift = 0;
         m_systemWidth = 0;
         m_currentScoreDefWidth = 0;
@@ -1173,7 +1187,7 @@ public:
     int m_shift;
     int m_systemWidth;
     int m_currentScoreDefWidth;
-    ArrayOfObjects m_pendingObjects;
+    ArrayOfObjects m_pendingElements;
     Doc *m_doc;
     bool m_smart;
     System *m_leftoverSystem;
@@ -1274,8 +1288,13 @@ public:
 
 class ConvertToPageBasedParams : public FunctorParams {
 public:
-    ConvertToPageBasedParams(System *pageBasedSystem) { m_pageBasedSystem = pageBasedSystem; }
-    System *m_pageBasedSystem;
+    ConvertToPageBasedParams(Page *page)
+    {
+        m_currentSystem = NULL;
+        m_page = page;
+    }
+    System *m_currentSystem;
+    Page *m_page;
 };
 
 //----------------------------------------------------------------------------
@@ -1561,6 +1580,26 @@ public:
 };
 
 //----------------------------------------------------------------------------
+// GenerateFeaturesParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: a pointer to the Doc
+ * member 1: a pointer to the FeatureExtractor to which extraction is delegated
+ **/
+
+class GenerateFeaturesParams : public FunctorParams {
+public:
+    GenerateFeaturesParams(Doc *doc, FeatureExtractor *extractor)
+    {
+        m_doc = doc;
+        m_extractor = extractor;
+    }
+    Doc *m_doc;
+    FeatureExtractor *m_extractor;
+};
+
+//----------------------------------------------------------------------------
 // GetAlignmentLeftRightParams
 //----------------------------------------------------------------------------
 
@@ -1765,6 +1804,31 @@ public:
 };
 
 //----------------------------------------------------------------------------
+// PrepareDelayedTurnsParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: a flag indicating that we are running a first pass to fill the map
+ * member 1: a pointer to the element to which a turn is pointing to
+ * member 2: a pointer to the turn to which we want to set a m_drawingEndElement
+ * member 3: a map of the delayed turns and the layer element they point to
+ **/
+
+class PrepareDelayedTurnsParams : public FunctorParams {
+public:
+    PrepareDelayedTurnsParams()
+    {
+        m_initMap = true;
+        m_previousElement = NULL;
+        m_currentTurn = NULL;
+    }
+    bool m_initMap;
+    LayerElement *m_previousElement;
+    Turn *m_currentTurn;
+    std::map<LayerElement *, Turn *> m_delayedTurns;
+};
+
+//----------------------------------------------------------------------------
 // PrepareFacsimileParams
 //----------------------------------------------------------------------------
 
@@ -1929,15 +1993,15 @@ public:
 
 class PrepareRptParams : public FunctorParams {
 public:
-    PrepareRptParams(ScoreDef *currentScoreDef)
+    PrepareRptParams(Doc *doc)
     {
         m_currentMRpt = NULL;
         m_multiNumber = BOOLEAN_NONE;
-        m_currentScoreDef = currentScoreDef;
+        m_doc = doc;
     }
     MRpt *m_currentMRpt;
     data_BOOLEAN m_multiNumber;
-    ScoreDef *m_currentScoreDef;
+    Doc *m_doc;
 };
 
 //----------------------------------------------------------------------------
@@ -2139,40 +2203,46 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: the current scoreDef
- * member 1: the current staffDef
- * member 2: the upcoming scoreDef
- * member 3: the previous measure (for setting cautionary scoreDef)
- * member 4: the current system (for setting the system scoreDef)
- * member 5: the flag indicating whereas full labels have to be drawn
- * member 6: the flag indicating that the scoreDef restarts (draw brace and label)
- * member 7: the flag indicating is we already have a measure in the system
- * member 8: the doc
+ * member 0: the current score
+ * member 1: the current scoreDef
+ * member 2: the current staffDef
+ * member 3: the upcoming scoreDef
+ * member 4: the previous measure (for setting cautionary scoreDef)
+ * member 5: the current system (for setting the system scoreDef)
+ * member 6: the flag indicating whereas full labels have to be drawn
+ * member 7: the flag indicating that the scoreDef restarts (draw brace and label)
+ * member 8: the flag indicating is we already have a measure in the system
+ * member 9: the doc
+ * member 10: the functor to be redirected from Score
  **/
 
 class ScoreDefSetCurrentParams : public FunctorParams {
 public:
-    ScoreDefSetCurrentParams(Doc *doc, ScoreDef *upcomingScoreDef)
+    ScoreDefSetCurrentParams(Doc *doc, Functor *functor)
     {
+        m_currentScore = NULL;
         m_currentScoreDef = NULL;
         m_currentStaffDef = NULL;
-        m_upcomingScoreDef = upcomingScoreDef;
+        m_upcomingScoreDef.Reset();
         m_previousMeasure = NULL;
         m_currentSystem = NULL;
         m_drawLabels = false;
         m_restart = false;
         m_hasMeasure = false;
         m_doc = doc;
+        m_functor = functor;
     }
+    Score *m_currentScore;
     ScoreDef *m_currentScoreDef;
     StaffDef *m_currentStaffDef;
-    ScoreDef *m_upcomingScoreDef;
+    ScoreDef m_upcomingScoreDef;
     Measure *m_previousMeasure;
     System *m_currentSystem;
     bool m_drawLabels;
     bool m_restart;
     bool m_hasMeasure;
     Doc *m_doc;
+    Functor *m_functor;
 };
 
 //----------------------------------------------------------------------------
@@ -2278,12 +2348,18 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: a pointer to the system we are adding system to
+ * member 0: a pointer to the page we are adding system to
+ * member 1: a pointer to the system we are adding content to
  **/
 
 class UnCastOffParams : public FunctorParams {
 public:
-    UnCastOffParams(System *currentSystem) { m_currentSystem = currentSystem; }
+    UnCastOffParams(Page *page)
+    {
+        m_page = page;
+        m_currentSystem = NULL;
+    }
+    Page *m_page;
     System *m_currentSystem;
 };
 

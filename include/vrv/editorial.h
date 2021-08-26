@@ -10,8 +10,8 @@
 
 #include "atts_critapp.h"
 #include "atts_shared.h"
-#include "boundary.h"
 #include "object.h"
+#include "systemboundary.h"
 
 namespace vrv {
 
@@ -43,10 +43,10 @@ public:
      */
     ///@{
     EditorialElement();
-    EditorialElement(const std::string &classid);
+    EditorialElement(ClassId classId);
+    EditorialElement(ClassId classId, const std::string &classIdStr);
     virtual ~EditorialElement();
     virtual void Reset();
-    virtual ClassId GetClassId() const { return EDITORIAL_ELEMENT; }
     ///@}
 
     /**

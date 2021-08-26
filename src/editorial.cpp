@@ -33,7 +33,8 @@ namespace vrv {
 // EditorialElement
 //----------------------------------------------------------------------------
 
-EditorialElement::EditorialElement() : Object("ee-"), SystemElementStartInterface(), AttLabelled(), AttTyped()
+EditorialElement::EditorialElement()
+    : Object(EDITORIAL_ELEMENT, "ee-"), SystemElementStartInterface(), AttLabelled(), AttTyped()
 {
     RegisterAttClass(ATT_LABELLED);
     RegisterAttClass(ATT_TYPED);
@@ -41,8 +42,17 @@ EditorialElement::EditorialElement() : Object("ee-"), SystemElementStartInterfac
     Reset();
 }
 
-EditorialElement::EditorialElement(const std::string &classid)
-    : Object(classid), SystemElementStartInterface(), AttLabelled(), AttTyped()
+EditorialElement::EditorialElement(ClassId classId)
+    : Object(classId, "ee-"), SystemElementStartInterface(), AttLabelled(), AttTyped()
+{
+    RegisterAttClass(ATT_LABELLED);
+    RegisterAttClass(ATT_TYPED);
+
+    Reset();
+}
+
+EditorialElement::EditorialElement(ClassId classId, const std::string &classIdStr)
+    : Object(classId, classIdStr), SystemElementStartInterface(), AttLabelled(), AttTyped()
 {
     RegisterAttClass(ATT_LABELLED);
     RegisterAttClass(ATT_TYPED);
@@ -112,7 +122,8 @@ int EditorialElement::ConvertToPageBased(FunctorParams *functorParams)
     ConvertToPageBasedParams *params = vrv_params_cast<ConvertToPageBasedParams *>(functorParams);
     assert(params);
 
-    this->MoveItselfTo(params->m_pageBasedSystem);
+    assert(params->m_currentSystem);
+    this->MoveItselfTo(params->m_currentSystem);
 
     return FUNCTOR_CONTINUE;
 }
@@ -122,14 +133,14 @@ int EditorialElement::ConvertToPageBasedEnd(FunctorParams *functorParams)
     ConvertToPageBasedParams *params = vrv_params_cast<ConvertToPageBasedParams *>(functorParams);
     assert(params);
 
-    if (m_visibility == Visible) ConvertToPageBasedBoundary(this, params->m_pageBasedSystem);
+    if (m_visibility == Visible) ConvertToPageBasedBoundary(this, params->m_currentSystem);
 
     return FUNCTOR_CONTINUE;
 }
 
 int EditorialElement::PrepareBoundaries(FunctorParams *functorParams)
 {
-    if (this->IsBoundary()) {
+    if (this->IsSystemBoundary()) {
         this->SystemElementStartInterface::InterfacePrepareBoundaries(functorParams);
     }
 
@@ -138,7 +149,7 @@ int EditorialElement::PrepareBoundaries(FunctorParams *functorParams)
 
 int EditorialElement::ResetDrawing(FunctorParams *functorParams)
 {
-    if (this->IsBoundary()) {
+    if (this->IsSystemBoundary()) {
         this->SystemElementStartInterface::InterfaceResetDrawing(functorParams);
     }
 
@@ -161,7 +172,7 @@ int EditorialElement::CastOffSystems(FunctorParams *functorParams)
         = vrv_cast<EditorialElement *>(params->m_contentSystem->Relinquish(this->GetIdx()));
     assert(editorialElement);
     // move as pending since we want it at the beginning of the system in case of system break coming
-    params->m_pendingObjects.push_back(editorialElement);
+    params->m_pendingElements.push_back(editorialElement);
 
     return FUNCTOR_SIBLINGS;
 }
