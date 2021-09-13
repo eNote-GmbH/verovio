@@ -923,7 +923,7 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
     if (this->AbortRequested()) {
         return;
     }
-    
+
     Page *castOffSinglePage = new Page();
 
     System *leftoverSystem = NULL;
