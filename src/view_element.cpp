@@ -306,8 +306,8 @@ void View::DrawArtic(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
     const data_STAFFREL place = artic->GetDrawingPlace();
 
     const wchar_t code = artic->GetArticGlyph(articValue, place);
-    const wchar_t enclosingFront = artic->GetEnclosingGlyph(true);
-    const wchar_t enclosingBack = artic->GetEnclosingGlyph(false);
+    wchar_t enclosingFront, enclosingBack;
+    std::tie(enclosingFront, enclosingBack) = artic->GetEnclosingGlyphs();
 
     // Skip it if we do not have it in the font (for now - we should log / document this somewhere)
     if (code == 0) {
@@ -673,7 +673,33 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         fi->GetZone()->SetLry(ToDeviceContextY(y - noteHeight));
     }
 
+    // Possibly draw enclosing brackets
+    this->DrawClefEnclosing(dc, clef, staff, sym, x, y, clefSizeFactor);
+
     dc->EndGraphic(element, this);
+}
+
+void View::DrawClefEnclosing(
+    DeviceContext *dc, Clef *clef, Staff *staff, wchar_t glyph, int x, int y, double sizeFactor)
+{
+    if ((clef->GetEnclose() == ENCLOSURE_brack) || (clef->GetEnclose() == ENCLOSURE_box)) {
+        const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        x += sizeFactor * m_doc->GetGlyphLeft(glyph, staff->m_drawingStaffSize, false);
+        y += sizeFactor * m_doc->GetGlyphBottom(glyph, staff->m_drawingStaffSize, false);
+        const int height = sizeFactor * m_doc->GetGlyphHeight(glyph, staff->m_drawingStaffSize, false);
+        const int width = sizeFactor * m_doc->GetGlyphWidth(glyph, staff->m_drawingStaffSize, false);
+        const int offset = 3 * unit / 4;
+        // We use overlapping brackets to draw boxes :)
+        const int bracketWidth = (clef->GetEnclose() == ENCLOSURE_brack) ? unit : (width + offset);
+        const int verticalThickness = m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+        const int horizontalThickness = ((clef->GetEnclose() == ENCLOSURE_brack) ? 2 : 1) * verticalThickness;
+
+        this->DrawEnclosingBrackets(
+            dc, x, y, height, width, offset, bracketWidth, horizontalThickness, verticalThickness);
+    }
+    else if (clef->HasEnclose() && (clef->GetEnclose() != ENCLOSURE_none)) {
+        LogWarning("Only drawing of enclosing brackets and boxes is supported for clef.");
+    }
 }
 
 void View::DrawCustos(DeviceContext *dc, LayerElement *element, Layer *layer, Staff *staff, Measure *measure)
@@ -1030,43 +1056,48 @@ void View::DrawMeterSig(DeviceContext *dc, LayerElement *element, Layer *layer, 
     MeterSig *meterSig = vrv_cast<MeterSig *>(element);
     assert(meterSig);
 
+    DrawMeterSig(dc, meterSig, staff, 0);
+}
+
+void View::DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int horizOffset)
+{
     if (meterSig->GetForm() == METERFORM_invis) return;
 
-    const wchar_t enclosingFront = meterSig->GetEnclosingGlyph(true);
-    const wchar_t enclosingBack = meterSig->GetEnclosingGlyph(false);
-    if (meterSig->HasEnclose() && (meterSig->GetEnclose() != ENCLOSURE_paren)) {
+    const bool hasSmallEnclosing = (meterSig->HasSym() || (meterSig->GetForm() == METERFORM_num));
+    wchar_t enclosingFront, enclosingBack;
+    std::tie(enclosingFront, enclosingBack) = meterSig->GetEnclosingGlyphs(hasSmallEnclosing);
+    if (meterSig->HasEnclose() && (meterSig->GetEnclose() != ENCLOSURE_none)
+        && (meterSig->GetEnclose() != ENCLOSURE_paren)) {
         LogWarning("Only drawing of enclosing parentheses is supported for metersig.");
     }
 
-    dc->StartGraphic(element, "", element->GetUuid());
+    dc->StartGraphic(meterSig, "", meterSig->GetUuid());
 
     int y = staff->GetDrawingY() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - 1);
-    int x = element->GetDrawingX();
+    int x = meterSig->GetDrawingX() + horizOffset;
 
-    const bool diminEncl = (meterSig->HasSym() || meterSig->GetForm() == METERFORM_num);
     if (enclosingFront) {
-        const int xCorrEncl = m_doc->GetGlyphWidth(enclosingFront, staff->m_drawingStaffSize, diminEncl);
-        DrawSmuflCode(dc, x - xCorrEncl, y, enclosingFront, staff->m_drawingStaffSize, diminEncl);
+        DrawSmuflCode(dc, x, y, enclosingFront, staff->m_drawingStaffSize, false);
+        x += m_doc->GetGlyphWidth(enclosingFront, staff->m_drawingStaffSize, false);
     }
 
-    int contentWidth = 0;
     if (meterSig->HasSym()) {
         const wchar_t code = meterSig->GetSymbolGlyph();
         DrawSmuflCode(dc, x, y, code, staff->m_drawingStaffSize, false);
-        contentWidth = m_doc->GetGlyphWidth(code, staff->m_drawingStaffSize, false);
+        x += m_doc->GetGlyphWidth(code, staff->m_drawingStaffSize, false);
     }
     else if (meterSig->GetForm() == METERFORM_num) {
-        contentWidth = DrawMeterSigFigures(dc, x, y, meterSig->GetCount(), 0, staff);
+        x += DrawMeterSigFigures(dc, x, y, meterSig->GetCount(), 0, staff);
     }
     else if (meterSig->HasCount()) {
-        contentWidth = DrawMeterSigFigures(dc, x, y, meterSig->GetCount(), meterSig->GetUnit(), staff);
+        x += DrawMeterSigFigures(dc, x, y, meterSig->GetCount(), meterSig->GetUnit(), staff);
     }
 
     if (enclosingBack) {
-        DrawSmuflCode(dc, x + contentWidth, y, enclosingBack, staff->m_drawingStaffSize, diminEncl);
+        DrawSmuflCode(dc, x, y, enclosingBack, staff->m_drawingStaffSize, false);
     }
 
-    dc->EndGraphic(element, this);
+    dc->EndGraphic(meterSig, this);
 }
 
 void View::DrawMRest(DeviceContext *dc, LayerElement *element, Layer *layer, Staff *staff, Measure *measure)
@@ -1598,16 +1629,12 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
 
     if (label || labelAbbr) {
 
-        std::wstring labelStr;
         Object *graphic = NULL;
-
         if (label) {
             graphic = label;
-            labelStr = label->GetText(label);
         }
         else {
             graphic = labelAbbr;
-            labelStr = labelAbbr->GetText(labelAbbr);
         }
 
         FontInfo labelTxt;

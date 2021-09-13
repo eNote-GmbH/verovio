@@ -83,7 +83,10 @@ public:
     /**
      * Wrapper for checking if an element has a boundary start interface and also if is set as a boundary element
      */
+    ///@{
     bool IsBoundaryElement();
+    Object *GetBoundaryEnd();
+    ///@}
 
     /**
      * @name Methods for checking if an object is part of a group of classId's.
@@ -1571,6 +1574,11 @@ public:
      * Add the name / constructor map entry to the static register
      */
     void Register(std::string name, ClassId classId, std::function<Object *(void)> function);
+
+    /**
+     * Get the ClassId from the MEI element string name by making a lookup in the register
+     */
+    ClassId GetClassId(std::string name);
 
     /**
      * Get the correspondings ClassIds from the vector of MEI element string names

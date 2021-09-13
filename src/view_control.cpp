@@ -1124,7 +1124,7 @@ void View::DrawFConnector(DeviceContext *dc, F *f, int x1, int x2, Staff *staff,
     assert(f->GetStart() && f->GetEnd());
     if (!f->GetStart() || !f->GetEnd()) return;
 
-    int y = GetFYRel(f, staff);
+    const int y = GetFYRel(f, staff);
     TextExtend extend;
 
     // The both correspond to the current system, which means no system break in-between (simple case)
@@ -1175,7 +1175,7 @@ void View::DrawSylConnector(
     assert(syl->GetStart() && syl->GetEnd());
     if (!syl->GetStart() || !syl->GetEnd()) return;
 
-    int y = staff->GetDrawingY() + GetSylYRel(syl->m_drawingVerse, staff);
+    const int y = staff->GetDrawingY() + GetSylYRel(syl->m_drawingVerse, staff);
 
     // Invalid bounding boxes might occur for empty syllables without text child
     if (!syl->HasContentHorizontalBB()) return;
@@ -1257,9 +1257,9 @@ void View::DrawSylConnectorLines(DeviceContext *dc, int x1, int x2, int y, Syl *
         int dashLength = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_options->m_lyricHyphenLength.GetValue();
         // Adjust it proportionally to the lyric size
         dashLength *= m_options->m_lyricSize.GetValue() / m_options->m_lyricSize.GetDefault();
-        int halfDashLength = dashLength / 2;
+        const int halfDashLength = dashLength / 2;
 
-        int dashSpace = m_doc->GetDrawingStaffSize(staff->m_drawingStaffSize) * 5 / 3;
+        const int dashSpace = m_doc->GetDrawingStaffSize(staff->m_drawingStaffSize) * 5 / 3;
         int dist = x2 - x1;
         int nbDashes = dist / dashSpace;
 
@@ -1314,7 +1314,7 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     // We arbitrarily look at the top note
     Staff *staff = vrv_cast<Staff *>(topNote->GetFirstAncestor(STAFF));
     assert(staff);
-    bool drawingCueSize = topNote->GetDrawingCueSize();
+    const bool drawingCueSize = topNote->GetDrawingCueSize();
 
     // We are going to have only one FloatingPositioner - staff will be the top note one
     if (!system->SetCurrentFloatingPositioner(staff->GetN(), arpeg, topNote, staff)) {
@@ -1350,9 +1350,55 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     // Smufl glyphs are horizontal - Rotate them counter clockwise
     dc->RotateGraphic(Point(ToDeviceContextX(x), ToDeviceContextY(y)), angle);
 
-    DrawSmuflLine(dc, orig, length, staff->m_drawingStaffSize, drawingCueSize, fillGlyph, startGlyph, endGlyph);
+    this->DrawSmuflLine(dc, orig, length, staff->m_drawingStaffSize, drawingCueSize, fillGlyph, startGlyph, endGlyph);
 
     dc->EndGraphic(arpeg, this);
+
+    // Possibly draw enclosing brackets
+    this->DrawArpegEnclosing(dc, arpeg, staff, startGlyph, fillGlyph, endGlyph, x, y, length, drawingCueSize);
+}
+
+void View::DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, wchar_t startGlyph, wchar_t fillGlyph,
+    wchar_t endGlyph, int x, int y, int height, bool cueSize)
+{
+    assert(dc);
+    assert(arpeg);
+    assert(staff);
+
+    if ((arpeg->GetEnclose() == ENCLOSURE_brack) || (arpeg->GetEnclose() == ENCLOSURE_box)) {
+        // Calculate position and width
+        const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        int width = m_doc->GetGlyphHeight(fillGlyph, staff->m_drawingStaffSize, cueSize);
+        int exceedingWidth = std::max(unit - width, 0);
+        if (arpeg->GetArrow() == BOOLEAN_true) {
+            int arrowWidth = 0;
+            if (arpeg->GetOrder() == arpegLog_ORDER_down) {
+                arrowWidth = m_doc->GetGlyphHeight(startGlyph, staff->m_drawingStaffSize, cueSize);
+            }
+            else {
+                arrowWidth = m_doc->GetGlyphHeight(endGlyph, staff->m_drawingStaffSize, cueSize);
+            }
+            exceedingWidth = std::max(exceedingWidth, arrowWidth - width);
+        }
+        x -= (width + exceedingWidth / 2);
+        width += exceedingWidth;
+
+        // We use overlapping brackets to draw boxes :)
+        // Set params for offset, bracket width and line thickness
+        const int offset = 3 * unit / 4;
+        const int bracketWidth = (arpeg->GetEnclose() == ENCLOSURE_brack) ? unit : (width + offset);
+        const int verticalThickness = m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+        const int horizontalThickness = ((arpeg->GetEnclose() == ENCLOSURE_brack) ? 2 : 1) * verticalThickness;
+
+        // Draw the brackets
+        dc->StartGraphic(arpeg, "", arpeg->GetUuid());
+        this->DrawEnclosingBrackets(
+            dc, x, y, height, width, offset, bracketWidth, horizontalThickness, verticalThickness);
+        dc->EndGraphic(arpeg, this);
+    }
+    else if (arpeg->HasEnclose() && (arpeg->GetEnclose() != ENCLOSURE_none)) {
+        LogWarning("Only drawing of enclosing brackets and boxes is supported for arpeggio.");
+    }
 }
 
 void View::DrawBreath(DeviceContext *dc, Breath *breath, Measure *measure, System *system)
@@ -1417,7 +1463,7 @@ void View::DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system
 
     TextDrawingParams params;
 
-    int lineCount = dir->GetNumberOfLines(dir);
+    const int lineCount = dir->GetNumberOfLines(dir);
 
     // If we have not timestamp
     params.m_x = dir->GetStart()->GetDrawingX() + dir->GetStart()->GetDrawingRadius(m_doc);
@@ -1488,7 +1534,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
 
     TextDrawingParams params;
 
-    int lineCount = dynam->GetNumberOfLines(dynam);
+    const int lineCount = dynam->GetNumberOfLines(dynam);
 
     // If we have not timestamp
     params.m_x = dynam->GetStart()->GetDrawingX() + dynam->GetStart()->GetDrawingRadius(m_doc);
@@ -1552,8 +1598,8 @@ void View::DrawFb(DeviceContext *dc, Staff *staff, Fb *fb, TextDrawingParams &pa
     dc->StartGraphic(fb, "", fb->GetUuid());
 
     FontInfo *fontDim = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize);
-    int lineHeight = m_doc->GetTextLineHeight(fontDim, false);
-    int startX = params.m_x;
+    const int lineHeight = m_doc->GetTextLineHeight(fontDim, false);
+    const int startX = params.m_x;
 
     fontDim->SetPointSize(m_doc->GetDrawingLyricFont((staff)->m_drawingStaffSize)->GetPointSize());
 
@@ -1600,8 +1646,8 @@ void View::DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, Sy
     dc->StartGraphic(fermata, "", fermata->GetUuid());
 
     const wchar_t code = fermata->GetFermataGlyph();
-    const wchar_t enclosingFront = fermata->GetEnclosingGlyph(true);
-    const wchar_t enclosingBack = fermata->GetEnclosingGlyph(false);
+    wchar_t enclosingFront, enclosingBack;
+    std::tie(enclosingFront, enclosingBack) = fermata->GetEnclosingGlyphs();
 
     const int x = fermata->GetStart()->GetDrawingX() + fermata->GetStart()->GetDrawingRadius(m_doc);
 
@@ -1720,22 +1766,18 @@ void View::DrawGliss(DeviceContext *dc, Gliss *gliss, int x1, int x2, Staff *sta
         return;
     }
 
-    if (note1 || note2) {
-        int firstLoc = note1->GetDrawingLoc();
-        int secondLoc = note2->GetDrawingLoc();
-        if (x1 != x2)
-            slope = (secondLoc - firstLoc) * m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / (double)(x2 - x1);
-    }
+    const int firstLoc = note1->GetDrawingLoc();
+    const int secondLoc = note2->GetDrawingLoc();
+    if (x1 != x2) slope = (secondLoc - firstLoc) * m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / (double)(x2 - x1);
+
     // only half at system breaks
     if (spanningType != SPANNING_START_END) slope = slope / 2;
 
     // the normal case
     if (spanningType == SPANNING_START_END || spanningType == SPANNING_START) {
-        if (note1) {
-            x1 += m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-            y1 = note1->GetDrawingY() + m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * slope;
-        }
-        if (note1 && (note1->GetDots() > 0) && (abs(slope) < 1.0)) {
+        x1 += m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        y1 = note1->GetDrawingY() + m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * slope;
+        if ((note1->GetDots() > 0) && (abs(slope) < 1.0)) {
             x1 += m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * note1->GetDots();
             y1 += m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * note1->GetDots() * slope;
         }
@@ -1748,11 +1790,9 @@ void View::DrawGliss(DeviceContext *dc, Gliss *gliss, int x1, int x2, Staff *sta
         y1 = note2->GetDrawingY() - (x2 - x1) * slope;
     }
     if (spanningType == SPANNING_START_END || spanningType == SPANNING_END) {
-        if (note2) {
-            x2 -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
-            y2 = note2->GetDrawingY() - m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * slope;
-        }
-        if (note2 && note2->GetDrawingAccid()) {
+        x2 -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
+        y2 = note2->GetDrawingY() - m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * slope;
+        if (note2->GetDrawingAccid()) {
             x2 -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
             y2 -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * slope;
         }
@@ -1878,10 +1918,10 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
 
     dc->StartGraphic(mordent, "", mordent->GetUuid());
 
-    int x = mordent->GetStart()->GetDrawingX() + mordent->GetStart()->GetDrawingRadius(m_doc);
+    const int x = mordent->GetStart()->GetDrawingX() + mordent->GetStart()->GetDrawingRadius(m_doc);
 
     // set mordent glyph
-    int code = mordent->GetMordentGlyph();
+    const int code = mordent->GetMordentGlyph();
 
     std::wstring str;
     str.push_back(code);
