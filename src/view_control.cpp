@@ -1502,7 +1502,7 @@ void View::DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system
         dc->ResetFont();
         dc->ResetBrush();
 
-        DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+        DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
     }
 
     dc->EndGraphic(dir, this);
@@ -1584,7 +1584,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
             dc->ResetFont();
             dc->ResetBrush();
         }
-        DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+        DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
     }
 
     dc->EndGraphic(dynam, this);
@@ -1664,11 +1664,21 @@ void View::DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, Sy
         int yCorr = 0;
         const int height = m_doc->GetGlyphHeight(code, staff->m_drawingStaffSize, drawingCueSize);
         const data_VERTICALALIGNMENT yAlignment = Fermata::GetVerticalAlignment(code);
+        int enclosureYCorr = 0;
         if (yAlignment == VERTICALALIGNMENT_top) {
             yCorr = height / 2;
         }
         else if (yAlignment == VERTICALALIGNMENT_bottom) {
             yCorr = -height / 2;
+        }
+        else {
+            const int glyphBottomY = m_doc->GetGlyphBottom(code, staff->m_drawingStaffSize, false);
+            if (fermata->GetPlace() == STAFFREL_above) {
+                yCorr = height / 2 + glyphBottomY;
+            }
+            else {
+                enclosureYCorr = height / 2 + glyphBottomY;
+            }
         }
 
         // Draw glyph including possible enclosing brackets
@@ -1677,14 +1687,16 @@ void View::DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, Sy
         if (enclosingFront) {
             const int xCorrEncl = xCorr + m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / 3
                 + m_doc->GetGlyphWidth(enclosingFront, staff->m_drawingStaffSize, drawingCueSize);
-            DrawSmuflCode(dc, x - xCorrEncl, y, enclosingFront, staff->m_drawingStaffSize, drawingCueSize);
+            DrawSmuflCode(
+                dc, x - xCorrEncl, y + enclosureYCorr, enclosingFront, staff->m_drawingStaffSize, drawingCueSize);
         }
 
         DrawSmuflCode(dc, x - xCorr, y - yCorr, code, staff->m_drawingStaffSize, drawingCueSize);
 
         if (enclosingBack) {
             const int xCorrEncl = xCorr + m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / 3;
-            DrawSmuflCode(dc, x + xCorrEncl, y, enclosingBack, staff->m_drawingStaffSize, drawingCueSize);
+            DrawSmuflCode(
+                dc, x + xCorrEncl, y + enclosureYCorr, enclosingBack, staff->m_drawingStaffSize, drawingCueSize);
         }
 
         dc->ResetFont();
@@ -1739,7 +1751,7 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
         dc->ResetFont();
         dc->ResetBrush();
 
-        DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+        DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
     }
 
     dc->EndGraphic(fing, this);
@@ -1899,7 +1911,7 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
             dc->ResetFont();
             dc->ResetBrush();
 
-            DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+            DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
         }
     }
 
@@ -2121,7 +2133,7 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
         dc->ResetFont();
         dc->ResetBrush();
 
-        DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+        DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
     }
 
     dc->EndGraphic(reh, this);
@@ -2183,7 +2195,7 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
         dc->ResetFont();
         dc->ResetBrush();
 
-        DrawTextBoxes(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
+        DrawTextBox(dc, params.m_boxedRend, (*staffIter)->m_drawingStaffSize);
     }
 
     dc->EndGraphic(tempo, this);
@@ -2548,17 +2560,16 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
         dc->EndGraphic(ending, this);
 }
 
-void View::DrawTextBoxes(DeviceContext *dc, const std::vector<TextElement *> &boxedRend, int staffSize)
+void View::DrawTextBox(DeviceContext *dc, const std::vector<TextElement *> &boxedRend, const int staffSize)
 {
     assert(dc);
     const int lineThickness = m_options->m_textEnclosureThickness.GetValue() * staffSize;
-    const int boxMargin = staffSize / 2;
 
     for (const auto rend : boxedRend) {
-        const int x1 = rend->GetContentLeft() - boxMargin;
-        const int y1 = rend->GetContentBottom() - boxMargin;
-        const int x2 = rend->GetContentRight() + boxMargin;
-        const int y2 = rend->GetContentTop() + 2 * boxMargin;
+        const int y1 = rend->GetContentBottom() - staffSize / 2;
+        const int y2 = rend->GetContentTop() + staffSize;
+        int x1 = rend->GetContentLeft() - staffSize;
+        int x2 = rend->GetContentRight() + staffSize;
 
         DrawNotFilledRectangle(dc, x1, y1, x2, y2, lineThickness, 0);
     }
