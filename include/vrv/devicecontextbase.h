@@ -113,10 +113,12 @@ public:
         m_faceName.clear();
         m_encoding = 0; // was wxFONTENCODING_DEFAULT;
         m_widthToHeightRatio = 1.0;
+        m_interval = 0;
     }
     virtual ~FontInfo(){};
 
     // accessors and modifiers for the font elements
+    int GetInterval() { return m_interval; }
     int GetPointSize() { return m_pointSize; }
     data_FONTSTYLE GetStyle() { return m_style; }
     data_FONTWEIGHT GetWeight() { return m_weight; }
@@ -127,6 +129,7 @@ public:
     int GetEncoding() { return m_encoding; }
     float GetWidthToHeightRatio() { return m_widthToHeightRatio; }
 
+    void SetInterval(int interval) { m_interval = interval; }
     void SetPointSize(int pointSize) { m_pointSize = pointSize; }
     void SetStyle(data_FONTSTYLE style) { m_style = style; }
     void SetWeight(data_FONTWEIGHT weight) { m_weight = weight; }
@@ -138,6 +141,7 @@ public:
     void SetWidthToHeightRatio(float ratio) { m_widthToHeightRatio = ratio; }
 
 private:
+    int m_interval;
     int m_pointSize;
     int m_family;
     data_FONTSTYLE m_style;
