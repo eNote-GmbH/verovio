@@ -25,6 +25,7 @@ class Dynam : public ControlElement,
               public TextListInterface,
               public TextDirInterface,
               public TimeSpanningInterface,
+              public AttEnclosingChars,
               public AttExtender,
               public AttLineRendBase,
               public AttMidiValue,
@@ -92,6 +93,11 @@ public:
      * See Object::PrepareFloatingGrps
      */
     virtual int PrepareFloatingGrps(FunctorParams *functoParams);
+
+    /**
+     * See Object::PrepareEnclosedDynam
+     */
+    int PrepareDynamEnclosure(FunctorParams *functoParams) override;
 
 protected:
     //

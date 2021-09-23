@@ -813,6 +813,10 @@ void Doc::PrepareDrawing()
         }
     }
 
+    /************ Resolve @enclose for dynamics ************/
+    Functor prepareDynamEnclosure(&Object::PrepareDynamEnclosure);
+    this->Process(&prepareDynamEnclosure, NULL);
+
     Functor scoreDefSetGrpSym(&Object::ScoreDefSetGrpSym);
     GetCurrentScoreDef()->Process(&scoreDefSetGrpSym, NULL);
 
