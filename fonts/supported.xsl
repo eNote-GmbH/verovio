@@ -1417,9 +1417,9 @@ a            <glyph glyph-code="E5BF" smufl-name="ornamentPrecompCadenceWithTurn
             <!--<glyph glyph-code="E5E2" smufl-name="brassSmear"/>-->
             <!--<glyph glyph-code="E5E3" smufl-name="brassBend"/>-->
             <!--<glyph glyph-code="E5E4" smufl-name="brassJazzTurn"/>-->
-            <!--<glyph glyph-code="E5E5" smufl-name="brassMuteClosed"/>-->
-            <!--<glyph glyph-code="E5E6" smufl-name="brassMuteHalfClosed"/>-->
-            <!--<glyph glyph-code="E5E7" smufl-name="brassMuteOpen"/>-->
+            <glyph glyph-code="E5E5" smufl-name="brassMuteClosed"/>
+            <glyph glyph-code="E5E6" smufl-name="brassMuteHalfClosed"/>
+            <glyph glyph-code="E5E7" smufl-name="brassMuteOpen"/>
             <!--<glyph glyph-code="E5E8" smufl-name="brassHarmonMuteClosed"/>-->
             <!--<glyph glyph-code="E5E9" smufl-name="brassHarmonMuteStemHalfLeft"/>-->
             <!--<glyph glyph-code="E5EA" smufl-name="brassHarmonMuteStemHalfRight"/>-->
@@ -2526,7 +2526,7 @@ a            <glyph glyph-code="E5BF" smufl-name="ornamentPrecompCadenceWithTurn
             <!--<glyph glyph-code="EAA1" smufl-name="wiggleTrillFasterStill"/>-->
             <!--<glyph glyph-code="EAA2" smufl-name="wiggleTrillFaster"/>-->
             <!--<glyph glyph-code="EAA3" smufl-name="wiggleTrillFast"/>-->
-            <!--<glyph glyph-code="EAA4" smufl-name="wiggleTrill"/>-->
+            <glyph glyph-code="EAA4" smufl-name="wiggleTrill"/>
             <!--<glyph glyph-code="EAA5" smufl-name="wiggleTrillSlow"/>-->
             <!--<glyph glyph-code="EAA6" smufl-name="wiggleTrillSlower"/>-->
             <!--<glyph glyph-code="EAA7" smufl-name="wiggleTrillSlowerStill"/>-->
@@ -2537,7 +2537,7 @@ a            <glyph glyph-code="E5BF" smufl-name="ornamentPrecompCadenceWithTurn
             <!--<glyph glyph-code="EAAC" smufl-name="wiggleArpeggiatoDownSwash"/>-->
             <glyph glyph-code="EAAD" smufl-name="wiggleArpeggiatoUpArrow"/>
             <glyph glyph-code="EAAE" smufl-name="wiggleArpeggiatoDownArrow"/>
-            <!--<glyph glyph-code="EAAF" smufl-name="wiggleGlissando"/>-->
+            <glyph glyph-code="EAAF" smufl-name="wiggleGlissando"/>
             <!--<glyph glyph-code="EAB0" smufl-name="wiggleVibrato"/>-->
             <!--<glyph glyph-code="EAB1" smufl-name="wiggleVibratoWide"/>-->
             <!--<glyph glyph-code="EAB2" smufl-name="guitarVibratoStroke"/>-->

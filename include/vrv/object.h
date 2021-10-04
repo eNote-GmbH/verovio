@@ -1143,6 +1143,11 @@ public:
     virtual int ResetDrawing(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
+     * Resolve Reh time pointing position in case none is set
+     */
+    virtual int ResolveRehPosition(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
      * Go through all layer elements of the layer and return next/previous element relative to the specified
      * layer element. It will search recursively through children elements until note, chord or ftrem is found.
      * It can be used to look in neighboring layers for the similar search, but only first element will be checked.
@@ -1179,7 +1184,7 @@ public:
     ///@{
 
     /**
-     * Fill a page by adding systems with the appropriate length.
+     * @name Fill a page by adding systems with the appropriate length.
      * At the end, add all the pending objects where reaching the end
      */
     ///@{
@@ -1188,9 +1193,12 @@ public:
     ///@}
 
     /**
-     *
+     * @name Fill a doc by adding pages with the appropriate length.
      */
+    ///@{
     virtual int CastOffPages(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int CastOffPagesEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    ///@}
 
     /**
      * Cast off the document according to the encoding provided (pb and sb)

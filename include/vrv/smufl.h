@@ -292,6 +292,9 @@ enum {
     SMUFL_E5C6_ornamentPrecompMordentUpperPrefix = 0xE5C6,
     SMUFL_E5C7_ornamentPrecompInvertedMordentUpperPrefix = 0xE5C7,
     SMUFL_E5C8_ornamentPrecompTrillLowerSuffix = 0xE5C8,
+    SMUFL_E5E5_brassMuteClosed = 0xE5E5,
+    SMUFL_E5E6_brassMuteHalfClosed = 0xE5E6,
+    SMUFL_E5E7_brassMuteOpen = 0xE5E7,
     SMUFL_E610_stringsDownBow = 0xE610,
     SMUFL_E611_stringsDownBowTurned = 0xE611,
     SMUFL_E612_stringsUpBow = 0xE612,
@@ -385,10 +388,12 @@ enum {
     SMUFL_E9F8_mensuralRestSemifusa = 0xE9F8,
     SMUFL_EA02_mensuralCustosUp = 0xEA02,
     SMUFL_EA06_chantCustosStemUpPosMiddle = 0xEA06,
+    SMUFL_EAA4_wiggleTrill = 0xEAA4,
     SMUFL_EAA9_wiggleArpeggiatoUp = 0xEAA9,
     SMUFL_EAAA_wiggleArpeggiatoDown = 0xEAAA,
     SMUFL_EAAD_wiggleArpeggiatoUpArrow = 0xEAAD,
     SMUFL_EAAE_wiggleArpeggiatoDownArrow = 0xEAAE,
+    SMUFL_EAAF_wiggleGlissando = 0xEAAF,
     SMUFL_EBA7_luteDurationWhole = 0xEBA7,
     SMUFL_EBA8_luteDurationHalf = 0xEBA8,
     SMUFL_EBA9_luteDurationQuarter = 0xEBA9,
@@ -423,7 +428,7 @@ enum {
 };
 
 /** The number of glyphs for verification **/
-#define SMUFL_COUNT 398
+#define SMUFL_COUNT 403
 
 } // namespace vrv
 
