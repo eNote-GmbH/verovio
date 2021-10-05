@@ -235,7 +235,8 @@ int main(int argc, char **argv)
         { "version", no_argument, 0, 'v' }, //
         { "xml-id-seed", required_argument, 0, 'x' }, //
         // standard input - long options only or - as filename
-        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 } };
+        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 }
+    };
 
     int baseSize = sizeof(base_options) / sizeof(option);
 
