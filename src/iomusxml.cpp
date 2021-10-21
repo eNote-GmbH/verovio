@@ -3403,7 +3403,7 @@ void MusicXmlInput::ReadMusicXmlBeamsAndTuplets(const pugi::xml_node &node, Laye
             std::string measureName = (currentMeasure.node().attribute("id"))
                 ? currentMeasure.node().attribute("id").as_string()
                 : currentMeasure.node().attribute("number").as_string();
-            LogError("MusicXML import: Beam without end in measure %s", measureName.c_str());
+            LogWarning("MusicXML import: Beam without end in measure %s", measureName.c_str());
             return;
         }
         // form vector of the beam nodes and find whether there are tuplets that start or end within the beam
