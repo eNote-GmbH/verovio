@@ -1320,13 +1320,13 @@ Options::Options()
     m_systemMaxPerPage.Init(0, 0, 24);
     this->Register(&m_systemMaxPerPage, "systemMaxPerPage", &m_generalLayout);
 
-    m_textFont.SetInfo("Text font", "Set the text font");
-    m_textFont.Init("Times");
-    this->Register(&m_textFont, "textFont", &m_generalLayout);
-
     m_textEnclosureThickness.SetInfo("Text box line thickness", "The thickness of the line text enclosing box");
     m_textEnclosureThickness.Init(0.2, 0.10, 0.80);
     this->Register(&m_textEnclosureThickness, "textEnclosureThickness", &m_generalLayout);
+
+    m_textFont.SetInfo("Text font", "Set the text font");
+    m_textFont.Init("Times");
+    this->Register(&m_textFont, "textFont", &m_generalLayout);
 
     m_thickBarlineThickness.SetInfo("Thick barline thickness", "The thickness of the thick barline");
     m_thickBarlineThickness.Init(1.0, 0.5, 2.0);
