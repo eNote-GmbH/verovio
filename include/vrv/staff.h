@@ -46,7 +46,6 @@ public:
     virtual Object *Clone() const { return new Staff(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Staff"; }
-    virtual ClassId GetClassId() const { return STAFF; }
     ///@}
 
     /**
@@ -205,6 +204,11 @@ public:
     virtual int FillStaffCurrentTimeSpanning(FunctorParams *functorParams);
 
     /**
+     * See Object::CastOffEncoding
+     */
+    virtual int CastOffEncoding(FunctorParams *functorParams);
+
+    /**
      * See Object::ResetDrawing
      */
     virtual int ResetDrawing(FunctorParams *functorParams);
@@ -245,7 +249,8 @@ private:
     /**
      * Shorten ledger lines which overlap with neighbors
      */
-    void AdjustLedgerLines(ArrayOfLedgerLines &lines, int extension, int minExtension);
+    void AdjustLedgerLines(
+        ArrayOfLedgerLines &lines, ArrayOfLedgerLines &cueLines, double cueScaling, int extension, int minExtension);
 
 public:
     /**

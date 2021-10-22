@@ -52,7 +52,6 @@ public:
     virtual Object *Clone() const { return new Chord(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Chord"; }
-    virtual ClassId GetClassId() const { return CHORD; }
     ///@}
 
     /**
@@ -142,6 +141,11 @@ public:
     bool IsVisible();
 
     /**
+     * Return true if the chord has two notes with 1 diatonic step difference in the specific staff
+     */
+    bool HasAdjacentNotesInStaff(Staff *staff);
+
+    /**
      * Return true if the chord has at least one note with a @dots > 0
      */
     bool HasNoteWithDots();
@@ -206,9 +210,9 @@ public:
     virtual int ResetDrawing(FunctorParams *functorParams);
 
     /**
-     * See Object::JustifyY
+     * See Object::AdjustCrossStaffContent
      */
-    virtual int JustifyY(FunctorParams *functorParams);
+    virtual int AdjustCrossStaffContent(FunctorParams *functorParams);
 
 protected:
     /**

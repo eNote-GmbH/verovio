@@ -43,7 +43,6 @@ public:
     virtual Object *Clone() const { return new Accid(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Accid"; }
-    virtual ClassId GetClassId() const { return ACCID; }
     ///@}
 
     virtual PositionInterface *GetPositionInterface() { return dynamic_cast<PositionInterface *>(this); }
@@ -62,12 +61,25 @@ public:
     ///@}
 
     /**
+     * @name Set and get drawing unison accid
+     */
+    ///@{
+    void SetDrawingUnisonAccid(Accid *drawingUnison) { m_drawingUnison = drawingUnison; }
+    Accid *GetDrawingUnisonAccid() const { return m_drawingUnison; }
+    ///@}
+
+    /**
      * Retrieve SMuFL string for the accidental.
      * This will include brackets
      */
     std::wstring GetSymbolStr() const;
 
-    bool AdjustX(LayerElement *element, Doc *doc, int staffSize, std::vector<Accid *> &leftAccids);
+    void AdjustX(LayerElement *element, Doc *doc, int staffSize, std::vector<Accid *> &leftAccids);
+
+    /**
+     * Adjust accid position if it's placed above/below staff so that it does not overlap with ledger lines
+     */
+    void AdjustToLedgerLines(Doc *doc, LayerElement *element, int staffSize);
 
     //----------------//
     // Static methods //
@@ -98,6 +110,7 @@ public:
     //
 private:
     Accid *m_drawingOctave;
+    Accid *m_drawingUnison;
     bool m_isDrawingOctave;
 };
 

@@ -41,6 +41,9 @@
 #include "note.h"
 #include "options.h"
 #include "page.h"
+#include "pageboundary.h"
+#include "pageelement.h"
+#include "reh.h"
 #include "smufl.h"
 #include "staff.h"
 #include "staffdef.h"
@@ -64,8 +67,6 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
     m_currentPage = m_doc->SetDrawingPage(m_pageIdx);
 
-    int i;
-
     // Keep the width of the initial scoreDef
     SetScoreDefDrawingWidth(dc, &m_currentPage->m_drawingScoreDef);
 
@@ -88,10 +89,18 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
     dc->StartPage();
 
-    for (i = 0; i < m_currentPage->GetSystemCount(); ++i) {
-        // cast to System check in DrawSystem
-        System *system = dynamic_cast<System *>(m_currentPage->GetChild(i));
-        DrawSystem(dc, system);
+    for (auto child : *m_currentPage->GetChildren()) {
+        if (child->IsPageElement()) {
+            // cast to PageElement check in DrawSystemEditorial element
+            DrawPageElement(dc, dynamic_cast<PageElement *>(child));
+        }
+        else if (child->Is(SYSTEM)) {
+            System *system = dynamic_cast<System *>(child);
+            DrawSystem(dc, system);
+        }
+        else {
+            assert(false);
+        }
     }
 
     DrawRunningElements(dc, m_currentPage);
@@ -142,6 +151,30 @@ void View::SetScoreDefDrawingWidth(DeviceContext *dc, ScoreDef *scoreDef)
     }
 
     scoreDef->SetDrawingWidth(width);
+}
+
+void View::DrawPageElement(DeviceContext *dc, PageElement *element)
+{
+    assert(dc);
+    assert(element);
+
+    if (element->Is(PAGE_ELEMENT_END)) {
+        PageElementEnd *elementEnd = vrv_cast<PageElementEnd *>(element);
+        assert(elementEnd);
+        assert(elementEnd->GetStart());
+        dc->StartGraphic(element, elementEnd->GetStart()->GetUuid(), element->GetUuid());
+        dc->EndGraphic(element, this);
+    }
+    else if (element->Is(MDIV)) {
+        // When the mdiv is not visible, then there is no start / end element
+        std::string elementStart = (element->IsBoundaryElement()) ? "pageElementStart" : "";
+        dc->StartGraphic(element, elementStart, element->GetUuid());
+        dc->EndGraphic(element, this);
+    }
+    else if (element->Is(SCORE)) {
+        dc->StartGraphic(element, "pageElementStart", element->GetUuid());
+        dc->EndGraphic(element, this);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -318,8 +351,8 @@ void View::DrawStaffGrp(
     // draw the system start bar line
     if (topStaffGrp
         && ((((firstDef != lastDef) || staffGrp->GetFirst(GRPSYM))
-                && (m_doc->m_mdivScoreDef.GetSystemLeftline() != BOOLEAN_false))
-            || (m_doc->m_mdivScoreDef.GetSystemLeftline() == BOOLEAN_true))) {
+                && (m_doc->GetCurrentScoreDef()->GetSystemLeftline() != BOOLEAN_false))
+            || (m_doc->GetCurrentScoreDef()->GetSystemLeftline() == BOOLEAN_true))) {
         // int barLineWidth = m_doc->GetDrawingElementDefaultSize("bracketThickness", staffSize);
         const int barLineWidth = m_doc->GetDrawingBarLineWidth(staffSize);
         DrawVerticalLine(dc, yTop, yBottom, x + barLineWidth / 2, barLineWidth);
@@ -427,14 +460,12 @@ void View::DrawGrpSym(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp, i
         }
         case staffGroupingSym_SYMBOL_bracket: {
             DrawBracket(dc, x, yTop, yBottom, staffSize);
-            x -= m_doc->GetDrawingUnit(staffSize) * m_options->m_bracketThickness.GetValue()
-                + m_doc->GetDrawingUnit(staffSize);
+            x -= m_doc->GetDrawingUnit(staffSize) * (1.0 + m_options->m_bracketThickness.GetValue());
             break;
         }
         case staffGroupingSym_SYMBOL_bracketsq: {
-            DrawBracketsq(dc, x, yTop, yBottom, staffSize);
-            x -= m_doc->GetDrawingUnit(staffSize) * m_options->m_subBracketThickness.GetValue()
-                + m_doc->GetDrawingUnit(staffSize);
+            DrawBracketSq(dc, x, yTop, yBottom, staffSize);
+            x -= m_doc->GetDrawingUnit(staffSize);
             break;
         }
         default: break;
@@ -530,25 +561,19 @@ void View::DrawBracket(DeviceContext *dc, int x, int y1, int y2, int staffSize)
     DrawSmuflCode(dc, x1, y2 - offset - bracketThickness / 2, SMUFL_E004_bracketBottom, staffSize, false);
 
     DrawFilledRectangle(dc, x1, y1 + 2 * offset + bracketThickness / 2, x2, y2 - 2 * offset - bracketThickness / 2);
-
-    return;
 }
 
-void View::DrawBracketsq(DeviceContext *dc, int x, int y1, int y2, int staffSize)
+void View::DrawBracketSq(DeviceContext *dc, int x, int y1, int y2, int staffSize)
 {
     assert(dc);
 
-    const int offset = m_doc->GetDrawingStaffLineWidth(staffSize) / 2;
-    const int basicDist = m_doc->GetDrawingUnit(staffSize);
+    const int y = std::min(y1, y2);
+    const int height = std::abs(y2 - y1);
+    const int horizontalThickness = m_doc->GetDrawingStaffLineWidth(staffSize);
+    const int verticalThickness = m_doc->GetDrawingUnit(staffSize) * m_options->m_subBracketThickness.GetValue();
+    const int width = m_doc->GetDrawingUnit(staffSize);
 
-    const int bracketWidth = m_doc->GetDrawingUnit(staffSize) * m_options->m_subBracketThickness.GetValue();
-    x -= basicDist;
-
-    DrawFilledRectangle(dc, x, y1 + offset, x - bracketWidth, y2 - offset); // left
-    DrawFilledRectangle(dc, x, y1 + offset, x + basicDist, y1 - offset); // top
-    DrawFilledRectangle(dc, x, y2 + offset, x + basicDist, y2 - offset); // bottom
-
-    return;
+    DrawSquareBracket(dc, true, x - width, y, height, width, horizontalThickness, verticalThickness);
 }
 
 void View::DrawBrace(DeviceContext *dc, int x, int y1, int y2, int staffSize)
@@ -687,7 +712,7 @@ void View::DrawBarLines(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp,
                 // drawn
                 data_BARRENDITION form = barLine->GetForm();
                 if (measure->HasInvisibleStaffBarlines()) {
-                    data_BARRENDITION barlineRend = barLine->Is(BARLINE_ATTR_RIGHT)
+                    data_BARRENDITION barlineRend = (barLine->GetPosition() == BarLinePosition::Right)
                         ? measure->GetDrawingRightBarLineByStaffN(childStaffDef->GetN())
                         : measure->GetDrawingLeftBarLineByStaffN(childStaffDef->GetN());
                     if (barlineRend != BARRENDITION_NONE) form = barlineRend;
@@ -771,7 +796,7 @@ void View::DrawBarLines(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp,
         // erase intersections only if we have more than one staff
         bool eraseIntersections = (first != last) ? true : false;
         // do not erase intersections with right barline of the last measure of the system
-        if (isLastMeasure && barLine->Is(BARLINE_ATTR_RIGHT)) {
+        if (isLastMeasure && (barLine->GetPosition() == BarLinePosition::Right)) {
             eraseIntersections = false;
         }
         DrawBarLine(dc, yTop, yBottom, barLine, barLine->GetForm(), eraseIntersections);
@@ -952,7 +977,12 @@ void View::DrawMeasure(DeviceContext *dc, Measure *measure, System *system)
 
     if (m_drawingScoreDef.GetMnumVisible() != BOOLEAN_false) {
         MNum *mnum = dynamic_cast<MNum *>(measure->FindDescendantByType(MNUM));
-        if (mnum) {
+        Reh *reh = dynamic_cast<Reh *>(measure->FindDescendantByType(REH));
+        const bool hasRehearsal = reh
+            && ((reh->HasTstamp() && (reh->GetTstamp() == 0.0))
+                || (reh->GetStart()->Is(BARLINE)
+                    && vrv_cast<BarLine *>(reh->GetStart())->GetPosition() == BarLinePosition::Left));
+        if (mnum && !hasRehearsal) {
             // this should be an option
             Measure *systemStart = dynamic_cast<Measure *>(system->FindDescendantByType(MEASURE));
 
@@ -1019,25 +1049,21 @@ void View::DrawMeterSigGrp(DeviceContext *dc, Layer *layer, Staff *staff)
         MeterSig *meterSig = vrv_cast<MeterSig *>(*iter);
         assert(meterSig);
 
-        dc->StartGraphic(meterSig, "", meterSig->GetUuid());
-        int y = staff->GetDrawingY() - unit * (staff->m_drawingLines - 1);
-        int x = meterSig->GetDrawingX() + offset;
-
         if (meterSig->HasCount()) {
-            DrawMeterSigFigures(dc, x, y, meterSig->GetCount(), meterSig->GetUnit(), staff);
+            DrawMeterSig(dc, meterSig, staff, offset);
         }
 
-        dc->EndGraphic(meterSig, this);
-        int margin = unit / 2;
+        const int y = staff->GetDrawingY() - unit * (staff->m_drawingLines - 1);
+        const int x = meterSig->GetDrawingX() + offset;
         const int width = meterSig->GetContentRight() - meterSig->GetContentLeft();
         if ((meterSigGrp->GetFunc() == meterSigGrpLog_FUNC_mixed) && (iter != std::prev(childList->end()))) {
             // draw plus sign here
-            const int plusX = x + width;
+            const int plusX = x + width + unit / 2;
             DrawSmuflCode(dc, plusX, y, SMUFL_E08C_timeSigPlus, staff->m_drawingStaffSize, false);
-            offset += width + m_doc->GetGlyphWidth(SMUFL_E08C_timeSigPlus, staff->m_drawingStaffSize, false);
+            offset += width + unit + m_doc->GetGlyphWidth(SMUFL_E08C_timeSigPlus, staff->m_drawingStaffSize, false);
         }
         else {
-            offset += width + margin * 2;
+            offset += width + unit;
         }
     }
 
@@ -1429,6 +1455,9 @@ void View::DrawSystemDivider(DeviceContext *dc, System *system, Measure *firstMe
 
     // Draw system divider (from the second one) if scoreDef is optimized
     if (!firstMeasure || (m_options->m_systemDivider.GetValue() == SYSTEMDIVIDER_none)) return;
+    // No system divider if we are on the first system of a page or of an mdiv
+    if (system->IsFirstInPage() || system->IsFirstOfMdiv()) return;
+
     // initialize to zero, first measure is not supposed to have system divider
     int previousSystemBottomMarginY = 0;
     Object *currentPage = system->GetFirstAncestor(PAGE);
@@ -1450,8 +1479,7 @@ void View::DrawSystemDivider(DeviceContext *dc, System *system, Measure *firstMe
         }
     }
 
-    if ((system->GetIdx() > 0)
-        && (system->IsDrawingOptimized() || (m_options->m_systemDivider.GetValue() > SYSTEMDIVIDER_auto))) {
+    if ((system->IsDrawingOptimized() || (m_options->m_systemDivider.GetValue() > SYSTEMDIVIDER_auto))) {
         int y = system->GetDrawingY();
         Staff *staff = firstMeasure->GetTopVisibleStaff();
         if (staff) {
@@ -1514,7 +1542,7 @@ void View::DrawSystemChildren(DeviceContext *dc, Object *parent, System *system)
             SetScoreDefDrawingWidth(dc, scoreDef);
         }
         else if (current->IsSystemElement()) {
-            // cast to EditorialElement check in DrawSystemEditorial element
+            // cast to SystemElement check in DrawSystemEditorial element
             DrawSystemElement(dc, dynamic_cast<SystemElement *>(current), system);
         }
         else if (current->IsEditorialElement()) {
@@ -1690,10 +1718,10 @@ void View::DrawSystemEditorialElement(DeviceContext *dc, EditorialElement *eleme
     else if (element->Is(CHOICE)) {
         assert(dynamic_cast<Choice *>(element) && (dynamic_cast<Choice *>(element)->GetLevel() == EDITORIAL_TOPLEVEL));
     }
-    std::string boundaryStart;
-    if (element->IsBoundaryElement()) boundaryStart = "boundaryStart";
+    std::string elementStart;
+    if (element->IsBoundaryElement()) elementStart = "systemeElementStart";
 
-    dc->StartGraphic(element, boundaryStart, element->GetUuid());
+    dc->StartGraphic(element, elementStart, element->GetUuid());
     // EditorialElements at the system level that are visible have no children
     // if (element->m_visibility == Visible) {
     //    DrawSystemChildren(dc, element, system);

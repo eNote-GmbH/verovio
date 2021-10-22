@@ -1,11 +1,28 @@
 # Changelog
 
 ## [unreleased]
+* Complete refactoring of the Plaine and Easie parser
+* Support for `arpeg@enclose` (@eNote-GmBH)
+* Support for `clef@enclose` (@eNote-GmBH)
+* Support for `metersig@enclose` (@eNote-GmBH)
+* Option --tie-min-length to control the minimum length of ties (@eNote-GmBH)
+* Option --svg-additional-attribute to make MEI attributes appear in the SVG (@wergo)
+
+## [3.6.0] - 2021-08-24
 * Support for `section@restart`
+* Support for rendering multiple `mdiv/score`
+* Support for delayed turns using `@startid`
 * Improved ties between chords (@eNote-GmBH)
 * Improved handling of whole notes with multiple layers (@eNote-GmBH)
-* Imnproved support for `engravingDefaults` (@eNote-GmBH)
+* Improved support for `engravingDefaults` (@eNote-GmBH)
 * Improved logging for Android (@alpha0010)
+* Improved spacing for notes on ledger lines (@eNote-GmBH)
+* Improved placement of beam in order to avoid overlaps (@eNote-GmBH)
+* Function getElementsAtTime includes `chord` elements
+* Function resetXmlIdSeed for resetting the `@xml:id` random generator with a specific value
+* Function getDescriptiveFeatures for basic feature extraction (experimental work)
+* Option --staccato-center to center staccato on notehead and not the stem (new default)
+* Option --xml-id-checksum to have `@xml:id` generated based on the checksum of the input data
 
 ## [3.5.0] - 2021-07-22
 * Support for `lv` (@eNote-GmbH)

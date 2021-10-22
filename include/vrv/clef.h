@@ -26,6 +26,7 @@ class ScoreDefInterface;
 class Clef : public LayerElement,
              public AttClefShape,
              public AttColor,
+             public AttEnclosingChars,
              public AttExtSym,
              public AttLineLoc,
              public AttOctaveDisplacement,
@@ -41,7 +42,6 @@ public:
     virtual Object *Clone() const { return new Clef(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Clef"; }
-    virtual ClassId GetClassId() const { return CLEF; }
     ///@}
 
     /** Override the method since alignment is required */

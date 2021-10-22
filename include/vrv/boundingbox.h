@@ -36,7 +36,7 @@ public:
     ///@{
     BoundingBox();
     virtual ~BoundingBox(){};
-    virtual ClassId GetClassId() const;
+    virtual ClassId GetClassId() const = 0;
     bool Is(ClassId classId) const { return (this->GetClassId() == classId); }
     bool Is(const std::vector<ClassId> &classIds) const;
     ///@}
@@ -189,6 +189,11 @@ public:
      * Calculate the position of a point after a rotation of alpha (in radian) around the center
      */
     static Point CalcPositionAfterRotation(Point point, float alpha, Point center);
+
+    /**
+     * Calculate the t parameter of a bezier at position x
+     */
+    static double CalcBezierParamAtPosition(const Point bezier[4], int x);
 
     /**
      * Calculate the y position of a bezier at position x

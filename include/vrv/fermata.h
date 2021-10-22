@@ -43,7 +43,6 @@ public:
     virtual Object *Clone() const { return new Fermata(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Fermata"; }
-    virtual ClassId GetClassId() const { return FERMATA; }
     ///@}
 
     /**
@@ -65,9 +64,9 @@ public:
     wchar_t GetFermataGlyph() const;
 
     /**
-     * Retrieves parentheses / brackets from the enclose attribute
+     * Retrieve parentheses / brackets from the enclose attribute
      */
-    wchar_t GetEnclosingGlyph(bool beforeFermata) const;
+    std::pair<wchar_t, wchar_t> GetEnclosingGlyphs() const;
 
     //----------------//
     // Static methods //

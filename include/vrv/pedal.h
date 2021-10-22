@@ -16,6 +16,7 @@
 
 namespace vrv {
 
+class System;
 //----------------------------------------------------------------------------
 // Pedal
 //----------------------------------------------------------------------------
@@ -42,7 +43,6 @@ public:
     virtual Object *Clone() const { return new Pedal(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Pedal"; }
-    virtual ClassId GetClassId() const { return PEDAL; }
     ///@}
 
     /**
@@ -65,6 +65,11 @@ public:
      * Get the SMuFL glyph for the pedal based on function or glyph.num
      */
     wchar_t GetPedalGlyph() const;
+
+    /**
+     * Get the pedal form based on the options and corresponding attributes from <pedal> and <scoreDef>
+     */
+    pedalVis_FORM GetPedalForm(Doc *doc, System *system) const;
 
     //----------//
     // Functors //

@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "editorial.h"
+#include "measure.h"
 #include "text.h"
 #include "verticalaligner.h"
 #include "vrv.h"
@@ -26,7 +27,8 @@ namespace vrv {
 
 static const ClassRegistrar<Reh> s_factory("reh", REH);
 
-Reh::Reh() : ControlElement("reh-"), TextDirInterface(), TimePointInterface(), AttColor(), AttLang(), AttVerticalGroup()
+Reh::Reh()
+    : ControlElement(REH, "reh-"), TextDirInterface(), TimePointInterface(), AttColor(), AttLang(), AttVerticalGroup()
 {
     RegisterInterface(TextDirInterface::GetAttClasses(), TextDirInterface::IsInterface());
     RegisterInterface(TimePointInterface::GetAttClasses(), TimePointInterface::IsInterface());
@@ -61,6 +63,20 @@ bool Reh::IsSupportedChild(Object *child)
         return false;
     }
     return true;
+}
+
+//----------------------------------------------------------------------------
+// Reh functor methods
+//----------------------------------------------------------------------------
+
+int Reh::ResolveRehPosition(FunctorParams *)
+{
+    if (!this->HasStart() && !this->HasTstamp()) {
+        Measure *measure = vrv_cast<Measure *>(this->GetFirstAncestor(MEASURE));
+        if (measure->GetLeftBarLine()) this->SetStart(measure->GetLeftBarLine());
+    }
+
+    return FUNCTOR_SIBLINGS;
 }
 
 } // namespace vrv

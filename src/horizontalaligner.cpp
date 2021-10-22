@@ -36,7 +36,7 @@ namespace vrv {
 // HorizontalAligner
 //----------------------------------------------------------------------------
 
-HorizontalAligner::HorizontalAligner() : Object()
+HorizontalAligner::HorizontalAligner(ClassId classId) : Object(classId)
 {
     Reset();
 }
@@ -93,7 +93,7 @@ void HorizontalAligner::AddAlignment(Alignment *alignment, int idx)
 // MeasureAligner
 //----------------------------------------------------------------------------
 
-MeasureAligner::MeasureAligner() : HorizontalAligner()
+MeasureAligner::MeasureAligner() : HorizontalAligner(MEASURE_ALIGNER)
 {
     m_leftAlignment = NULL;
     m_leftBarLineAlignment = NULL;
@@ -299,7 +299,7 @@ void MeasureAligner::AdjustGraceNoteSpacing(Doc *doc, Alignment *alignment, int 
 // GraceAligner
 //----------------------------------------------------------------------------
 
-GraceAligner::GraceAligner() : HorizontalAligner()
+GraceAligner::GraceAligner() : HorizontalAligner(GRACE_ALIGNER)
 {
     Reset();
 }
@@ -434,12 +434,12 @@ void GraceAligner::SetGraceAligmentXPos(Doc *doc)
 // Alignment
 //----------------------------------------------------------------------------
 
-Alignment::Alignment() : Object()
+Alignment::Alignment() : Object(ALIGNMENT)
 {
     Reset();
 }
 
-Alignment::Alignment(double time, AlignmentType type) : Object()
+Alignment::Alignment(double time, AlignmentType type) : Object(ALIGNMENT)
 {
     Reset();
     m_time = time;
@@ -544,7 +544,7 @@ bool Alignment::AddLayerElementRef(LayerElement *element)
             }
             // staffN and layerN remain unused for barLine attributes and timestamps
             else {
-                assert(element->Is({ BARLINE, BARLINE_ATTR_LEFT, BARLINE_ATTR_RIGHT, TIMESTAMP_ATTR }));
+                assert(element->Is({ BARLINE, TIMESTAMP_ATTR }));
             }
         }
     }
@@ -668,7 +668,7 @@ void Alignment::AddToAccidSpace(Accid *accid)
 // AlignmentReference
 //----------------------------------------------------------------------------
 
-AlignmentReference::AlignmentReference() : Object(), AttNInteger()
+AlignmentReference::AlignmentReference() : Object(ALIGNMENT_REFERENCE), AttNInteger()
 {
     RegisterAttClass(ATT_NINTEGER);
 
@@ -677,7 +677,7 @@ AlignmentReference::AlignmentReference() : Object(), AttNInteger()
     this->SetAsReferenceObject();
 }
 
-AlignmentReference::AlignmentReference(int staffN) : Object(), AttNInteger()
+AlignmentReference::AlignmentReference(int staffN) : Object(ALIGNMENT_REFERENCE), AttNInteger()
 {
     RegisterAttClass(ATT_NINTEGER);
 
@@ -750,25 +750,11 @@ void AlignmentReference::AdjustAccidWithAccidSpace(Accid *accid, Doc *doc, int s
     }
 }
 
-bool AlignmentReference::HasCrossStaffElements()
-{
-    ListOfObjects children;
-    ClassIdComparison classId(LAYER_ELEMENT);
-    FindAllDescendantByComparison(&children, &classId);
-
-    for (auto child : children) {
-        LayerElement *layerElement = vrv_cast<LayerElement *>(child);
-        if (layerElement && layerElement->m_crossStaff) return true;
-    }
-
-    return false;
-}
-
 //----------------------------------------------------------------------------
 // TimestampAligner
 //----------------------------------------------------------------------------
 
-TimestampAligner::TimestampAligner() : Object()
+TimestampAligner::TimestampAligner() : Object(TIMESTAMP_ALIGNER)
 {
     Reset();
 }
@@ -854,7 +840,7 @@ int Alignment::AdjustArpeg(FunctorParams *functorParams)
     assert(params);
 
     // An array of Alignment / arpeg / staffN / bool (for indicating if we have reached the alignment yet)
-    ArrayOfAligmentArpegTuples::iterator iter = params->m_alignmentArpegTuples.begin();
+    ArrayOfAlignmentArpegTuples::iterator iter = params->m_alignmentArpegTuples.begin();
 
     while (iter != params->m_alignmentArpegTuples.end()) {
         // We are reaching the alignment to which an arpeg points to (i.e, the topNote one)
@@ -916,7 +902,7 @@ int Alignment::AdjustArpeg(FunctorParams *functorParams)
                 if (topNote && bottomNote) {
                     const int arpegMax = topNote->GetDrawingY() + drawingUnit / 2;
                     const int arpegMin = bottomNote->GetDrawingY() - drawingUnit / 2;
-                    // Make sure that there is vertical overlap, otherwise do not shift arpeggo
+                    // Make sure that there is vertical overlap, otherwise do not shift arpeggio
                     if (((currentMin < arpegMin) && (currentMax > arpegMin))
                         || ((currentMax > arpegMax) && (currentMin < arpegMax))) {
                         std::get<0>(*iter)->SetXRel(std::get<0>(*iter)->GetXRel() + overlap + drawingUnit / 2);
@@ -1362,7 +1348,7 @@ int AlignmentReference::AdjustAccidX(FunctorParams *functorParams)
     if (m_accidSpace.empty()) return FUNCTOR_SIBLINGS;
 
     assert(params->m_doc);
-    StaffDef *staffDef = params->m_doc->m_mdivScoreDef.GetStaffDef(this->GetN());
+    StaffDef *staffDef = params->m_doc->GetCurrentScoreDef()->GetStaffDef(this->GetN());
     int staffSize = (staffDef && staffDef->HasScale()) ? staffDef->GetScale() : 100;
 
     std::sort(m_accidSpace.begin(), m_accidSpace.end(), AccidSpaceSort());
@@ -1377,9 +1363,13 @@ int AlignmentReference::AdjustAccidX(FunctorParams *functorParams)
             Note *octave = vrv_cast<Note *>((*octaveIter)->GetFirstAncestor(NOTE));
             assert(octave);
             if (!octave) continue;
+            bool sameChordOctave = true;
+            if (Chord *chord = vrv_cast<Chord *>((*iter)->GetFirstAncestor(CHORD)); chord != NULL) {
+                if ((*octaveIter)->GetFirstAncestor(CHORD) != chord) sameChordOctave = false;
+            }
             // Same pitch, different octave, same accid - for now?
             if ((note->GetPname() == octave->GetPname()) && (note->GetOct() != octave->GetOct())
-                && ((*iter)->GetAccid() == (*octaveIter)->GetAccid())) {
+                && ((*iter)->GetAccid() == (*octaveIter)->GetAccid()) && sameChordOctave) {
                 (*iter)->SetDrawingOctaveAccid(*octaveIter);
                 (*octaveIter)->SetDrawingOctave(true);
             }
@@ -1401,6 +1391,12 @@ int AlignmentReference::AdjustAccidX(FunctorParams *functorParams)
                 m_accidSpace.at(i)->GetDrawingOctaveAccid()->SetDrawingXRel(
                     m_accidSpace.at(i)->GetDrawingOctaveAccid()->GetDrawingXRel() + dist);
         }
+    }
+
+    // Align accidentals for unison notes if any of them are present
+    for (Accid *accid : m_accidSpace) {
+        if (accid->GetDrawingUnisonAccid() == NULL) continue;
+        accid->SetDrawingXRel(accid->GetDrawingUnisonAccid()->GetDrawingXRel());
     }
 
     int middle = (count % 2) ? (count / 2) + 1 : (count / 2);

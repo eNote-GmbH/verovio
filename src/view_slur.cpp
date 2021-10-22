@@ -123,11 +123,6 @@ void View::DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, i
         return;
     }
 
-    if (start->Is(TIMESTAMP_ATTR) && end->Is(TIMESTAMP_ATTR)) {
-        // for now ignore slur using 2 tstamps
-        return;
-    }
-
     if (start->Is(NOTE)) {
         startNote = vrv_cast<Note *>(start);
         assert(startNote);
@@ -166,12 +161,13 @@ void View::DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, i
         layer = dynamic_cast<Layer *>(start->GetFirstAncestor(LAYER));
         layerElement = start;
     }
-    else {
+    else if (!end->Is(TIMESTAMP_ATTR)) {
         layer = dynamic_cast<Layer *>(end->GetFirstAncestor(LAYER));
         layerElement = end;
     }
-    if (layerElement->m_crossStaff) layer = layerElement->m_crossLayer;
-    assert(layer);
+    if (layerElement && layerElement->m_crossStaff) layer = layerElement->m_crossLayer;
+
+    // At this stage layer can still be NULL for slurs with @tstamp and @tstamp2
 
     if (start->m_crossStaff != end->m_crossStaff) {
         curve->SetCrossStaff(end->m_crossStaff);
@@ -240,7 +236,7 @@ void View::DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, i
             = (slur->GetCurvedir() == curvature_CURVEDIR_above) ? curvature_CURVEDIR_above : curvature_CURVEDIR_below;
     }
     // grace notes - always below unless we have a drawing stem direction on the layer
-    else if (isGraceToNoteSlur && (layer->GetDrawingStemDir(layerElement) == STEMDIRECTION_NONE)) {
+    else if (isGraceToNoteSlur && layer && (layer->GetDrawingStemDir(layerElement) == STEMDIRECTION_NONE)) {
         drawingCurveDir = curvature_CURVEDIR_below;
     }
     // the normal case
@@ -480,7 +476,7 @@ void View::DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, i
     points[0] = Point(x1, y1);
     points[3] = Point(x2, y2);
 
-    float angle = CalcInitialSlur(curve, slur, staff, layer->GetN(), drawingCurveDir, points);
+    float angle = CalcInitialSlur(curve, slur, staff, drawingCurveDir, points);
     int thickness = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_options->m_slurMidpointThickness.GetValue();
 
     curve->UpdateCurveParams(points, angle, thickness, drawingCurveDir);
@@ -530,26 +526,10 @@ void View::DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, i
 }
 
 float View::CalcInitialSlur(
-    FloatingCurvePositioner *curve, Slur *slur, Staff *staff, int layerN, curvature_CURVEDIR curveDir, Point points[4])
+    FloatingCurvePositioner *curve, Slur *slur, Staff *staff, curvature_CURVEDIR curveDir, Point points[4])
 {
-    // For readability makes them p1 and p2
-    BezierCurve bezier;
-    bezier.p1 = points[0];
-    bezier.p2 = points[3];
-    bezier.CalculateControlPointOffset(m_doc, staff->m_drawingStaffSize);
-
-    /************** height **************/
-
-    // the 'height' of the bezier
-    int height;
-    int dist = abs(bezier.p2.x - bezier.p1.x);
-    height = std::max(int(m_options->m_slurMinHeight.GetValue() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize)),
-        dist / m_options->m_slurHeightFactor.GetValue());
-    height = std::min(
-        int(m_options->m_slurMaxHeight.GetValue() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize)), height);
-
-    // the height of the control points
-    height = height * 4 / 3;
+    // For now we pick C1 = P1 and C2 = P2
+    BezierCurve bezier(points[0], points[0], points[3], points[3]);
 
     /************** content **************/
 
@@ -618,29 +598,28 @@ float View::CalcInitialSlur(
     // This might be refined later, since using the entire bounding box of a tie for collision avoidance with slurs is
     // coarse.
     ArrayOfFloatingPositioners tiePositioners = staff->GetAlignment()->FindAllFloatingPositioners(TIE);
-    if (startStaff && (startStaff != staff)) {
+    if (startStaff && (startStaff != staff) && startStaff->GetAlignment()) {
         const ArrayOfFloatingPositioners startTiePositioners
             = startStaff->GetAlignment()->FindAllFloatingPositioners(TIE);
         std::copy(startTiePositioners.begin(), startTiePositioners.end(), std::back_inserter(tiePositioners));
     }
-    else if (endStaff && (endStaff != staff)) {
+    else if (endStaff && (endStaff != staff) && endStaff->GetAlignment()) {
         const ArrayOfFloatingPositioners endTiePositioners = endStaff->GetAlignment()->FindAllFloatingPositioners(TIE);
         std::copy(endTiePositioners.begin(), endTiePositioners.end(), std::back_inserter(tiePositioners));
     }
     for (FloatingPositioner *positioner : tiePositioners) {
-        System *positionerSystem = vrv_cast<System *>(positioner->GetObject()->GetFirstAncestor(SYSTEM));
-        if (positioner->HasContentBB() && (positioner->GetContentRight() > bezier.p1.x)
-            && (positioner->GetContentLeft() < bezier.p2.x)
-            && (positionerSystem == curve->GetAlignment()->GetParentSystem())) {
-            CurveSpannedElement *spannedElement = new CurveSpannedElement();
-            spannedElement->m_boundingBox = positioner;
-            curve->AddSpannedElement(spannedElement);
+        if (positioner->GetAlignment()->GetParentSystem() == curve->GetAlignment()->GetParentSystem()) {
+            if (positioner->HasContentBB() && (positioner->GetContentRight() > bezier.p1.x)
+                && (positioner->GetContentLeft() < bezier.p2.x)) {
+                CurveSpannedElement *spannedElement = new CurveSpannedElement();
+                spannedElement->m_boundingBox = positioner;
+                curve->AddSpannedElement(spannedElement);
+            }
         }
     }
 
     /************** angle **************/
 
-    const ArrayOfCurveSpannedElements *spannedElements = curve->GetSpannedElements();
     bool dontAdjustAngle = curve->IsCrossStaff();
     // If slur is cross-staff (where we don't want to adjust angle) but x distance is too small - adjust angle anyway
     if ((bezier.p2.x - bezier.p1.x) != 0 && curve->IsCrossStaff()) {
@@ -649,16 +628,14 @@ float View::CalcInitialSlur(
 
     const float nonAdjustedAngle
         = (bezier.p2 == bezier.p1) ? 0 : atan2(bezier.p2.y - bezier.p1.y, bezier.p2.x - bezier.p1.x);
-    const float slurAngle = dontAdjustAngle
-        ? nonAdjustedAngle
-        : slur->GetAdjustedSlurAngle(m_doc, bezier.p1, bezier.p2, curveDir, (spannedElements->size() > 0));
+    const float slurAngle
+        = dontAdjustAngle ? nonAdjustedAngle : slur->GetAdjustedSlurAngle(m_doc, bezier.p1, bezier.p2, curveDir);
     bezier.p2 = BoundingBox::CalcPositionAfterRotation(bezier.p2, -slurAngle, bezier.p1);
 
     /************** control points **************/
 
-    Point rotatedC1, rotatedC2;
-    bezier.SetControlHeight(height);
-    slur->GetControlPoints(bezier, curveDir);
+    bezier.CalcInitialControlPointParams(m_doc, slurAngle, staff->m_drawingStaffSize);
+    bezier.UpdateControlPoints(curveDir);
     bezier.Rotate(slurAngle, bezier.p1);
 
     points[0] = bezier.p1;

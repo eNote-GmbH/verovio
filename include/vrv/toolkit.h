@@ -20,6 +20,7 @@
 namespace vrv {
 
 class EditorToolkit;
+class RuntimeClock;
 
 enum FileFormat {
     UNKNOWN = 0,
@@ -107,6 +108,16 @@ public:
      */
     std::string GetVersion();
 
+    /**
+     * Reset the @xml:id seed
+     *
+     * Passing 0 will seed the xml:id generator with a random (time-based) seed value.
+     * This method will have no effect if the --xml-id-checksum option is set.
+     *
+     * @param seed The seed value for generating the xml:id values (0 for a time-based random seed)
+     */
+    void ResetXmlIdSeed(int seed);
+
     ///@}
 
     /**
@@ -152,6 +163,30 @@ public:
      * @return True if the data was successfully loaded
      */
     bool LoadZipDataBuffer(const unsigned char *data, int length);
+
+    /**
+     * Validate the Plaine and Easie file from the file system.
+     *
+     * The method calls Toolkit::ValidatePAE.
+     * This methods is not available in the JavaScript version of the toolkit.
+     *
+     * @param filename The filename to be validated
+     * @return A stringified JSON object with the validation warnings or errors
+     */
+    std::string ValidatePAEFile(const std::string &filename);
+
+    /**
+     * Validate the Plaine and Easie code passed in the string data.
+     *
+     * A single JSON object is returned when there is a global input error.
+     * When reading the input succeeds, validation is grouped by input keys.
+     * The methods always returns errors in PAE pedantic mode.
+     * No data remains loaded after the validation.
+     *
+     * @param data A string with the data in JSON or with PAE `@` keys
+     * @return A stringified JSON object with the validation warnings or errors
+     */
+    std::string ValidatePAE(const std::string &data);
 
     /**
      * Return the number of pages in the loaded document
@@ -439,6 +474,16 @@ public:
     ///@{
 
     /**
+     * Return descriptive features as a JSON string
+     *
+     * The features are tailored for implementing incipit search
+     *
+     * @param options A stringified JSON object with the feature extraction options
+     * @return A stringified JSON object with the requested features
+     */
+    std::string GetDescriptiveFeatures(const std::string &options);
+
+    /**
      * Returns array of IDs of elements being currently played
      *
      * @param millisec The time in milliseconds
@@ -654,6 +699,18 @@ public:
      */
     int GetOutputTo() { return m_outputTo; }
 
+    /**
+     * Measuring runtime.
+     *
+     * @ingroup nodoc
+     */
+    ///@{
+    void InitClock();
+    void ResetClock();
+    double GetRuntimeInSeconds() const;
+    void LogRuntime() const;
+    ///@}
+
     ///@}
 
 protected:
@@ -691,6 +748,11 @@ private:
     char *m_cString;
 
     EditorToolkit *m_editorToolkit;
+
+#ifndef NO_RUNTIME
+    /** Measuring runtime */
+    RuntimeClock *m_runtimeClock;
+#endif
 
     //----------------//
     // Static members //

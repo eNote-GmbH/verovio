@@ -66,6 +66,8 @@ enum option_MULTIRESTSTYLE {
     MULTIRESTSTYLE_symbols
 };
 
+enum option_PEDALSTYLE { PEDALSTYLE_auto = 0, PEDALSTYLE_line, PEDALSTYLE_pedstar, PEDALSTYLE_altpedstar };
+
 enum option_SYSTEMDIVIDER { SYSTEMDIVIDER_none = 0, SYSTEMDIVIDER_auto, SYSTEMDIVIDER_left, SYSTEMDIVIDER_left_right };
 
 //----------------------------------------------------------------------------
@@ -127,6 +129,7 @@ public:
     static const std::map<int, std::string> s_footer;
     static const std::map<int, std::string> s_header;
     static const std::map<int, std::string> s_multiRestStyle;
+    static const std::map<int, std::string> s_pedalStyle;
     static const std::map<int, std::string> s_systemDivider;
 
 protected:
@@ -599,19 +602,24 @@ public:
     OptionInt m_pageMarginRight;
     OptionInt m_pageMarginTop;
     OptionInt m_pageWidth;
+    OptionIntMap m_pedalStyle;
     OptionBool m_preserveAnalyticalMarkup;
     OptionBool m_removeIds;
+    OptionBool m_showRuntime;
     OptionBool m_shrinkToFit;
+    OptionBool m_staccatoCenter;
     OptionBool m_svgBoundingBoxes;
     OptionBool m_svgViewBox;
     OptionBool m_svgHtml5;
     OptionBool m_svgFormatRaw;
     OptionBool m_svgRemoveXlink;
+    OptionArray m_svgAdditionalAttribute;
     OptionInt m_unit;
     OptionBool m_useFacsimile;
     OptionBool m_usePgFooterForAll;
     OptionBool m_usePgHeaderForAll;
     OptionBool m_useBraceGlyph;
+    OptionBool m_xmlIdChecksum;
 
     /**
      * General layout
@@ -634,6 +642,7 @@ public:
     OptionBool m_graceRightAlign;
     OptionDbl m_hairpinSize;
     OptionDbl m_hairpinThickness;
+    OptionArray m_handwrittenFont;
     OptionDbl m_harmDist;
     OptionDbl m_justificationBraceGroup;
     OptionDbl m_justificationBracketGroup;
@@ -681,6 +690,7 @@ public:
     OptionDbl m_thickBarlineThickness;
     OptionDbl m_tieEndpointThickness;
     OptionDbl m_tieMidpointThickness;
+    OptionDbl m_tieMinLength;
     OptionDbl m_tupletBracketThickness;
     OptionBool m_tupletNumHead;
 
@@ -691,6 +701,7 @@ public:
 
     OptionArray m_appXPathQuery;
     OptionArray m_choiceXPathQuery;
+    OptionBool m_mdivAll;
     OptionString m_mdivXPathQuery;
     OptionArray m_substXPathQuery;
     OptionString m_transpose;

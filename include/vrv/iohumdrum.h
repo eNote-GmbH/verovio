@@ -375,8 +375,10 @@ public:
     std::vector<char> textmark;
     std::vector<std::string> textcolor;
 
+    // Articulation signfiers
     char hairpinAccent = '\0'; // For <> accent on a note.
     char verticalStroke = '\0'; // For horizontal stroke ornament
+    char lhpizz = '\0'; // For left-hand pizzicato
 };
 
 #endif /* NO_HUMDRUM_SUPPORT */
@@ -529,7 +531,7 @@ protected:
         std::vector<hum::HTp> &layerdata, int startindex);
     void setTupletLocationId(vrv::Object *object, const std::vector<humaux::HumdrumBeamAndTuplet> &tgs,
         std::vector<hum::HTp> &layerdata, int startindex);
-    void addMidiTempo(vrv::ScoreDef &m_scoreDef, hum::HTp kernpart, int top, int bot);
+    void addMidiTempo(vrv::ScoreDef *scoreDef, hum::HTp kernpart, int top, int bot);
     void addInstrumentDefinition(vrv::StaffDef *staffdef, hum::HTp partstart);
     void addOrnamentMarkers(hum::HTp token);
     void setNextLeftBarStyle(data_BARRENDITION style);
@@ -556,7 +558,7 @@ protected:
     void embedPitchInformationInClass(vrv::Note *note, const std::string &token);
     void embedTieInformation(Note *note, const std::string &token);
     void splitSyllableBySpaces(vector<std::string> &vtext, char spacer = ' ');
-    void addDefaultTempo(ScoreDef &m_scoreDef);
+    void addDefaultTempo(ScoreDef *scoreDef);
     int getChordNoteCount(hum::HTp token);
     bool isLowestSystemArpeggio(hum::HTp token);
     bool leftmostStaffArpeggio(hum::HTp token);

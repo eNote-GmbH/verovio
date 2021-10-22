@@ -23,7 +23,7 @@ class ScoreDefInterface;
 /**
  * This class models the MEI <meterSig> element.
  */
-class MeterSig : public LayerElement, public AttMeterSigLog, public AttMeterSigVis {
+class MeterSig : public LayerElement, public AttEnclosingChars, public AttMeterSigLog, public AttMeterSigVis {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
@@ -35,7 +35,6 @@ public:
     virtual Object *Clone() const { return new MeterSig(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "MeterSig"; }
-    virtual ClassId GetClassId() const { return METERSIG; }
     ///@}
 
     /** Override the method since alignment is required */
@@ -46,6 +45,12 @@ public:
 
     /** Evaluate additive meter counts */
     int GetTotalCount() const;
+
+    /** Retrieves the symbol glyph */
+    wchar_t GetSymbolGlyph() const;
+
+    /** Retrieve parentheses from the enclose attribute */
+    std::pair<wchar_t, wchar_t> GetEnclosingGlyphs(bool smallGlpyh) const;
 
     //----------//
     // Functors //

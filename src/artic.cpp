@@ -24,11 +24,13 @@
 
 namespace vrv {
 
-const std::vector<data_ARTICULATION> Artic::s_outStaffArtic = { ARTICULATION_acc, ARTICULATION_dnbow, ARTICULATION_marc,
-    ARTICULATION_upbow, ARTICULATION_harm, ARTICULATION_snap, ARTICULATION_damp };
+const std::vector<data_ARTICULATION> Artic::s_outStaffArtic
+    = { ARTICULATION_acc, ARTICULATION_dnbow, ARTICULATION_marc, ARTICULATION_upbow, ARTICULATION_harm,
+          ARTICULATION_snap, ARTICULATION_damp, ARTICULATION_lhpizz, ARTICULATION_open, ARTICULATION_stop };
 
-const std::vector<data_ARTICULATION> Artic::s_aboveStaffArtic = { ARTICULATION_dnbow, ARTICULATION_marc,
-    ARTICULATION_upbow, ARTICULATION_harm, ARTICULATION_snap, ARTICULATION_damp };
+const std::vector<data_ARTICULATION> Artic::s_aboveStaffArtic
+    = { ARTICULATION_dnbow, ARTICULATION_marc, ARTICULATION_upbow, ARTICULATION_harm, ARTICULATION_snap,
+          ARTICULATION_damp, ARTICULATION_lhpizz, ARTICULATION_open, ARTICULATION_stop };
 
 //----------------------------------------------------------------------------
 // Artic
@@ -37,7 +39,12 @@ const std::vector<data_ARTICULATION> Artic::s_aboveStaffArtic = { ARTICULATION_d
 static const ClassRegistrar<Artic> s_factory("artic", ARTIC);
 
 Artic::Artic()
-    : LayerElement("artic-"), AttArticulation(), AttColor(), AttEnclosingChars(), AttExtSym(), AttPlacementRelEvent()
+    : LayerElement(ARTIC, "artic-")
+    , AttArticulation()
+    , AttColor()
+    , AttEnclosingChars()
+    , AttExtSym()
+    , AttPlacementRelEvent()
 {
     RegisterAttClass(ATT_ARTICULATION);
     RegisterAttClass(ATT_COLOR);
@@ -193,6 +200,7 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const
     if (place == STAFFREL_above) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A0_articAccentAbove;
+            case ARTICULATION_acc_soft: return SMUFL_ED40_articSoftAccentAbove;
             case ARTICULATION_stacc: return SMUFL_E4A2_articStaccatoAbove;
             case ARTICULATION_ten: return SMUFL_E4A4_articTenutoAbove;
             case ARTICULATION_stacciss: return SMUFL_E4A6_articStaccatissimoAbove;
@@ -217,15 +225,15 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const
             // case ARTICULATION_ten_stacc: return SMUFL_E4B2_articTenutoStaccatoAbove;
             case ARTICULATION_damp: return SMUFL_E638_pluckedDamp;
             // case ARTICULATION_dampall;
-            // case ARTICULATION_open;
-            // case ARTICULATION_stop;
+            case ARTICULATION_open: return SMUFL_E5E7_brassMuteOpen;
+            case ARTICULATION_stop: return SMUFL_E5E5_brassMuteClosed;
             // case ARTICULATION_dbltongue;
             // case ARTICULATION_trpltongue;
             // case ARTICULATION_heel;
             // case ARTICULATION_toe;
             // case ARTICULATION_tap;
-            // case ARTICULATION_lhpizz;
-            // case ARTICULATION_dot;
+            case ARTICULATION_lhpizz: return SMUFL_E633_pluckedLeftHandPizzicato;
+            case ARTICULATION_dot: return SMUFL_E4A2_articStaccatoAbove;
             case ARTICULATION_stroke: return SMUFL_E4AA_articStaccatissimoStrokeAbove;
             default: return 0;
         }
@@ -233,6 +241,7 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const
     else if (place == STAFFREL_below) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A1_articAccentBelow;
+            case ARTICULATION_acc_soft: return SMUFL_ED41_articSoftAccentBelow;
             case ARTICULATION_stacc: return SMUFL_E4A3_articStaccatoBelow;
             case ARTICULATION_ten: return SMUFL_E4A5_articTenutoBelow;
             case ARTICULATION_stacciss: return SMUFL_E4A7_articStaccatissimoBelow;
@@ -246,10 +255,15 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const
             case ARTICULATION_harm: return SMUFL_E614_stringsHarmonic;
             case ARTICULATION_snap: return SMUFL_E630_pluckedSnapPizzicatoBelow;
             case ARTICULATION_damp: return SMUFL_E638_pluckedDamp;
+            // case ARTICULATION_dampall;
+            case ARTICULATION_open: return SMUFL_E5E7_brassMuteOpen;
+            case ARTICULATION_stop: return SMUFL_E5E5_brassMuteClosed;
             //
             // Removed in MEI 4.0
             // case ARTICULATION_ten_stacc: return SMUFL_E4B3_articTenutoStaccatoBelow;
             //
+            case ARTICULATION_lhpizz: return SMUFL_E633_pluckedLeftHandPizzicato;
+            case ARTICULATION_dot: return SMUFL_E4A3_articStaccatoBelow;
             case ARTICULATION_stroke: return SMUFL_E4AB_articStaccatissimoStrokeBelow;
             default: return 0;
         }
@@ -258,21 +272,19 @@ wchar_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const
         return 0;
 }
 
-wchar_t Artic::GetEnclosingGlyph(bool beforeArtic) const
+std::pair<wchar_t, wchar_t> Artic::GetEnclosingGlyphs() const
 {
-    wchar_t glyph = 0;
+    std::pair<wchar_t, wchar_t> glyphs(0, 0);
     if (this->HasEnclose()) {
         switch (this->GetEnclose()) {
             case ENCLOSURE_brack:
-                glyph = beforeArtic ? SMUFL_E26C_accidentalBracketLeft : SMUFL_E26D_accidentalBracketRight;
+                glyphs = { SMUFL_E26C_accidentalBracketLeft, SMUFL_E26D_accidentalBracketRight };
                 break;
-            case ENCLOSURE_paren:
-                glyph = beforeArtic ? SMUFL_E26A_accidentalParensLeft : SMUFL_E26B_accidentalParensRight;
-                break;
+            case ENCLOSURE_paren: glyphs = { SMUFL_E26A_accidentalParensLeft, SMUFL_E26B_accidentalParensRight }; break;
             default: break;
         }
     }
-    return glyph;
+    return glyphs;
 }
 
 //----------------------------------------------------------------------------
@@ -361,8 +373,7 @@ int Artic::CalcArtic(FunctorParams *functorParams)
 
     /************** adjust the xRel position **************/
 
-    int xShift = params->m_parent->GetDrawingRadius(params->m_doc);
-    this->SetDrawingXRel(xShift);
+    this->SetDrawingXRel(CalculateHorizontalShift(params->m_doc, params->m_parent, params->m_stemDir));
 
     /************** set cross-staff / layer **************/
 
@@ -527,6 +538,35 @@ int Artic::ResetDrawing(FunctorParams *functorParams)
     m_drawingPlace = STAFFREL_NONE;
 
     return FUNCTOR_CONTINUE;
+}
+
+int Artic::CalculateHorizontalShift(Doc *doc, LayerElement *parent, data_STEMDIRECTION stemDir) const
+{
+    int shift = parent->GetDrawingRadius(doc);
+    if ((parent->GetChildCount(ARTIC) > 1) || (doc->GetOptions()->m_staccatoCenter.GetValue())) {
+        return shift;
+    }
+    data_ARTICULATION artic = GetArticFirst();
+    switch (artic) {
+        case ARTICULATION_stacc:
+        case ARTICULATION_stacciss: {
+            Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+            assert(staff);
+            const int stemWidth = doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+            if ((stemDir == STEMDIRECTION_up) && (m_drawingPlace == STAFFREL_above)) {
+                shift += shift - stemWidth / 2;
+            }
+            else if ((stemDir == STEMDIRECTION_down) && (m_drawingPlace == STAFFREL_below)) {
+                shift = stemWidth / 2;
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    return shift;
 }
 
 } // namespace vrv

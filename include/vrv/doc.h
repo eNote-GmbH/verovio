@@ -50,7 +50,6 @@ public:
     ///@{
     Doc();
     virtual ~Doc();
-    virtual ClassId GetClassId() const { return DOC; }
     ///@}
 
     /**
@@ -116,10 +115,9 @@ public:
     bool HasPage(int pageIdx);
 
     /**
-     * Get the Score in the visible Mdiv.
-     * Will find it only when having read a score-based MEI file
+     * Get all the Score in the visible Mdiv.
      */
-    Score *GetScore();
+    std::list<Score *> GetScores();
 
     /**
      * Get the Pages in the visible Mdiv.
@@ -144,7 +142,10 @@ public:
     ///@{
     int GetGlyphHeight(wchar_t code, int staffSize, bool graceSize) const;
     int GetGlyphWidth(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphDescender(wchar_t code, int staffSize, bool graceSize) const;
+    int GetGlyphLeft(wchar_t code, int staffSize, bool graceSize) const;
+    int GetGlyphRight(wchar_t code, int staffSize, bool graceSize) const;
+    int GetGlyphBottom(wchar_t code, int staffSize, bool graceSize) const;
+    int GetGlyphTop(wchar_t code, int staffSize, bool graceSize) const;
     int GetGlyphAdvX(wchar_t code, int staffSize, bool graceSize) const;
     int GetDrawingUnit(int staffSize) const;
     int GetDrawingDoubleUnit(int staffSize) const;
@@ -195,7 +196,9 @@ public:
      */
     ///@{
     double GetLeftMargin(const ClassId classId) const;
+    double GetLeftMargin(Object *object) const;
     double GetRightMargin(const ClassId classId) const;
+    double GetRightMargin(Object *object) const;
     double GetLeftPosition() const;
     double GetBottomMargin(const ClassId classId) const;
     double GetTopMargin(const ClassId classId) const;
@@ -236,17 +239,17 @@ public:
         std::map<double, std::vector<std::string>> &realTimeToOffElements, std::map<double, double> &realTimeToTempo);
 
     /**
+     * Extract music features to JSON string.
+     */
+    bool ExportFeatures(std::string &output, const std::string &options);
+
+    /**
      * Set the initial scoreDef of each page.
      * This is necessary for integrating changes that occur within a page.
      * It uses the MusObject::SetPageScoreDef functor method for parsing the file.
      * This will be done only if m_currentScoreDefDone is false or force is true.
      */
     void ScoreDefSetCurrentDoc(bool force = false);
-
-    /**
-     * Check whether we need to optimize score based on the condense option
-     */
-    bool ScoreDefNeedsOptimization();
 
     /**
      * Optimize the scoreDef once the document is cast-off.
@@ -314,7 +317,7 @@ public:
 
     /**
      * Convert the doc from score-based to page-based MEI.
-     * Containers will be converted to boundaryStart / boundaryEnd.
+     * Containers will be converted to systemElementStart / systemElementEnd.
      * Does not perform any check if the data needs or can be converted.
      */
     void ConvertToPageBasedDoc();
@@ -322,13 +325,9 @@ public:
     /**
      * Convert mensural MEI into cast-off (measure) segments looking at the barLine objects.
      * Segment positions occur where a barLine is set on all staves.
+     * castOff parameters indicates if we perform cast off (true) or un-cast off
      */
-    void ConvertToCastOffMensuralDoc();
-
-    /**
-     * Reverse of ConvertToCastOffMensuralDoc()
-     */
-    void ConvertToUnCastOffMensuralDoc();
+    void ConvertToCastOffMensuralDoc(bool castOff);
 
     /**
      * Convert analytical encoding (@fermata, @tie) to correpsonding elements
@@ -410,6 +409,18 @@ public:
     bool HasFacsimile() const { return m_facsimile != NULL; }
     ///@}
 
+    /**
+     * @name Setter and getter for the current Score/ScoreDef.
+     * If not set, then looks for the first Score in the Document and use that.
+     * The currentScoreDef is also changed by the Object::Process whenever as Score is reached.
+     * When processing backward, the ScoreDef is changed when reaching the corresponding PageElementEnd
+     */
+    ///@{
+    Score *GetCurrentScore();
+    ScoreDef *GetCurrentScoreDef();
+    void SetCurrentScore(Score *score);
+    ///@}
+
     //----------//
     // Functors //
     //----------//
@@ -445,12 +456,6 @@ public:
      * A copy of the header tree stored as pugi::xml_document
      */
     pugi::xml_document m_back;
-
-    /**
-     * Holds the top scoreDef.
-     * In a standard MEI file, this is the <scoreDef> encoded before the first <section>.
-     */
-    ScoreDef m_mdivScoreDef;
 
     /** The current page height */
     int m_drawingPageHeight;
@@ -500,6 +505,14 @@ private:
      * Abort flag which triggers the cancellation of layout from another thread
      */
     std::atomic_bool m_abort;
+
+    /**
+     * @name Holds a pointer to the current score/scoreDef.
+     * Set by Doc::GetCurrentScoreDef or explicitly through Doc::SetCurrentScoreDef
+     */
+    ///@{
+    Score *m_currentScore;
+    ///@}
 
     /*
      * The following values are set in the Doc::SetDrawingPage.
@@ -575,7 +588,7 @@ private:
     int m_pageMarginTop;
 
     /** Facsimile information */
-    Facsimile *m_facsimile = NULL;
+    Facsimile *m_facsimile;
 };
 
 } // namespace vrv

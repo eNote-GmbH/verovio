@@ -54,6 +54,7 @@ class Num;
 class Octave;
 class Options;
 class Page;
+class PageElement;
 class Pedal;
 class PgFoot;
 class PgFoot;
@@ -185,6 +186,7 @@ protected:
      * Defined in view_page.cpp
      */
     ///@{
+    void DrawPageElement(DeviceContext *dc, PageElement *element);
     void DrawSystem(DeviceContext *dc, System *system);
     void DrawSystemList(DeviceContext *dc, System *system, const ClassId classId);
     void DrawScoreDef(DeviceContext *dc, ScoreDef *scoreDef, Measure *measure, int x, BarLine *barLine = NULL,
@@ -198,7 +200,7 @@ protected:
     void DrawLabels(DeviceContext *dc, ScoreDef *scoreDef, Object *object, int x, int y, bool abbreviations,
         int staffSize, int space);
     void DrawBracket(DeviceContext *dc, int x, int y1, int y2, int staffSize);
-    void DrawBracketsq(DeviceContext *dc, int x, int y1, int y2, int staffSize);
+    void DrawBracketSq(DeviceContext *dc, int x, int y1, int y2, int staffSize);
     void DrawBrace(DeviceContext *dc, int x, int y1, int y2, int staffSize);
     void DrawBarLines(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp, BarLine *barLine, bool isLastMeasure);
     void DrawBarLine(DeviceContext *dc, int y_top, int y_bottom, BarLine *barLine, data_BARRENDITION form,
@@ -324,8 +326,11 @@ protected:
      */
     ///@{
     void DrawAcciaccaturaSlash(DeviceContext *dc, Stem *stem, Staff *staff);
+    void DrawClefEnclosing(DeviceContext *dc, Clef *clef, Staff *staff, wchar_t glyph, int x, int y, double sizeFactor);
     void DrawDotsPart(DeviceContext *dc, int x, int y, unsigned char dots, Staff *staff);
-    void DrawMeterSigFigures(
+    void DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int horizOffset);
+    /** Returns the width of the drawn figures */
+    int DrawMeterSigFigures(
         DeviceContext *dc, int x, int y, const std::vector<int> &numSummands, int den, Staff *staff);
     void DrawMRptPart(DeviceContext *dc, int xCentered, wchar_t smulfCode, int num, bool line, Staff *staff);
     ///@}
@@ -363,7 +368,7 @@ protected:
     void DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params);
     void DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params);
     void DrawText(DeviceContext *dc, Text *text, TextDrawingParams &params);
-    void DrawTextBoxes(DeviceContext *dc, const std::vector<TextElement *> &boxedRend, int staffSize);
+    void DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params, int staffSize);
 
     /**
      * @name Method for drawing Beam and FTrem.
@@ -393,6 +398,8 @@ protected:
     void DrawControlElement(DeviceContext *dc, ControlElement *element, Measure *measure, System *system);
     void DrawTimeSpanningElement(DeviceContext *dc, Object *object, System *system);
     void DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *system);
+    void DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, wchar_t startGlyph, wchar_t fillGlyph,
+        wchar_t endGlyph, int x, int y, int height, bool cueSize);
     void DrawBreath(DeviceContext *dc, Breath *breath, Measure *measure, System *system);
     void DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system);
     void DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *system);
@@ -527,12 +534,17 @@ protected:
         int staffSize = 100, bool dimin = false, bool setBBGlyph = false);
     void DrawLyricString(DeviceContext *dc, std::wstring str, int staffSize = 100,
         std::optional<TextDrawingParams> params = std::nullopt);
+    void DrawNotFilledEllipse(DeviceContext *dc, int x1, int y1, int x2, int y2, int lineThinkness);
     void DrawFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2);
     void DrawNotFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2, int lineThinkness, int radius);
     void DrawFilledRoundedRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2, int radius);
     void DrawObliquePolygon(DeviceContext *dc, int x1, int y1, int x2, int y2, int height);
     void DrawDiamond(DeviceContext *dc, int x1, int y1, int height, int width, bool fill, int linewidth);
     void DrawDot(DeviceContext *dc, int x, int y, int staffSize);
+    void DrawSquareBracket(DeviceContext *dc, bool leftBracket, int x, int y, int height, int width,
+        int horizontalThickness, int verticalThickness);
+    void DrawEnclosingBrackets(DeviceContext *dc, int x, int y, int height, int width, int offset, int bracketWidth,
+        int horizontalThickness, int verticalThickness);
     ///@}
 
     /**
@@ -561,8 +573,8 @@ private:
      */
     ///@{
     void DrawSlurInitial(FloatingCurvePositioner *curve, Slur *slur, int x1, int x2, Staff *staff, char spanningType);
-    float CalcInitialSlur(FloatingCurvePositioner *curve, Slur *slur, Staff *staff, int layerN,
-        curvature_CURVEDIR curveDir, Point points[4]);
+    float CalcInitialSlur(
+        FloatingCurvePositioner *curve, Slur *slur, Staff *staff, curvature_CURVEDIR curveDir, Point points[4]);
     ///@}
 
     /**

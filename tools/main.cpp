@@ -223,13 +223,20 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    static struct option base_options[] = { { "all-pages", no_argument, 0, 'a' }, { "from", required_argument, 0, 'f' },
-        { "help", no_argument, 0, 'h' }, { "outfile", required_argument, 0, 'o' },
-        { "page", required_argument, 0, 'p' }, { "resources", required_argument, 0, 'r' },
-        { "scale", required_argument, 0, 's' }, { "to", required_argument, 0, 't' }, { "version", no_argument, 0, 'v' },
-        { "xml-id-seed", required_argument, 0, 'x' },
+    static struct option base_options[] = { //
+        { "all-pages", no_argument, 0, 'a' }, //
+        { "input-from", required_argument, 0, 'f' }, //
+        { "help", no_argument, 0, 'h' }, //
+        { "outfile", required_argument, 0, 'o' }, //
+        { "page", required_argument, 0, 'p' }, //
+        { "resources", required_argument, 0, 'r' }, //
+        { "scale", required_argument, 0, 's' }, //
+        { "output-to", required_argument, 0, 't' }, //
+        { "version", no_argument, 0, 'v' }, //
+        { "xml-id-seed", required_argument, 0, 'x' }, //
         // standard input - long options only or - as filename
-        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 } };
+        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 }
+    };
 
     int baseSize = sizeof(base_options) / sizeof(option);
 
@@ -269,6 +276,7 @@ int main(int argc, char **argv)
     }
 
     int c;
+    int seed = 0;
     std::string key;
     int option_index = 0;
     vrv::Option *opt = NULL;
@@ -331,7 +339,11 @@ int main(int argc, char **argv)
 
             case 'v': show_version = 1; break;
 
-            case 'x': vrv::Object::SeedUuid(atoi(optarg)); break;
+            case 'x':
+                seed = atoi(optarg);
+                options->m_xmlIdSeed.SetValue(seed);
+                vrv::Object::SeedUuid(seed);
+                break;
 
             case 'z':
                 if (!strcmp(long_options[option_index].name, "stdin")) {
@@ -362,6 +374,11 @@ int main(int argc, char **argv)
     if (show_help) {
         display_usage();
         exit(0);
+    }
+
+    // Start the clock if desired
+    if (options->m_showRuntime.GetValue()) {
+        toolkit.InitClock();
     }
 
     std::cerr << infile;
@@ -630,6 +647,11 @@ int main(int argc, char **argv)
                 std::cerr << "Output written to " << outfile << "." << std::endl;
             }
         }
+    }
+
+    // Display runtime if desired
+    if (options->m_showRuntime.GetValue()) {
+        toolkit.LogRuntime();
     }
 
     free(long_options);

@@ -9,6 +9,7 @@
 #define __VRV_IOMEI_H__
 
 #include <sstream>
+#include <stack>
 
 //----------------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ class Artic;
 class BarLine;
 class Beam;
 class BeatRpt;
-class BoundaryEnd;
+class SystemElementEnd;
 class BracketSpan;
 class Breath;
 class BTrem;
@@ -99,6 +100,8 @@ class Num;
 class Octave;
 class Orig;
 class Page;
+class PageElement;
+class PageElementEnd;
 class Pages;
 class Pb;
 class Pedal;
@@ -194,9 +197,25 @@ public:
     std::string GetOutput(int page = -1);
 
     /**
-     * Setter for score-based MEI output
+     * @name Setter and getter for score-based MEI output
      */
+    ///@{
     void SetScoreBasedMEI(bool scoreBasedMEI) { m_scoreBasedMEI = scoreBasedMEI; }
+    bool GetScoreBasedMEI() const { return m_scoreBasedMEI; }
+    ///@}
+
+    /**
+     * Return true when the MEIOutput object is currently saving single page
+     */
+    bool IsSavingSinglePage() const { return (m_page != -1); }
+
+    /**
+     * @name Gettersto improve code readability
+     */
+    ///@{
+    bool IsScoreBasedMEI() const { return m_scoreBasedMEI; }
+    bool IsPageBasedMEI() const { return !m_scoreBasedMEI; }
+    ///@}
 
     /**
      * Setter for indent for the MEI output (default is 3, -1 for tabs)
@@ -241,8 +260,10 @@ private:
      */
     ///@{
     void WritePage(pugi::xml_node currentNode, Page *page);
+    void WritePageElement(pugi::xml_node element, PageElement *object);
+    void WritePageElementEnd(pugi::xml_node currentNode, PageElementEnd *elementEnd);
     void WriteSystem(pugi::xml_node currentNode, System *system);
-    void WriteBoundaryEnd(pugi::xml_node currentNode, BoundaryEnd *boundaryEnd);
+    void WriteSystemElementEnd(pugi::xml_node currentNode, SystemElementEnd *elementEnd);
     void WriteScoreDef(pugi::xml_node currentNode, ScoreDef *scoreDef);
     void WriteGrpSym(pugi::xml_node currentNode, GrpSym *grmSym);
     void WritePgFoot(pugi::xml_node currentNode, PgFoot *pgFoot);
@@ -440,6 +461,7 @@ private:
     /** @name Current element */
     pugi::xml_node m_currentNode;
     std::list<pugi::xml_node> m_nodeStack;
+    std::stack<Object *> m_boundaries;
     bool m_removeIds;
     ListOfObjects m_referredObjects;
 };
@@ -496,7 +518,7 @@ private:
     bool ReadPageChildren(Object *parent, pugi::xml_node parentNode);
     bool ReadSystem(Object *parent, pugi::xml_node system);
     bool ReadSystemChildren(Object *parent, pugi::xml_node parentNode);
-    bool ReadBoundaryEnd(Object *parent, pugi::xml_node boundaryEnd);
+    bool ReadSystemElementEnd(Object *parent, pugi::xml_node elementEnd);
     bool ReadScoreDef(Object *parent, pugi::xml_node scoreDef);
     bool ReadScoreDefChildren(Object *parent, pugi::xml_node parentNode);
     bool ReadGrpSym(Object *parent, pugi::xml_node grpSym);
@@ -755,7 +777,7 @@ private:
     bool m_readingScoreBased;
 
     /**
-     * This is used when reading a standard MEI file to specify if a scoreDef has already been read or not.
+     * This is used to specify if a scoreDef has been read or not.
      */
     bool m_hasScoreDef;
 
@@ -769,12 +791,6 @@ private:
      * If not specified by --mdiv-x-path query, then it is the first <mdiv> in the body
      */
     pugi::xml_node m_selectedMdiv;
-
-    /**
-     * A flag indicating if the first scoreDef has to be used as Doc scoreDef.
-     * This is not the case when selecting a mDiv that is not the first one with a score in the tree.
-     */
-    bool m_useScoreDefForDoc;
 
     /**
      * The comment to be attached to the next Object

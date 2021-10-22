@@ -18,6 +18,9 @@ verovio.vrvToolkit.editInfo = Module.cwrap( 'vrvToolkit_editInfo', 'string', ['n
 // char *getAvailableOptions(Toolkit *ic)
 verovio.vrvToolkit.getAvailableOptions = Module.cwrap( 'vrvToolkit_getAvailableOptions', 'string', ['number'] );
 
+// char *getDescriptiveFeatures(Toolkit *ic, const char *options)
+verovio.vrvToolkit.getDescriptiveFeatures = Module.cwrap( 'vrvToolkit_getDescriptiveFeatures', 'string', ['number', 'string'] );
+
 // char *getElementAttr(Toolkit *ic, const char *xmlId)
 verovio.vrvToolkit.getElementAttr = Module.cwrap( 'vrvToolkit_getElementAttr', 'string', ['number', 'string'] );
 
@@ -96,8 +99,14 @@ verovio.vrvToolkit.renderToSVG = Module.cwrap( 'vrvToolkit_renderToSVG', 'string
 // char *renderToTimemap(Toolkit *ic)
 verovio.vrvToolkit.renderToTimemap = Module.cwrap( 'vrvToolkit_renderToTimemap', 'string', ['number'] );
 
+// void resetXmlIdSeed(Toolkit *ic, int seed) 
+verovio.vrvToolkit.resetXmlIdSeed = Module.cwrap( 'vrvToolkit_resetXmlIdSeed', null, ['number', 'number'] );
+
 // void setOptions(Toolkit *ic, const char *options) 
 verovio.vrvToolkit.setOptions = Module.cwrap( 'vrvToolkit_setOptions', null, ['number', 'string'] );
+
+// char *validatePAE(Toolkit *ic, const char *options)
+verovio.vrvToolkit.validatePAE = Module.cwrap( 'vrvToolkit_validatePAE', 'string', ['number', 'string'] );
 
 // A pointer to the object - only one instance can be created for now
 verovio.instances = [];
@@ -131,6 +140,11 @@ verovio.toolkit.prototype.editInfo = function ()
 verovio.toolkit.prototype.getAvailableOptions = function ()
 {
     return JSON.parse( verovio.vrvToolkit.getAvailableOptions( this.ptr ) );
+};
+
+verovio.toolkit.prototype.getDescriptiveFeatures = function ( options )
+{
+    return JSON.parse( verovio.vrvToolkit.getDescriptiveFeatures( this.ptr, JSON.stringify( options ) ) );
 };
 
 verovio.toolkit.prototype.getElementAttr = function ( xmlId )
@@ -168,22 +182,9 @@ verovio.toolkit.prototype.getLog = function ()
     return verovio.vrvToolkit.getLog( this.ptr );
 };
 
-verovio.toolkit.prototype.getMEI = function ( param1, scoreBased )
+verovio.toolkit.prototype.getMEI = function ( param1 )
 {
-    if ( typeof param1 === 'undefined' )
-    {
-        return verovio.vrvToolkit.getMEI( this.ptr, JSON.stringify( {} ) );
-    }
-    else if ( param1 instanceof Object )
-    {
-        return verovio.vrvToolkit.getMEI( this.ptr, JSON.stringify( param1 ) );
-    }
-    else
-    {
-        options = { "pageNo": param1, "scoreBased": scoreBased };
-        console.warn( "Deprecated getMEI() arguments, use JSON object instead. Adjusted input:", options );
-        return verovio.vrvToolkit.getMEI( this.ptr, JSON.stringify( options ) );
-    }
+    return verovio.vrvToolkit.getMEI( this.ptr, JSON.stringify( param1 ) );
 };
 
 verovio.toolkit.prototype.getMIDIValuesForElement = function ( xmlId )
@@ -299,9 +300,23 @@ verovio.toolkit.prototype.renderToTimemap = function ()
     return JSON.parse( verovio.vrvToolkit.renderToTimemap( this.ptr ) );
 };
 
+verovio.toolkit.prototype.resetXmlIdSeed = function ( seed )
+{
+    return verovio.vrvToolkit.resetXmlIdSeed( this.ptr, seed );
+};
+
 verovio.toolkit.prototype.setOptions = function ( options )
 {
     verovio.vrvToolkit.setOptions( this.ptr, JSON.stringify( options ) );
+};
+
+verovio.toolkit.prototype.validatePAE = function ( data )
+{
+    if ( data instanceof Object )
+    {
+        data = JSON.stringify( data )
+    }
+    return JSON.parse( verovio.vrvToolkit.validatePAE( this.ptr, data ) );
 };
 
 /***************************************************************************************************************************/

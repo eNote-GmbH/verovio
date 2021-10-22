@@ -20,12 +20,19 @@ namespace vrv {
 static const ClassRegistrar<MultiRest> s_factory("multiRest", MULTIREST);
 
 MultiRest::MultiRest()
-    : LayerElement("multirest-"), PositionInterface(), AttColor(), AttMultiRestVis(), AttNumbered(), AttWidth()
+    : LayerElement(MULTIREST, "multirest-")
+    , PositionInterface()
+    , AttColor()
+    , AttMultiRestVis()
+    , AttNumbered()
+    , AttNumberPlacement()
+    , AttWidth()
 {
     RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
     RegisterAttClass(ATT_COLOR);
     RegisterAttClass(ATT_MULTIRESTVIS);
     RegisterAttClass(ATT_NUMBERED);
+    RegisterAttClass(ATT_NUMBERPLACEMENT);
     RegisterAttClass(ATT_WIDTH);
     Reset();
 }
@@ -39,6 +46,7 @@ void MultiRest::Reset()
     ResetColor();
     ResetMultiRestVis();
     ResetNumbered();
+    ResetNumberPlacement();
     ResetWidth();
 }
 

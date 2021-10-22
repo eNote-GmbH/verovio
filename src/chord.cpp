@@ -64,7 +64,7 @@ template <typename Iterator> std::set<int> CalculateDotLocations(Iterator begin,
 static const ClassRegistrar<Chord> s_factory("chord", CHORD);
 
 Chord::Chord()
-    : LayerElement("chord-")
+    : LayerElement(CHORD, "chord-")
     , ObjectListInterface()
     , DrawingListInterface()
     , StemmedDrawingInterface()
@@ -197,7 +197,7 @@ void Chord::FilterList(ArrayOfObjects *childList)
 
     Note *curNote, *lastNote = vrv_cast<Note *>(*iter);
     assert(lastNote);
-    int curPitch, lastPitch = lastNote->GetDiatonicPitch();
+    int lastPitch = lastNote->GetDiatonicPitch();
     ChordCluster *curCluster = NULL;
 
     ++iter;
@@ -208,7 +208,7 @@ void Chord::FilterList(ArrayOfObjects *childList)
     while (iter != childList->end()) {
         curNote = vrv_cast<Note *>(*iter);
         assert(curNote);
-        curPitch = curNote->GetDiatonicPitch();
+        const int curPitch = curNote->GetDiatonicPitch();
 
         if ((curPitch - lastPitch < 2) && (curNote->GetCrossStaff(layer1) == lastNote->GetCrossStaff(layer2))) {
             if (!lastNote->GetCluster()) {
@@ -407,6 +407,23 @@ bool Chord::IsVisible()
     }
 
     return false;
+}
+
+bool Chord::HasAdjacentNotesInStaff(Staff *staff)
+{
+    assert(staff);
+    MapOfNoteLocs locations = this->CalcNoteLocations();
+
+    if (locations[staff].empty() || locations[staff].size() == 1) return false;
+
+    std::vector<int> diff;
+    diff.resize(locations[staff].size());
+    // Find difference between adjacent notes in the chord. Since locations[staff] is multiset, elements are ordered and
+    // represent position of notes in chord. This way we can find whether there are notes with diatonic step difference
+    // of 1.
+    std::adjacent_difference(locations[staff].begin(), locations[staff].end(), diff.begin());
+
+    return (diff.end() != std::find(std::next(diff.begin()), diff.end(), 1));
 }
 
 bool Chord::HasNoteWithDots()
@@ -823,11 +840,10 @@ int Chord::ResetDrawing(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Chord::JustifyY(FunctorParams *functorParams)
+int Chord::AdjustCrossStaffContent(FunctorParams *functorParams)
 {
-    JustifyYParams *params = vrv_params_cast<JustifyYParams *>(functorParams);
+    AdjustCrossStaffContentParams *params = vrv_params_cast<AdjustCrossStaffContentParams *>(functorParams);
     assert(params);
-    assert(params->m_justificationSum > 0);
 
     // Check if chord spreads across several staves
     std::list<Staff *> extremalStaves;
@@ -843,37 +859,41 @@ int Chord::JustifyY(FunctorParams *functorParams)
     const int topStaffN = extremalStaves.front()->GetN();
     const int bottomStaffN = extremalStaves.back()->GetN();
     if (topStaffN < bottomStaffN) {
-        // Now calculate the shift due to vertical justification of the involved staves.
-        Object *measure = this->GetFirstAncestor(MEASURE);
-        if (!measure) return FUNCTOR_CONTINUE;
-
-        ListOfObjects staves;
-        ClassIdComparison matchType(STAFF);
-        measure->FindAllDescendantByComparison(&staves, &matchType, 1);
-
-        int shift = 0;
-        for (Object *staff : staves) {
-            Staff *currentStaff = vrv_cast<Staff *>(staff);
-            assert(currentStaff);
-
-            if ((currentStaff->GetN() > topStaffN) && (currentStaff->GetN() <= bottomStaffN)) {
-                const double staffJustificationFactor
-                    = currentStaff->GetAlignment()->GetJustificationFactor(params->m_doc);
-                shift += staffJustificationFactor / params->m_justificationSum * params->m_spaceToDistribute;
+        // Now calculate the shift due to vertical justification
+        auto getShift = [params](Staff *staff) {
+            StaffAlignment *alignment = staff->GetAlignment();
+            if (params->m_shiftForStaff.find(alignment) != params->m_shiftForStaff.end()) {
+                return params->m_shiftForStaff.at(alignment);
             }
-        }
+            return 0;
+        };
 
-        // Add the shift to the stem length of the chord.
+        const int shift = getShift(extremalStaves.back()) - getShift(extremalStaves.front());
+
+        // Add the shift to the stem length of the chord
         Stem *stem = vrv_cast<Stem *>(this->FindDescendantByType(STEM));
         if (!stem) return FUNCTOR_CONTINUE;
 
         const int stemLen = stem->GetDrawingStemLen();
         if (stem->GetDrawingStemDir() == STEMDIRECTION_up) {
             stem->SetDrawingStemLen(stemLen - shift);
-            stem->SetDrawingYRel(stem->GetDrawingYRel() - shift);
         }
         else {
             stem->SetDrawingStemLen(stemLen + shift);
+        }
+
+        // Reposition the stem
+        Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+        assert(staff);
+        Staff *rootStaff
+            = (stem->GetDrawingStemDir() == STEMDIRECTION_up) ? extremalStaves.back() : extremalStaves.front();
+        stem->SetDrawingYRel(stem->GetDrawingYRel() + getShift(staff) - getShift(rootStaff));
+
+        // Add the shift to the flag position
+        Flag *flag = vrv_cast<Flag *>(stem->FindDescendantByType(FLAG));
+        if (flag) {
+            const int sign = (stem->GetDrawingStemDir() == STEMDIRECTION_up) ? 1 : -1;
+            flag->SetDrawingYRel(flag->GetDrawingYRel() + sign * shift);
         }
     }
 

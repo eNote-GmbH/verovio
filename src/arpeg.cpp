@@ -30,13 +30,14 @@ namespace vrv {
 static const ClassRegistrar<Arpeg> s_factory("arpeg", ARPEG);
 
 Arpeg::Arpeg()
-    : ControlElement("arpeg-"), PlistInterface(), TimePointInterface(), AttArpegLog(), AttArpegVis(), AttColor()
+    : ControlElement(ARPEG, "arpeg-"), PlistInterface(), TimePointInterface(), AttArpegLog(), AttArpegVis(), AttColor()
 {
     RegisterInterface(PlistInterface::GetAttClasses(), PlistInterface::IsInterface());
     RegisterInterface(TimePointInterface::GetAttClasses(), TimePointInterface::IsInterface());
     RegisterAttClass(ATT_ARPEGLOG);
     RegisterAttClass(ATT_ARPEGVIS);
     RegisterAttClass(ATT_COLOR);
+    RegisterAttClass(ATT_ENCLOSINGCHARS);
 
     Reset();
 }
@@ -51,6 +52,7 @@ void Arpeg::Reset()
     ResetArpegLog();
     ResetArpegVis();
     ResetColor();
+    ResetEnclosingChars();
 
     m_drawingXRel = 0;
 }
@@ -250,7 +252,10 @@ int Arpeg::AdjustArpeg(FunctorParams *functorParams)
     if (minTopLeft != -VRV_UNSET) {
         int dist = topNote->GetDrawingX() - minTopLeft;
         // HARDCODED
-        dist += (params->m_doc->GetDrawingUnit(topStaff->m_drawingStaffSize));
+        double unitFactor = 1.0;
+        if ((this->GetEnclose() == ENCLOSURE_brack) || (this->GetEnclose() == ENCLOSURE_box)) unitFactor += 0.75;
+        if (this->GetArrow() == BOOLEAN_true) unitFactor += 0.33;
+        dist += unitFactor * params->m_doc->GetDrawingUnit(topStaff->m_drawingStaffSize);
         this->SetDrawingXRel(-dist);
     }
 

@@ -29,7 +29,7 @@ namespace vrv {
 // Dots
 //----------------------------------------------------------------------------
 
-Dots::Dots() : LayerElement("dots-"), AttAugmentDots()
+Dots::Dots() : LayerElement(DOTS, "dots-"), AttAugmentDots()
 {
     RegisterAttClass(ATT_AUGMENTDOTS);
 
@@ -65,7 +65,7 @@ std::set<int> &Dots::ModifyDotLocsForStaff(Staff *staff)
 // Flag
 //----------------------------------------------------------------------------
 
-Flag::Flag() : LayerElement("flag-")
+Flag::Flag() : LayerElement(FLAG, "flag-")
 {
 
     Reset();
@@ -114,22 +114,21 @@ Point Flag::GetStemUpSE(Doc *doc, int staffSize, bool graceSize, wchar_t &code) 
 {
     code = this->GetFlagGlyph(STEMDIRECTION_up);
 
-    int h = doc->GetGlyphHeight(code, staffSize, graceSize);
-    return Point(0, h + doc->GetGlyphDescender(code, staffSize, graceSize));
+    return Point(0, doc->GetGlyphTop(code, staffSize, graceSize));
 }
 
 Point Flag::GetStemDownNW(Doc *doc, int staffSize, bool graceSize, wchar_t &code) const
 {
     code = this->GetFlagGlyph(STEMDIRECTION_down);
 
-    return Point(0, doc->GetGlyphDescender(code, staffSize, graceSize));
+    return Point(0, doc->GetGlyphBottom(code, staffSize, graceSize));
 }
 
 //----------------------------------------------------------------------------
 // TupletBracket
 //----------------------------------------------------------------------------
 
-TupletBracket::TupletBracket() : LayerElement("bracket-"), AttTupletVis()
+TupletBracket::TupletBracket() : LayerElement(TUPLET_BRACKET, "bracket-"), AttTupletVis()
 {
     RegisterAttClass(ATT_TUPLETVIS);
 
@@ -202,7 +201,7 @@ int TupletBracket::GetDrawingYRight()
 // TupletNum
 //----------------------------------------------------------------------------
 
-TupletNum::TupletNum() : LayerElement("num-"), AttNumberPlacement(), AttTupletVis()
+TupletNum::TupletNum() : LayerElement(TUPLET_NUM, "num-"), AttNumberPlacement(), AttTupletVis()
 {
     RegisterAttClass(ATT_NUMBERPLACEMENT);
     RegisterAttClass(ATT_TUPLETVIS);
@@ -271,7 +270,7 @@ void TupletNum::SetAlignedBracket(TupletBracket *alignedBracket)
 // Stem
 //----------------------------------------------------------------------------
 
-Stem::Stem() : LayerElement("stem-"), AttGraced(), AttStems(), AttStemsCmn()
+Stem::Stem() : LayerElement(STEM, "stem-"), AttGraced(), AttStems(), AttStemsCmn()
 {
     RegisterAttClass(ATT_GRACED);
     RegisterAttClass(ATT_STEMS);

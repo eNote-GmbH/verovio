@@ -35,7 +35,6 @@ public:
     virtual Object *Clone() const { return new Artic(*this); }
     virtual void Reset();
     virtual std::string GetClassName() const { return "Artic"; }
-    virtual ClassId GetClassId() const { return ARTIC; }
     ///@}
 
     /** Override the method since alignment is required */
@@ -84,9 +83,9 @@ public:
     wchar_t GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) const;
 
     /**
-     * Retrieves parentheses / brackets from the enclose attribute
+     * Retrieve parentheses / brackets from the enclose attribute
      */
-    wchar_t GetEnclosingGlyph(bool beforeArtic) const;
+    std::pair<wchar_t, wchar_t> GetEnclosingGlyphs() const;
 
     //----------------//
     // Static methods //
@@ -140,6 +139,8 @@ public:
 
 private:
     bool IsInsideArtic(data_ARTICULATION artic) const;
+    // Calculate shift for the articulation based on its type and presence of other articulations
+    int CalculateHorizontalShift(Doc *doc, LayerElement *parent, data_STEMDIRECTION stemDir) const;
 
 public:
     std::vector<FloatingCurvePositioner *> m_startSlurPositioners;
