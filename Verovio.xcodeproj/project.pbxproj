@@ -1252,6 +1252,12 @@
 		BDEF9ECA26725234008A3A47 /* caesura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDEF9EC626725234008A3A47 /* caesura.cpp */; };
 		BDEF9ECC26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
 		BDEF9ECD26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
+		E73B37FB2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; };
+		E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; };
+		E73B37FE2726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
+		E73B37FF2726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
+		E73B38002726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
+		E73B38012726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
 		E79ADDC426BD1AE900527E4B /* runtimeclock.h in Headers */ = {isa = PBXBuildFile; fileRef = E79ADDC326BD1AE900527E4B /* runtimeclock.h */; };
 		E79ADDC526BD1AE900527E4B /* runtimeclock.h in Headers */ = {isa = PBXBuildFile; fileRef = E79ADDC326BD1AE900527E4B /* runtimeclock.h */; };
 		E79ADDC726BD645B00527E4B /* runtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E79ADDC626BD645B00527E4B /* runtimeclock.cpp */; };
@@ -1727,6 +1733,8 @@
 		BDC366C62576AF9300E4D826 /* grpsym.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = grpsym.h; path = include/vrv/grpsym.h; sourceTree = "<group>"; };
 		BDEF9EC626725234008A3A47 /* caesura.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = caesura.cpp; path = src/caesura.cpp; sourceTree = "<group>"; };
 		BDEF9ECB26725248008A3A47 /* caesura.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = caesura.h; path = include/vrv/caesura.h; sourceTree = "<group>"; };
+		E73B37FA2726B4470063B232 /* enotetoolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = enotetoolkit.h; path = include/vrv/enotetoolkit.h; sourceTree = "<group>"; };
+		E73B37FD2726B4740063B232 /* enotetoolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = enotetoolkit.cpp; path = src/enotetoolkit.cpp; sourceTree = "<group>"; };
 		E79ADDC326BD1AE900527E4B /* runtimeclock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = runtimeclock.h; path = include/vrv/runtimeclock.h; sourceTree = "<group>"; };
 		E79ADDC626BD645B00527E4B /* runtimeclock.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = runtimeclock.cpp; path = src/runtimeclock.cpp; sourceTree = "<group>"; };
 		E79C87C1269440420098FE85 /* lv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lv.h; path = include/vrv/lv.h; sourceTree = "<group>"; };
@@ -2191,6 +2199,8 @@
 				4D9234F11A586AE100763251 /* comparison.h */,
 				8F086EBD188539540037FD8E /* doc.cpp */,
 				8F59291418854BF800FE51AD /* doc.h */,
+				E73B37FD2726B4740063B232 /* enotetoolkit.cpp */,
+				E73B37FA2726B4470063B232 /* enotetoolkit.h */,
 				36E0442B2347A9150054F141 /* expansionmap.cpp */,
 				36E0442D2347A9290054F141 /* expansionmap.h */,
 				4D79643826C6B3520026288B /* featureextractor.cpp */,
@@ -2439,6 +2449,7 @@
 				4DB3D8E51F83D16600B5FC2B /* elementpart.h in Headers */,
 				4DB3D8D21F83D12000B5FC2B /* octave.h in Headers */,
 				4DB3D8E21F83D15C00B5FC2B /* chord.h in Headers */,
+				E73B37FB2726B4470063B232 /* enotetoolkit.h in Headers */,
 				4DD11DC52240E78B00A405D8 /* c_wrapper.h in Headers */,
 				403BEFFA206C010100D022D5 /* beatrpt.h in Headers */,
 				8F59293418854BF800FE51AD /* verticalaligner.h in Headers */,
@@ -2768,6 +2779,7 @@
 				BB4C4B8C22A932DF001F6AF0 /* rend.h in Headers */,
 				4D674B40255F40AC008AEF4C /* plica.h in Headers */,
 				4D79643226C6AA720026288B /* featureextractor.h in Headers */,
+				E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */,
 				BB4C4ABC22A932B6001F6AF0 /* instrdef.h in Headers */,
 				BB4C4B7622A932D7001F6AF0 /* syl.h in Headers */,
 				BB4C4AEA22A932BC001F6AF0 /* del.h in Headers */,
@@ -3227,6 +3239,7 @@
 				4D1694591E3A44F300569BF4 /* custos.cpp in Sources */,
 				4D16945A1E3A44F300569BF4 /* dot.cpp in Sources */,
 				4D20740B22A4FDFA00E0765F /* course.cpp in Sources */,
+				E73B37FF2726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3268,6 +3281,7 @@
 				4D1BE76D1C688F5A0086DC0E /* MidiEvent.cpp in Sources */,
 				35FDEBD124B6DC5B00AC1696 /* fing.cpp in Sources */,
 				8F086EEC188539540037FD8E /* io.cpp in Sources */,
+				E73B37FE2726B4740063B232 /* enotetoolkit.cpp in Sources */,
 				4D796B5E1D78641900A15238 /* harm.cpp in Sources */,
 				4DB3072F1AC9ED2500EE0982 /* space.cpp in Sources */,
 				4DEC4D7E21C804C500D1D273 /* add.cpp in Sources */,
@@ -3656,6 +3670,7 @@
 				4DB3D8B91F83D0C600B5FC2B /* systemboundary.cpp in Sources */,
 				4D2073FA22A3BCE000E0765F /* tabdursym.cpp in Sources */,
 				4DEC4DB421C826E000D1D273 /* supplied.cpp in Sources */,
+				E73B38002726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3871,6 +3886,7 @@
 				BB4C4A6022A9321F001F6AF0 /* atts_analytical.cpp in Sources */,
 				BB4C4B4322A932D7001F6AF0 /* beatrpt.cpp in Sources */,
 				BB4C4AB122A932A6001F6AF0 /* iodarms.cpp in Sources */,
+				E73B38012726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

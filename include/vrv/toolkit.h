@@ -734,7 +734,7 @@ private:
 
 public:
     //
-private:
+protected:
     Doc m_doc;
     View m_view;
     FileFormat m_inputFrom;
@@ -742,6 +742,7 @@ private:
 
     Options *m_options;
 
+private:
     /**
      * The C buffer string.
      */
