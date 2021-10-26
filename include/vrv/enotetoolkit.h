@@ -39,6 +39,36 @@ public:
 
     ///@}
 
+    /**
+     *************************************************************************
+     * Editor methods
+     *************************************************************************
+     */
+    ///@{
+    /**
+     * Find existing elements
+     */
+    Measure *FindMeasureByUuid(const std::string &uuid);
+    Measure *FindMeasureByN(const std::string &n);
+
+    /**
+     * Edit hairpins
+     */
+    bool AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
+        data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
+    bool UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
+
+    /**
+     * Edit notes
+     */
+    bool UpdateNote(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave);
+
+    /**
+     * Edit ties
+     */
+    bool RemoveTie(const std::string &uuid);
+    ///@}
+
 private:
     //
 public:
