@@ -50,13 +50,15 @@ public:
      */
     Measure *FindMeasureByUuid(const std::string &uuid);
     Measure *FindMeasureByN(const std::string &n);
+    std::vector<Measure *> FindAllMeasures();
 
     /**
      * Edit hairpins
      */
     bool AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
         data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
-    bool UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
+    bool UpdateHairpin(const std::string &uuid, hairpinLog_FORM form);
+    bool UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
 
     /**
      * Edit notes
@@ -70,7 +72,13 @@ public:
     ///@}
 
 private:
-    //
+    /**
+     * Prepare rerendering
+     */
+    ///@{
+    void UpdateTimeStamps(ControlElement *element);
+    ///@}
+
 public:
     //
 private:

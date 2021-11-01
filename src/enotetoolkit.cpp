@@ -13,6 +13,7 @@
 #include "hairpin.h"
 #include "measure.h"
 #include "tie.h"
+#include "timestamp.h"
 
 //----------------------------------------------------------------------------
 
@@ -38,6 +39,18 @@ Measure *EnoteToolkit::FindMeasureByN(const std::string &n)
     return vrv_cast<Measure *>(m_doc.FindDescendantByComparison(&comparison));
 }
 
+std::vector<Measure *> EnoteToolkit::FindAllMeasures()
+{
+    ListOfObjects objects;
+    ClassIdComparison comparison(MEASURE);
+    m_doc.FindAllDescendantByComparison(&objects, &comparison);
+
+    std::vector<Measure *> measures;
+    std::transform(objects.cbegin(), objects.cend(), std::back_inserter(measures),
+        [](Object *object) { return vrv_cast<Measure *>(object); });
+    return measures;
+}
+
 bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
     data_MEASUREBEAT endTstamp, hairpinLog_FORM form)
 {
@@ -50,19 +63,32 @@ bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int sta
         hairpin->SetForm(form);
 
         measure->AddChild(hairpin);
+        this->UpdateTimeStamps(hairpin);
         return true;
     }
     return false;
 }
 
-bool EnoteToolkit::UpdateHairpin(
-    const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp, hairpinLog_FORM form)
+bool EnoteToolkit::UpdateHairpin(const std::string &uuid, hairpinLog_FORM form)
 {
     Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
     if (hairpin) {
+        hairpin->SetForm(form);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp)
+{
+    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
+    if (hairpin) {
+        const xsdPositiveInteger_List staffNs = hairpin->GetStaff();
+        hairpin->TimeSpanningInterface::Reset();
+        hairpin->SetStaff(staffNs);
         hairpin->SetTstamp(startTstamp);
         hairpin->SetTstamp2(endTstamp);
-        hairpin->SetForm(form);
+        this->UpdateTimeStamps(hairpin);
         return true;
     }
     return false;
@@ -87,6 +113,36 @@ bool EnoteToolkit::RemoveTie(const std::string &uuid)
         return true;
     }
     return false;
+}
+
+void EnoteToolkit::UpdateTimeStamps(ControlElement *element)
+{
+    TimeSpanningInterface *interface = element->GetTimeSpanningInterface();
+    if (interface) {
+        // Set the first timestamp
+        Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
+        TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(interface->GetTstamp());
+        interface->SetStart(timestampAttr);
+
+        // Set the second timestamp
+        const data_MEASUREBEAT endTstamp = interface->GetTstamp2();
+        if (endTstamp.first > 0) {
+            std::vector<Measure *> measures = this->FindAllMeasures();
+            auto iter = std::find(measures.cbegin(), measures.cend(), measure);
+            if (iter != measures.end()) {
+                const size_t index = iter - measures.cbegin() + endTstamp.first;
+                if ((index >= 0) && (index < measures.size())) {
+                    iter = std::next(iter, endTstamp.first);
+                    measure = *iter;
+                }
+                else {
+                    vrv::LogWarning("Measure of end timestamp not found, shift is ignored.");
+                }
+            }
+        }
+        timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(endTstamp.second);
+        interface->SetEnd(timestampAttr);
+    }
 }
 
 } // namespace vrv
