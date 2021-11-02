@@ -12,6 +12,7 @@
 #include "comparison.h"
 #include "hairpin.h"
 #include "measure.h"
+#include "staff.h"
 #include "tie.h"
 #include "timestamp.h"
 
@@ -63,13 +64,13 @@ bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int sta
         hairpin->SetForm(form);
 
         measure->AddChild(hairpin);
-        this->UpdateTimeStamps(hairpin);
+        this->UpdateTimeSpanning(hairpin);
         return true;
     }
     return false;
 }
 
-bool EnoteToolkit::UpdateHairpin(const std::string &uuid, hairpinLog_FORM form)
+bool EnoteToolkit::ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form)
 {
     Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
     if (hairpin) {
@@ -79,7 +80,7 @@ bool EnoteToolkit::UpdateHairpin(const std::string &uuid, hairpinLog_FORM form)
     return false;
 }
 
-bool EnoteToolkit::UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp)
+bool EnoteToolkit::ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp)
 {
     Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
     if (hairpin) {
@@ -88,13 +89,13 @@ bool EnoteToolkit::UpdateHairpin(const std::string &uuid, double startTstamp, da
         hairpin->SetStaff(staffNs);
         hairpin->SetTstamp(startTstamp);
         hairpin->SetTstamp2(endTstamp);
-        this->UpdateTimeStamps(hairpin);
+        this->UpdateTimeSpanning(hairpin);
         return true;
     }
     return false;
 }
 
-bool EnoteToolkit::UpdateNote(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave)
+bool EnoteToolkit::ChangeNotePitch(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave)
 {
     Note *note = dynamic_cast<Note *>(m_doc.FindDescendantByUuid(uuid));
     if (note) {
@@ -115,33 +116,61 @@ bool EnoteToolkit::RemoveTie(const std::string &uuid)
     return false;
 }
 
-void EnoteToolkit::UpdateTimeStamps(ControlElement *element)
+void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
 {
     TimeSpanningInterface *interface = element->GetTimeSpanningInterface();
     if (interface) {
+        // Retrieve all measures
+        std::vector<Measure *> measures = this->FindAllMeasures();
+
+        // See Object::PrepareTimestamps
         // Set the first timestamp
         Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
+        const auto iterStart = std::find(measures.cbegin(), measures.cend(), measure);
+        assert(iterStart != measures.cend());
+        const int startIndex = static_cast<int>(iterStart - measures.cbegin());
         TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(interface->GetTstamp());
         interface->SetStart(timestampAttr);
 
         // Set the second timestamp
         const data_MEASUREBEAT endTstamp = interface->GetTstamp2();
+        int endIndex = startIndex;
         if (endTstamp.first > 0) {
-            std::vector<Measure *> measures = this->FindAllMeasures();
-            auto iter = std::find(measures.cbegin(), measures.cend(), measure);
-            if (iter != measures.end()) {
-                const size_t index = iter - measures.cbegin() + endTstamp.first;
-                if ((index >= 0) && (index < measures.size())) {
-                    iter = std::next(iter, endTstamp.first);
-                    measure = *iter;
-                }
-                else {
-                    vrv::LogWarning("Measure of end timestamp not found, shift is ignored.");
-                }
+            if (startIndex + endTstamp.first < measures.size()) {
+                const auto iterEnd = std::next(iterStart, endTstamp.first);
+                measure = *iterEnd;
+                endIndex += endTstamp.first;
+            }
+            else {
+                vrv::LogWarning("Measure of end timestamp not found, shift is ignored.");
             }
         }
         timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(endTstamp.second);
         interface->SetEnd(timestampAttr);
+
+        // See Object::FillStaffCurrentTimeSpanning
+        // Check if element must be added or removed to m_timeSpanningElements in the staves
+        for (int index = 0; index < measures.size(); ++index) {
+            ArrayOfObjects *children = measures.at(index)->GetChildrenForModification();
+            for (Object *child : *children) {
+                if (!child->Is(STAFF)) continue;
+                Staff *staff = vrv_cast<Staff *>(child);
+                assert(staff);
+
+                if (!interface->IsOnStaff(staff->GetN())) continue;
+
+                const bool shouldExist = ((index >= startIndex) && (index <= endIndex));
+                auto iter
+                    = std::find(staff->m_timeSpanningElements.cbegin(), staff->m_timeSpanningElements.cend(), element);
+                const bool doesExist = (iter != staff->m_timeSpanningElements.cend());
+                if (shouldExist && !doesExist) {
+                    staff->m_timeSpanningElements.push_back(element);
+                }
+                if (!shouldExist && doesExist) {
+                    staff->m_timeSpanningElements.erase(iter, iter + 1);
+                }
+            }
+        }
     }
 }
 

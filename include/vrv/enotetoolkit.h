@@ -57,13 +57,13 @@ public:
      */
     bool AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
         data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
-    bool UpdateHairpin(const std::string &uuid, hairpinLog_FORM form);
-    bool UpdateHairpin(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
+    bool ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form);
+    bool ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
 
     /**
      * Edit notes
      */
-    bool UpdateNote(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave);
+    bool ChangeNotePitch(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave);
 
     /**
      * Edit ties
@@ -76,7 +76,7 @@ private:
      * Prepare rerendering
      */
     ///@{
-    void UpdateTimeStamps(ControlElement *element);
+    void UpdateTimeSpanning(ControlElement *element);
     ///@}
 
 public:
