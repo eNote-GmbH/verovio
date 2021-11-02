@@ -12,6 +12,7 @@
 #include "comparison.h"
 #include "hairpin.h"
 #include "measure.h"
+#include "page.h"
 #include "staff.h"
 #include "tie.h"
 #include "timestamp.h"
@@ -42,14 +43,77 @@ Measure *EnoteToolkit::FindMeasureByN(const std::string &n)
 
 std::vector<Measure *> EnoteToolkit::FindAllMeasures()
 {
+    return this->FindAllMeasures(&m_doc);
+}
+
+std::vector<Measure *> EnoteToolkit::FindAllMeasures(Object *parent)
+{
     ListOfObjects objects;
     ClassIdComparison comparison(MEASURE);
-    m_doc.FindAllDescendantByComparison(&objects, &comparison);
+    parent->FindAllDescendantByComparison(&objects, &comparison);
 
     std::vector<Measure *> measures;
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(measures),
         [](Object *object) { return vrv_cast<Measure *>(object); });
     return measures;
+}
+
+std::vector<Page *> EnoteToolkit::FindAllPages()
+{
+    ListOfObjects objects;
+    ClassIdComparison comparison(PAGE);
+    m_doc.FindAllDescendantByComparison(&objects, &comparison);
+
+    std::vector<Page *> pages;
+    std::transform(objects.cbegin(), objects.cend(), std::back_inserter(pages),
+        [](Object *object) { return vrv_cast<Page *>(object); });
+    return pages;
+}
+
+std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
+{
+    std::vector<Page *> pages = this->FindAllPages();
+    if ((index < 1) || (index > pages.size())) {
+        vrv::LogWarning("Page not found.");
+        return {};
+    }
+    Page *requestedPage = pages.at(index - 1);
+
+    // Run through all pages and extract the measure ranges
+    std::list<MeasureRange> measureRanges;
+    std::string mdivUuid;
+    int firstN = 0;
+    int lastN = 0;
+    for (Page *page : pages) {
+        ArrayOfObjects *children = page->GetChildrenForModification();
+        for (Object *child : *children) {
+            if (child->Is(MDIV)) {
+                if (firstN > 0) {
+                    measureRanges.push_back({ mdivUuid, firstN, lastN });
+                    firstN = 0;
+                    lastN = 0;
+                }
+                mdivUuid = child->GetUuid();
+            }
+            else if (page == requestedPage) {
+                std::vector<Measure *> measures = this->FindAllMeasures(child);
+                for (Measure *measure : measures) {
+                    const int number = this->ExtractNumber(measure->GetN());
+                    if (number > 0) {
+                        lastN = number;
+                        if (firstN == 0) firstN = number;
+                    }
+                }
+            }
+        }
+        // Update at end of page
+        if (firstN > 0) {
+            measureRanges.push_back({ mdivUuid, firstN, lastN });
+            firstN = 0;
+            lastN = 0;
+        }
+    }
+    return measureRanges;
 }
 
 bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
@@ -172,6 +236,15 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
             }
         }
     }
+}
+
+int EnoteToolkit::ExtractNumber(const std::string &text)
+{
+    const size_t index = text.find_first_of("0123456789");
+    if (index != std::string::npos) {
+        return std::stoi(text.substr(index));
+    }
+    return 0;
 }
 
 } // namespace vrv

@@ -17,6 +17,16 @@
 namespace vrv {
 
 //----------------------------------------------------------------------------
+// MeasureRange
+//----------------------------------------------------------------------------
+
+struct MeasureRange {
+    std::string mdivUuid;
+    int firstN;
+    int lastN;
+};
+
+//----------------------------------------------------------------------------
 // EnoteToolkit
 //----------------------------------------------------------------------------
 
@@ -41,34 +51,60 @@ public:
 
     /**
      *************************************************************************
+     * Search methods
+     *************************************************************************
+     */
+    ///@{
+
+    /**
+     * Find existing elements
+     */
+    ///@{
+    Measure *FindMeasureByUuid(const std::string &uuid);
+    Measure *FindMeasureByN(const std::string &n);
+    std::vector<Measure *> FindAllMeasures();
+    std::vector<Page *> FindAllPages();
+    ///@}
+
+    /**
+     * Extract measure ranges
+     */
+    /// @param index is 1-based
+    std::list<MeasureRange> GetMeasureRangeForPage(int index);
+
+    ///@}
+
+    /**
+     *************************************************************************
      * Editor methods
      *************************************************************************
      */
     ///@{
-    /**
-     * Find existing elements
-     */
-    Measure *FindMeasureByUuid(const std::string &uuid);
-    Measure *FindMeasureByN(const std::string &n);
-    std::vector<Measure *> FindAllMeasures();
 
     /**
      * Edit hairpins
      */
+    ///@{
     bool AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
         data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
     bool ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form);
     bool ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
+    ///@}
 
     /**
      * Edit notes
      */
+    ///@{
     bool ChangeNotePitch(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave);
+    ///@}
 
     /**
      * Edit ties
      */
+    ///@{
     bool RemoveTie(const std::string &uuid);
+    ///@}
+
     ///@}
 
 private:
@@ -78,6 +114,12 @@ private:
     ///@{
     void UpdateTimeSpanning(ControlElement *element);
     ///@}
+
+    // Find all measures in subtree
+    std::vector<Measure *> FindAllMeasures(Object *parent);
+
+    // Extract the first integer from a string
+    int ExtractNumber(const std::string &text);
 
 public:
     //
