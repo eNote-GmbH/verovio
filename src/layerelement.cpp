@@ -1425,6 +1425,9 @@ int LayerElement::AdjustBeams(FunctorParams *functorParams)
     if (this->Is({ BTREM, GRACEGRP, SPACE, TUPLET, TUPLET_BRACKET, TUPLET_NUM })) return FUNCTOR_CONTINUE;
     // ignore elements that start before the beam
     if (this->GetDrawingX() < params->m_x1) return FUNCTOR_CONTINUE;
+    // ignore elements that have @visible attribute set to false
+    AttVisibilityComparison isInvisible(this->GetClassId(), BOOLEAN_false);
+    if (isInvisible(this)) return FUNCTOR_SIBLINGS;
     // ignore editorial accidental
     if (this->Is(ACCID)) {
         Accid *accid = vrv_cast<Accid *>(this);
@@ -1576,9 +1579,9 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(Doc *doc,
                 int previousDuration = previousNote->GetDrawingDur();
                 const bool isPreviousCoord = previousNote->GetParent()->Is(CHORD);
                 bool isEdgeElement = false;
+                data_STEMDIRECTION stemDir = currentNote->GetDrawingStemDir();
                 if (isPreviousCoord) {
                     Chord *parentChord = vrv_cast<Chord *>(previousNote->GetParent());
-                    data_STEMDIRECTION stemDir = currentNote->GetDrawingStemDir();
                     previousDuration = parentChord->GetDur();
                     isEdgeElement = ((STEMDIRECTION_down == stemDir) && (parentChord->GetBottomNote() == previousNote))
                         || ((STEMDIRECTION_up == stemDir) && (parentChord->GetTopNote() == previousNote));
@@ -1589,6 +1592,19 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(Doc *doc,
                 }
                 if (!isPreviousCoord || isEdgeElement || isChordElement) {
                     if ((currentNote->GetDrawingDur() == DUR_2) && (previousDuration == DUR_2)) {
+                        isInUnison = true;
+                        continue;
+                    }
+                    else if ((!currentNote->IsGraceNote() && !currentNote->GetDrawingCueSize())
+                        && (previousNote->IsGraceNote() || previousNote->GetDrawingCueSize())
+                        && (STEMDIRECTION_down == stemDir)) {
+                        shift -= 0.8 * horizontalMargin;
+                        continue;
+                    }
+                    else if ((currentNote->IsGraceNote() || currentNote->GetDrawingCueSize())
+                        && (!previousNote->IsGraceNote() && !previousNote->GetDrawingCueSize())
+                        && (STEMDIRECTION_up == stemDir)) {
+                        currentNote->SetDrawingXRel(currentNote->GetDrawingXRel() + 0.8 * horizontalMargin);
                         isInUnison = true;
                         continue;
                     }
@@ -1731,9 +1747,11 @@ int LayerElement::AdjustTupletNumOverlap(FunctorParams *functorParams)
     AdjustTupletNumOverlapParams *params = vrv_params_cast<AdjustTupletNumOverlapParams *>(functorParams);
     assert(params);
 
-    if (!Is({ ARTIC, ACCID, CHORD, DOT, FLAG, NOTE, REST, STEM }) || !HasSelfBB()) return FUNCTOR_CONTINUE;
+    if (!this->Is({ ARTIC, ACCID, CHORD, DOT, FLAG, NOTE, REST, STEM }) || !this->HasSelfBB()) return FUNCTOR_CONTINUE;
 
-    if (params->m_ignoreCrossStaff && Is({ CHORD, NOTE, REST }) && m_crossStaff) return FUNCTOR_SIBLINGS;
+    if (this->Is({ CHORD, NOTE, REST })
+        && ((m_crossStaff || (this->GetFirstAncestor(STAFF) != params->m_staff)) && (m_crossStaff != params->m_staff)))
+        return FUNCTOR_SIBLINGS;
 
     if (!params->m_tupletNum->HorizontalSelfOverlap(this, params->m_horizontalMargin)
         && !params->m_tupletNum->VerticalSelfOverlap(this, params->m_verticalMargin)) {
@@ -2293,10 +2311,20 @@ int LayerElement::FindSpannedLayerElements(FunctorParams *functorParams)
             return FUNCTOR_CONTINUE;
         }
 
+        // Skip if neither parent staff nor cross staff matches the given staff number
+        if (!params->m_staffNs.empty()) {
+            Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+            assert(staff);
+            if (params->m_staffNs.find(staff->GetN()) == params->m_staffNs.end()) {
+                Layer *layer = NULL;
+                staff = this->GetCrossStaff(layer);
+                if (!staff || (params->m_staffNs.find(staff->GetN()) == params->m_staffNs.end())) {
+                    return FUNCTOR_CONTINUE;
+                }
+            }
+        }
+
         params->m_elements.push_back(this);
-    }
-    else if (this->GetDrawingX() > params->m_maxPos) {
-        return FUNCTOR_STOP;
     }
 
     return FUNCTOR_CONTINUE;
