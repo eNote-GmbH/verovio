@@ -282,8 +282,31 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
 
         // TimeSpanning element are not necessary floating elements (e.g., syl) - we have a bounding box only for them
         if (element->IsControlElement()) {
+            Staff *staff = *staffIter;
+            // The floating curve positioner of cross staff slurs should live in the upper/lower staff alignment
+            // corresponding to whether the slur is curved above/below
+            if (element->Is(SLUR)) {
+                Slur *slur = vrv_cast<Slur *>(element);
+                const std::vector<LayerElement *> spannedElements
+                    = slur->CollectSpannedElements(staff, x1, x2, spanningType);
+                for (LayerElement *element : spannedElements) {
+                    Layer *elementLayer = NULL;
+                    Staff *elementStaff = element->GetCrossStaff(elementLayer);
+                    if (!elementStaff) elementStaff = vrv_cast<Staff *>(element->GetFirstAncestor(STAFF));
+                    assert(elementStaff);
+
+                    if ((slur->GetCurvedir() == curvature_CURVEDIR_above) && (elementStaff->GetN() < staff->GetN())) {
+                        staff = elementStaff;
+                    }
+                    if ((slur->GetCurvedir() == curvature_CURVEDIR_below) && (elementStaff->GetN() > staff->GetN())) {
+                        staff = elementStaff;
+                    }
+                }
+            }
+
+            // Create the floating positioner
             if (!system->SetCurrentFloatingPositioner(
-                    (*staffIter)->GetN(), dynamic_cast<ControlElement *>(element), objectX, *staffIter, spanningType)) {
+                    staff->GetN(), dynamic_cast<ControlElement *>(element), objectX, staff, spanningType)) {
                 continue;
             }
         }
@@ -902,11 +925,11 @@ void View::DrawTie(DeviceContext *dc, Tie *tie, int x1, int x2, Staff *staff, ch
         = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_doc->GetOptions()->m_tieMidpointThickness.GetValue();
     const int penWidth
         = m_doc->GetOptions()->m_tieEndpointThickness.GetValue() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-    if (m_tieThicknessCoeficient <= 0) {
-        m_tieThicknessCoeficient = BoundingBox::GetBezierThicknessCoeficient(bezier, thickness, 0, penWidth);
+    if (m_tieThicknessCoefficient <= 0) {
+        m_tieThicknessCoefficient = BoundingBox::GetBezierThicknessCoefficient(bezier, thickness, 0, penWidth);
     }
     DrawThickBezierCurve(
-        dc, bezier, m_tieThicknessCoeficient * thickness, staff->m_drawingStaffSize, penWidth, 0, penStyle);
+        dc, bezier, m_tieThicknessCoefficient * thickness, staff->m_drawingStaffSize, penWidth, 0, penStyle);
     if (graphic)
         dc->EndResumedGraphic(graphic, this);
     else
@@ -1484,6 +1507,17 @@ void View::DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system
         params.m_y = dir->GetDrawingY();
         params.m_pointSize = m_doc->GetDrawingLyricFont((*staffIter)->m_drawingStaffSize)->GetPointSize();
 
+        int xAdjust = 0;
+        const bool isBetweenStaves = (dir->GetPlace() == STAFFREL_between)
+            || ((dir->GetPlace() == STAFFREL_below) && (*staffIter != measure->GetLast(STAFF)))
+            || ((dir->GetPlace() == STAFFREL_above) && (*staffIter != measure->GetFirst(STAFF)));
+        if (isBetweenStaves
+            && (dir->GetStart()->GetAlignment()->GetTime()
+                == measure->m_measureAligner.GetRightBarLineAlignment()->GetTime())
+            && dir->AreChildrenAlignedTo(HORIZONTALALIGNMENT_right)) {
+            xAdjust = m_doc->GetDrawingUnit((*staffIter)->m_drawingStaffSize) / 2;
+        }
+
         dirTxt.SetPointSize(params.m_pointSize);
 
         if (dir->GetPlace() == STAFFREL_between) {
@@ -1496,7 +1530,7 @@ void View::DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system
         dc->SetBrush(m_currentColour, AxSOLID);
         dc->SetFont(&dirTxt);
 
-        dc->StartText(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), alignment);
+        dc->StartText(ToDeviceContextX(params.m_x - xAdjust), ToDeviceContextY(params.m_y), alignment);
         DrawTextChildren(dc, dir, params);
         dc->EndText();
 
@@ -1737,10 +1771,9 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
 
         params.m_enclosedRend.clear();
         params.m_y = fing->GetDrawingY();
+        params.m_pointSize = m_doc->GetFingeringFont((*staffIter)->m_drawingStaffSize)->GetPointSize();
 
-        params.m_pointSize = m_doc->GetDrawingLyricFont((*staffIter)->m_drawingStaffSize)->GetPointSize();
-
-        fingTxt.SetPointSize(params.m_pointSize / 2);
+        fingTxt.SetPointSize(params.m_pointSize);
 
         dc->SetBrush(m_currentColour, AxSOLID);
         dc->SetFont(&fingTxt);
@@ -2078,7 +2111,13 @@ void View::DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *
         data_HORIZONTALALIGNMENT alignment = HORIZONTALALIGNMENT_center;
         // center the pedal only with @startid
         if (pedal->GetStart()->Is(TIMESTAMP_ATTR)) {
-            alignment = HORIZONTALALIGNMENT_left;
+            if (pedal->GetStart()->GetAlignment()->GetTime()
+                == measure->m_measureAligner.GetRightBarLineAlignment()->GetTime()) {
+                alignment = HORIZONTALALIGNMENT_right;
+            }
+            else {
+                alignment = HORIZONTALALIGNMENT_left;
+            }
         }
 
         std::vector<Staff *>::iterator staffIter;
@@ -2367,16 +2406,18 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
         }
         int y = turn->GetDrawingY();
 
+        const int shift = m_doc->GetGlyphHeight(code, (*staffIter)->m_drawingStaffSize, false);
+        dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
         if (turn->HasAccidupper()) {
             int accidXShift = (alignment == HORIZONTALALIGNMENT_center)
                 ? 0
                 : m_doc->GetGlyphWidth(code, (*staffIter)->m_drawingStaffSize, false) / 2;
-            wchar_t accid = Accid::GetAccidGlyph(turn->GetAccidupper());
+            data_ACCIDENTAL_WRITTEN glyph = turn->GetAccidupper();
+            wchar_t accid = Accid::GetAccidGlyph(glyph);
             std::wstring accidStr;
             accidStr.push_back(accid);
-            dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
-            int accidYShit = m_doc->GetGlyphHeight(accid, (*staffIter)->m_drawingStaffSize, true);
-            DrawSmuflString(dc, x + accidXShift, y + accidYShit, accidStr, HORIZONTALALIGNMENT_center,
+            int accidYShift = shift - m_doc->GetGlyphBottom(accid, (*staffIter)->m_drawingStaffSize, true);
+            DrawSmuflString(dc, x + accidXShift, y + accidYShift, accidStr, HORIZONTALALIGNMENT_center,
                 (*staffIter)->m_drawingStaffSize / 2, false);
         }
         if (turn->HasAccidlower()) {
@@ -2386,13 +2427,11 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
             wchar_t accid = Accid::GetAccidGlyph(turn->GetAccidlower());
             std::wstring accidStr;
             accidStr.push_back(accid);
-            dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
-            int accidYShit = -m_doc->GetGlyphHeight(accid, (*staffIter)->m_drawingStaffSize, true) / 2;
-            DrawSmuflString(dc, x + accidXShift, y + accidYShit, accidStr, HORIZONTALALIGNMENT_center,
+            int accidYShift = -m_doc->GetGlyphHeight(accid, (*staffIter)->m_drawingStaffSize, true) / 2;
+            DrawSmuflString(dc, x + accidXShift, y + accidYShift, accidStr, HORIZONTALALIGNMENT_center,
                 (*staffIter)->m_drawingStaffSize / 2, false);
         }
 
-        dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
         DrawSmuflString(dc, x, y, str, alignment, (*staffIter)->m_drawingStaffSize);
         dc->ResetFont();
     }

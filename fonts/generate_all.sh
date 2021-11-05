@@ -11,9 +11,6 @@ if ! command -v phantomjs >/dev/null 2>&1 ; then
 	exit 1;
 fi
 
-echo "Generating metadata for Leipzig..."
-fontforge generate_font_metadata.py Leipzig-5.2.sfd
-
 echo "Generating C++ header and implementation file ..."
 python3 generate-smufl-code.py
 
@@ -23,7 +20,7 @@ phantomjs generate-bbox.js tmp/Bravura-bounding-boxes.svg ../data/Bravura.xml js
 
 echo "Generating Leipzig files ..."
 python3 extract-glyphs.py Leipzig.svg > tmp/Leipzig-bounding-boxes.svg
-phantomjs generate-bbox.js tmp/Leipzig-bounding-boxes.svg ../data/Leipzig.xml json/leipzig-5.2_metadata.json
+phantomjs generate-bbox.js tmp/Leipzig-bounding-boxes.svg ../data/Leipzig.xml json/leipzig_metadata.json
 
 echo "Generating Gootville files ..."
 python3 extract-glyphs.py Gootville.svg > tmp/Gootville-bounding-boxes.svg
@@ -36,5 +33,9 @@ phantomjs generate-bbox.js tmp/Petaluma-bounding-boxes.svg ../data/Petaluma.xml 
 echo "Generating Leland files ..."
 python3 extract-glyphs.py Leland.svg > tmp/Leland-bounding-boxes.svg
 phantomjs generate-bbox.js tmp/Leland-bounding-boxes.svg ../data/Leland.xml json/leland_metadata.json
+
+echo "Generating Legato files ..."
+python3 extract-glyphs.py Legato.svg > tmp/Legato-bounding-boxes.svg
+phantomjs generate-bbox.js tmp/Legato-bounding-boxes.svg ../data/Legato.xml json/legato_metadata.json
 
 echo "Done!"

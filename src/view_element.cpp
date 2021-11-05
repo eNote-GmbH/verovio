@@ -1142,7 +1142,9 @@ void View::DrawMRest(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
             ledgerLineExtension *= m_doc->GetOptions()->m_graceFactor.GetValue();
         }
 
+        dc->StartCustomGraphic("ledgerLines");
         DrawHorizontalLine(dc, x - ledgerLineExtension, x + width + ledgerLineExtension, y, ledgerLineThickness);
+        dc->EndCustomGraphic();
     }
 
     dc->EndGraphic(element, this);
@@ -1361,7 +1363,7 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         int drawingDur = note->GetDrawingDur();
         drawingDur = ((note->GetColored() == BOOLEAN_true) && drawingDur > DUR_1) ? (drawingDur + 1) : drawingDur;
 
-        if (drawingDur < DUR_1) {
+        if (drawingDur < DUR_BR) {
             DrawMaximaToBrevis(dc, noteY, element, layer, staff);
         }
         else {
@@ -1453,6 +1455,7 @@ void View::DrawRest(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         const int bottomMargin = staff->GetDrawingY()
             - (staff->m_drawingLines - 1) * m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
 
+        dc->StartCustomGraphic("ledgerLines");
         // single legder line for half and whole rests
         if ((drawingDur == DUR_1 || drawingDur == DUR_2) && (y > topMargin || y < bottomMargin)) {
             dc->DeactivateGraphicX();
@@ -1473,6 +1476,7 @@ void View::DrawRest(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
             }
             dc->ReactivateGraphic();
         }
+        dc->EndCustomGraphic();
     }
 
     /************ Draw children (dots) ************/
@@ -1541,7 +1545,7 @@ void View::DrawStem(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
 
     /************ Draw slash ************/
 
-    if ((stem->GetGrace() == GRACE_unacc) && !stem->IsInBeam()) {
+    if ((stem->GetGrace() == GRACE_unacc) && (NULL == stem->GetFirstAncestor(BEAM))) {
         DrawAcciaccaturaSlash(dc, stem, staff);
     }
 
@@ -1696,10 +1700,25 @@ void View::DrawAcciaccaturaSlash(DeviceContext *dc, Stem *stem, Staff *staff)
     int positionShiftY1 = positionShift * -4;
     int positionShiftX2 = positionShift * 2;
     int positionShiftY2 = positionShift * -1;
-    Point startPoint(stem->GetDrawingX(), stem->GetDrawingY() - stem->GetDrawingStemLen());
+
+    const data_STEMDIRECTION stemDir = stem->GetDrawingStemDir();
+    int y = stem->GetDrawingY() - stem->GetDrawingStemLen();
+    Flag *flag = dynamic_cast<Flag *>(stem->GetFirst(FLAG));
+    if (flag) {
+        const wchar_t glyph = flag->GetFlagGlyph(stemDir);
+        const int slashAdjust = (stemDir == STEMDIRECTION_up)
+            ? m_doc->GetGlyphTop(glyph, staff->m_drawingStaffSize, true)
+            : m_doc->GetGlyphBottom(glyph, staff->m_drawingStaffSize, true);
+        y += slashAdjust;
+    }
+    if ((stemDir == STEMDIRECTION_down) && (!flag || (flag->GetFlagGlyph(stemDir) == SMUFL_E241_flag8thDown))) {
+        y -= m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / 3;
+    }
+
+    Point startPoint(stem->GetDrawingX(), y);
 
     // HARDCODED
-    if (stem->GetDrawingStemDir() == STEMDIRECTION_up) {
+    if (stemDir == STEMDIRECTION_up) {
         dc->DrawLine(ToDeviceContextX(startPoint.x - positionShiftX1), ToDeviceContextY(startPoint.y + positionShiftY1),
             ToDeviceContextX(startPoint.x + positionShiftX2), ToDeviceContextY(startPoint.y + positionShiftY2));
     }
