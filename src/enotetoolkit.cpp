@@ -244,7 +244,7 @@ int EnoteToolkit::ExtractNumber(const std::string &text)
     if (index != std::string::npos) {
         return std::stoi(text.substr(index));
     }
-    return 0;
+    return -1;
 }
 
 } // namespace vrv
