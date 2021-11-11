@@ -12,7 +12,7 @@
 		2D2A799A1A69812C000A441B /* chord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2D2A79991A69812C000A441B /* chord.cpp */; };
 		35F6580F24F92B6100C99A2D /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBCE24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; };
-		35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; };
+		35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35FDEBD124B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD224B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD324B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
