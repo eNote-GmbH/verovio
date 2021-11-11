@@ -114,13 +114,13 @@ function update_swift_package {
 
 # Entry point
 function main {
-    # clear_tmp_dir
-    # build_ios_simulator
-    # build_ios
-    # build_macos
-    # build_xcframework
-    # compress_xcframework
-    # upload_to_s3
+    clear_tmp_dir
+    build_ios_simulator
+    build_ios
+    build_macos
+    build_xcframework
+    compress_xcframework
+    upload_to_s3
     update_swift_package
 }
 
