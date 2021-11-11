@@ -78,7 +78,7 @@ function update_swift_package {
     cd Verovio-XCFramework
     cp "$PROJ_DIR/$XCFRAMEWORK_ZIP" ./
     CHECKSUM="$(swift package compute-checksum VerovioFramework.xcframework.zip)"
-    rm Verovio.xcframework.zip
+    rm VerovioFramework.xcframework.zip
 
     # modify Package.swift
     cat Package.template | sed -e "s|ZIP_URL|$AWS_PUBLIC_LINK|g" | sed -e "s/ZIP_CHECKSUM/$CHECKSUM/g" > Package.swift
@@ -100,7 +100,7 @@ function update_swift_package {
     # commit changes to swift package
     git add .
     git commit -am "Binary framework for verovio commit $VEROVIO_COMMIT_HASH"
-    git push origin main
+    git push origin master
 
     # Add tag with verovio commit hash 
     git tag "verovio-$VEROVIO_COMMIT_HASH"
@@ -114,13 +114,13 @@ function update_swift_package {
 
 # Entry point
 function main {
-    clear_tmp_dir
-    build_ios_simulator
-    build_ios
-    build_macos
-    build_xcframework
-    compress_xcframework
-    upload_to_s3
+    # clear_tmp_dir
+    # build_ios_simulator
+    # build_ios
+    # build_macos
+    # build_xcframework
+    # compress_xcframework
+    # upload_to_s3
     update_swift_package
 }
 
