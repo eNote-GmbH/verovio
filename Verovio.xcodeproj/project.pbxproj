@@ -1234,7 +1234,7 @@
 		BBC19FBF22B37CA000100F42 /* all.h in Headers */ = {isa = PBXBuildFile; fileRef = BBC19FBE22B37CA000100F42 /* all.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BBC19FC322B38C1400100F42 /* VerovioFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = BBC19FC222B38C1400100F42 /* VerovioFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BBC19FC922B39AC400100F42 /* git_commit.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D9C5F3A1ADBBBEB005D3031 /* git_commit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BDA81C21268B38760065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; };
+		BDA81C21268B38760065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BDA81C22268B38770065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; };
 		BDA81C24268B38A10065B802 /* metersiggrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDA81C23268B38A10065B802 /* metersiggrp.cpp */; };
 		BDA81C25268B38A10065B802 /* metersiggrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDA81C23268B38A10065B802 /* metersiggrp.cpp */; };
