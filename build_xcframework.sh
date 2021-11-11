@@ -7,6 +7,7 @@ TMP_DIR="./tmp"
 IOS_SIM_ARCHIVE="$TMP_DIR/iOS-Simulator.xcarchive"
 IOS_ARCHIVE="$TMP_DIR/iOS.xcarchive"
 MACOS_ARCHIVE="$TMP_DIR/macOS.xcarchive"
+MAC_CATALYST_ARCHIVE="$TMP_DIR/macCatalyst.xcarchive"
 XCFRAMEWORK="$TMP_DIR/VerovioFramework.xcframework"
 XCFRAMEWORK_ZIP="$XCFRAMEWORK.zip"
 VEROVIO_COMMIT_HASH="$(git rev-parse --short HEAD)"
@@ -46,12 +47,18 @@ function build_macos {
         -scheme VerovioFramework \
         -archivePath "$MACOS_ARCHIVE" \
         -sdk macosx SKIP_INSTALL=NO | xcpretty || die "Can't build macOS Framework"
+
+    xcodebuild archive \
+        -scheme VerovioFramework \
+        -archivePath "$MAC_CATALYST_ARCHIVE" \
+        -destination 'platform=macOS,variant=Mac Catalyst' SKIP_INSTALL=NO | xcpretty || die "Can't build macOS Framework"
 }
 
 function build_xcframework {
     xcodebuild -create-xcframework \
         -framework "$IOS_SIM_ARCHIVE/Products/Library/Frameworks/VerovioFramework.framework" \
         -framework "$IOS_ARCHIVE/Products/Library/Frameworks/VerovioFramework.framework" \
+        -framework "$MAC_CATALYST_ARCHIVE/Products/Library/Frameworks/VerovioFramework.framework" \
         -framework "$MACOS_ARCHIVE/Products/Library/Frameworks/VerovioFramework.framework" \
         -output "$XCFRAMEWORK" || die "Can't combine XCFramework"
 }
