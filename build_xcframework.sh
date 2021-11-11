@@ -104,7 +104,7 @@ function update_swift_package {
 
     # Add tag with verovio commit hash 
     git tag "verovio-$VEROVIO_COMMIT_HASH"
-    git tag "$VEROVIO_VERSION.$BUILD_NR"
+    git tag "v$VEROVIO_VERSION.$BUILD_NR"
 
     # push tags
     git push --tags
