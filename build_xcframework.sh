@@ -7,11 +7,11 @@ TMP_DIR="./tmp"
 IOS_SIM_ARCHIVE="$TMP_DIR/iOS-Simulator.xcarchive"
 IOS_ARCHIVE="$TMP_DIR/iOS.xcarchive"
 MACOS_ARCHIVE="$TMP_DIR/macOS.xcarchive"
-XCFRAMEWORK="$TMP_DIR/Verovio.xcframework"
+XCFRAMEWORK="$TMP_DIR/VerovioFramework.xcframework"
 XCFRAMEWORK_ZIP="$XCFRAMEWORK.zip"
 VEROVIO_COMMIT_HASH="$(git rev-parse --short HEAD)"
 AWS_PUBLIC_LINK="https://enote-macos-app.s3.eu-central-1.amazonaws.com/verovio/$VEROVIO_COMMIT_HASH.zip"
-VEROVIO_VERSION="$(cat codemeta.json | jq .softwareVersion | sed -e "s/-dev//g" | sed -e "s/\"//g")"
+VEROVIO_VERSION="$(cat codemeta.json | jq .softwareVersion | sed -e "s/-dev//g" | sed -e "s/\"//g" | sed -e "s/.[0-9]$//g" )"
 
 # Emergency exit function
 function die {
@@ -58,7 +58,7 @@ function build_xcframework {
 
 function compress_xcframework {
     pushd tmp
-    zip -r "Verovio.xcframework.zip" "Verovio.xcframework" || die "Can't compress xcframework"
+    zip -r "VerovioFramework.xcframework.zip" "VerovioFramework.xcframework" || die "Can't compress xcframework"
     popd
 }
 
@@ -77,7 +77,7 @@ function update_swift_package {
     # generate checksum for zipped framework
     cd Verovio-XCFramework
     cp "$PROJ_DIR/$XCFRAMEWORK_ZIP" ./
-    CHECKSUM="$(swift package compute-checksum Verovio.xcframework.zip)"
+    CHECKSUM="$(swift package compute-checksum VerovioFramework.xcframework.zip)"
     rm Verovio.xcframework.zip
 
     # modify Package.swift
