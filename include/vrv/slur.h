@@ -122,6 +122,11 @@ private:
      * Helper for calculating the initial slur start and end points
      */
     ///@{
+    // Retrieve the start and end note locations of the slur
+    std::pair<int, int> GetStartEndLocs(
+        Note *startNote, Chord *startChord, Note *endNote, Chord *endChord, curvature_CURVEDIR dir) const;
+    // Calculate the break location at system start/end and the pitch difference
+    std::pair<int, int> CalcBrokenLoc(Staff *staff, int startLoc, int endLoc, curvature_CURVEDIR dir) const;
     // Check if the slur resembles portato
     PortatoSlurType IsPortatoSlur(Doc *doc, Note *startNote, Chord *startChord, curvature_CURVEDIR curveDir) const;
     ///@}
