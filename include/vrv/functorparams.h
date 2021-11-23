@@ -808,14 +808,16 @@ public:
 
 class AlignMeasuresParams : public FunctorParams {
 public:
-    AlignMeasuresParams()
+    AlignMeasuresParams(Doc *doc)
     {
         m_shift = 0;
         m_justifiableWidth = 0;
+        m_doc = doc;
     }
 
     int m_shift;
     int m_justifiableWidth;
+    Doc *m_doc;
 };
 
 //----------------------------------------------------------------------------
@@ -2383,6 +2385,20 @@ public:
 class ReorderByXPosParams : public FunctorParams {
 public:
     int modifications = 0;
+};
+
+//----------------------------------------------------------------------------
+// PrepareSlursParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the doc
+ **/
+
+class PrepareSlursParams : public FunctorParams {
+public:
+    PrepareSlursParams(Doc *doc) { m_doc = doc; }
+    Doc *m_doc;
 };
 
 } // namespace vrv
