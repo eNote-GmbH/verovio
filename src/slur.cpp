@@ -100,7 +100,52 @@ void Slur::Reset()
     ResetLayerIdent();
 
     m_drawingCurvedir = curvature_CURVEDIR_NONE;
-    // m_isCrossStaff = false;
+}
+
+std::pair<Layer *, LayerElement *> Slur::GetBoundaryLayer()
+{
+    LayerElement *start = this->GetStart();
+    LayerElement *end = this->GetEnd();
+
+    if (!start || !end) return { NULL, NULL };
+
+    Layer *layer = NULL;
+    LayerElement *layerElement = NULL;
+    // For now, with timestamps, get the first layer. We should eventually look at the @layerident (not implemented)
+    if (!start->Is(TIMESTAMP_ATTR)) {
+        layer = dynamic_cast<Layer *>(start->GetFirstAncestor(LAYER));
+        layerElement = start;
+    }
+    else if (!end->Is(TIMESTAMP_ATTR)) {
+        layer = dynamic_cast<Layer *>(end->GetFirstAncestor(LAYER));
+        layerElement = end;
+    }
+    if (layerElement && layerElement->m_crossStaff) layer = layerElement->m_crossLayer;
+
+    return { layer, layerElement };
+}
+
+Staff *Slur::GetBoundaryCrossStaff()
+{
+    LayerElement *start = this->GetStart();
+    LayerElement *end = this->GetEnd();
+
+    if (!start || !end) return NULL;
+
+    if (start->m_crossStaff != end->m_crossStaff) {
+        return end->m_crossStaff;
+    }
+    else {
+        // Check if the two elements are in different staves (but themselves not cross-staff)
+        Staff *startStaff = vrv_cast<Staff *>(start->GetFirstAncestor(STAFF));
+        Staff *endStaff = vrv_cast<Staff *>(end->GetFirstAncestor(STAFF));
+        if (startStaff && endStaff && (startStaff->GetN() != endStaff->GetN())) {
+            return endStaff;
+        }
+        else {
+            return NULL;
+        }
+    }
 }
 
 std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin, int xMax, char spanningType)
@@ -142,10 +187,7 @@ std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin,
     }
     else {
         for (LayerElement *element : { this->GetStart(), this->GetEnd() }) {
-            int layerN = element->GetAlignmentLayerN();
-            if (layerN < 0) {
-                layerN = vrv_cast<Layer *>(element->GetFirstAncestor(LAYER))->GetN();
-            }
+            const int layerN = element->GetOriginalLayerN();
             layersN.insert(layerN);
         }
     }
@@ -155,10 +197,7 @@ std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin,
     // Check whether outside layers exist
     const bool hasOutsideLayers = std::any_of(findSpannedLayerElementsParams.m_elements.cbegin(),
         findSpannedLayerElementsParams.m_elements.cend(), [minLayerN, maxLayerN](LayerElement *element) {
-            int layerN = element->GetAlignmentLayerN();
-            if (layerN < 0) {
-                layerN = vrv_cast<Layer *>(element->GetFirstAncestor(LAYER))->GetN();
-            }
+            const int layerN = element->GetOriginalLayerN();
             return ((layerN < minLayerN) || (layerN > maxLayerN));
         });
 
@@ -173,13 +212,13 @@ std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin,
             notes.push_back(this->GetStart());
         }
         else {
-            this->GetStart()->FindAllDescendantByComparison(&notes, &cmp, 1, FORWARD, false);
+            this->GetStart()->FindAllDescendantsByComparison(&notes, &cmp, 1, FORWARD, false);
         }
         if (this->GetEnd()->Is(NOTE)) {
             notes.push_back(this->GetEnd());
         }
         else {
-            this->GetEnd()->FindAllDescendantByComparison(&notes, &cmp, 1, FORWARD, false);
+            this->GetEnd()->FindAllDescendantsByComparison(&notes, &cmp, 1, FORWARD, false);
         }
 
         // Determine the minimal and maximal diatonic pitch
@@ -188,10 +227,7 @@ std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin,
         for (Object *object : notes) {
             Note *note = vrv_cast<Note *>(object);
             assert(note);
-            int layerN = note->GetAlignmentLayerN();
-            if (layerN < 0) {
-                layerN = vrv_cast<Layer *>(note->GetFirstAncestor(LAYER))->GetN();
-            }
+            const int layerN = note->GetOriginalLayerN();
             if (layerN == maxLayerN) {
                 minPitch = std::min(note->GetDiatonicPitch(), minPitch);
             }
@@ -204,10 +240,7 @@ std::vector<LayerElement *> Slur::CollectSpannedElements(Staff *staff, int xMin,
         const bool layersAreSeparated
             = std::all_of(notes.cbegin(), notes.cend(), [minLayerN, maxLayerN, minPitch, maxPitch](Object *object) {
                   Note *note = vrv_cast<Note *>(object);
-                  int layerN = note->GetAlignmentLayerN();
-                  if (layerN < 0) {
-                      layerN = vrv_cast<Layer *>(note->GetFirstAncestor(LAYER))->GetN();
-                  }
+                  const int layerN = note->GetOriginalLayerN();
                   if (layerN < minLayerN) {
                       return (note->GetDiatonicPitch() > maxPitch);
                   }
@@ -539,7 +572,7 @@ std::pair<int, int> Slur::CalcControlPointVerticalShift(
             const int xLeft = std::max(bezierCurve.p1.x, spannedElement->m_boundingBox->GetSelfLeft());
             float distanceRatio = float(xLeft - bezierCurve.p1.x) / float(dist);
             // Ignore obstacles close to the endpoints, because this would result in very large shifts
-            if (std::abs(0.5 - distanceRatio) < 0.45) {
+            if ((std::abs(0.5 - distanceRatio) < 0.45) && (intersectionLeft > 0)) {
                 const double t = BoundingBox::CalcBezierParamAtPosition(points, xLeft);
                 constraints.push_back(
                     { 3.0 * pow(1.0 - t, 2.0) * t, 3.0 * (1.0 - t) * pow(t, 2.0), double(intersectionLeft) });
@@ -549,7 +582,7 @@ std::pair<int, int> Slur::CalcControlPointVerticalShift(
             const int xRight = std::min(bezierCurve.p2.x, spannedElement->m_boundingBox->GetSelfRight());
             distanceRatio = float(xRight - bezierCurve.p1.x) / float(dist);
             // Ignore obstacles close to the endpoints, because this would result in very large shifts
-            if (std::abs(0.5 - distanceRatio) < 0.45) {
+            if ((std::abs(0.5 - distanceRatio) < 0.45) && (intersectionRight > 0)) {
                 const double t = BoundingBox::CalcBezierParamAtPosition(points, xRight);
                 constraints.push_back(
                     { 3.0 * pow(1.0 - t, 2.0) * t, 3.0 * (1.0 - t) * pow(t, 2.0), double(intersectionRight) });
@@ -734,10 +767,8 @@ curvature_CURVEDIR Slur::GetGraceCurveDirection(Doc *doc)
     return curvature_CURVEDIR_below;
 }
 
-curvature_CURVEDIR Slur::GetPreferredCurveDirection(
-    Doc *doc, Layer *layer, LayerElement *layerElement, data_STEMDIRECTION noteStemDir, bool isAboveStaffCenter)
+curvature_CURVEDIR Slur::GetPreferredCurveDirection(Doc *doc, data_STEMDIRECTION noteStemDir, bool isAboveStaffCenter)
 {
-    assert(layerElement);
     const bool isGraceToNoteSlur = !this->GetStart()->Is(TIMESTAMP_ATTR) && !this->GetEnd()->Is(TIMESTAMP_ATTR)
         && this->GetStart()->IsGraceNote() && !this->GetEnd()->IsGraceNote();
     Note *startNote = NULL;
@@ -748,7 +779,11 @@ curvature_CURVEDIR Slur::GetPreferredCurveDirection(
         startParentChord = startNote->IsChordTone();
     }
 
-    data_STEMDIRECTION layerStemDir;
+    Layer *layer = NULL;
+    LayerElement *layerElement = NULL;
+    std::tie(layer, layerElement) = this->GetBoundaryLayer();
+    data_STEMDIRECTION layerStemDir = STEMDIRECTION_NONE;
+
     curvature_CURVEDIR drawingCurveDir = curvature_CURVEDIR_above;
     // first should be the slur @curvedir
     if (this->HasCurvedir()) {
@@ -756,15 +791,12 @@ curvature_CURVEDIR Slur::GetPreferredCurveDirection(
             = (this->GetCurvedir() == curvature_CURVEDIR_above) ? curvature_CURVEDIR_above : curvature_CURVEDIR_below;
     }
     // grace notes - always below unless we have a drawing stem direction on the layer
-    else if (isGraceToNoteSlur && layer && (layer->GetDrawingStemDir(layerElement) == STEMDIRECTION_NONE)) {
+    else if (isGraceToNoteSlur && layer && layerElement
+        && (layer->GetDrawingStemDir(layerElement) == STEMDIRECTION_NONE)) {
         drawingCurveDir = this->GetGraceCurveDirection(doc);
     }
-    // the normal case
-    else if (this->HasDrawingCurvedir()) {
-        drawingCurveDir = this->GetDrawingCurvedir();
-    }
     // then layer direction trumps note direction
-    else if (layer && ((layerStemDir = layer->GetDrawingStemDir(layerElement)) != STEMDIRECTION_NONE)) {
+    else if (layer && layerElement && ((layerStemDir = layer->GetDrawingStemDir(layerElement)) != STEMDIRECTION_NONE)) {
         drawingCurveDir = (layerStemDir == STEMDIRECTION_up) ? curvature_CURVEDIR_above : curvature_CURVEDIR_below;
     }
     // look if in a chord
@@ -1194,12 +1226,11 @@ std::pair<int, int> Slur::CalcBrokenLoc(Staff *staff, int startLoc, int endLoc, 
 PortatoSlurType Slur::IsPortatoSlur(Doc *doc, Note *startNote, Chord *startChord, curvature_CURVEDIR curveDir) const
 {
     ListOfObjects artics;
-    ClassIdComparison cmp(ARTIC);
     if (startChord) {
-        startChord->FindAllDescendantByComparison(&artics, &cmp, 1);
+        artics = startChord->FindAllDescendantsByType(ARTIC, true, 1);
     }
     else if (startNote) {
-        startNote->FindAllDescendantByComparison(&artics, &cmp, 1);
+        artics = startNote->FindAllDescendantsByType(ARTIC, true, 1);
     }
 
     PortatoSlurType type = PortatoSlurType::None;
@@ -1235,6 +1266,65 @@ int Slur::ResetDrawing(FunctorParams *functorParams)
 
     m_drawingCurvedir = curvature_CURVEDIR_NONE;
     // m_isCrossStaff = false;
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Slur::PrepareSlurs(FunctorParams *functorParams)
+{
+    PrepareSlursParams *params = vrv_params_cast<PrepareSlursParams *>(functorParams);
+    assert(params);
+
+    // If curve direction is prescribed or was calculated before, use it
+    if (this->HasCurvedir()) {
+        this->SetDrawingCurvedir(
+            (this->GetCurvedir() == curvature_CURVEDIR_above) ? curvature_CURVEDIR_above : curvature_CURVEDIR_below);
+    }
+    if (this->HasDrawingCurvedir()) return FUNCTOR_CONTINUE;
+
+    // Retrieve boundary, staves and system
+    LayerElement *start = this->GetStart();
+    LayerElement *end = this->GetEnd();
+    if (!start || !end) {
+        this->SetDrawingCurvedir(curvature_CURVEDIR_above);
+        return FUNCTOR_CONTINUE;
+    }
+
+    std::vector<Staff *> staffList = this->GetTstampStaves(this->GetStartMeasure(), this);
+    if (staffList.empty()) {
+        this->SetDrawingCurvedir(curvature_CURVEDIR_above);
+        return FUNCTOR_CONTINUE;
+    }
+    Staff *staff = staffList.at(0);
+    Staff *crossStaff = this->GetBoundaryCrossStaff();
+
+    System *system = vrv_cast<System *>(staff->GetFirstAncestor(SYSTEM));
+    assert(system);
+
+    if (!start->Is(TIMESTAMP_ATTR) && !end->Is(TIMESTAMP_ATTR) && system->HasMixedDrawingStemDir(start, end)) {
+        // Handle mixed stem direction
+        if (crossStaff) {
+            const curvature_CURVEDIR curveDir = system->GetPreferredCurveDirection(start, end, this);
+            this->SetDrawingCurvedir(curveDir != curvature_CURVEDIR_NONE ? curveDir : curvature_CURVEDIR_above);
+        }
+        else {
+            this->SetDrawingCurvedir(curvature_CURVEDIR_above);
+        }
+    }
+    else {
+        // Handle uniform stem direction and time stamp boundaries
+        StemmedDrawingInterface *startStemDrawInterface = dynamic_cast<StemmedDrawingInterface *>(start);
+        data_STEMDIRECTION startStemDir = STEMDIRECTION_NONE;
+        if (startStemDrawInterface) {
+            startStemDir = startStemDrawInterface->GetDrawingStemDir();
+        }
+
+        const int center = staff->GetDrawingY() - params->m_doc->GetDrawingStaffSize(staff->m_drawingStaffSize) / 2;
+        const bool isAboveStaffCenter = (start->GetDrawingY() > center);
+        const curvature_CURVEDIR curveDir
+            = this->GetPreferredCurveDirection(params->m_doc, startStemDir, isAboveStaffCenter);
+        this->SetDrawingCurvedir(curveDir != curvature_CURVEDIR_NONE ? curveDir : curvature_CURVEDIR_above);
+    }
 
     return FUNCTOR_CONTINUE;
 }
