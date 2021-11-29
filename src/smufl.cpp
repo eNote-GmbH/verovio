@@ -484,6 +484,6 @@ const std::map<std::string, wchar_t> Resources::s_smuflNames = {
 };
 
 /** The number of glyphs for verification **/
-// 455
+// 458
 
 } // namespace vrv

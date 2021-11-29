@@ -483,7 +483,7 @@ enum {
 };
 
 /** The number of glyphs for verification **/
-#define SMUFL_COUNT 455
+#define SMUFL_COUNT 458
 
 } // namespace vrv
 
