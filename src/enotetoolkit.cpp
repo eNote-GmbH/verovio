@@ -48,10 +48,7 @@ std::vector<Measure *> EnoteToolkit::FindAllMeasures()
 
 std::vector<Measure *> EnoteToolkit::FindAllMeasures(Object *parent)
 {
-    ListOfObjects objects;
-    ClassIdComparison comparison(MEASURE);
-    parent->FindAllDescendantByComparison(&objects, &comparison);
-
+    ListOfObjects objects = parent->FindAllDescendantsByType(MEASURE, false);
     std::vector<Measure *> measures;
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(measures),
         [](Object *object) { return vrv_cast<Measure *>(object); });
@@ -60,10 +57,7 @@ std::vector<Measure *> EnoteToolkit::FindAllMeasures(Object *parent)
 
 std::vector<Page *> EnoteToolkit::FindAllPages()
 {
-    ListOfObjects objects;
-    ClassIdComparison comparison(PAGE);
-    m_doc.FindAllDescendantByComparison(&objects, &comparison);
-
+    ListOfObjects objects = m_doc.FindAllDescendantsByType(PAGE, false);
     std::vector<Page *> pages;
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(pages),
         [](Object *object) { return vrv_cast<Page *>(object); });
