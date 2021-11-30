@@ -11,7 +11,6 @@ MAC_CATALYST_ARCHIVE="$TMP_DIR/macCatalyst.xcarchive"
 XCFRAMEWORK="$TMP_DIR/VerovioFramework.xcframework"
 XCFRAMEWORK_ZIP="$XCFRAMEWORK.zip"
 VEROVIO_COMMIT_HASH="$(git rev-parse --short HEAD)"
-AWS_PUBLIC_LINK="https://enote-macos-app.s3.eu-central-1.amazonaws.com/verovio/$VEROVIO_COMMIT_HASH.zip"
 VEROVIO_VERSION="$(cat codemeta.json | jq .softwareVersion | sed -e "s/-dev//g" | sed -e "s/\"//g" | sed -e "s/.[0-9]$//g" )"
 
 # Emergency exit function
@@ -69,11 +68,6 @@ function compress_xcframework {
     popd
 }
 
-function upload_to_s3 {
-    aws s3 cp "$XCFRAMEWORK_ZIP" "s3://enote-macos-app/verovio/$VEROVIO_COMMIT_HASH.zip" || die "Can't upload to S3"
-    echo "$AWS_PUBLIC_LINK"
-}
-
 function update_swift_package {
     # clone swift package
     PROJ_DIR="$(pwd)"
@@ -85,10 +79,6 @@ function update_swift_package {
     cd Verovio-XCFramework
     cp "$PROJ_DIR/$XCFRAMEWORK_ZIP" ./
     CHECKSUM="$(swift package compute-checksum VerovioFramework.xcframework.zip)"
-    rm VerovioFramework.xcframework.zip
-
-    # modify Package.swift
-    cat Package.template | sed -e "s|ZIP_URL|$AWS_PUBLIC_LINK|g" | sed -e "s/ZIP_CHECKSUM/$CHECKSUM/g" > Package.swift
 
     # calculate tag for swit package manager
     if [ ! -d versions ]; then
@@ -104,6 +94,11 @@ function update_swift_package {
     echo $BUILD_NR > "$VEROVIO_VERSION"
     popd
 
+    # modify Package.swift
+    RELEASE_NUM="v$VEROVIO_VERSION.$BUILD_NR"
+    GITHUB_LINK="https://github.com/eNote-GmbH/Verovio-XCFramework/releases/download/$RELEASE_NUM/VerovioFramework.xcframework.zip"
+    cat Package.template | sed -e "s|ZIP_URL|$GITHUB_LINK|g" | sed -e "s/ZIP_CHECKSUM/$CHECKSUM/g" > Package.swift
+
     # commit changes to swift package
     git add .
     git commit -am "Binary framework for verovio commit $VEROVIO_COMMIT_HASH"
@@ -111,10 +106,16 @@ function update_swift_package {
 
     # Add tag with verovio commit hash 
     git tag "verovio-$VEROVIO_COMMIT_HASH"
-    git tag "v$VEROVIO_VERSION.$BUILD_NR"
+    git tag "$RELEASE_NUM"
 
     # push tags
     git push --tags
+
+    # create release
+    gh release create "$RELEASE_NUM" --notes "Auto deploy $RELEASE_NUM" VerovioFramework.xcframework.zip
+
+    # clear tmp repo
+    rm VerovioFramework.xcframework.zip
     cd "$PROJ_DIR"
     rm -rf "$TMP"
 }
@@ -127,7 +128,6 @@ function main {
     build_macos
     build_xcframework
     compress_xcframework
-    upload_to_s3
     update_swift_package
 }
 
