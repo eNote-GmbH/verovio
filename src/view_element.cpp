@@ -249,9 +249,8 @@ void View::DrawAccid(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
 
     dc->StartGraphic(element, "", element->GetUuid());
 
-    /************** editorial accidental **************/
-
-    std::wstring accidStr = accid->GetSymbolStr();
+    const data_NOTATIONTYPE notationType = staff->m_drawingNotationType;
+    std::wstring accidStr = accid->GetSymbolStr(notationType);
 
     int x = accid->GetDrawingX();
     int y = accid->GetDrawingY();
@@ -271,7 +270,7 @@ void View::DrawAccid(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
         }
         TextExtend extend;
         dc->SetFont(m_doc->GetDrawingSmuflFont(staff->m_drawingStaffSize, accid->GetDrawingCueSize()));
-        dc->GetSmuflTextExtent(accid->GetSymbolStr(), &extend);
+        dc->GetSmuflTextExtent(accid->GetSymbolStr(notationType), &extend);
         dc->ResetFont();
         y += extend.m_descent + m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
     }
@@ -715,16 +714,8 @@ void View::DrawCustos(DeviceContext *dc, LayerElement *element, Layer *layer, St
 
     dc->StartGraphic(element, "", element->GetUuid());
 
-    int sym = 0;
     // Select glyph to use for this custos
-    switch (staff->m_drawingNotationType) {
-        case NOTATIONTYPE_neume:
-            sym = SMUFL_EA06_chantCustosStemUpPosMiddle; // chantCustosStemUpPosMiddle
-            break;
-        default:
-            sym = SMUFL_EA02_mensuralCustosUp; // mensuralCustosUp
-            break;
-    }
+    const int sym = custos->GetCustosGlyph(staff->m_drawingNotationType);
 
     int x, y;
     if (custos->HasFacs() && m_doc->GetType() == Facs) {
@@ -1227,12 +1218,15 @@ void View::DrawMultiRest(DeviceContext *dc, LayerElement *element, Layer *layer,
     // We do not support more than three chars
     const int num = std::min(multiRest->GetNum(), 999);
 
+    const int mutliRestThickness
+        = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_doc->GetOptions()->m_multiRestThickness.GetValue();
     // Position centered in staff
-    int y2 = staff->GetDrawingY() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * staff->m_drawingLines;
+    int y2 = staff->GetDrawingY() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - 1)
+        - mutliRestThickness / 2;
     if (multiRest->HasLoc()) {
         y2 -= m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - 1 - multiRest->GetLoc());
     }
-    int y1 = y2 + m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
+    int y1 = y2 + mutliRestThickness;
 
     if (multiRest->UseBlockStyle(m_doc)) {
         // This is 1/2 the length of the black rectangle

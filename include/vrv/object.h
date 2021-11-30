@@ -436,6 +436,11 @@ public:
     bool DeleteChild(Object *child);
 
     /**
+     * Returns all ancestors
+     */
+    ListOfObjects GetAncestors() const;
+
+    /**
      * Return the first ancestor of the specified type.
      * The maxSteps parameter limits the search to a certain number of level if not -1.
      */
@@ -539,6 +544,11 @@ public:
     static std::string GenerateRandUuid();
 
     static bool sortByUlx(Object *a, Object *b);
+
+    /**
+     * @Return true if left appears before right in preorder traversal
+     */
+    static bool IsPreOrdered(Object *left, Object *right);
 
     //----------//
     // Functors //
@@ -802,6 +812,11 @@ public:
      * Calculate the x position of tuplet brackets and num
      */
     virtual int AdjustTupletsX(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Calculate the slur direction
+     */
+    virtual int PrepareSlurs(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     ///@}
 
@@ -1112,6 +1127,11 @@ public:
      * Processed by staff/layer after that
      */
     virtual int PrepareDelayedTurns(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Functor for setting enlosure for the dynamics by adding corresponding text children to it
+     */
+    virtual int PrepareDynamEnclosure(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
      * Functor for setting Measure of Ending

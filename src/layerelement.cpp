@@ -152,6 +152,8 @@ LayerElement *LayerElement::ThisOrSameasAsLink()
 
 bool LayerElement::IsGraceNote()
 {
+    // First, regardless of the type, check whether it's part of GRACEGRP
+    if (this->GetFirstAncestor(GRACEGRP)) return true;
     // For note, we need to look at it or at the parent chord
     if (this->Is(NOTE)) {
         Note const *note = vrv_cast<Note const *>(this);
@@ -228,6 +230,15 @@ Beam *LayerElement::IsInBeam()
         }
     }
     return NULL;
+}
+
+int LayerElement::GetOriginalLayerN()
+{
+    int layerN = this->GetAlignmentLayerN();
+    if (layerN < 0) {
+        layerN = vrv_cast<Layer *>(this->GetFirstAncestor(LAYER))->GetN();
+    }
+    return layerN;
 }
 
 Staff *LayerElement::GetCrossStaff(Layer *&layer) const
@@ -1104,6 +1115,9 @@ int LayerElement::AlignHorizontally(FunctorParams *functorParams)
         assert(note);
         m_alignment = note->GetAlignment();
     }
+    else if (this->Is(GRACEGRP)) {
+        return FUNCTOR_CONTINUE;
+    }
     else if (this->IsGraceNote()) {
         type = ALIGNMENT_GRACENOTE;
     }
@@ -1189,17 +1203,23 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
             else
                 m_alignment->AddToAccidSpace(accid);
         }
+        else if (this->GetFirstAncestor(CUSTOS)) {
+            m_alignment->AddToAccidSpace(
+                accid); // If this is not added, the accidental is drawn an octave below the custos
+        }
         else {
-            Custos *custos = vrv_cast<Custos *>(this->GetFirstAncestor(CUSTOS));
-            if (custos) {
-                m_alignment->AddToAccidSpace(
-                    accid); // If this is not added, the custos is drawn an octave below the custos
-            }
-            else {
-                // do something for accid that are not children of a note - e.g., mensural?
-                this->SetDrawingYRel(
-                    staffY->CalcPitchPosYRel(params->m_doc, accid->CalcDrawingLoc(layerY, layerElementY)));
-            }
+            // do something for accid that are not children of a note - e.g., mensural?
+            this->SetDrawingYRel(staffY->CalcPitchPosYRel(params->m_doc, accid->CalcDrawingLoc(layerY, layerElementY)));
+        }
+        // override if staff position is set explicitly
+        if (accid->HasPloc() && accid->HasOloc()) {
+            accid->SetDrawingLoc(
+                PitchInterface::CalcLoc(accid->GetPloc(), accid->GetOloc(), layerY->GetClefLocOffset(layerElementY)));
+            this->SetDrawingYRel(staffY->CalcPitchPosYRel(params->m_doc, accid->GetDrawingLoc()));
+        }
+        else if (accid->HasLoc()) {
+            accid->SetDrawingLoc(accid->GetLoc());
+            this->SetDrawingYRel(staffY->CalcPitchPosYRel(params->m_doc, accid->GetLoc()));
         }
     }
     else if (this->Is(CHORD)) {
@@ -1960,7 +1980,7 @@ int LayerElement::PrepareDrawingCueSize(FunctorParams *functorParams)
 {
     if (this->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
-    if (this->IsGraceNote() || this->GetFirstAncestor(GRACEGRP)) {
+    if (this->IsGraceNote()) {
         m_drawingCueSize = true;
     }
     // This cover the case when the @size is given on the element
@@ -2312,7 +2332,9 @@ int LayerElement::FindSpannedLayerElements(FunctorParams *functorParams)
         && (this->GetContentLeft() < params->m_maxPos)) {
 
         // We skip the start or end of the slur
-        if ((this == params->m_interface->GetStart()) || (this == params->m_interface->GetEnd())) {
+        LayerElement *start = params->m_interface->GetStart();
+        LayerElement *end = params->m_interface->GetEnd();
+        if ((this == start) || (this == end)) {
             return FUNCTOR_CONTINUE;
         }
 
@@ -2330,15 +2352,34 @@ int LayerElement::FindSpannedLayerElements(FunctorParams *functorParams)
         }
 
         // Skip if layer number is outside given bounds
-        int layerN = this->GetAlignmentLayerN();
-        if (layerN < 0) {
-            layerN = vrv_cast<Layer *>(this->GetFirstAncestor(LAYER))->GetN();
-        }
+        const int layerN = this->GetOriginalLayerN();
         if (params->m_minLayerN && (params->m_minLayerN > layerN)) {
             return FUNCTOR_CONTINUE;
         }
         if (params->m_maxLayerN && (params->m_maxLayerN < layerN)) {
             return FUNCTOR_CONTINUE;
+        }
+
+        // Skip elements aligned at start/end, but on a different staff
+        if (this->GetAlignment() == start->GetAlignment()) {
+            Layer *layer = NULL;
+            Staff *staff = this->GetCrossStaff(layer);
+            if (!staff) staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+            Staff *startStaff = start->GetCrossStaff(layer);
+            if (!startStaff) startStaff = vrv_cast<Staff *>(start->GetFirstAncestor(STAFF));
+            if (staff->GetN() != startStaff->GetN()) {
+                return FUNCTOR_CONTINUE;
+            }
+        }
+        if (this->GetAlignment() == end->GetAlignment()) {
+            Layer *layer = NULL;
+            Staff *staff = this->GetCrossStaff(layer);
+            if (!staff) staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+            Staff *endStaff = end->GetCrossStaff(layer);
+            if (!endStaff) endStaff = vrv_cast<Staff *>(end->GetFirstAncestor(STAFF));
+            if (staff->GetN() != endStaff->GetN()) {
+                return FUNCTOR_CONTINUE;
+            }
         }
 
         params->m_elements.push_back(this);
@@ -2499,6 +2540,11 @@ int LayerElement::GetRelativeLayerElement(FunctorParams *functorParams)
     if (Is(REST)) return params->m_isInNeighboringLayer ? FUNCTOR_STOP : FUNCTOR_SIBLINGS;
 
     return FUNCTOR_CONTINUE;
+}
+
+int LayerElement::PrepareSlurs(FunctorParams *)
+{
+    return FUNCTOR_SIBLINGS;
 }
 
 } // namespace vrv

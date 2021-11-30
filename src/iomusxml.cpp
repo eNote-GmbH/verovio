@@ -3224,6 +3224,10 @@ void MusicXmlInput::ReadMusicXmlNote(
                 turn->SetAccidlower(ConvertAccidentalToAccid(xmlAccidMark.text().as_string()));
             }
         }
+        if (xmlTurn.node().attribute("slash").as_bool()) {
+            turn->SetExternalsymbols(turn, "glyph.auth", "smufl");
+            turn->SetExternalsymbols(turn, "glyph.num", "U+E569");
+        }
         if (!std::strncmp(xmlTurn.node().name(), "inverted", 8)) {
             turn->SetForm(turnLog_FORM_lower);
             if (std::string(xmlTurn.node().name()).find("vertical") != std::string::npos) {
@@ -3498,8 +3502,7 @@ void MusicXmlInput::ReadMusicXmlTies(
 
     const std::string tieType = xmlTie.node().attribute("type").as_string();
     if ("stop" == tieType) { // add to stack if (endTie) or if pitch/oct match to open tie on m_tieStack
-        if (!m_tieStack.empty() && note->GetPname() == m_tieStack.back().second->GetPname()
-            && note->GetOct() == m_tieStack.back().second->GetOct()) {
+        if (!m_tieStack.empty() && note->IsEnharmonicWith(m_tieStack.back().second)) {
             m_tieStack.back().first->SetEndid("#" + note->GetUuid());
             m_tieStack.pop_back();
         }
