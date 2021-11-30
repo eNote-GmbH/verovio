@@ -11,7 +11,7 @@ MAC_CATALYST_ARCHIVE="$TMP_DIR/macCatalyst.xcarchive"
 XCFRAMEWORK="$TMP_DIR/VerovioFramework.xcframework"
 XCFRAMEWORK_ZIP="$XCFRAMEWORK.zip"
 VEROVIO_COMMIT_HASH="$(git rev-parse --short HEAD)"
-VEROVIO_VERSION="$(cat codemeta.json | jq .softwareVersion | sed -e "s/-dev//g" | sed -e "s/\"//g" | sed -e "s/.[0-9]$//g" )"
+VEROVIO_VERSION="$(cat codemeta.json | jq .softwareVersion | sed -e "s/-dev//g" | sed -e "s/\"//g" | sed -e "s/.[0-9]*$//g" )"
 
 # Emergency exit function
 function die {
