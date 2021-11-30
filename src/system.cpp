@@ -226,7 +226,7 @@ bool System::HasMixedDrawingStemDir(LayerElement *start, LayerElement *end)
     for (auto &measure : measures) {
         Object *curStart = (measure == measureStart) ? start : measure->GetFirst();
         Object *curEnd = (measure == measureEnd) ? end : measure->GetLast();
-        measure->FindAllDescendantBetween(&children, &matchType, curStart, curEnd, false);
+        measure->FindAllDescendantsBetween(&children, &matchType, curStart, curEnd, false);
     }
 
     Layer *layerStart = vrv_cast<Layer *>(start->GetFirstAncestor(LAYER));
@@ -276,7 +276,8 @@ curvature_CURVEDIR System::GetPreferredCurveDirection(LayerElement *start, Layer
     assert(layerStart);
 
     Functor findSpannedLayerElements(&Object::FindSpannedLayerElements);
-    Process(&findSpannedLayerElements, &findSpannedLayerElementsParams, NULL);
+    Functor findSpannedLayerElementsEnd(&Object::FindSpannedLayerElementsEnd);
+    this->Process(&findSpannedLayerElements, &findSpannedLayerElementsParams, &findSpannedLayerElementsEnd);
 
     curvature_CURVEDIR preferredDirection = curvature_CURVEDIR_NONE;
     for (auto element : findSpannedLayerElementsParams.m_elements) {

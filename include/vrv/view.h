@@ -83,6 +83,9 @@ class TupletBracket;
 class TupletNum;
 class Verse;
 
+// Helper enums
+enum class SlurHandling { Ignore, Initialize, Drawing };
+
 //----------------------------------------------------------------------------
 // View
 //----------------------------------------------------------------------------
@@ -180,9 +183,12 @@ public:
     ///@}
 
     /**
-     * Set whether slurs should be initialized when drawn
+     * Control how slurs are handled
      */
-    void ActivateSlurInitialization(bool active) { m_initializeSlurs = active; };
+    ///@{
+    SlurHandling GetSlurHandling() const { return m_slurHandling; }
+    void SetSlurHandling(SlurHandling slurHandling) { m_slurHandling = slurHandling; }
+    ///@}
 
 protected:
     /**
@@ -208,7 +214,7 @@ protected:
     void DrawBracketSq(DeviceContext *dc, int x, int y1, int y2, int staffSize);
     void DrawBrace(DeviceContext *dc, int x, int y1, int y2, int staffSize);
     void DrawBarLines(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp, BarLine *barLine, bool isLastMeasure);
-    void DrawBarLine(DeviceContext *dc, int y_top, int y_bottom, BarLine *barLine, data_BARRENDITION form,
+    void DrawBarLine(DeviceContext *dc, int yTop, int yBottom, BarLine *barLine, const data_BARRENDITION form,
         bool eraseIntersections = false);
     void DrawBarLineDots(DeviceContext *dc, Staff *staff, BarLine *barLine);
     void DrawLedgerLines(DeviceContext *dc, Staff *staff, const ArrayOfLedgerLines &lines, bool below, bool cueSize);
@@ -634,9 +640,9 @@ protected:
     ///@}
 
     /**
-     * Indicates whether slurs should be initialized when drawn
+     * Control the handling of slurs
      */
-    bool m_initializeSlurs;
+    SlurHandling m_slurHandling;
 
     /**
      * The current drawing score def.

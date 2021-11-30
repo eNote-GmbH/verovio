@@ -20,7 +20,7 @@ variables:
 build-osx:
   extends: .build-template
   tags:
-    - macos
+    - mac-ai
 
 build-linux:
   extends: .build-template
@@ -56,4 +56,3 @@ bridge:
     project: Verovio/verovio-humdrum-viewer
     branch: enote-develop
     strategy: depend
-

@@ -48,10 +48,7 @@ std::vector<Measure *> EnoteToolkit::FindAllMeasures()
 
 std::vector<Measure *> EnoteToolkit::FindAllMeasures(Object *parent)
 {
-    ListOfObjects objects;
-    ClassIdComparison comparison(MEASURE);
-    parent->FindAllDescendantByComparison(&objects, &comparison);
-
+    ListOfObjects objects = parent->FindAllDescendantsByType(MEASURE, false);
     std::vector<Measure *> measures;
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(measures),
         [](Object *object) { return vrv_cast<Measure *>(object); });
@@ -60,10 +57,7 @@ std::vector<Measure *> EnoteToolkit::FindAllMeasures(Object *parent)
 
 std::vector<Page *> EnoteToolkit::FindAllPages()
 {
-    ListOfObjects objects;
-    ClassIdComparison comparison(PAGE);
-    m_doc.FindAllDescendantByComparison(&objects, &comparison);
-
+    ListOfObjects objects = m_doc.FindAllDescendantsByType(PAGE, false);
     std::vector<Page *> pages;
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(pages),
         [](Object *object) { return vrv_cast<Page *>(object); });
@@ -73,7 +67,8 @@ std::vector<Page *> EnoteToolkit::FindAllPages()
 std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
 {
     std::vector<Page *> pages = this->FindAllPages();
-    if ((index < 1) || (index > pages.size())) {
+    const int pageCount = static_cast<int>(pages.size());
+    if ((index < 1) || (index > pageCount)) {
         vrv::LogWarning("Page not found.");
         return {};
     }
@@ -186,6 +181,7 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
     if (interface) {
         // Retrieve all measures
         std::vector<Measure *> measures = this->FindAllMeasures();
+        const int measureCount = static_cast<int>(measures.size());
 
         // See Object::PrepareTimestamps
         // Set the first timestamp
@@ -200,7 +196,7 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
         const data_MEASUREBEAT endTstamp = interface->GetTstamp2();
         int endIndex = startIndex;
         if (endTstamp.first > 0) {
-            if (startIndex + endTstamp.first < measures.size()) {
+            if (startIndex + endTstamp.first < measureCount) {
                 const auto iterEnd = std::next(iterStart, endTstamp.first);
                 measure = *iterEnd;
                 endIndex += endTstamp.first;
@@ -214,7 +210,7 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
 
         // See Object::FillStaffCurrentTimeSpanning
         // Check if element must be added or removed to m_timeSpanningElements in the staves
-        for (int index = 0; index < measures.size(); ++index) {
+        for (int index = 0; index < measureCount; ++index) {
             ArrayOfObjects *children = measures.at(index)->GetChildrenForModification();
             for (Object *child : *children) {
                 if (!child->Is(STAFF)) continue;
