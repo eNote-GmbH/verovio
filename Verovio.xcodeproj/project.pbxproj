@@ -1251,7 +1251,7 @@
 		BDEF9EC926725234008A3A47 /* caesura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDEF9EC626725234008A3A47 /* caesura.cpp */; };
 		BDEF9ECA26725234008A3A47 /* caesura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDEF9EC626725234008A3A47 /* caesura.cpp */; };
 		BDEF9ECC26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
-		BDEF9ECD26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
+		BDEF9ECD26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E73B37FB2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; };
 		E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E73B37FE2726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
