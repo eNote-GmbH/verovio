@@ -12,7 +12,7 @@
 		2D2A799A1A69812C000A441B /* chord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2D2A79991A69812C000A441B /* chord.cpp */; };
 		35F6580F24F92B6100C99A2D /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBCE24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; };
-		35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; };
+		35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */ = {isa = PBXBuildFile; fileRef = 35FDEBCD24B6DBC100AC1696 /* fing.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35FDEBD124B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD224B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD324B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
@@ -23,7 +23,7 @@
 		400FEDD5206FA74D000D3233 /* gracegrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400FEDD2206FA743000D3233 /* gracegrp.cpp */; };
 		400FEDD6206FA74D000D3233 /* gracegrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400FEDD2206FA743000D3233 /* gracegrp.cpp */; };
 		402197941F2E09DA00182DF1 /* ioabc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 402197931F2E09DA00182DF1 /* ioabc.cpp */; };
-		402492BE232E6FCB0017BB75 /* gracegrp.h in Headers */ = {isa = PBXBuildFile; fileRef = 400FEDD1206FA742000D3233 /* gracegrp.h */; };
+		402492BE232E6FCB0017BB75 /* gracegrp.h in Headers */ = {isa = PBXBuildFile; fileRef = 400FEDD1206FA742000D3233 /* gracegrp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		402492BF232E70000017BB75 /* gracegrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400FEDD2206FA743000D3233 /* gracegrp.cpp */; };
 		4026FBE4203C827E0076535E /* mnum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4026FBE3203C827D0076535E /* mnum.cpp */; };
 		403B050F244F3E2900EE4F71 /* gliss.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 403B050E244F3E2800EE4F71 /* gliss.cpp */; };
@@ -48,7 +48,7 @@
 		4067E4C81DDDAF0000C6E059 /* fermata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4067E4C71DDDAF0000C6E059 /* fermata.cpp */; };
 		406916DC23833770009E6B04 /* mspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406916DB2383376F009E6B04 /* mspace.cpp */; };
 		406916DE23833794009E6B04 /* mspace.h in Headers */ = {isa = PBXBuildFile; fileRef = 406916DD2383378F009E6B04 /* mspace.h */; };
-		406916DF23833795009E6B04 /* mspace.h in Headers */ = {isa = PBXBuildFile; fileRef = 406916DD2383378F009E6B04 /* mspace.h */; };
+		406916DF23833795009E6B04 /* mspace.h in Headers */ = {isa = PBXBuildFile; fileRef = 406916DD2383378F009E6B04 /* mspace.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		406916E02383379A009E6B04 /* mspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406916DB2383376F009E6B04 /* mspace.cpp */; };
 		406916E12383379B009E6B04 /* mspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406916DB2383376F009E6B04 /* mspace.cpp */; };
 		406916E22383379C009E6B04 /* mspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406916DB2383376F009E6B04 /* mspace.cpp */; };
@@ -1234,7 +1234,7 @@
 		BBC19FBF22B37CA000100F42 /* all.h in Headers */ = {isa = PBXBuildFile; fileRef = BBC19FBE22B37CA000100F42 /* all.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BBC19FC322B38C1400100F42 /* VerovioFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = BBC19FC222B38C1400100F42 /* VerovioFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BBC19FC922B39AC400100F42 /* git_commit.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D9C5F3A1ADBBBEB005D3031 /* git_commit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BDA81C21268B38760065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; };
+		BDA81C21268B38760065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BDA81C22268B38770065B802 /* metersiggrp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA81C20268B386C0065B802 /* metersiggrp.h */; };
 		BDA81C24268B38A10065B802 /* metersiggrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDA81C23268B38A10065B802 /* metersiggrp.cpp */; };
 		BDA81C25268B38A10065B802 /* metersiggrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDA81C23268B38A10065B802 /* metersiggrp.cpp */; };
@@ -1251,15 +1251,15 @@
 		BDEF9EC926725234008A3A47 /* caesura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDEF9EC626725234008A3A47 /* caesura.cpp */; };
 		BDEF9ECA26725234008A3A47 /* caesura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDEF9EC626725234008A3A47 /* caesura.cpp */; };
 		BDEF9ECC26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
-		BDEF9ECD26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; };
+		BDEF9ECD26725248008A3A47 /* caesura.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEF9ECB26725248008A3A47 /* caesura.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E73B37FB2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; };
-		E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; };
+		E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */ = {isa = PBXBuildFile; fileRef = E73B37FA2726B4470063B232 /* enotetoolkit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E73B37FE2726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
 		E73B37FF2726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
 		E73B38002726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
 		E73B38012726B4740063B232 /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E73B37FD2726B4740063B232 /* enotetoolkit.cpp */; };
 		E79ADDC426BD1AE900527E4B /* runtimeclock.h in Headers */ = {isa = PBXBuildFile; fileRef = E79ADDC326BD1AE900527E4B /* runtimeclock.h */; };
-		E79ADDC526BD1AE900527E4B /* runtimeclock.h in Headers */ = {isa = PBXBuildFile; fileRef = E79ADDC326BD1AE900527E4B /* runtimeclock.h */; };
+		E79ADDC526BD1AE900527E4B /* runtimeclock.h in Headers */ = {isa = PBXBuildFile; fileRef = E79ADDC326BD1AE900527E4B /* runtimeclock.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E79ADDC726BD645B00527E4B /* runtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E79ADDC626BD645B00527E4B /* runtimeclock.cpp */; };
 		E79ADDC826BD645B00527E4B /* runtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E79ADDC626BD645B00527E4B /* runtimeclock.cpp */; };
 		E79ADDC926BD645B00527E4B /* runtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E79ADDC626BD645B00527E4B /* runtimeclock.cpp */; };
