@@ -24,8 +24,8 @@ clang:
   tags:
     - mac-ai
   script:
-    - clang-format -n -Werror src/*
-    - clang-format -n -Werror include/vrv/*
+    - clang-format -n -Werror src/*.cpp
+    - clang-format -n -Werror include/vrv/*.h
 
 build-osx:
   extends: .build-template
