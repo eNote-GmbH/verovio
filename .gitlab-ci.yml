@@ -3,6 +3,7 @@ stages:
   - build
   - build-toolkit
   - build-viewer
+  - build-xc
   - deploy-viewer
   - deploy-editor
 
@@ -21,6 +22,15 @@ build-osx:
   extends: .build-template
   tags:
     - mac-ai
+
+build-xc-framework:
+  stage: build-xc
+  tags:
+    - mac-ai
+  script:
+    - ./build_xcframework.sh
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
 
 build-linux:
   extends: .build-template
