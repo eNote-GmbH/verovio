@@ -1,9 +1,10 @@
 ---
 stages:
+  - clang-format
+  - build-xc
   - build
   - build-toolkit
   - build-viewer
-  - build-xc
   - deploy-viewer
   - deploy-editor
 
@@ -17,6 +18,14 @@ variables:
     - cd tools
     - cmake ../cmake -DNO_ABC_SUPPORT=ON -DNO_HUMDRUM_SUPPORT=ON -DNO_PAE_SUPPORT=ON
     - make -j 10
+
+clang:
+  stage: clang-format
+  tags:
+    - mac-ai
+  script:
+    - clang-format -n -Werror src/*
+    - clang-format -n -Werror include/vrv/*
 
 build-osx:
   extends: .build-template
