@@ -667,6 +667,7 @@ public:
     OptionDbl m_lyricTopMinMargin;
     OptionBool m_lyricVerseCollapse;
     OptionDbl m_lyricWordSpace;
+    OptionDbl m_lyricLetterSpacing;
     OptionInt m_measureMinWidth;
     OptionInt m_mnumInterval;
     OptionIntMap m_multiRestStyle;

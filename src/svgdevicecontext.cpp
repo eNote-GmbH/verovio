@@ -854,8 +854,8 @@ void SvgDeviceContext::DrawText(const std::string &text, const std::wstring &wte
     if (m_fontStack.top()->GetPointSize() != 0) {
         textChild.append_attribute("font-size") = StringFormat("%dpx", m_fontStack.top()->GetPointSize()).c_str();
     }
-    if (m_fontStack.top()->GetInterval() != 0) {
-        textChild.append_attribute("letter-spacing") = StringFormat("%dpx", m_fontStack.top()->GetInterval()).c_str();
+    if (m_fontStack.top()->GetLetterSpacing() != 0) {
+        textChild.append_attribute("letter-spacing") = StringFormat("%dpx", m_fontStack.top()->GetLetterSpacing()).c_str();
     }
     if (m_fontStack.top()->GetStyle() != FONTSTYLE_NONE) {
         if (m_fontStack.top()->GetStyle() == FONTSTYLE_italic) {
@@ -937,8 +937,8 @@ void SvgDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, boo
             glyph->GetBoundingBox(gx, gy, w, h);
             x += w * m_fontStack.top()->GetPointSize() / glyph->GetUnitsPerEm();
         }
-        if (m_fontStack.top()->GetInterval() != 0) {
-            x += m_fontStack.top()->GetInterval();
+        if (m_fontStack.top()->GetMusicTextInterval() != 0) {
+            x += m_fontStack.top()->GetMusicTextInterval();
         }
     }
 }
