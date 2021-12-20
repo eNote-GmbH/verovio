@@ -29,7 +29,7 @@
 #include "slur.h"
 #include "staff.h"
 #include "syl.h"
-#include "systemboundary.h"
+#include "systemmilestone.h"
 #include "trill.h"
 #include "verse.h"
 #include "vrv.h"
@@ -876,6 +876,9 @@ int System::AdjustFloatingPositioners(FunctorParams *functorParams)
     params->m_classId = TRILL;
     m_systemAligner.Process(params->m_functor, params);
 
+    params->m_classId = FING;
+    m_systemAligner.Process(params->m_functor, params);
+
     params->m_classId = DYNAM;
     m_systemAligner.Process(params->m_functor, params);
 
@@ -900,9 +903,6 @@ int System::AdjustFloatingPositioners(FunctorParams *functorParams)
     m_systemAligner.Process(params->m_functor, params);
 
     params->m_classId = FERMATA;
-    m_systemAligner.Process(params->m_functor, params);
-
-    params->m_classId = FING;
     m_systemAligner.Process(params->m_functor, params);
 
     params->m_classId = DIR;
@@ -1087,7 +1087,7 @@ int System::CastOffEncoding(FunctorParams *functorParams)
     // We are starting a new system we need to cast off
     params->m_contentSystem = this;
     // Create the new system but do not add it to the page yet.
-    // It will be added when reaching a pb / sb or at the end of the score in PageElementEnd::CastOffEncoding
+    // It will be added when reaching a pb / sb or at the end of the score in PageMilestoneEnd::CastOffEncoding
     assert(!params->m_currentSystem);
     params->m_currentSystem = new System();
 

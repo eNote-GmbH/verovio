@@ -30,7 +30,7 @@
 #include "staffdef.h"
 #include "syl.h"
 #include "system.h"
-#include "systemboundary.h"
+#include "systemmilestone.h"
 #include "tempo.h"
 #include "tie.h"
 #include "timeinterface.h"
@@ -52,6 +52,8 @@ static const ClassRegistrar<Measure> s_factory("measure", MEASURE);
 Measure::Measure(bool measureMusic, int logMeasureNb)
     : Object(MEASURE, "measure-")
     , AttBarring()
+    , AttCoordX1()
+    , AttCoordX2()
     , AttMeasureLog()
     , AttMeterConformanceBar()
     , AttNNumberLike()
@@ -59,6 +61,8 @@ Measure::Measure(bool measureMusic, int logMeasureNb)
     , AttTyped()
 {
     RegisterAttClass(ATT_BARRING);
+    RegisterAttClass(ATT_COORDX1);
+    RegisterAttClass(ATT_COORDX2);
     RegisterAttClass(ATT_MEASURELOG);
     RegisterAttClass(ATT_METERCONFORMANCEBAR);
     RegisterAttClass(ATT_NNUMBERLIKE);
@@ -111,6 +115,8 @@ void Measure::CloneReset()
 void Measure::Reset()
 {
     Object::Reset();
+    ResetCoordX1();
+    ResetCoordX2();
     ResetMeasureLog();
     ResetMeterConformanceBar();
     ResetNNumberLike();
@@ -1291,23 +1297,23 @@ int Measure::FillStaffCurrentTimeSpanningEnd(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Measure::PrepareBoundaries(FunctorParams *functorParams)
+int Measure::PrepareMilestones(FunctorParams *functorParams)
 {
-    PrepareBoundariesParams *params = vrv_params_cast<PrepareBoundariesParams *>(functorParams);
+    PrepareMilestonesParams *params = vrv_params_cast<PrepareMilestonesParams *>(functorParams);
     assert(params);
 
-    std::vector<SystemElementStartInterface *>::iterator iter;
-    for (iter = params->m_startBoundaries.begin(); iter != params->m_startBoundaries.end(); ++iter) {
+    std::vector<SystemMilestoneInterface *>::iterator iter;
+    for (iter = params->m_startMilestones.begin(); iter != params->m_startMilestones.end(); ++iter) {
         (*iter)->SetMeasure(this);
     }
-    params->m_startBoundaries.clear();
+    params->m_startMilestones.clear();
 
     if (params->m_currentEnding) {
         // Set the ending to each measure in between
         m_drawingEnding = params->m_currentEnding;
     }
 
-    // Keep a pointer to the measure for when we are reaching the end (see SystemElementEnd::PrepareBoundaries)
+    // Keep a pointer to the measure for when we are reaching the end (see SystemMilestoneEnd::PrepareMilestones)
     params->m_lastMeasure = this;
 
     return FUNCTOR_CONTINUE;
