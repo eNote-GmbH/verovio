@@ -1216,6 +1216,9 @@ void Toolkit::RedoLayout()
     if (m_options->m_breaks.GetValue() == BREAKS_line) {
         m_doc.CastOffLineDoc();
     }
+    else if (m_options->m_breaks.GetValue() == BREAKS_encoded) {
+        m_doc.CastOffEncodingDoc();
+    }
     else if (m_options->m_breaks.GetValue() == BREAKS_smart) {
         m_doc.CastOffSmartDoc();
     }
