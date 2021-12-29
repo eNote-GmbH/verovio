@@ -40,6 +40,7 @@
 
 #include "glyph.h"
 #include "smufl.h"
+#include "smufl_font.h"
 #include "vrvdef.h"
 
 //----------------------------------------------------------------------------
@@ -83,6 +84,9 @@ bool Resources::InitFonts()
     if (!LoadFont("Bravura")) LogError("Bravura font could not be loaded.");
     // The Leipzig as the default font
     if (!LoadFont("Leipzig")) LogError("Leipzig font could not be loaded.");
+
+    //SmuflFont font;
+    //font.Load("Leipzig");
 
     if (s_font.size() < SMUFL_COUNT) {
         LogError("Expected %d default SMuFL glyphs but could load only %d.", SMUFL_COUNT, s_font.size());

@@ -36,7 +36,8 @@ public:
     ///@{
     Glyph();
     Glyph(std::string path, std::string codeStr);
-    Glyph(int unitsPerEm);
+    explicit Glyph(int unitsPerEm);
+    explicit Glyph(const std::string& codeStr);
     virtual ~Glyph();
     ///@}
 
@@ -50,8 +51,13 @@ public:
      */
     void SetBoundingBox(double x, double y, double w, double h);
 
-    /** Get the units per EM */
+    /**
+     * @name Setter and getter for the units per EM 
+     */
+    ///@{
     int GetUnitsPerEm() const { return m_unitsPerEm; }
+    void SetUnitsPerEm(int unitsPerEm) { m_unitsPerEm = unitsPerEm; }
+    ///@}
 
     /** Get the path */
     std::string GetPath() { return m_path; }

@@ -86,6 +86,17 @@ Glyph::Glyph(int unitsPerEm)
     m_codeStr = "[unset]";
 }
 
+Glyph::Glyph(const std::string &codeStr)
+{
+    m_x = 0;
+    m_y = 0;
+    m_width = 0;
+    m_height = 0;
+    m_horizAdvX = 0;
+    m_unitsPerEm = 20480;
+    m_codeStr = codeStr;
+}
+
 Glyph::~Glyph() {}
 
 void Glyph::SetBoundingBox(double x, double y, double w, double h)
