@@ -32,6 +32,7 @@
 #include "tabgrp.h"
 #include "tie.h"
 #include "transposition.h"
+#include "tuning.h"
 #include "verse.h"
 #include "vrv.h"
 
@@ -591,7 +592,7 @@ void Note::CalcMIDIPitch(int shift)
     if (this->HasPnum()) {
         m_MIDIPitch = this->GetPnum();
     }
-    else {
+    else if (this->HasPname() || this->HasPnameGes()) {
         int midiBase = 0;
         data_PITCHNAME pname = this->GetPname();
         if (this->HasPnameGes()) pname = this->GetPnameGes();
@@ -616,6 +617,18 @@ void Note::CalcMIDIPitch(int shift)
         if (this->HasOctGes()) oct = this->GetOctGes();
 
         m_MIDIPitch = midiBase + (oct + 1) * 12;
+    }
+    else if (this->HasTabCourse()) {
+        // tablature
+        Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+        assert(staff);
+        if (staff->m_drawingTuning) {
+            m_MIDIPitch = staff->m_drawingTuning->CalcPitchNumber(
+                this->GetTabCourse(), this->GetTabFret(), staff->m_drawingNotationType);
+        }
+    }
+    else {
+        m_MIDIPitch = 0;
     }
 }
 
@@ -1179,9 +1192,6 @@ int Note::CalcLedgerLines(FunctorParams *functorParams)
     const int extension = params->m_doc->GetDrawingLedgerLineExtension(staffSize, drawingCueSize);
     const int left = this->GetDrawingX() - extension - staffX;
     int right = this->GetDrawingX() + 2 * radius + extension - staffX;
-    if (this->GetDrawingDur() == DUR_MX) {
-        right += 2 * radius;
-    }
 
     if (left > right) return FUNCTOR_CONTINUE;
 

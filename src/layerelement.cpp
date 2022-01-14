@@ -210,7 +210,7 @@ FTrem *LayerElement::IsInFTrem()
 
 Beam *LayerElement::IsInBeam()
 {
-    if (!this->Is({ CHORD, NOTE, STEM })) return NULL;
+    if (!this->Is({ CHORD, NOTE, TABGRP, STEM })) return NULL;
     Beam *beamParent = vrv_cast<Beam *>(this->GetFirstAncestor(BEAM));
     if (beamParent != NULL) {
         if (!this->IsGraceNote()) return beamParent;
@@ -1947,7 +1947,9 @@ int LayerElement::AdjustXPos(FunctorParams *functorParams)
         [this](const std::pair<LayerElement *, LayerElement *> &pair) { return pair.second == this; });
     if (it != params->m_measureTieEndpoints.end()) {
         const int minTieLength = params->m_doc->GetOptions()->m_tieMinLength.GetValue() * drawingUnit;
-        const int currentTieLength = it->second->GetContentLeft() - it->first->GetContentRight() - drawingUnit;
+        const int leftXPos = it->first->HasContentBB() ? it->first->GetContentRight() : it->first->GetDrawingX();
+        const int rightXPos = it->second->HasContentBB() ? it->second->GetContentLeft() : it->second->GetDrawingX();
+        const int currentTieLength = rightXPos - leftXPos - drawingUnit;
         if ((currentTieLength < minTieLength)
             && ((it->first->GetFirstAncestor(CHORD) != NULL) || (this->GetFirstAncestor(CHORD) != NULL)
                 || (it->first->FindDescendantByType(FLAG) != NULL))) {
@@ -2413,11 +2415,16 @@ int LayerElement::CalcOnsetOffset(FunctorParams *functorParams)
         if (note->IsGraceNote()) return FUNCTOR_CONTINUE;
 
         Chord *chord = note->IsChordTone();
+        TabGrp *tabGrp = note->IsTabGrpNote();
 
         // If the note has a @dur or a @dur.ges, take it into account
         // This means that overwriting only @dots or @dots.ges will not be taken into account
         if (chord && !note->HasDur() && !note->HasDurGes()) {
             incrementScoreTime = chord->GetAlignmentDuration(
+                params->m_currentMensur, params->m_currentMeterSig, true, params->m_notationType);
+        }
+        else if (tabGrp && !note->HasDur() && !note->HasDurGes()) {
+            incrementScoreTime = tabGrp->GetAlignmentDuration(
                 params->m_currentMensur, params->m_currentMeterSig, true, params->m_notationType);
         }
         else {
@@ -2442,8 +2449,9 @@ int LayerElement::CalcOnsetOffset(FunctorParams *functorParams)
         storeNote->SetScoreTimeOffset(params->m_currentScoreTime + incrementScoreTime);
         storeNote->SetRealTimeOffsetSeconds(params->m_currentRealTimeSeconds + realTimeIncrementSeconds);
 
-        // increase the currentTime accordingly, but only if not in a chord - checkit with note->IsChordTone()
-        if (!(note->IsChordTone())) {
+        // increase the currentTime accordingly, but only if not in a chord or tabGrp - checkit with note->IsChordTone()
+        // or note->IsTabGrpNote()
+        if (!(note->IsChordTone()) && !(note->IsTabGrpNote())) {
             params->m_currentScoreTime += incrementScoreTime;
             params->m_currentRealTimeSeconds += realTimeIncrementSeconds;
         }
@@ -2544,6 +2552,30 @@ int LayerElement::GetRelativeLayerElement(FunctorParams *functorParams)
 int LayerElement::PrepareSlurs(FunctorParams *)
 {
     return FUNCTOR_SIBLINGS;
+}
+
+int LayerElement::PrepareDuration(FunctorParams *functorParams)
+{
+    PrepareDurationParams *params = vrv_params_cast<PrepareDurationParams *>(functorParams);
+    assert(params);
+
+    DurationInterface *durInterface = this->GetDurationInterface();
+    if (durInterface) {
+        durInterface->SetDurDefault(params->m_durDefault);
+        // Check if there is a duration default for the staff
+        if (!params->m_durDefaultForStaffN.empty()) {
+            Layer *layer = NULL;
+            Staff *staff = this->GetCrossStaff(layer);
+            if (!staff) staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+            assert(staff);
+
+            if (params->m_durDefaultForStaffN.count(staff->GetN()) > 0) {
+                durInterface->SetDurDefault(params->m_durDefaultForStaffN.at(staff->GetN()));
+            }
+        }
+    }
+
+    return FUNCTOR_CONTINUE;
 }
 
 } // namespace vrv
