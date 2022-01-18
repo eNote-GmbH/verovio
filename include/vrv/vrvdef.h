@@ -65,6 +65,8 @@ enum MEIVersion { MEI_UNDEFINED = 0, MEI_2013, MEI_3_0_0, MEI_4_0_0, MEI_4_0_1, 
 #define MIDI_VELOCITY 90
 #define MIDI_TEMPO 120
 
+#define UNACC_GRACENOTE_DUR 27 // in milliseconds
+
 //----------------------------------------------------------------------------
 // Object defines
 //----------------------------------------------------------------------------
@@ -612,7 +614,7 @@ enum { KEY_LEFT = 37, KEY_UP = 38, KEY_RIGHT = 39, KEY_DOWN = 40 };
 // Temporary - to be made an option?
 //----------------------------------------------------------------------------
 
-#define TABLATURE_STAFF_RATIO 1.3
+#define TABLATURE_STAFF_RATIO 1.75
 
 #define SUPER_SCRIPT_FACTOR 0.58
 #define SUPER_SCRIPT_POSITION -0.20 // lowered down from the midline
