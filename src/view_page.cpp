@@ -413,7 +413,8 @@ void View::DrawStaffDefLabels(DeviceContext *dc, Measure *measure, StaffGrp *sta
         int y = staff->GetDrawingY()
             - (staffDef->GetLines() * m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) / 2);
 
-        this->DrawLabels(dc, scoreDef, staffDef, x - space, y, abbreviations, staff->m_drawingStaffSize, 2 * space);
+        const int staffSize = staff->GetDrawingStaffNotationSize();
+        this->DrawLabels(dc, scoreDef, staffDef, x - space, y, abbreviations, staffSize, 2 * space);
     }
 }
 
@@ -1224,9 +1225,11 @@ void View::DrawStaffLines(DeviceContext *dc, Staff *staff, Measure *measure, Sys
             y2 -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
         }
         else {
+            const bool isFrenchOrItalianTablature = (staff->IsTabLuteFrench() || staff->IsTabLuteItalian());
             SegmentedLine line(x1, x2);
-            // We do not need to do this during layout calculation - and only with tablature
-            if (!dc->Is(BBOX_DEVICE_CONTEXT) && staff->IsTablature()) {
+            // We do not need to do this during layout calculation - and only with tablature but not for French or
+            // Italian tablature
+            if (!dc->Is(BBOX_DEVICE_CONTEXT) && staff->IsTablature() && !isFrenchOrItalianTablature) {
                 Object fullLine;
                 fullLine.SetParent(system);
                 fullLine.UpdateContentBBoxY(y1 + (lineWidth / 2), y1 - (lineWidth / 2));

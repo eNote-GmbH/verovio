@@ -625,12 +625,13 @@ double LayerElement::GetAlignmentDuration(
         return 0.0;
     }
 
-    if (this->HasSameasLink() && this->GetSameasLink()->IsLayerElement()) {
-        LayerElement *sameas = vrv_cast<LayerElement *>(this->GetSameasLink());
-        assert(sameas);
+    // Only resolve simple sameas links to avoid infinite recursion
+    LayerElement *sameas = dynamic_cast<LayerElement *>(this->GetSameasLink());
+    if (sameas && !sameas->HasSameasLink()) {
         return sameas->GetAlignmentDuration(mensur, meterSig, notGraceOnly, notationType);
     }
-    else if (this->HasInterface(INTERFACE_DURATION)) {
+
+    if (this->HasInterface(INTERFACE_DURATION)) {
         int num = 1;
         int numbase = 1;
         Tuplet *tuplet = dynamic_cast<Tuplet *>(this->GetFirstAncestor(TUPLET, MAX_TUPLET_DEPTH));
@@ -1430,6 +1431,15 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
         rest->SetDrawingLoc(loc);
         this->SetDrawingYRel(staffY->CalcPitchPosYRel(params->m_doc, loc));
     }
+    else if (this->Is(TABDURSYM)) {
+        int yRel = 0;
+        double spacingRatio = 1.0;
+        if (staffY->IsTabLuteFrench()) {
+            spacingRatio = 2.0;
+        }
+        yRel += params->m_doc->GetDrawingUnit(staffY->m_drawingStaffSize) * spacingRatio;
+        this->SetDrawingYRel(yRel);
+    }
 
     return FUNCTOR_CONTINUE;
 }
@@ -1704,7 +1714,7 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(Doc *doc,
         else if (this->Is(NOTE)) {
             Note *currentNote = vrv_cast<Note *>(this);
             assert(currentNote);
-            if ((currentNote->GetDrawingDur() == DUR_1) && otherElements.at(i)->Is(STEM)) {
+            if ((currentNote->GetDrawingDur() == DUR_1) && otherElements.at(i)->Is(STEM) && (shift == 0)) {
                 const int horizontalMargin = doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
                 Stem *stem = vrv_cast<Stem *>(otherElements.at(i));
                 data_STEMDIRECTION stemDir = stem->GetDrawingStemDir();
@@ -2489,9 +2499,10 @@ int LayerElement::GenerateMIDI(FunctorParams *functorParams)
 
     if (this->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
-    if (this->HasSameasLink()) {
-        assert(this->GetSameasLink());
-        this->GetSameasLink()->Process(params->m_functor, functorParams);
+    // Only resolve simple sameas links to avoid infinite recursion
+    LayerElement *sameas = dynamic_cast<LayerElement *>(this->GetSameasLink());
+    if (sameas && !sameas->HasSameasLink()) {
+        sameas->Process(params->m_functor, functorParams);
     }
 
     return FUNCTOR_CONTINUE;
@@ -2504,9 +2515,10 @@ int LayerElement::GenerateTimemap(FunctorParams *functorParams)
 
     if (this->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
-    if (this->HasSameasLink()) {
-        assert(this->GetSameasLink());
-        this->GetSameasLink()->Process(params->m_functor, functorParams);
+    // Only resolve simple sameas links to avoid infinite recursion
+    LayerElement *sameas = dynamic_cast<LayerElement *>(this->GetSameasLink());
+    if (sameas && !sameas->HasSameasLink()) {
+        sameas->Process(params->m_functor, functorParams);
     }
 
     return FUNCTOR_CONTINUE;

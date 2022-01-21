@@ -55,7 +55,6 @@ void BeamSegment::Reset()
 
     m_beamSlope = 0.0;
     m_verticalCenter = 0;
-    m_extendedToCenter = false;
     m_ledgerLinesAbove = 0;
     m_ledgerLinesBelow = 0;
     m_uniformStemLength = 0;
@@ -90,20 +89,34 @@ void BeamSegment::CalcTabBeam(
 
     // Calculate the y position of the beam - this currently need to be inline with the code in View::DrawTabGrp that
     // draws the stems.
-    int glyphSize = staff->m_drawingStaffSize / TABLATURE_STAFF_RATIO;
+    int glyphSize = staff->GetDrawingStaffNotationSize();
     beamInterface->m_fractionSize = glyphSize * 2 / 3;
-    int height = doc->GetGlyphHeight(SMUFL_EBA8_luteDurationHalf, glyphSize, true);
-    int y = staff->GetDrawingY() + height;
-    y += doc->GetDrawingUnit(staff->m_drawingStaffSize) * 1.5;
 
     assert(m_beamElementCoordRefs.size() > 0);
 
-    // For recursive calls, avoid to re-init values
+    int y = staff->GetDrawingY();
+
+    // Get the y position of the first tabDurSym
+    assert(m_beamElementCoordRefs.at(0)->m_element);
+    LayerElement *tabDurSym
+        = vrv_cast<LayerElement *>(m_beamElementCoordRefs.at(0)->m_element->FindDescendantByType(TABDURSYM));
+    if (tabDurSym) y = tabDurSym->GetDrawingY();
+
+    const int height = doc->GetGlyphHeight(SMUFL_EBA8_luteDurationHalf, glyphSize, true);
+    y += height;
+
     this->CalcBeamInit(layer, staff, doc, beamInterface, place);
 
     // Adjust the height and spacing of the beams
     beamInterface->m_beamWidthBlack /= 2;
     beamInterface->m_beamWidthWhite /= 2;
+
+    // Adjust it further for tab.lute.french and tab.lute.italian
+    if (staff->IsTabLuteFrench() || staff->IsTabLuteItalian()) {
+        beamInterface->m_beamWidthBlack = beamInterface->m_beamWidthBlack * 2 / 5;
+        beamInterface->m_beamWidthWhite = beamInterface->m_beamWidthWhite * 3 / 5;
+    }
+
     beamInterface->m_beamWidth = beamInterface->m_beamWidthBlack + beamInterface->m_beamWidthWhite;
 
     beamInterface->m_drawingPlace = (place == BEAMPLACE_below) ? BEAMPLACE_below : BEAMPLACE_above;
@@ -405,7 +418,6 @@ void BeamSegment::CalcBeamInit(
     int nbRests = 0;
 
     m_nbNotesOrChords = 0;
-    m_extendedToCenter = false;
     m_ledgerLinesAbove = 0;
     m_ledgerLinesBelow = 0;
 
@@ -525,11 +537,7 @@ bool BeamSegment::CalcBeamSlope(
     // Indicates if we have a short step of half a unit
     // This occurs with 8th and 16th only and with a reduced distance of 3 stave-spaces (6 units)
     bool shortStep = false;
-    if (m_extendedToCenter) {
-        step = unit / 2;
-        shortStep = true;
-    }
-    else if (m_nbNotesOrChords == 2) {
+    if (m_nbNotesOrChords == 2) {
         step = unit * 2;
         // Short distance
         if (dist <= unit * 6) {
@@ -550,13 +558,20 @@ bool BeamSegment::CalcBeamSlope(
     }
     else {
         // A fourth or smaller - reduce to a short step
-        if (noteStep <= unit * 3) {
+        if (noteStep < unit * 3) {
             step = unit / 2;
             shortStep = true;
         }
         // A fifth or smaller - reduce the step
         else if (noteStep <= unit * 4) {
             step = unit * 2;
+        }
+        else if (m_nbNotesOrChords == 4) {
+            if ((m_beamElementCoordRefs.at(1)->m_yBeam == m_beamElementCoordRefs.at(2)->m_yBeam)
+                && ((m_firstNoteOrChord->m_yBeam == m_beamElementCoordRefs.at(1)->m_yBeam)
+                    || (m_lastNoteOrChord->m_yBeam == m_beamElementCoordRefs.at(2)->m_yBeam))) {
+                step = unit * 2;
+            }
         }
     }
 
@@ -810,16 +825,26 @@ void BeamSegment::CalcAdjustSlope(Staff *staff, Doc *doc, BeamDrawingInterface *
     // We can actually tolerate a stem slightly shorter within the beam
     refLen -= unit;
 
-    int lengthen = 0;
+    bool lengthen = false;
     for (auto coord : m_beamElementCoordRefs) {
         if (coord->m_stem && coord->m_closestNote) {
-            // Here we should look at duration to because longer values in the middle could actually be OK as they are
-            int len = abs(coord->m_yBeam - coord->m_closestNote->GetDrawingY());
-            if (len < refLen) lengthen = std::max(lengthen, refLen - len);
+            const int len = abs(coord->m_yBeam - coord->m_closestNote->GetDrawingY());
+            if (len < refLen) {
+                lengthen = true;
+                break;
+            }
+            // Here we should look at duration too because longer values in the middle could actually be OK as they are
+            else if (((coord != m_lastNoteOrChord) || (coord != m_firstNoteOrChord)) && (coord->m_dur > DUR_8)) {
+                const int durLen = len - unit;
+                if (durLen < refLen) {
+                    lengthen = true;
+                    break;
+                }
+            }
         }
     }
     // We need to legthen the stems
-    if (lengthen > 0) {
+    if (lengthen) {
         // First if the slope step is 4 units (or more?) reduce it to 2 units and try again (recursive call)
         if (step >= 4 * unit) {
             step = 2 * unit;
@@ -1412,17 +1437,12 @@ void BeamElementCoord::SetDrawingStemDir(
 
     // Make sure the stem reaches the center of the staff
     // Mark the segment as extendedToCenter since we then want a reduced slope
-    if (interface->m_crossStaffContent || (BEAMPLACE_mixed == interface->m_drawingPlace)) {
-        segment->m_extendedToCenter = false;
-    }
-    else if (((stemDir == STEMDIRECTION_up) && (m_yBeam <= segment->m_verticalCenter))
-        || ((stemDir == STEMDIRECTION_down) && (segment->m_verticalCenter <= m_yBeam))) {
-        m_yBeam = segment->m_verticalCenter;
-        segment->m_extendedToCenter = true;
-        m_centered = false;
-    }
-    else {
-        segment->m_extendedToCenter = false;
+    if (!interface->m_crossStaffContent && (BEAMPLACE_mixed != interface->m_drawingPlace)) {
+        if (((stemDir == STEMDIRECTION_up) && (m_yBeam <= segment->m_verticalCenter))
+            || ((stemDir == STEMDIRECTION_down) && (segment->m_verticalCenter <= m_yBeam))) {
+            m_yBeam = segment->m_verticalCenter;
+            m_centered = false;
+        }
     }
 
     m_yBeam += m_overlapMargin;
