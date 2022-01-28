@@ -204,6 +204,11 @@ public:
     int GetDrawingOverflow();
 
     /**
+     * Calculates the section restart shift
+     */
+    int GetSectionRestartShift(Doc *doc) const;
+
+    /**
      * @name Setter and getter of the drawing scoreDef
      */
     ///@{
@@ -453,7 +458,10 @@ public:
     /**
      * See Object::CalcMaxMeasureDuration
      */
+    ///@{
     int CalcMaxMeasureDuration(FunctorParams *functorParams) override;
+    int CalcMaxMeasureDurationEnd(FunctorParams *functorParams) override;
+    ///@}
 
     /**
      * See Object::CalcOnsetOffset
