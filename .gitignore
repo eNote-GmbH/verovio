@@ -92,7 +92,3 @@ Release/
 *.vcxproj*
 *.sln
 
-# Fonts
-fonts/tmp/
-/.idea/
-tmp

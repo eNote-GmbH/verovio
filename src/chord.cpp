@@ -478,7 +478,7 @@ bool Chord::HasNoteWithDots()
 }
 
 int Chord::AdjustOverlappingLayers(
-    Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted, bool &isUnison)
+    Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted, bool &isUnison, bool &stemSameas)
 {
     int margin = 0;
     // get positions of other elements
@@ -536,7 +536,7 @@ std::list<Note *> Chord::GetAdjacentNotesList(Staff *staff, int loc)
         Note *note = vrv_cast<Note *>(obj);
         assert(note);
 
-        Staff *noteStaff = note->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+        Staff *noteStaff = note->GetAncestorStaff(RESOLVE_CROSS_STAFF);
         if (noteStaff != staff) continue;
 
         const int locDiff = note->GetDrawingLoc() - loc;
@@ -696,6 +696,7 @@ int Chord::CalcStem(FunctorParams *functorParams)
     params->m_interface = this;
     params->m_dur = this->GetActualDur();
     params->m_isGraceNote = this->IsGraceNote();
+    params->m_stemSameas = false;
 
     /************ Set the direction ************/
 
@@ -743,7 +744,7 @@ MapOfNoteLocs Chord::CalcNoteLocations(NotePredicate predicate)
 
         if (predicate && !predicate(note)) continue;
 
-        Staff *staff = note->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+        Staff *staff = note->GetAncestorStaff(RESOLVE_CROSS_STAFF);
 
         noteLocations[staff].insert(note->GetDrawingLoc());
     }
@@ -911,7 +912,7 @@ int Chord::AdjustCrossStaffContent(FunctorParams *functorParams)
     // Check if chord spreads across several staves
     std::list<Staff *> extremalStaves;
     for (Note *note : { this->GetTopNote(), this->GetBottomNote() }) {
-        Staff *staff = note->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+        Staff *staff = note->GetAncestorStaff(RESOLVE_CROSS_STAFF);
         extremalStaves.push_back(staff);
     }
     assert(extremalStaves.size() == 2);

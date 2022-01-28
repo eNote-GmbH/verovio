@@ -245,7 +245,7 @@ int LayerElement::GetOriginalLayerN()
 Staff *LayerElement::GetAncestorStaff(const StaffSearch strategy, const bool assertExistence) const
 {
     Staff *staff = NULL;
-    if (strategy == RESOLVE_CROSSSTAFF) {
+    if (strategy == RESOLVE_CROSS_STAFF) {
         Layer *layer = NULL;
         staff = this->GetCrossStaff(layer);
     }
@@ -281,7 +281,7 @@ data_STAFFREL_basic LayerElement::GetCrossStaffRel()
 
 void LayerElement::GetOverflowStaffAlignments(StaffAlignment *&above, StaffAlignment *&below)
 {
-    Staff *staff = this->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+    Staff *staff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
 
     // By default use the alignment of the staff
     above = staff->GetAlignment();
@@ -1542,15 +1542,15 @@ int LayerElement::AdjustLayers(FunctorParams *functorParams)
     // We are processing the first layer, nothing to do yet
     if (params->m_previous.empty()) return FUNCTOR_SIBLINGS;
 
-    const int shift
-        = AdjustOverlappingLayers(params->m_doc, params->m_previous, !params->m_ignoreDots, params->m_unison);
+    const int shift = AdjustOverlappingLayers(
+        params->m_doc, params->m_previous, !params->m_ignoreDots, params->m_unison, params->m_stemSameas);
     params->m_accumulatedShift += shift;
 
     return FUNCTOR_SIBLINGS;
 }
 
 int LayerElement::AdjustOverlappingLayers(
-    Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted, bool &isUnison)
+    Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted, bool &isUnison, bool &stemSameas)
 {
     if (Is(NOTE) && GetParent()->Is(CHORD))
         return 0;
@@ -1558,11 +1558,18 @@ int LayerElement::AdjustOverlappingLayers(
         isUnison = false;
         return 0;
     }
+    else if (Is(STEM) && stemSameas) {
+        stemSameas = false;
+        return 0;
+    }
 
     auto [margin, isInUnison] = CalcElementHorizontalOverlap(doc, otherElements, areDotsAdjusted, false);
     if (Is(NOTE)) {
         isUnison = isInUnison;
         if (isUnison) return 0;
+        Note *note = vrv_cast<Note *>(this);
+        assert(note);
+        stemSameas = note->HasStemSameasNote();
     }
 
     if (Is({ DOTS, STEM })) {
@@ -2369,15 +2376,15 @@ int LayerElement::FindSpannedLayerElements(FunctorParams *functorParams)
 
         // Skip elements aligned at start/end, but on a different staff
         if ((this->GetAlignment() == start->GetAlignment()) && !start->Is(TIMESTAMP_ATTR)) {
-            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSSSTAFF);
-            Staff *startStaff = start->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+            Staff *startStaff = start->GetAncestorStaff(RESOLVE_CROSS_STAFF);
             if (staff->GetN() != startStaff->GetN()) {
                 return FUNCTOR_CONTINUE;
             }
         }
         if ((this->GetAlignment() == end->GetAlignment()) && !end->Is(TIMESTAMP_ATTR)) {
-            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSSSTAFF);
-            Staff *endStaff = end->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+            Staff *endStaff = end->GetAncestorStaff(RESOLVE_CROSS_STAFF);
             if (staff->GetN() != endStaff->GetN()) {
                 return FUNCTOR_CONTINUE;
             }
@@ -2514,6 +2521,20 @@ int LayerElement::GenerateTimemap(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
+int LayerElement::CalcMaxMeasureDuration(FunctorParams *functorParams)
+{
+    CalcMaxMeasureDurationParams *params = vrv_params_cast<CalcMaxMeasureDurationParams *>(functorParams);
+    assert(params);
+
+    if (this->Is(MULTIREST)) {
+        MultiRest *multiRest = vrv_cast<MultiRest *>(this);
+        assert(multiRest);
+        params->m_multiRestFactor = multiRest->GetNum();
+    }
+
+    return FUNCTOR_SIBLINGS;
+}
+
 int LayerElement::ResetDrawing(FunctorParams *functorParams)
 {
     m_drawingCueSize = false;
@@ -2566,7 +2587,7 @@ int LayerElement::PrepareDuration(FunctorParams *functorParams)
         durInterface->SetDurDefault(params->m_durDefault);
         // Check if there is a duration default for the staff
         if (!params->m_durDefaultForStaffN.empty()) {
-            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSSSTAFF);
+            Staff *staff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
             if (params->m_durDefaultForStaffN.count(staff->GetN()) > 0) {
                 durInterface->SetDurDefault(params->m_durDefaultForStaffN.at(staff->GetN()));
             }
