@@ -20,7 +20,6 @@ echo "Generating Leland files ..."
 python3 extract-bounding-boxes.py Leland.svg json/leland_metadata.json ../data/Leland.xml
 
 echo "Generating Legato files ..."
-python3 extract-glyphs.py Legato.svg > tmp/Legato-bounding-boxes.svg
-phantomjs generate-bbox.js tmp/Legato-bounding-boxes.svg ../data/Legato.xml json/legato_metadata.json
+python3 extract-bounding-boxes.py Legato.svg json/legato_metadata.json ../data/Legato.xml
 
 echo "Done!"
