@@ -882,10 +882,6 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
     Page *unCastOffPage = this->SetDrawingPage(0);
     assert(unCastOffPage);
 
-    if (this->AbortRequested()) {
-        return;
-    }
-
     // Check if the the horizontal layout is cached by looking at the first measure
     // The cache is not set the first time, or can be reset by Doc::UnCastOffDoc
     Measure *firstMeasure = vrv_cast<Measure *>(unCastOffPage->FindDescendantByType(MEASURE));
@@ -896,6 +892,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
     }
     else {
         unCastOffPage->HorizontalLayoutCachePage(true);
+    }
+
+    if (this->AbortRequested()) {
+        return;
     }
 
     Page *castOffSinglePage = new Page();

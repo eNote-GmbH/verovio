@@ -130,7 +130,7 @@ void Page::LayOut(bool force)
         return;
     }
 
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     this->LayOutHorizontally();
@@ -143,8 +143,6 @@ void Page::LayOut(bool force)
 
     this->JustifyVertically();
 
-    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
-    assert(doc);
     if (doc->GetOptions()->m_svgBoundingBoxes.GetValue()) {
         View view;
         view.SetDoc(doc);
