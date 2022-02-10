@@ -142,6 +142,16 @@ public:
      */
     virtual std::pair<int, int> GetFloatingBeamCount() const { return { 0, 0 }; }
 
+    /**
+     * Get above/below overflow
+     */
+    void GetBeamOverflow(StaffAlignment *&above, StaffAlignment *&below);
+
+    /**
+     * Get above/below overflow for the children
+     */
+    void GetBeamChildOverflow(StaffAlignment *&above, StaffAlignment *&below);
+
 protected:
     /**
      * Return the position of the element in the beam.
@@ -155,7 +165,7 @@ private:
      * Determines whether beam should be horizontal based on item positions and relative beam place. Should be used with
      * mixed beams, where beam place can be different for separate elements
      */
-    bool IsHorizontal(const std::vector<int> &items, const std::vector<data_BEAMPLACE> &directions) const;
+    bool IsHorizontalMixedBeam(const std::vector<int> &items, const std::vector<data_BEAMPLACE> &directions) const;
 
 public:
     // values to be set before calling CalcBeam

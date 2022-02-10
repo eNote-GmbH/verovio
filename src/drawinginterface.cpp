@@ -18,16 +18,15 @@
 #include "layerelement.h"
 #include "note.h"
 #include "object.h"
+#include "staff.h"
 
 namespace vrv {
 
-enum class NoteDirection { none, upward, downward };
-
 // helper for determining note direction
-NoteDirection GetNoteDirection(int leftNoteX, int rightNoteX)
+data_STEMDIRECTION GetNoteDirection(int leftNoteY, int rightNoteY)
 {
-    if (leftNoteX == rightNoteX) return NoteDirection::none;
-    return (leftNoteX < rightNoteX) ? NoteDirection::upward : NoteDirection::downward;
+    if (leftNoteY == rightNoteY) return STEMDIRECTION_NONE;
+    return (leftNoteY < rightNoteY) ? STEMDIRECTION_up : STEMDIRECTION_down;
 }
 
 //----------------------------------------------------------------------------
@@ -299,7 +298,7 @@ bool BeamDrawingInterface::IsHorizontal()
     if (first == last) return true;
 
     // If drawing place is mixed and is should be drawn horizontal based on mixed rules
-    if ((m_drawingPlace == BEAMPLACE_mixed) && (IsHorizontal(items, directions))) return true;
+    if ((m_drawingPlace == BEAMPLACE_mixed) && (this->IsHorizontalMixedBeam(items, directions))) return true;
 
     // Detect beam with two pitches only and as step at the beginning or at the end
     const bool firstStep = (first != items.at(1));
@@ -335,7 +334,7 @@ bool BeamDrawingInterface::IsHorizontal()
     return false;
 }
 
-bool BeamDrawingInterface::IsHorizontal(
+bool BeamDrawingInterface::IsHorizontalMixedBeam(
     const std::vector<int> &items, const std::vector<data_BEAMPLACE> &directions) const
 {
     // items and directions should be of the same size, otherwise something is wrong
@@ -359,10 +358,10 @@ bool BeamDrawingInterface::IsHorizontal(
 
     int previousTop = VRV_UNSET;
     int previousBottom = VRV_UNSET;
-    NoteDirection outsidePitchDirection = GetNoteDirection(items.front(), items.back());
-    std::map<NoteDirection, int> beamDirections{ { NoteDirection::none, 0 }, { NoteDirection::upward, 0 },
-        { NoteDirection::downward, 0 } };
-    for (int i = 0; i < items.size(); ++i) {
+    data_STEMDIRECTION outsidePitchDirection = GetNoteDirection(items.front(), items.back());
+    std::map<data_STEMDIRECTION, int> beamDirections{ { STEMDIRECTION_NONE, 0 }, { STEMDIRECTION_up, 0 },
+        { STEMDIRECTION_down, 0 } };
+    for (int i = 0; i < (int)items.size(); ++i) {
         if (directions[i] == BEAMPLACE_above) {
             if (previousTop == VRV_UNSET) {
                 previousTop = items[i];
@@ -500,6 +499,50 @@ int BeamDrawingInterface::GetPosition(Object *object, LayerElement *element)
         if (chord) position = this->GetListIndex(chord);
     }
     return position;
+}
+
+void BeamDrawingInterface::GetBeamOverflow(StaffAlignment *&above, StaffAlignment *&below)
+{
+    if (!m_beamStaff || !m_crossStaffContent) return;
+
+    if (m_drawingPlace == BEAMPLACE_mixed) {
+        above = NULL;
+        below = NULL;
+    }
+    // Beam below - ignore above and find the appropriate below staff
+    else if (m_drawingPlace == BEAMPLACE_below) {
+        above = NULL;
+        if (m_crossStaffRel == STAFFREL_basic_above) {
+            below = m_beamStaff->GetAlignment();
+        }
+        else {
+            below = m_crossStaffContent->GetAlignment();
+        }
+    }
+    // Beam above - ignore below and find the appropriate above staff
+    else if (m_drawingPlace == BEAMPLACE_above) {
+        below = NULL;
+        if (m_crossStaffRel == STAFFREL_basic_below) {
+            above = m_beamStaff->GetAlignment();
+        }
+        else {
+            above = m_crossStaffContent->GetAlignment();
+        }
+    }
+}
+
+void BeamDrawingInterface::GetBeamChildOverflow(StaffAlignment *&above, StaffAlignment *&below)
+{
+    if (m_beamStaff && m_crossStaffContent) {
+        if (m_crossStaffRel == STAFFREL_basic_above) {
+            above = m_crossStaffContent->GetAlignment();
+            below = m_beamStaff->GetAlignment();
+        }
+        else {
+            above = m_beamStaff->GetAlignment();
+            below = m_crossStaffContent->GetAlignment();
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
