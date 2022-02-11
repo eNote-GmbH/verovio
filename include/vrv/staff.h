@@ -109,9 +109,11 @@ public:
     bool IsMensural();
     bool IsNeume();
     bool IsTablature();
+    bool IsTabGuitar() { return m_drawingNotationType == NOTATIONTYPE_tab_guitar; }
     bool IsTabLuteFrench() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_french; }
     bool IsTabLuteGerman() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_german; }
     bool IsTabLuteItalian() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_italian; }
+    bool IsTabWithStemsOutside();
     ///@}
 
     /**
@@ -166,6 +168,11 @@ public:
      * exists).
      */
     virtual void SetFromFacsimile(Doc *doc);
+
+    /**
+     * Set beam adjustment for the corresponding staff alignment
+     */
+    void SetAlignmentBeamAdjustment(int adjust);
 
     //----------//
     // Functors //

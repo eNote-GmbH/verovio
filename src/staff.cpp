@@ -226,6 +226,13 @@ bool Staff::IsTablature()
     return isTablature;
 }
 
+bool Staff::IsTabWithStemsOutside()
+{
+    if (!m_drawingStaffDef) return false;
+    // Temporary implementation looking at staffDef@type
+    return (!this->IsTabGuitar() || !m_drawingStaffDef->HasType() || m_drawingStaffDef->GetType() != "stems.within");
+}
+
 int Staff::CalcPitchPosYRel(Doc *doc, int loc)
 {
     assert(doc);
@@ -375,6 +382,11 @@ int Staff::GetNearestInterStaffPosition(int y, Doc *doc, data_STAFFREL place)
         if (distance < 0) distance = doc->GetDrawingUnit(m_drawingStaffSize) + distance;
         return y - distance - doc->GetDrawingUnit(m_drawingStaffSize);
     }
+}
+
+void Staff::SetAlignmentBeamAdjustment(int adjust)
+{
+    m_staffAlignment->SetBeamAdjust(adjust);
 }
 
 //----------------------------------------------------------------------------

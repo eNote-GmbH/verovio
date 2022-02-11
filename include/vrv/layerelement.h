@@ -467,6 +467,11 @@ protected:
 private:
     int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticType type);
 
+    /**
+     * Get above/below overflow for the chord elements
+     */
+    void GetChordOverflow(StaffAlignment *&above, StaffAlignment *&below, int staffN);
+
 public:
     /** Absolute position X. This is used for facsimile (transcription) encoding */
     int m_xAbs;
