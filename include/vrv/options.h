@@ -765,6 +765,7 @@ public:
     //
     OptionDbl m_topMarginArtic;
     OptionDbl m_topMarginHarm;
+    OptionDbl m_topMarginPgFooter;
 
     /**
      * Deprecated options
