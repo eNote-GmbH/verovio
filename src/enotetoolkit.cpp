@@ -80,8 +80,8 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
     int firstN = 0;
     int lastN = 0;
     for (Page *page : pages) {
-        ArrayOfObjects *children = page->GetChildrenForModification();
-        for (Object *child : *children) {
+        ArrayOfObjects &children = page->GetChildrenForModification();
+        for (Object *child : children) {
             if (child->Is(MDIV)) {
                 if (firstN > 0) {
                     measureRanges.push_back({ mdivUuid, firstN, lastN });
@@ -211,8 +211,8 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
         // See Object::FillStaffCurrentTimeSpanning
         // Check if element must be added or removed to m_timeSpanningElements in the staves
         for (int index = 0; index < measureCount; ++index) {
-            ArrayOfObjects *children = measures.at(index)->GetChildrenForModification();
-            for (Object *child : *children) {
+            ArrayOfObjects &children = measures.at(index)->GetChildrenForModification();
+            for (Object *child : children) {
                 if (!child->Is(STAFF)) continue;
                 Staff *staff = vrv_cast<Staff *>(child);
                 assert(staff);
