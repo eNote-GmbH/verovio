@@ -100,6 +100,7 @@ public:
     void SetDrawingStemDir(data_STEMDIRECTION stemDirection) { m_drawingStemDir = stemDirection; }
     data_STEMDIRECTION GetDrawingStemDir(LayerElement *element);
     data_STEMDIRECTION GetDrawingStemDir(const ArrayOfBeamElementCoords *coords);
+    data_STEMDIRECTION GetDrawingStemDir() const { return m_drawingStemDir; }
     ///@}
 
     /**
@@ -134,10 +135,10 @@ public:
     ListOfObjects GetLayerElementsInTimeSpan(
         double time, double duration, Measure *measure, int staff, bool excludeCurrent);
 
-    Clef *GetCurrentClef() const;
-    KeySig *GetCurrentKeySig() const;
-    Mensur *GetCurrentMensur() const;
-    MeterSig *GetCurrentMeterSig() const;
+    Clef *GetCurrentClef();
+    KeySig *GetCurrentKeySig();
+    Mensur *GetCurrentMensur();
+    MeterSig *GetCurrentMeterSig();
 
     void ResetStaffDefObjects();
 
@@ -245,6 +246,11 @@ public:
      * See Object::ResetDrawing
      */
     int ResetDrawing(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::GenerateMIDIEnd
+     */
+    int GenerateMIDIEnd(FunctorParams *functorParams) override;
 
 private:
     //

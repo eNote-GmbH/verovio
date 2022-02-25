@@ -26,6 +26,7 @@
 #include "rest.h"
 #include "space.h"
 #include "staff.h"
+#include "tabgrp.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -44,12 +45,12 @@ Tuplet::Tuplet()
     , AttNumberPlacement()
     , AttTupletVis()
 {
-    RegisterAttClass(ATT_COLOR);
-    RegisterAttClass(ATT_DURATIONRATIO);
-    RegisterAttClass(ATT_NUMBERPLACEMENT);
-    RegisterAttClass(ATT_TUPLETVIS);
+    this->RegisterAttClass(ATT_COLOR);
+    this->RegisterAttClass(ATT_DURATIONRATIO);
+    this->RegisterAttClass(ATT_NUMBERPLACEMENT);
+    this->RegisterAttClass(ATT_TUPLETVIS);
 
-    Reset();
+    this->Reset();
 }
 
 Tuplet::~Tuplet() {}
@@ -57,10 +58,10 @@ Tuplet::~Tuplet() {}
 void Tuplet::Reset()
 {
     LayerElement::Reset();
-    ResetColor();
-    ResetDurationRatio();
-    ResetNumberPlacement();
-    ResetTupletVis();
+    this->ResetColor();
+    this->ResetDurationRatio();
+    this->ResetNumberPlacement();
+    this->ResetTupletVis();
 
     m_drawingLeft = NULL;
     m_drawingRight = NULL;
@@ -101,6 +102,9 @@ bool Tuplet::IsSupportedChild(Object *child)
     else if (child->Is(SPACE)) {
         assert(dynamic_cast<Space *>(child));
     }
+    else if (child->Is(TABGRP)) {
+        assert(dynamic_cast<TabGrp *>(child));
+    }
     else if (child->Is(TUPLET)) {
         assert(dynamic_cast<Tuplet *>(child));
     }
@@ -122,15 +126,15 @@ void Tuplet::AddChild(Object *child)
 
     child->SetParent(this);
 
-    ArrayOfObjects *children = this->GetChildrenForModification();
+    ArrayOfObjects &children = this->GetChildrenForModification();
 
     // Num and bracket are always added by PrepareLayerElementParts (for now) and we want them to be in the front
     // for the drawing order in the SVG output
     if (child->Is({ TUPLET_BRACKET, TUPLET_NUM })) {
-        children->insert(children->begin(), child);
+        children.insert(children.begin(), child);
     }
     else {
-        children->push_back(child);
+        children.push_back(child);
     }
 
     Modify();
@@ -157,16 +161,16 @@ void Tuplet::AdjustTupletBracketY(Doc *doc, Staff *staff, int staffSize)
             if (m_drawingBracketPos == STAFFREL_basic_above) {
                 // Left point when slope is going up and right when going down
                 int relevantX = (beam->m_beamSegment.m_beamSlope > 0) ? artic->GetSelfLeft() : artic->GetSelfRight();
-                int currentYRel = beam->m_beamSegment.m_startingY
-                    + beam->m_beamSegment.m_beamSlope * (relevantX - beam->m_beamSegment.m_startingX);
+                int currentYRel = beam->m_beamSegment.GetStartingY()
+                    + beam->m_beamSegment.m_beamSlope * (relevantX - beam->m_beamSegment.GetStartingX());
                 int articYRel = artic->GetSelfTop();
                 articPadding = std::min(currentYRel - articYRel, articPadding);
             }
             else {
                 // Right point when slope is going up and left when going down
                 int relevantX = (beam->m_beamSegment.m_beamSlope > 0) ? artic->GetSelfRight() : artic->GetSelfLeft();
-                int currentYRel = beam->m_beamSegment.m_startingY
-                    + beam->m_beamSegment.m_beamSlope * (relevantX - beam->m_beamSegment.m_startingX);
+                int currentYRel = beam->m_beamSegment.GetStartingY()
+                    + beam->m_beamSegment.m_beamSlope * (relevantX - beam->m_beamSegment.GetStartingX());
                 int articYRel = artic->GetSelfBottom();
                 articPadding = std::max(currentYRel - articYRel, articPadding);
             }
@@ -199,9 +203,9 @@ void Tuplet::AdjustTupletBracketY(Doc *doc, Staff *staff, int staffSize)
         // Adjust bracket in case beam is horizontal and bracket overlaps with staff line
         if (beam->m_beamSegment.m_beamSlope == 0.0) {
             const int staffHeight = doc->GetDrawingStaffSize(staffSize);
-            if ((beam->m_beamSegment.m_startingY < yReference)
-                && (beam->m_beamSegment.m_startingY > yReference - staffHeight)
-                && !(beam->m_beamSegment.m_startingY % doubleUnit)) {
+            if ((beam->m_beamSegment.GetStartingY() < yReference)
+                && (beam->m_beamSegment.GetStartingY() > yReference - staffHeight)
+                && !(beam->m_beamSegment.GetStartingY() % doubleUnit)) {
                 bracketVerticalMargin += doubleUnit / 4;
             }
         }
@@ -237,7 +241,7 @@ void Tuplet::AdjustTupletBracketY(Doc *doc, Staff *staff, int staffSize)
 void Tuplet::AdjustTupletNumY(Doc *doc, Staff *staff, int staffSize)
 {
     TupletNum *tupletNum = dynamic_cast<TupletNum *>(FindDescendantByType(TUPLET_NUM));
-    if (!tupletNum || (GetNumVisible() == BOOLEAN_false)) return;
+    if (!tupletNum || (this->GetNumVisible() == BOOLEAN_false)) return;
 
     this->CalculateTupletNumCrossStaff(tupletNum);
 
@@ -272,8 +276,8 @@ void Tuplet::AdjustTupletNumY(Doc *doc, Staff *staff, int staffSize)
     // If we have a beam, see if we can move it to more appropriate position
     if (beam && !m_crossStaff && !FindDescendantByType(ARTIC)) {
         const int xMid = tupletNum->GetDrawingXMid(doc);
-        const int yMid = beam->m_beamSegment.m_startingY
-            + beam->m_beamSegment.m_beamSlope * (xMid - beam->m_beamSegment.m_startingX);
+        const int yMid = beam->m_beamSegment.GetStartingY()
+            + beam->m_beamSegment.m_beamSlope * (xMid - beam->m_beamSegment.GetStartingX());
         const int beamYRel = yMid - yReference + numVerticalMargin;
         if (((m_drawingNumPos == STAFFREL_basic_above) && (beamYRel > 0))
             || ((m_drawingNumPos == STAFFREL_basic_below) && (beamYRel < -staffHeight))) {
@@ -320,8 +324,7 @@ void Tuplet::CalculateTupletNumCrossStaff(LayerElement *layerElement)
         return;
     };
 
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
-    assert(staff);
+    Staff *staff = this->GetAncestorStaff();
     // Find if there is a mix of cross-staff and non-cross-staff elements in the tuplet
     ListOfObjects descendants;
     ClassIdsComparison comparison({ CHORD, NOTE, REST });
@@ -644,9 +647,8 @@ int Tuplet::AdjustTupletsY(FunctorParams *functorParams)
         return FUNCTOR_SIBLINGS;
     }
 
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
-    assert(staff);
-    int staffSize = staff->m_drawingStaffSize;
+    Staff *staff = this->GetAncestorStaff();
+    const int staffSize = staff->m_drawingStaffSize;
 
     assert(m_drawingBracketPos != STAFFREL_basic_NONE);
 

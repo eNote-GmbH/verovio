@@ -64,11 +64,11 @@ public:
      * @name Methods for checking the presence of clef, key signature, etc. information and getting them.
      */
     ///@{
-    bool HasClefInfo(int depth = 1);
-    bool HasKeySigInfo(int depth = 1);
-    bool HasMensurInfo(int depth = 1);
-    bool HasMeterSigInfo(int depth = 1);
-    bool HasMeterSigGrpInfo(int depth = 1);
+    bool HasClefInfo(int depth = 1) const;
+    bool HasKeySigInfo(int depth = 1) const;
+    bool HasMensurInfo(int depth = 1) const;
+    bool HasMeterSigInfo(int depth = 1) const;
+    bool HasMeterSigGrpInfo(int depth = 1) const;
     ///@}
 
     /**
@@ -81,15 +81,20 @@ public:
      */
     ///@{
     Clef *GetClef();
-    Clef *GetClefCopy();
+    const Clef *GetClef() const;
+    Clef *GetClefCopy() const;
     KeySig *GetKeySig();
-    KeySig *GetKeySigCopy();
+    const KeySig *GetKeySig() const;
+    KeySig *GetKeySigCopy() const;
     Mensur *GetMensur();
-    Mensur *GetMensurCopy();
+    const Mensur *GetMensur() const;
+    Mensur *GetMensurCopy() const;
     MeterSig *GetMeterSig();
-    MeterSig *GetMeterSigCopy();
+    const MeterSig *GetMeterSig() const;
+    MeterSig *GetMeterSigCopy() const;
     MeterSigGrp *GetMeterSigGrp();
-    MeterSigGrp *GetMeterSigGrpCopy();
+    const MeterSigGrp *GetMeterSigGrp() const;
+    MeterSigGrp *GetMeterSigGrpCopy() const;
     ///@}
 
     //----------//
@@ -197,9 +202,13 @@ public:
      */
     ///@{
     PgFoot *GetPgFoot();
+    const PgFoot *GetPgFoot() const;
     PgFoot2 *GetPgFoot2();
+    const PgFoot2 *GetPgFoot2() const;
     PgHead *GetPgHead();
+    const PgHead *GetPgHead() const;
     PgHead2 *GetPgHead2();
+    const PgHead2 *GetPgHead2() const;
     ///@}
 
     /**
@@ -207,7 +216,7 @@ public:
      */
     int GetMaxStaffSize();
 
-    bool IsSectionRestart();
+    bool IsSectionRestart() const;
 
     //----------//
     // Functors //
@@ -234,7 +243,6 @@ public:
     int CastOffSystems(FunctorParams *functorParams) override;
 
     /**
-
      * See Object::CastOffEncoding
      */
     int CastOffEncoding(FunctorParams *functorParams) override;
@@ -249,6 +257,11 @@ public:
      */
     int JustifyX(FunctorParams *functorParams) override;
 
+    /**
+     * See Object::PrepareDuration
+     */
+    int PrepareDuration(FunctorParams *functorParams) override;
+
 protected:
     /**
      * Filter the flat list and keep only StaffDef elements.
@@ -260,7 +273,7 @@ private:
 public:
     bool m_setAsDrawing;
     bool m_insertScoreDef;
-    //
+
 private:
     /** Flags for indicating whether labels need to be drawn or not */
     bool m_drawLabels;

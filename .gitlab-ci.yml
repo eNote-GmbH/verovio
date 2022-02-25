@@ -1,5 +1,7 @@
 ---
 stages:
+  - clang-format
+  - build-xc
   - build
   - build-toolkit
   - build-viewer
@@ -17,10 +19,27 @@ variables:
     - cmake ../cmake -DNO_ABC_SUPPORT=ON -DNO_HUMDRUM_SUPPORT=ON -DNO_PAE_SUPPORT=ON
     - make -j 10
 
+clang:
+  stage: clang-format
+  tags:
+    - mac-ai
+  script:
+    - clang-format -n -Werror src/*.cpp
+    - clang-format -n -Werror include/vrv/*.h
+
 build-osx:
   extends: .build-template
   tags:
     - mac-ai
+
+build-xc-framework:
+  stage: build-xc
+  tags:
+    - mac-ai
+  script:
+    - ./build_xcframework.sh
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
 
 build-linux:
   extends: .build-template

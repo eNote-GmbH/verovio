@@ -34,28 +34,28 @@ namespace vrv {
 RunningElement::RunningElement()
     : Object(RUNNING_ELEMENT, "re"), ObjectListInterface(), AttHorizontalAlign(), AttTyped()
 {
-    RegisterAttClass(ATT_HORIZONTALALIGN);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_HORIZONTALALIGN);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 RunningElement::RunningElement(ClassId classId)
     : Object(classId, "re"), ObjectListInterface(), AttHorizontalAlign(), AttTyped()
 {
-    RegisterAttClass(ATT_HORIZONTALALIGN);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_HORIZONTALALIGN);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 RunningElement::RunningElement(ClassId classId, const std::string &classIdStr)
     : Object(classId, classIdStr), AttHorizontalAlign(), AttTyped()
 {
-    RegisterAttClass(ATT_HORIZONTALALIGN);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_HORIZONTALALIGN);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 RunningElement::~RunningElement() {}
@@ -63,8 +63,8 @@ RunningElement::~RunningElement() {}
 void RunningElement::Reset()
 {
     Object::Reset();
-    ResetHorizontalAlign();
-    ResetTyped();
+    this->ResetHorizontalAlign();
+    this->ResetTyped();
 
     m_isGenerated = false;
 
@@ -157,7 +157,7 @@ int RunningElement::GetDrawingY() const
 
 void RunningElement::SetDrawingYRel(int drawingYRel)
 {
-    ResetCachedDrawingY();
+    this->ResetCachedDrawingY();
     m_drawingYRel = drawingYRel;
 }
 
@@ -175,9 +175,9 @@ int RunningElement::GetWidth() const
 void RunningElement::SetDrawingPage(Page *page)
 {
 
-    ResetList(this);
+    this->ResetList(this);
 
-    ResetCachedDrawingX();
+    this->ResetCachedDrawingX();
     m_drawingPage = page;
 
     if (page) {
@@ -185,7 +185,7 @@ void RunningElement::SetDrawingPage(Page *page)
     }
 }
 
-int RunningElement::GetTotalHeight()
+int RunningElement::GetContentHeight() const
 {
     int height = 0;
     int i;
@@ -195,7 +195,7 @@ int RunningElement::GetTotalHeight()
     return height;
 }
 
-int RunningElement::GetRowHeight(int row)
+int RunningElement::GetRowHeight(int row) const
 {
     assert((row >= 0) && (row < 3));
 
@@ -207,7 +207,7 @@ int RunningElement::GetRowHeight(int row)
     return height;
 }
 
-int RunningElement::GetColHeight(int col)
+int RunningElement::GetColHeight(int col) const
 {
     assert((col >= 0) && (col < 3));
 
@@ -219,13 +219,13 @@ int RunningElement::GetColHeight(int col)
     return height;
 }
 
-int RunningElement::GetCellHeight(int cell)
+int RunningElement::GetCellHeight(int cell) const
 {
     assert((cell >= 0) && (cell < 9));
 
     int columnHeight = 0;
-    ArrayOfTextElements *textElements = &m_cells[cell];
-    ArrayOfTextElements::iterator iter;
+    const ArrayOfTextElements *textElements = &m_cells[cell];
+    ArrayOfTextElements::const_iterator iter;
     for (iter = textElements->begin(); iter != textElements->end(); ++iter) {
         if ((*iter)->HasContentBB()) {
             columnHeight += (*iter)->GetContentY2() - (*iter)->GetContentY1();

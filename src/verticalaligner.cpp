@@ -36,7 +36,7 @@ namespace vrv {
 
 SystemAligner::SystemAligner() : Object(SYSTEM_ALIGNER), m_bottomAlignment(NULL), m_system(NULL)
 {
-    Reset();
+    this->Reset();
 }
 
 SystemAligner::~SystemAligner() {}
@@ -47,47 +47,47 @@ void SystemAligner::Reset()
     m_spacingTypes.clear();
     m_system = NULL;
     m_bottomAlignment = NULL;
-    m_bottomAlignment = GetStaffAlignment(0, NULL, NULL);
+    m_bottomAlignment = this->GetStaffAlignment(0, NULL, NULL);
 }
 
 StaffAlignment *SystemAligner::GetStaffAlignment(int idx, Staff *staff, Doc *doc)
 {
-    ArrayOfObjects *children = this->GetChildrenForModification();
+    ArrayOfObjects &children = this->GetChildrenForModification();
 
     // The last one is always the bottomAlignment (unless if not created)
     if (m_bottomAlignment) {
         // remove it temporarily
-        children->pop_back();
+        children.pop_back();
     }
 
-    if (idx < GetChildCount()) {
-        children->push_back(m_bottomAlignment);
-        return dynamic_cast<StaffAlignment *>(GetChildren()->at(idx));
+    if (idx < this->GetChildCount()) {
+        children.push_back(m_bottomAlignment);
+        return dynamic_cast<StaffAlignment *>(this->GetChild(idx));
     }
     // check that we are searching for the next one (not a gap)
-    assert(idx == GetChildCount());
+    assert(idx == this->GetChildCount());
     // LogDebug("Creating staff alignment");
 
     // This is the first time we are looking for it (e.g., first staff)
     // We create the StaffAlignment
     StaffAlignment *alignment = new StaffAlignment();
-    alignment->SetStaff(staff, doc, GetAboveSpacingType(staff));
+    alignment->SetStaff(staff, doc, this->GetAboveSpacingType(staff));
     alignment->SetParent(this);
-    alignment->SetParentSystem(GetSystem());
-    children->push_back(alignment);
+    alignment->SetParentSystem(this->GetSystem());
+    children.push_back(alignment);
 
     if (m_bottomAlignment) {
-        children->push_back(m_bottomAlignment);
+        children.push_back(m_bottomAlignment);
     }
 
     return alignment;
 }
 
-StaffAlignment *SystemAligner::GetStaffAlignmentForStaffN(int staffN) const
+StaffAlignment *SystemAligner::GetStaffAlignmentForStaffN(int staffN)
 {
     StaffAlignment *alignment = NULL;
     for (int i = 0; i < this->GetChildCount(); ++i) {
-        alignment = vrv_cast<StaffAlignment *>(GetChildren()->at(i));
+        alignment = vrv_cast<StaffAlignment *>(this->GetChild(i));
         assert(alignment);
 
         if ((alignment->GetStaff()) && (alignment->GetStaff()->GetN() == staffN)) return alignment;
@@ -99,7 +99,7 @@ StaffAlignment *SystemAligner::GetStaffAlignmentForStaffN(int staffN) const
 System *SystemAligner::GetSystem()
 {
     if (m_system == NULL) {
-        m_system = dynamic_cast<System *>(GetFirstAncestor(SYSTEM));
+        m_system = dynamic_cast<System *>(this->GetFirstAncestor(SYSTEM));
     }
     return m_system;
 }
@@ -111,7 +111,7 @@ void SystemAligner::FindAllPositionerPointingTo(ArrayOfFloatingPositioners *posi
     positioners->clear();
 
     StaffAlignment *alignment = NULL;
-    for (const auto child : *this->GetChildren()) {
+    for (const auto child : this->GetChildren()) {
         alignment = vrv_cast<StaffAlignment *>(child);
         assert(alignment);
         FloatingPositioner *positioner = alignment->GetCorrespFloatingPositioner(object);
@@ -125,29 +125,31 @@ void SystemAligner::FindAllIntersectionPoints(
     SegmentedLine &line, BoundingBox &boundingBox, const std::vector<ClassId> &classIds, int margin)
 {
     StaffAlignment *alignment = NULL;
-    for (const auto child : *this->GetChildren()) {
+    for (const auto child : this->GetChildren()) {
         alignment = vrv_cast<StaffAlignment *>(child);
         assert(alignment);
         alignment->FindAllIntersectionPoints(line, boundingBox, classIds, margin);
     }
 }
 
-int SystemAligner::GetOverflowAbove(const Doc *) const
+int SystemAligner::GetOverflowAbove(const Doc *, bool scoreDefClef) const
 {
-    if (!GetChildCount() || GetChild(0) == m_bottomAlignment) return 0;
+    if (!this->GetChildCount() || this->GetChild(0) == m_bottomAlignment) return 0;
 
-    StaffAlignment *alignment = vrv_cast<StaffAlignment *>(GetChild(0));
+    const StaffAlignment *alignment = vrv_cast<const StaffAlignment *>(this->GetChild(0));
     assert(alignment);
-    return alignment->GetOverflowAbove();
+    int overflowAbove = scoreDefClef ? alignment->GetScoreDefClefOverflowAbove() : alignment->GetOverflowAbove();
+    return overflowAbove;
 }
 
-int SystemAligner::GetOverflowBelow(const Doc *doc) const
+int SystemAligner::GetOverflowBelow(const Doc *doc, bool scoreDefClef) const
 {
-    if (!GetChildCount() || GetChild(0) == m_bottomAlignment) return 0;
+    if (!this->GetChildCount() || this->GetChild(0) == m_bottomAlignment) return 0;
 
-    StaffAlignment *alignment = vrv_cast<StaffAlignment *>(GetChild(GetChildCount() - 2));
+    const StaffAlignment *alignment = vrv_cast<const StaffAlignment *>(this->GetChild(this->GetChildCount() - 2));
     assert(alignment);
-    return alignment->GetOverflowBelow() + doc->GetBottomMargin(STAFF) * doc->GetDrawingUnit(alignment->GetStaffSize());
+    int overflowBelow = scoreDefClef ? alignment->GetScoreDefClefOverflowBelow() : alignment->GetOverflowBelow();
+    return overflowBelow;
 }
 
 double SystemAligner::GetJustificationSum(const Doc *doc) const
@@ -155,8 +157,8 @@ double SystemAligner::GetJustificationSum(const Doc *doc) const
     assert(doc);
 
     double justificationSum = 0.;
-    for (const auto child : *this->GetChildren()) {
-        StaffAlignment *alignment = dynamic_cast<StaffAlignment *>(child);
+    for (const auto child : this->GetChildren()) {
+        const StaffAlignment *alignment = dynamic_cast<const StaffAlignment *>(child);
         justificationSum += alignment ? alignment->GetJustificationFactor(doc) : 0.;
     }
 
@@ -186,7 +188,7 @@ SystemAligner::SpacingType SystemAligner::GetAboveSpacingType(Staff *staff)
     if (m_spacingTypes.empty()) {
         System *system = dynamic_cast<System *>(staff->GetFirstAncestor(SYSTEM));
         ScoreDef *scoreDef = system ? system->GetDrawingScoreDef() : NULL;
-        SetSpacing(scoreDef);
+        this->SetSpacing(scoreDef);
     }
 
     auto iter = m_spacingTypes.find(staff->GetN());
@@ -258,6 +260,8 @@ StaffAlignment::StaffAlignment() : Object(STAFF_ALIGNMENT)
     m_overlap = 0;
     m_overflowBBoxAbove = NULL;
     m_overflowBBoxBelow = NULL;
+    m_scoreDefClefOverflowAbove = 0;
+    m_scoreDefClefOverflowBelow = 0;
 }
 
 StaffAlignment::~StaffAlignment()
@@ -295,7 +299,7 @@ int StaffAlignment::GetStaffSize() const
 
 const AttSpacing *StaffAlignment::GetAttSpacing() const
 {
-    System *system = GetParentSystem();
+    System *system = this->GetParentSystem();
     assert(system);
 
     return system->GetDrawingScoreDef();
@@ -400,7 +404,7 @@ double StaffAlignment::GetJustificationFactor(const Doc *doc) const
             case SystemAligner::SpacingType::None: break;
             default: assert(false);
         }
-        if (m_spacingType != SystemAligner::SpacingType::System) justificationFactor *= GetStaffSize() / 100.0;
+        if (m_spacingType != SystemAligner::SpacingType::System) justificationFactor *= this->GetStaffSize() / 100.0;
     }
 
     return justificationFactor;
@@ -429,7 +433,7 @@ int StaffAlignment::CalcOverflowBelow(BoundingBox *box)
 int StaffAlignment::GetMinimumStaffSpacing(const Doc *doc, const AttSpacing *attSpacing) const
 {
     const auto &option = doc->GetOptions()->m_spacingStaff;
-    int spacing = option.GetValue() * doc->GetDrawingUnit(GetStaffSize());
+    int spacing = option.GetValue() * doc->GetDrawingUnit(this->GetStaffSize());
 
     if (!option.IsSet() && attSpacing->HasSpacingStaff()) {
         spacing = attSpacing->GetSpacingStaff() * doc->GetDrawingUnit(100);
@@ -441,6 +445,8 @@ int StaffAlignment::GetMinimumSpacing(const Doc *doc) const
 {
     assert(doc);
 
+    const AttSpacing *scoreDefSpacing = this->GetAttSpacing();
+
     int spacing = 0;
     if (m_staff && m_staff->m_drawingStaffDef) {
         // Default or staffDef spacing
@@ -448,32 +454,36 @@ int StaffAlignment::GetMinimumSpacing(const Doc *doc) const
             spacing = m_staff->m_drawingStaffDef->GetSpacing() * doc->GetDrawingUnit(100);
         }
         else {
-            const AttSpacing *scoreDefSpacing = GetAttSpacing();
             switch (m_spacingType) {
                 case SystemAligner::SpacingType::System: {
-                    spacing = GetParentSystem()->GetMinimumSystemSpacing(doc);
+                    // Top staff spacing (above) is half of a staff spacing
+                    spacing = this->GetMinimumStaffSpacing(doc, scoreDefSpacing) / 2;
                     break;
                 }
                 case SystemAligner::SpacingType::Staff: {
-                    spacing = GetMinimumStaffSpacing(doc, scoreDefSpacing);
+                    spacing = this->GetMinimumStaffSpacing(doc, scoreDefSpacing);
                     break;
                 }
                 case SystemAligner::SpacingType::Brace: {
                     const auto &option = doc->GetOptions()->m_spacingBraceGroup;
-                    spacing = option.IsSet() ? option.GetValue() * doc->GetDrawingUnit(GetStaffSize())
-                                             : GetMinimumStaffSpacing(doc, scoreDefSpacing);
+                    spacing = option.IsSet() ? option.GetValue() * doc->GetDrawingUnit(this->GetStaffSize())
+                                             : this->GetMinimumStaffSpacing(doc, scoreDefSpacing);
                     break;
                 }
                 case SystemAligner::SpacingType::Bracket: {
                     const auto &option = doc->GetOptions()->m_spacingBracketGroup;
-                    spacing = option.IsSet() ? option.GetValue() * doc->GetDrawingUnit(GetStaffSize())
-                                             : GetMinimumStaffSpacing(doc, scoreDefSpacing);
+                    spacing = option.IsSet() ? option.GetValue() * doc->GetDrawingUnit(this->GetStaffSize())
+                                             : this->GetMinimumStaffSpacing(doc, scoreDefSpacing);
                     break;
                 }
                 case SystemAligner::SpacingType::None: break;
                 default: assert(false);
             }
         }
+    }
+    // This is the bottom aligner - spacing is half of a staff spacing
+    else {
+        spacing = this->GetMinimumStaffSpacing(doc, scoreDefSpacing) / 2;
     }
 
     return spacing;
@@ -483,40 +493,95 @@ int StaffAlignment::CalcMinimumRequiredSpacing(const Doc *doc) const
 {
     assert(doc);
 
-    Object *parent = GetParent();
+    const Object *parent = this->GetParent();
     assert(parent);
 
-    StaffAlignment *prevAlignment = dynamic_cast<StaffAlignment *>(parent->GetPrevious(this));
+    const StaffAlignment *prevAlignment = dynamic_cast<const StaffAlignment *>(parent->GetPrevious(this));
 
     if (!prevAlignment) {
-        return GetOverflowAbove() + GetOverlap();
+        const int maxOverflow = std::max(this->GetOverflowAbove(), this->GetScoreDefClefOverflowAbove());
+        return maxOverflow + this->GetOverlap();
     }
 
     int overflowSum = 0;
     const bool verseCollapse = doc->GetOptions()->m_lyricVerseCollapse.GetValue();
     if (prevAlignment->GetVerseCount(verseCollapse) > 0) {
-        overflowSum = prevAlignment->GetOverflowBelow() + GetOverflowAbove();
+        overflowSum = prevAlignment->GetOverflowBelow() + this->GetOverflowAbove();
     }
     else {
         // The maximum between the overflow below of the previous staff and the overflow above of the current
-        overflowSum = std::max(prevAlignment->GetOverflowBelow(), GetOverflowAbove());
+        overflowSum = std::max(prevAlignment->GetOverflowBelow(), this->GetOverflowAbove());
         // add overlap if there any
-        overflowSum += GetOverlap();
+        overflowSum += this->GetOverlap();
     }
 
-    // Add a margin
-    overflowSum += doc->GetBottomMargin(STAFF) * doc->GetDrawingUnit(GetStaffSize());
+    const int unit = doc->GetDrawingUnit(this->GetStaffSize());
+
+    // Add a margin but not for the bottom aligner
+    if (m_staff) overflowSum += doc->GetBottomMargin(STAFF) * unit;
+
+    if (const int adjust = prevAlignment->GetBeamAdjust()) {
+        overflowSum += adjust;
+    }
 
     BoundingBox *previous = prevAlignment->GetOverflowBBoxBelow();
-    BoundingBox *current = GetOverflowBBoxAbove();
+    BoundingBox *current = this->GetOverflowBBoxAbove();
     if (previous && current) {
         if ((current->Is(ARTIC) && previous->Is(ARTIC)) || (previous->Is(ARTIC) && current->Is(NOTE))
             || (current->Is(ARTIC) && previous->Is(NOTE))) {
-            if (current->HorizontalContentOverlap(previous)) overflowSum += doc->GetDrawingUnit(GetStaffSize());
+            if (current->HorizontalContentOverlap(previous)) overflowSum += unit;
         }
     }
 
     return overflowSum;
+}
+
+void StaffAlignment::AdjustBracketGroupSpacing(Doc *doc, StaffAlignment *previous, int spacing)
+{
+    if (!previous) return;
+
+    if (this->IsInBracketGroup(true) && previous->IsInBracketGroup(false)) {
+        const int unit = doc->GetDrawingUnit(this->GetStaffSize());
+        const int offset = (doc->GetOptions()->m_bracketThickness.GetValue() - 1) * unit / 2;
+        const int overflowAbove = doc->GetGlyphHeight(SMUFL_E003_bracketTop, this->GetStaffSize(), false) + offset;
+        const int overflowBelow = doc->GetGlyphHeight(SMUFL_E004_bracketBottom, this->GetStaffSize(), false) + offset;
+        if (spacing < (overflowAbove + overflowBelow)) {
+            const int bracketOverlap = (overflowAbove + overflowBelow) - spacing / 2;
+            if (this->GetOverlap() < bracketOverlap) {
+                this->SetOverlap(bracketOverlap);
+            }
+        }
+    }
+}
+
+bool StaffAlignment::IsInBracketGroup(bool isFirst) const
+{
+    if (!this->m_staff) return false;
+
+    ScoreDef *scoreDef = this->m_system->GetDrawingScoreDef();
+    ListOfObjects groups = scoreDef->FindAllDescendantsByType(STAFFGRP);
+    for (auto staffGrp : groups) {
+        // Make sure that there is GrpSym present
+        GrpSym *grpSym = vrv_cast<GrpSym *>(staffGrp->GetFirst(GRPSYM));
+        if (!grpSym) continue;
+
+        if (grpSym->GetSymbol() == staffGroupingSym_SYMBOL_bracket) {
+            std::set<int> staffNs;
+            ListOfObjects staffDefs = staffGrp->FindAllDescendantsByType(STAFFDEF);
+            std::for_each(staffDefs.begin(), staffDefs.end(), [&staffNs](Object *object) {
+                StaffDef *staffDef = vrv_cast<StaffDef *>(object);
+                staffNs.emplace(staffDef->GetN());
+            });
+
+            const int currentN = this->m_staff->GetN();
+            if (staffNs.count(currentN)) {
+                if ((isFirst && (*staffNs.begin() == currentN)) || (!isFirst && (*staffNs.rbegin() == currentN)))
+                    return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void StaffAlignment::SetCurrentFloatingPositioner(
@@ -934,25 +999,36 @@ int StaffAlignment::AdjustSlurs(FunctorParams *functorParams)
         }
     }
 
-    Staff *staff = GetStaff();
+    // Adjust positioning of slurs with common start/end
+    Staff *staff = this->GetStaff();
     if (staff) {
-        const int slurShift = staff->m_drawingStaffSize / 2;
-        for (size_t i = 0; i + 1 < positioners.size(); i++) {
+        const int unit = params->m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        for (size_t i = 0; i + 1 < positioners.size(); ++i) {
             Slur *firstSlur = vrv_cast<Slur *>(positioners[i]->GetObject());
-            for (auto j = i + 1; j < positioners.size(); j++) {
+            for (size_t j = i + 1; j < positioners.size(); ++j) {
                 Slur *secondSlur = vrv_cast<Slur *>(positioners[j]->GetObject());
                 Point points1[4], points2[4];
                 positioners[i]->GetPoints(points1);
                 positioners[j]->GetPoints(points2);
-                if (firstSlur->GetStart() == secondSlur->GetStart()) {
-                    FloatingCurvePositioner *positioner = positioners[points1[2].x > points2[2].x ? i : j];
-                    positioner->MoveFrontVertical(
-                        positioner->GetDir() == curvature_CURVEDIR_below ? -slurShift : slurShift);
+                if ((firstSlur->GetStart() == secondSlur->GetStart())
+                    && BoundingBox::ArePointsClose(points1[0], points2[0], unit)) {
+                    FloatingCurvePositioner *positioner = positioners[points1[3].x > points2[3].x ? i : j];
+                    positioner->MoveFrontVertical(positioner->GetDir() == curvature_CURVEDIR_below ? -unit : unit);
                 }
-                else if (firstSlur->GetEnd() == secondSlur->GetEnd()) {
+                else if ((firstSlur->GetEnd() == secondSlur->GetEnd())
+                    && BoundingBox::ArePointsClose(points1[3], points2[3], unit)) {
                     FloatingCurvePositioner *positioner = positioners[points1[0].x < points2[0].x ? i : j];
-                    positioner->MoveBackVertical(
-                        positioner->GetDir() == curvature_CURVEDIR_below ? -slurShift : slurShift);
+                    positioner->MoveBackVertical(positioner->GetDir() == curvature_CURVEDIR_below ? -unit : unit);
+                }
+                else if ((firstSlur->GetStart() == secondSlur->GetEnd())
+                    && BoundingBox::ArePointsClose(points1[0], points2[3], unit)) {
+                    positioners[i]->MoveFrontHorizontal(unit / 2);
+                    positioners[j]->MoveBackHorizontal(-unit / 2);
+                }
+                else if ((firstSlur->GetEnd() == secondSlur->GetStart())
+                    && BoundingBox::ArePointsClose(points1[3], points2[0], unit)) {
+                    positioners[i]->MoveBackHorizontal(-unit / 2);
+                    positioners[j]->MoveFrontHorizontal(unit / 2);
                 }
             }
         }
@@ -966,12 +1042,26 @@ int StaffAlignment::AdjustStaffOverlap(FunctorParams *functorParams)
     AdjustStaffOverlapParams *params = vrv_params_cast<AdjustStaffOverlapParams *>(functorParams);
     assert(params);
 
-    // This is the bottom alignment (or something is wrong)
-    if (!m_staff) return FUNCTOR_STOP;
-
+    // This is the first alignment
     if (params->m_previous == NULL) {
         params->m_previous = this;
         return FUNCTOR_SIBLINGS;
+    }
+
+    const int spacing = std::max(params->m_previous->m_overflowBelow, m_overflowAbove);
+
+    // Calculate the overlap for scoreDef clefs
+    int overflowBelow = params->m_previous->GetScoreDefClefOverflowBelow();
+    int overflowAbove = this->GetScoreDefClefOverflowAbove();
+    if (spacing < (overflowBelow + overflowAbove)) {
+        this->SetOverlap((overflowBelow + overflowAbove) - spacing);
+    }
+
+    this->AdjustBracketGroupSpacing(params->m_doc, params->m_previous, spacing);
+
+    // This is the bottom alignment (or something is wrong) - this is all we need to do
+    if (!m_staff) {
+        return FUNCTOR_STOP;
     }
 
     const int staffSize = this->GetStaffSize();
@@ -999,7 +1089,6 @@ int StaffAlignment::AdjustStaffOverlap(FunctorParams *functorParams)
                 // calculate the vertical overlap and see if this is more than the expected space
                 int overflowBelow = params->m_previous->CalcOverflowBelow(*iter);
                 int overflowAbove = this->CalcOverflowAbove(*i);
-                int spacing = std::max(params->m_previous->m_overflowBelow, m_overflowAbove);
                 if (spacing < (overflowBelow + overflowAbove)) {
                     // LogDebug("Overlap %d", (overflowBelow + overflowAbove) - spacing);
                     this->SetOverlap((overflowBelow + overflowAbove) - spacing);
@@ -1019,11 +1108,9 @@ int StaffAlignment::AlignVerticallyEnd(FunctorParams *functorParams)
     AlignVerticallyParams *params = vrv_params_cast<AlignVerticallyParams *>(functorParams);
     assert(params);
 
-    if (m_spacingType != SystemAligner::SpacingType::System) {
-        params->m_cumulatedShift += GetMinimumSpacing(params->m_doc);
-    }
+    params->m_cumulatedShift += this->GetMinimumSpacing(params->m_doc);
 
-    SetYRel(-params->m_cumulatedShift);
+    this->SetYRel(-params->m_cumulatedShift);
 
     params->m_cumulatedShift += m_staffHeight;
     params->m_staffIdx++;
@@ -1036,17 +1123,14 @@ int StaffAlignment::AdjustYPos(FunctorParams *functorParams)
     AdjustYPosParams *params = vrv_params_cast<AdjustYPosParams *>(functorParams);
     assert(params);
 
-    const int defaultSpacing = GetMinimumSpacing(params->m_doc);
-    const int minSpacing = CalcMinimumRequiredSpacing(params->m_doc);
+    const int defaultSpacing = this->GetMinimumSpacing(params->m_doc);
+    const int minSpacing = this->CalcMinimumRequiredSpacing(params->m_doc);
 
-    if (m_spacingType == SystemAligner::SpacingType::System) {
-        params->m_cumulatedShift += minSpacing;
-    }
-    else if (minSpacing > defaultSpacing) {
+    if (minSpacing > defaultSpacing) {
         params->m_cumulatedShift += minSpacing - defaultSpacing;
     }
 
-    SetYRel(GetYRel() - params->m_cumulatedShift);
+    this->SetYRel(this->GetYRel() - params->m_cumulatedShift);
 
     return FUNCTOR_CONTINUE;
 }

@@ -24,24 +24,23 @@ namespace vrv {
 
 TextDirInterface::TextDirInterface() : Interface(), AttPlacementRelStaff()
 {
-    RegisterInterfaceAttClass(ATT_PLACEMENTRELSTAFF);
+    this->RegisterInterfaceAttClass(ATT_PLACEMENTRELSTAFF);
 
-    Reset();
+    this->Reset();
 }
 
 TextDirInterface::~TextDirInterface() {}
 
 void TextDirInterface::Reset()
 {
-    ResetPlacementRelStaff();
+    this->ResetPlacementRelStaff();
 }
 
-int TextDirInterface::GetNumberOfLines(Object *object)
+int TextDirInterface::GetNumberOfLines(const Object *object) const
 {
     assert(object);
 
-    ListOfObjects lbs = object->FindAllDescendantsByType(LB);
-    return ((int)lbs.size() + 1);
+    return object->GetDescendantCount(LB) + 1;
 }
 
 } // namespace vrv

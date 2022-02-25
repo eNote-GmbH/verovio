@@ -36,12 +36,12 @@ namespace vrv {
 
 static const ClassRegistrar<Score> s_factory("score", SCORE);
 
-Score::Score() : PageElement(SCORE, "score-"), PageElementStartInterface(), AttLabelled(), AttNNumberLike()
+Score::Score() : PageElement(SCORE, "score-"), PageMilestoneInterface(), AttLabelled(), AttNNumberLike()
 {
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_NNUMBERLIKE);
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_NNUMBERLIKE);
 
-    Reset();
+    this->Reset();
 }
 
 Score::~Score() {}
@@ -49,8 +49,8 @@ Score::~Score() {}
 void Score::Reset()
 {
     Object::Reset();
-    ResetLabelled();
-    ResetNNumberLike();
+    this->ResetLabelled();
+    this->ResetNNumberLike();
 
     m_scoreDef.Reset();
 
@@ -114,8 +114,8 @@ void Score::CalcRunningElementHeight(Doc *doc)
     RunningElement *page1Header = page1->GetHeader();
     RunningElement *page1Footer = page1->GetFooter();
 
-    m_drawingPgHeadHeight = (page1Header) ? page1Header->GetTotalHeight() : 0;
-    m_drawingPgFootHeight = (page1Footer) ? page1Footer->GetTotalHeight() : 0;
+    m_drawingPgHeadHeight = (page1Header) ? page1Header->GetTotalHeight(doc) : 0;
+    m_drawingPgFootHeight = (page1Footer) ? page1Footer->GetTotalHeight(doc) : 0;
 
     Page *page2 = new Page();
     page2->m_score = this;
@@ -127,8 +127,8 @@ void Score::CalcRunningElementHeight(Doc *doc)
     RunningElement *page2Header = page2->GetHeader();
     RunningElement *page2Footer = page2->GetFooter();
 
-    m_drawingPgHead2Height = (page2Header) ? page2Header->GetTotalHeight() : 0;
-    m_drawingPgFoot2Height = (page2Footer) ? page2Footer->GetTotalHeight() : 0;
+    m_drawingPgHead2Height = (page2Header) ? page2Header->GetTotalHeight(doc) : 0;
+    m_drawingPgFoot2Height = (page2Footer) ? page2Footer->GetTotalHeight(doc) : 0;
 
     pages->DeleteChild(page1);
     pages->DeleteChild(page2);
@@ -136,14 +136,14 @@ void Score::CalcRunningElementHeight(Doc *doc)
     doc->ResetDrawingPage();
 }
 
-bool Score::ScoreDefNeedsOptimization(int optionCondense)
+bool Score::ScoreDefNeedsOptimization(int optionCondense) const
 {
     if (optionCondense == CONDENSE_none) return false;
     // optimize scores only if encoded
     bool optimize = (m_scoreDef.HasOptimize() && m_scoreDef.GetOptimize() == BOOLEAN_true);
     // if nothing specified, do not if there is only one grpSym
     if ((optionCondense == CONDENSE_auto) && !m_scoreDef.HasOptimize()) {
-        ListOfObjects symbols = m_scoreDef.FindAllDescendantsByType(GRPSYM);
+        ListOfConstObjects symbols = m_scoreDef.FindAllDescendantsByType(GRPSYM);
         optimize = (symbols.size() > 1);
     }
 
@@ -213,7 +213,7 @@ int Score::ConvertToPageBasedEnd(FunctorParams *functorParams)
     ConvertToPageBasedParams *params = vrv_params_cast<ConvertToPageBasedParams *>(functorParams);
     assert(params);
 
-    ConvertToPageBasedBoundary(this, params->m_page);
+    ConvertToPageBasedMilestone(this, params->m_page);
     params->m_currentSystem = NULL;
 
     return FUNCTOR_CONTINUE;
@@ -259,6 +259,19 @@ int Score::ScoreDefOptimize(FunctorParams *functorParams)
     params->m_firstScoreDef = true;
     params->m_hasFermata = false;
     params->m_hasTempo = false;
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Score::PrepareDuration(FunctorParams *functorParams)
+{
+    PrepareDurationParams *params = vrv_params_cast<PrepareDurationParams *>(functorParams);
+    assert(params);
+
+    ScoreDef *scoreDef = this->GetScoreDef();
+    if (scoreDef) {
+        scoreDef->Process(params->m_functor, params);
+    }
 
     return FUNCTOR_CONTINUE;
 }

@@ -1,8 +1,40 @@
 # Changelog
 
 ## [unreleased]
+* Python Package Index (PyPI) distribution for macos arm64
+
+## [3.9.0] - 2022-02-22
+* Support for `beatRpt@beatdef`
+* Support for `scoreDef` and `staffDef` `@dur.default` (@eNote-GmBH)
+* Support for MIDI output of grace notes and multi-measure rests (@eNote-GmBH)
+* Support for `@stem.sameas` on notes for orchestra scores
+* Support for MIDI output of arpeggios (@eNote-GmBH)
+* Support for `beamSpan` (@eNote-GmBH)
+* Support for lyrics, tuplets and multiple tunes (`mdiv`) in ABC import (@eNote-GmBH)
+* Improved double stemmed beams (@eNote-GmBH)
+* Improved tablature MIDI output (@paul-bayleaf)
+* Improved PAE importer (nested beams, mensural dots, stemless notes)
+* Improved vertical positioning with half staff spacing above and below the systems
+* Improved justification (@eNote-GmBH)
+* Improved handling of the SMUFL fonts (@eNote-GmBH)
+* Additional parameters to the redoLayout method for faster cached layout redoing
+* Additional parameters to the renderToTimemap method for including rests and measure
+* Additional ids for rests and measure added to the getElementsAtTime methods
+* Option --svg-css for passing an additional CSS to be included in the SVG output
+* Preliminary support for stems and beam for guitar tablature
+* Preliminary support for tablature MusicXML import (@paul-bayleaf)
+* Distribution of the build with humdrum as NPM package
+
+## [3.8.1] - 2022-01-10
+* Fix bug in PAE importer for durations and for key signatures
+
+## [3.8.0] - 2021-12-22
+* Support for figured-bass extenders on `f` without `@tstamp` or `@startid` 
+* Improved page-based MEI output with validation with a customized MEI Schema
 * Improved layout with beams and control events (ornaments, fingering, etc.) (@eNote-GmBH)
 * Improve enharmonic tie overlap with accidentals (@eNote-GmBH)
+* Improved Plaine and Easie validation output with error codes and values
+* Additional parameters to the getMEI method for exporting selected content (@eNote-GmBH)
 * Option --multi-rest-thickness to control the thickness of measure rests (@eNote-GmBH)
 
 ## [3.7.0] - 2021-11-22

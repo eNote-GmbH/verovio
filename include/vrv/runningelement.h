@@ -90,13 +90,16 @@ public:
      * @name Get the size of row, cols or cells
      */
     ///@{
-    int GetTotalHeight();
+    /** Height including margins */
+    virtual int GetTotalHeight(const Doc *doc) const = 0;
+    /** Content height */
+    int GetContentHeight() const;
     /** Row from 0 to 2 */
-    int GetRowHeight(int row);
+    int GetRowHeight(int row) const;
     /** Col from 0 to 2 */
-    int GetColHeight(int col);
+    int GetColHeight(int col) const;
     /** Row from 0 to 8 */
-    int GetCellHeight(int cell);
+    int GetCellHeight(int cell) const;
     ///@}
 
     /**

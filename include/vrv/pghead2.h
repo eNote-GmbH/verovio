@@ -32,6 +32,11 @@ public:
     std::string GetClassName() const override { return "PgHead2"; }
     ///@}
 
+    /**
+     * Overriden to get the appropriate margin
+     */
+    int GetTotalHeight(const Doc *doc) const override;
+
     //----------//
     // Functors //
     //----------//

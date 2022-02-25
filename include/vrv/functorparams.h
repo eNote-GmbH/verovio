@@ -20,7 +20,7 @@ class MidiFile;
 namespace vrv {
 
 class Artic;
-class SystemElementStartInterface;
+class SystemMilestoneInterface;
 class Chord;
 class ClassIdComparison;
 class Clef;
@@ -57,6 +57,7 @@ class StemmedDrawingInterface;
 class Syl;
 class System;
 class SystemAligner;
+class Timemap;
 class Transposer;
 class TupletNum;
 class Turn;
@@ -282,7 +283,7 @@ public:
     }
     std::vector<int> m_staffNs;
     std::vector<LayerElement *> m_elements;
-    std::vector<LayerElement *> m_dots;
+    std::vector<Dots *> m_dots;
     Doc *m_doc;
     Functor *m_functor;
     Functor *m_functorEnd;
@@ -293,48 +294,6 @@ public:
 //----------------------------------------------------------------------------
 
 // Use FunctorDocParams
-
-//----------------------------------------------------------------------------
-// AdjustGraceXPosParams
-//----------------------------------------------------------------------------
-
-/**
- * member 0: the maximum position
- * member 1: the upcoming maximum position (i.e., the min pos for the next element)
- * member 2: the cumulated shift on the previous aligners
- * member 3: the list of staffN in the top-level scoreDef
- * member 4: the flag indicating whereas the alignment is in a Measure or in a Grace
- * member 5: the pointer to the right ALIGNMENT_DEFAULT (if any)
- * member 6: the Doc
- * member 7: the Functor to be redirected to MeasureAligner and GraceAligner
- * member 8: the end Functor for redirection
- **/
-
-class AdjustGraceXPosParams : public FunctorParams {
-public:
-    AdjustGraceXPosParams(Doc *doc, Functor *functor, Functor *functorEnd, std::vector<int> staffNs)
-    {
-        m_graceMaxPos = 0;
-        m_graceUpcomingMaxPos = -VRV_UNSET;
-        m_graceCumulatedXShift = 0;
-        m_staffNs = staffNs;
-        m_isGraceAlignment = false;
-        m_rightDefaultAlignment = NULL;
-        m_doc = doc;
-        m_functor = functor;
-        m_functorEnd = functorEnd;
-        m_staffNs = staffNs;
-    }
-    int m_graceMaxPos;
-    int m_graceUpcomingMaxPos;
-    int m_graceCumulatedXShift;
-    std::vector<int> m_staffNs;
-    bool m_isGraceAlignment;
-    Alignment *m_rightDefaultAlignment;
-    Doc *m_doc;
-    Functor *m_functor;
-    Functor *m_functorEnd;
-};
 
 //----------------------------------------------------------------------------
 // AdjustFloatingPositionersParams
@@ -408,6 +367,48 @@ public:
 };
 
 //----------------------------------------------------------------------------
+// AdjustGraceXPosParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the maximum position
+ * member 1: the upcoming maximum position (i.e., the min pos for the next element)
+ * member 2: the cumulated shift on the previous aligners
+ * member 3: the list of staffN in the top-level scoreDef
+ * member 4: the flag indicating whereas the alignment is in a Measure or in a Grace
+ * member 5: the pointer to the right ALIGNMENT_DEFAULT (if any)
+ * member 6: the Doc
+ * member 7: the Functor to be redirected to MeasureAligner and GraceAligner
+ * member 8: the end Functor for redirection
+ **/
+
+class AdjustGraceXPosParams : public FunctorParams {
+public:
+    AdjustGraceXPosParams(Doc *doc, Functor *functor, Functor *functorEnd, std::vector<int> staffNs)
+    {
+        m_graceMaxPos = 0;
+        m_graceUpcomingMaxPos = -VRV_UNSET;
+        m_graceCumulatedXShift = 0;
+        m_staffNs = staffNs;
+        m_isGraceAlignment = false;
+        m_rightDefaultAlignment = NULL;
+        m_doc = doc;
+        m_functor = functor;
+        m_functorEnd = functorEnd;
+        m_staffNs = staffNs;
+    }
+    int m_graceMaxPos;
+    int m_graceUpcomingMaxPos;
+    int m_graceCumulatedXShift;
+    std::vector<int> m_staffNs;
+    bool m_isGraceAlignment;
+    Alignment *m_rightDefaultAlignment;
+    Doc *m_doc;
+    Functor *m_functor;
+    Functor *m_functorEnd;
+};
+
+//----------------------------------------------------------------------------
 // AdjustHarmGrpsSpacingParams
 //----------------------------------------------------------------------------
 
@@ -461,8 +462,9 @@ public:
  * member 4: the doc
  * member 5: a pointer to the functor for passing it to the system aligner
  * member 6: a pointer to the end functor for passing it to the system aligner
- * member 7: flag whether element is in unison
- * member 8: the total shift of the current note or chord
+ * member 7: flag whether the element is in unison
+ * member 8: flag whether the element (note) has as stem.sameas note
+ * member 9: the total shift of the current note or chord
  **/
 
 class AdjustLayersParams : public FunctorParams {
@@ -476,6 +478,7 @@ public:
         m_staffNs = staffNs;
         m_unison = false;
         m_ignoreDots = true;
+        m_stemSameas = false;
         m_accumulatedShift = 0;
     }
     std::vector<int> m_staffNs;
@@ -487,6 +490,7 @@ public:
     Functor *m_functorEnd;
     bool m_unison;
     bool m_ignoreDots;
+    bool m_stemSameas;
     int m_accumulatedShift;
 };
 
@@ -804,6 +808,9 @@ public:
 /**
  * member 0: the cumulated shift
  * member 1: the cumulated justifiable width
+ * member 2: shift next measure due to section restart
+ * member 3: store castoff system widths if true
+ * member 4: the doc
  **/
 
 class AlignMeasuresParams : public FunctorParams {
@@ -812,11 +819,15 @@ public:
     {
         m_shift = 0;
         m_justifiableWidth = 0;
+        m_applySectionRestartShift = false;
+        m_storeCastOffSystemWidths = false;
         m_doc = doc;
     }
 
     int m_shift;
     int m_justifiableWidth;
+    bool m_applySectionRestartShift;
+    bool m_storeCastOffSystemWidths;
     Doc *m_doc;
 };
 
@@ -837,14 +848,16 @@ public:
     AlignSystemsParams(Doc *doc)
     {
         m_shift = 0;
-        m_systemMargin = 0;
+        m_systemSpacing = 0;
         m_prevBottomOverflow = 0;
+        m_prevBottomClefOverflow = 0;
         m_justificationSum = 0.;
         m_doc = doc;
     }
     int m_shift;
-    int m_systemMargin;
+    int m_systemSpacing;
     int m_prevBottomOverflow;
+    int m_prevBottomClefOverflow;
     double m_justificationSum;
     Doc *m_doc;
 };
@@ -984,9 +997,11 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: std::vector<double>: a stack of maximum duration filled by the functor
- * member 1: double: the duration of the current measure
- * member 2: the current bpm
+ * member 0: the current score time
+ * member 1: the current time in seconds
+ * member 2: the current tempo
+ * member 3: the tempo adjustment
+ * member 4: factor for multibar rests
  **/
 
 class CalcMaxMeasureDurationParams : public FunctorParams {
@@ -995,17 +1010,15 @@ public:
     {
         m_currentScoreTime = 0.0;
         m_currentRealTimeSeconds = 0.0;
-        m_maxCurrentScoreTime = 0.0;
-        m_maxCurrentRealTimeSeconds = 0.0;
-        m_currentTempo = 120.0;
+        m_currentTempo = MIDI_TEMPO;
         m_tempoAdjustment = 1.0;
+        m_multiRestFactor = 1;
     }
     double m_currentScoreTime;
     double m_currentRealTimeSeconds;
-    double m_maxCurrentScoreTime;
-    double m_maxCurrentRealTimeSeconds;
     double m_currentTempo;
     double m_tempoAdjustment;
+    int m_multiRestFactor;
 };
 
 //----------------------------------------------------------------------------
@@ -1030,7 +1043,7 @@ public:
         m_currentMensur = NULL;
         m_currentMeterSig = NULL;
         m_notationType = NOTATIONTYPE_cmn;
-        m_currentTempo = 120.0;
+        m_currentTempo = MIDI_TEMPO;
     }
     double m_currentScoreTime;
     double m_currentRealTimeSeconds;
@@ -1049,10 +1062,12 @@ public:
  * member 1: the vertical center of the staff
  * member 2: the actual duration of the chord / note
  * member 3: the flag for grace notes (stem is not extended)
- * member 4: the current staff (to avoid additional lookup)
- * member 5: the current layer (ditto)
- * member 6: the chord or note to which the stem belongs
- * member 7: the doc
+ * member 4: the flag for stem.sameas notes
+ * member 5: the flag indicating that we have no note in tabGrp
+ * member 6: the current staff (to avoid additional lookup)
+ * member 7: the current layer (ditto)
+ * member 8: the chord or note to which the stem belongs
+ * member 9: the doc
  **/
 
 class CalcStemParams : public FunctorParams {
@@ -1063,6 +1078,8 @@ public:
         m_verticalCenter = 0;
         m_dur = DUR_1;
         m_isGraceNote = false;
+        m_isStemSameasSecondary = false;
+        m_tabGrpWithNoNote = false;
         m_staff = NULL;
         m_layer = NULL;
         m_interface = NULL;
@@ -1072,6 +1089,8 @@ public:
     int m_verticalCenter;
     int m_dur;
     bool m_isGraceNote;
+    bool m_isStemSameasSecondary;
+    bool m_tabGrpWithNoNote;
     Staff *m_staff;
     Layer *m_layer;
     StemmedDrawingInterface *m_interface;
@@ -1340,7 +1359,7 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: the attComparision text
+ * member 0: the comparison object
  * member 1: an array of all matching objects
  * member 2: the start object range
  * member 3: the end object range
@@ -1348,7 +1367,7 @@ public:
 
 class FindAllBetweenParams : public FunctorParams {
 public:
-    FindAllBetweenParams(Comparison *comparison, ListOfObjects *elements, Object *start, Object *end)
+    FindAllBetweenParams(Comparison *comparison, ListOfObjects *elements, const Object *start, const Object *end)
     {
         m_comparison = comparison;
         m_elements = elements;
@@ -1357,8 +1376,35 @@ public:
     }
     Comparison *m_comparison;
     ListOfObjects *m_elements;
-    Object *m_start;
-    Object *m_end;
+    const Object *m_start;
+    const Object *m_end;
+};
+
+//----------------------------------------------------------------------------
+// FindAllConstBetweenParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the comparison object
+ * member 1: an array of all matching objects
+ * member 2: the start object range
+ * member 3: the end object range
+ **/
+
+class FindAllConstBetweenParams : public FunctorParams {
+public:
+    FindAllConstBetweenParams(
+        Comparison *comparison, ListOfConstObjects *elements, const Object *start, const Object *end)
+    {
+        m_comparison = comparison;
+        m_elements = elements;
+        m_start = start;
+        m_end = end;
+    }
+    Comparison *m_comparison;
+    ListOfConstObjects *m_elements;
+    const Object *m_start;
+    const Object *m_end;
 };
 
 //----------------------------------------------------------------------------
@@ -1367,12 +1413,18 @@ public:
 
 /**
  * member 0: an array of all matching objects
+ * member 1: a flag indicating if milestone references should be included as well
  **/
 
 class FindAllReferencedObjectsParams : public FunctorParams {
 public:
-    FindAllReferencedObjectsParams(ListOfObjects *elements) { m_elements = elements; }
+    FindAllReferencedObjectsParams(ListOfObjects *elements)
+    {
+        m_elements = elements;
+        m_milestoneReferences = false;
+    }
     ListOfObjects *m_elements;
+    bool m_milestoneReferences;
 };
 
 //----------------------------------------------------------------------------
@@ -1380,7 +1432,7 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: the attComparision text
+ * member 0: the comparison object
  * member 1: an array of all matching objects
  * member 2: flag indicating whether descendants of matches should be searched as well
  **/
@@ -1395,6 +1447,29 @@ public:
     }
     Comparison *m_comparison;
     ListOfObjects *m_elements;
+    bool m_continueDepthSearchForMatches;
+};
+
+//----------------------------------------------------------------------------
+// FindAllConstByComparisonParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the comparison object
+ * member 1: an array of all matching objects
+ * member 2: flag indicating whether descendants of matches should be searched as well
+ **/
+
+class FindAllConstByComparisonParams : public FunctorParams {
+public:
+    FindAllConstByComparisonParams(Comparison *comparison, ListOfConstObjects *elements)
+    {
+        m_comparison = comparison;
+        m_elements = elements;
+        m_continueDepthSearchForMatches = true;
+    }
+    Comparison *m_comparison;
+    ListOfConstObjects *m_elements;
     bool m_continueDepthSearchForMatches;
 };
 
@@ -1415,7 +1490,7 @@ public:
         m_element = NULL;
     }
     Comparison *m_comparison;
-    Object *m_element;
+    const Object *m_element;
 };
 
 //----------------------------------------------------------------------------
@@ -1431,7 +1506,7 @@ class FindByUuidParams : public FunctorParams {
 public:
     FindByUuidParams() { m_element = NULL; }
     std::string m_uuid;
-    Object *m_element;
+    const Object *m_element;
 };
 
 //----------------------------------------------------------------------------
@@ -1473,7 +1548,7 @@ public:
         m_element = NULL;
     }
     Comparison *m_comparison;
-    Object *m_element;
+    const Object *m_element;
 };
 
 //----------------------------------------------------------------------------
@@ -1515,84 +1590,6 @@ public:
 };
 
 //----------------------------------------------------------------------------
-// GenerateMIDIParams
-//----------------------------------------------------------------------------
-
-/**
- * Helper struct to store note sequences which replace notes in MIDI output due to expanded ornaments and tremolandi
- */
-struct MIDINote {
-    char pitch;
-    double duration;
-};
-
-using MIDINoteSequence = std::list<MIDINote>;
-
-/**
- * member 0: MidiFile*: the MidiFile we are writing to
- * member 1: int: the midi track number
- * member 3: double: the score time from the start of the music to the start of the current measure
- * member 4: int: the semi tone transposition for the current track
- * member 5: double with the current tempo
- * member 6: expanded notes due to ornaments and tremolandi
- **/
-
-class GenerateMIDIParams : public FunctorParams {
-public:
-    GenerateMIDIParams(smf::MidiFile *midiFile, Functor *functor)
-    {
-        m_midiFile = midiFile;
-        m_midiChannel = 0;
-        m_midiTrack = 1;
-        m_totalTime = 0.0;
-        m_transSemi = 0;
-        m_currentTempo = 120.0;
-        m_functor = functor;
-    }
-    smf::MidiFile *m_midiFile;
-    int m_midiChannel;
-    int m_midiTrack;
-    double m_totalTime;
-    int m_transSemi;
-    double m_currentTempo;
-    std::map<Note *, MIDINoteSequence> m_expandedNotes;
-    Functor *m_functor;
-};
-
-//----------------------------------------------------------------------------
-// GenerateTimemapParams
-//----------------------------------------------------------------------------
-
-/**
- * member 0: mapping of real times to score times
- * member 1: mapping of real times to elements which should be highlighted at time
- * member 2: mapping of real times to elements which should be unhighlighted at time
- * member 3: mapping of real times to tempos
- * member 4: Score time from the start of the piece to previous barline in quarter notes
- * member 5: Real time from the start of the piece to previous barline in ms
- * member 6: Currently active tempo
- **/
-
-class GenerateTimemapParams : public FunctorParams {
-public:
-    GenerateTimemapParams(Functor *functor)
-    {
-        m_scoreTimeOffset = 0.0;
-        m_realTimeOffsetMilliseconds = 0;
-        m_currentTempo = 120.0;
-        m_functor = functor;
-    }
-    std::map<double, double> realTimeToScoreTime;
-    std::map<double, std::vector<std::string>> realTimeToOnElements;
-    std::map<double, std::vector<std::string>> realTimeToOffElements;
-    std::map<double, double> realTimeToTempo;
-    double m_scoreTimeOffset;
-    double m_realTimeOffsetMilliseconds;
-    double m_currentTempo;
-    Functor *m_functor;
-};
-
-//----------------------------------------------------------------------------
 // GenerateFeaturesParams
 //----------------------------------------------------------------------------
 
@@ -1610,6 +1607,132 @@ public:
     }
     Doc *m_doc;
     FeatureExtractor *m_extractor;
+};
+
+//----------------------------------------------------------------------------
+// HorizontalLayoutCacheParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: a flag indicating if the cache should be stored (default) or restored
+ * member 1: a pointer to the Doc
+ **/
+
+class HorizontalLayoutCacheParams : public FunctorParams {
+public:
+    HorizontalLayoutCacheParams(Doc *doc)
+    {
+        m_restore = false;
+        m_doc = doc;
+    }
+    bool m_restore;
+    Doc *m_doc;
+};
+
+//----------------------------------------------------------------------------
+// GenerateMIDIParams
+//----------------------------------------------------------------------------
+
+/**
+ * Helper struct to store note sequences which replace notes in MIDI output due to expanded ornaments and tremolandi
+ */
+struct MIDINote {
+    int pitch;
+    double duration;
+};
+
+using MIDINoteSequence = std::list<MIDINote>;
+
+/**
+ * Helper struct for held notes in tablature
+ */
+struct MIDIHeldNote {
+    int m_pitch = 0;
+    double m_stopTime = 0;
+};
+
+/**
+ * Helper struct to store chord sequences in MIDI output due to grace notes
+ */
+struct MIDIChord {
+    std::set<int> pitches;
+    double duration;
+};
+
+using MIDIChordSequence = std::list<MIDIChord>;
+
+/**
+ * member 0: MidiFile*: the MidiFile we are writing to
+ * member 1: int: the midi track number
+ * member 2: int: the midi channel number
+ * member 3: double: the score time from the start of the music to the start of the current measure
+ * member 4: int: the semi tone transposition for the current track
+ * member 5: double with the current tempo
+ * member 6: the last (non grace) note that was performed
+ * member 7: expanded notes due to ornaments and tremolandi
+ * member 8: deferred notes which start slightly later
+ * member 9: grace note sequence
+ * member 10: flag indicating whether the last grace note/chord was accented
+ * member 11: the functor
+ * member 12: Tablature held notes indexed by (course - 1)
+ **/
+
+class GenerateMIDIParams : public FunctorParams {
+public:
+    GenerateMIDIParams(smf::MidiFile *midiFile, Functor *functor)
+    {
+        m_midiFile = midiFile;
+        m_midiChannel = 0;
+        m_midiTrack = 1;
+        m_totalTime = 0.0;
+        m_transSemi = 0;
+        m_currentTempo = MIDI_TEMPO;
+        m_lastNote = NULL;
+        m_accentedGraceNote = false;
+        m_functor = functor;
+    }
+    smf::MidiFile *m_midiFile;
+    int m_midiChannel;
+    int m_midiTrack;
+    double m_totalTime;
+    int m_transSemi;
+    double m_currentTempo;
+    Note *m_lastNote;
+    std::map<Note *, MIDINoteSequence> m_expandedNotes;
+    std::map<Note *, double> m_deferredNotes;
+    MIDIChordSequence m_graceNotes;
+    bool m_accentedGraceNote;
+    Functor *m_functor;
+    std::vector<MIDIHeldNote> m_heldNotes;
+};
+
+//----------------------------------------------------------------------------
+// GenerateTimemapParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: Score time from the start of the piece to previous barline in quarter notes
+ * member 1: Real time from the start of the piece to previous barline in ms
+ * member 2: Currently active tempo
+ * member 3: A pointer to the Timemap
+ * member 4: The functor for redirection
+ **/
+
+class GenerateTimemapParams : public FunctorParams {
+public:
+    GenerateTimemapParams(Timemap *timemap, Functor *functor)
+    {
+        m_scoreTimeOffset = 0.0;
+        m_realTimeOffsetMilliseconds = 0;
+        m_currentTempo = MIDI_TEMPO;
+        m_timemap = timemap;
+        m_functor = functor;
+    }
+    double m_scoreTimeOffset;
+    double m_realTimeOffsetMilliseconds;
+    double m_currentTempo;
+    Timemap *m_timemap;
+    Functor *m_functor;
 };
 
 //----------------------------------------------------------------------------
@@ -1666,12 +1789,14 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: the justification ratio
- * member 1: the justification ratio for the measure (depends on the margin)
- * member 2: the non justifiable margin
- * member 3: the system full width (without system margins)
- * member 4: the functor to be redirected to the MeasureAligner
- * member 5: the doc
+ * member 0: the relative X position of the next measure
+ * member 1: the justification ratio
+ * member 2: the left barline X position
+ * member 3: the right barline X position
+ * member 4: the system full width (without system margins)
+ * member 5: shift next measure due to section restart
+ * member 6: the functor to be redirected to the MeasureAligner
+ * member 7: the doc
  **/
 
 class JustifyXParams : public FunctorParams {
@@ -1683,6 +1808,7 @@ public:
         m_leftBarLineX = 0;
         m_rightBarLineX = 0;
         m_systemFullWidth = 0;
+        m_applySectionRestartShift = false;
         m_functor = functor;
         m_doc = doc;
     }
@@ -1691,6 +1817,7 @@ public:
     int m_leftBarLineX;
     int m_rightBarLineX;
     int m_systemFullWidth;
+    bool m_applySectionRestartShift;
     Functor *m_functor;
     Doc *m_doc;
 };
@@ -1796,24 +1923,24 @@ public:
 };
 
 //----------------------------------------------------------------------------
-// PrepareBoundariesParams
+// PrepareCrossStaffParams
 //----------------------------------------------------------------------------
 
 /**
- * member 0: the last measure
- * member 1: the current boundary
+ * member 0: a pointer to the current measure
  **/
 
-class PrepareBoundariesParams : public FunctorParams {
+class PrepareCrossStaffParams : public FunctorParams {
 public:
-    PrepareBoundariesParams()
+    PrepareCrossStaffParams()
     {
-        m_lastMeasure = NULL;
-        m_currentEnding = NULL;
+        m_currentMeasure = NULL;
+        m_currentCrossStaff = NULL;
+        m_currentCrossLayer = NULL;
     }
-    Measure *m_lastMeasure;
-    Ending *m_currentEnding;
-    std::vector<SystemElementStartInterface *> m_startBoundaries;
+    Measure *m_currentMeasure;
+    Staff *m_currentCrossStaff;
+    Layer *m_currentCrossLayer;
 };
 
 //----------------------------------------------------------------------------
@@ -1839,6 +1966,28 @@ public:
     LayerElement *m_previousElement;
     Turn *m_currentTurn;
     std::map<LayerElement *, Turn *> m_delayedTurns;
+};
+
+//----------------------------------------------------------------------------
+// PrepareDurationParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the current scoredef default duration
+ * member 1: the current staffdef default durations
+ * member 2: the functor for redirection
+ **/
+
+class PrepareDurationParams : public FunctorParams {
+public:
+    PrepareDurationParams(Functor *functor)
+    {
+        m_durDefault = DURATION_NONE;
+        m_functor = functor;
+    }
+    data_DURATION m_durDefault;
+    std::map<int, data_DURATION> m_durDefaultForStaffN;
+    Functor *m_functor;
 };
 
 //----------------------------------------------------------------------------
@@ -1885,33 +2034,13 @@ public:
 };
 
 //----------------------------------------------------------------------------
-// PrepareCrossStaffParams
-//----------------------------------------------------------------------------
-
-/**
- * member 0: a pointer to the current measure
- **/
-
-class PrepareCrossStaffParams : public FunctorParams {
-public:
-    PrepareCrossStaffParams()
-    {
-        m_currentMeasure = NULL;
-        m_currentCrossStaff = NULL;
-        m_currentCrossLayer = NULL;
-    }
-    Measure *m_currentMeasure;
-    Staff *m_currentCrossStaff;
-    Layer *m_currentCrossLayer;
-};
-
-//----------------------------------------------------------------------------
 // PrepareLyricsParams
 //----------------------------------------------------------------------------
 
 /**
  * member 0: the current Syl
- * member 1: the last Note
+ * member 1: the last Note or Chord
+ * member 2: the penultimate Note or Chord
  **/
 
 class PrepareLyricsParams : public FunctorParams {
@@ -1919,12 +2048,12 @@ public:
     PrepareLyricsParams()
     {
         m_currentSyl = NULL;
-        m_lastNote = NULL;
-        m_lastButOneNote = NULL;
+        m_lastNoteOrChord = NULL;
+        m_penultimateNoteOrChord = NULL;
     }
     Syl *m_currentSyl;
-    Note *m_lastNote;
-    Note *m_lastButOneNote;
+    LayerElement *m_lastNoteOrChord;
+    LayerElement *m_penultimateNoteOrChord;
 };
 
 //----------------------------------------------------------------------------
@@ -1932,8 +2061,11 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: ArrayOfInterfaceUuidPairs holds the interface / uuid pairs to match
- * member 1: bool* fillList for indicating whether the pairs have to be stacked or not
+ * member 0: MapOfLinkingInterfaceUuidPairs holds the interface / uuid pairs to match for links
+ * member 1: MapOfLinkingInterfaceUuidPairs holds the interface / uuid pairs to match for sameas
+ * member 2: MapOfNoteUuidPairs holds the note / uuid pairs to match for stem.sameas
+ * member 3: bool* fillList for indicating whether the pairs have to be stacked or not
+ *
  **/
 
 class PrepareLinkingParams : public FunctorParams {
@@ -1941,7 +2073,45 @@ public:
     PrepareLinkingParams() { m_fillList = true; }
     MapOfLinkingInterfaceUuidPairs m_nextUuidPairs;
     MapOfLinkingInterfaceUuidPairs m_sameasUuidPairs;
+    MapOfNoteUuidPairs m_stemSameasUuidPairs;
     bool m_fillList;
+};
+
+//----------------------------------------------------------------------------
+// PrepareMIDIParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the current tempo
+ * member 1: deferred notes which start slightly later
+ **/
+
+class PrepareMIDIParams : public FunctorParams {
+public:
+    PrepareMIDIParams() { m_currentTempo = MIDI_TEMPO; }
+    double m_currentTempo;
+    std::map<Note *, double> m_deferredNotes;
+};
+
+//----------------------------------------------------------------------------
+// PrepareMilestonesParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the last measure
+ * member 1: the current milestone
+ **/
+
+class PrepareMilestonesParams : public FunctorParams {
+public:
+    PrepareMilestonesParams()
+    {
+        m_lastMeasure = NULL;
+        m_currentEnding = NULL;
+    }
+    Measure *m_lastMeasure;
+    Ending *m_currentEnding;
+    std::vector<SystemMilestoneInterface *> m_startMilestones;
 };
 
 //----------------------------------------------------------------------------
@@ -1956,7 +2126,7 @@ public:
 class PreparePlistParams : public FunctorParams {
 public:
     PreparePlistParams() { m_fillList = true; }
-    ArrayOfPlistInterfaceUuidPairs m_interfaceUuidPairs;
+    ArrayOfPlistInterfaceUuidTuples m_interfaceUuidTuples;
     bool m_fillList;
 };
 
@@ -2020,6 +2190,20 @@ public:
 };
 
 //----------------------------------------------------------------------------
+// PrepareSlursParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: the doc
+ **/
+
+class PrepareSlursParams : public FunctorParams {
+public:
+    PrepareSlursParams(Doc *doc) { m_doc = doc; }
+    Doc *m_doc;
+};
+
+//----------------------------------------------------------------------------
 // PrepareTimePointingParams
 //----------------------------------------------------------------------------
 
@@ -2063,6 +2247,18 @@ public:
     PrepareTimestampsParams() {}
     ListOfSpanningInterClassIdPairs m_timeSpanningInterfaces;
     ListOfObjectBeatPairs m_tstamps;
+};
+
+//----------------------------------------------------------------------------
+// ReorderByXPosParams
+//----------------------------------------------------------------------------
+
+/**
+ * member 0: a pointer to the current object whose children we (may) reorder
+ **/
+class ReorderByXPosParams : public FunctorParams {
+public:
+    int modifications = 0;
 };
 
 //----------------------------------------------------------------------------
@@ -2130,11 +2326,12 @@ public:
  * member 0: the previous time position
  * member 1: the previous x rel position
  * member 2: duration of the longest note
- * member 3: the last alignment that was not timestamp-only
- * member 4: the list of timestamp-only alignment that needs to be adjusted
- * member 5: the MeasureAligner
- * member 6: the Doc
- * member 7: the functor to be redirected to Aligner
+ * member 3: the estimated justification ratio of the system
+ * member 4: the last alignment that was not timestamp-only
+ * member 5: the list of timestamp-only alignment that needs to be adjusted
+ * member 6: the MeasureAligner
+ * member 7: the Doc
+ * member 8: the functor to be redirected to Aligner
  **/
 
 class SetAlignmentXPosParams : public FunctorParams {
@@ -2144,6 +2341,7 @@ public:
         m_previousTime = 0.0;
         m_previousXRel = 0;
         m_longestActualDur = 0;
+        m_estimatedJustificationRatio = 1.0;
         m_lastNonTimestamp = NULL;
         m_measureAligner = NULL;
         m_doc = doc;
@@ -2152,6 +2350,7 @@ public:
     double m_previousTime;
     int m_previousXRel;
     int m_longestActualDur;
+    double m_estimatedJustificationRatio;
     Alignment *m_lastNonTimestamp;
     std::list<Alignment *> m_timestamps;
     MeasureAligner *m_measureAligner;
@@ -2365,6 +2564,7 @@ public:
 /**
  * member 0: a pointer to the page we are adding system to
  * member 1: a pointer to the system we are adding content to
+ * member 2: a flag indicating if we need to reset the horizontal layout cache
  **/
 
 class UnCastOffParams : public FunctorParams {
@@ -2373,35 +2573,11 @@ public:
     {
         m_page = page;
         m_currentSystem = NULL;
+        m_resetCache = true;
     }
     Page *m_page;
     System *m_currentSystem;
-};
-
-//----------------------------------------------------------------------------
-// ReorderByXPosParams
-//----------------------------------------------------------------------------
-
-/**
- * member 0: a pointer to the current object whose children we (may) reorder
- **/
-class ReorderByXPosParams : public FunctorParams {
-public:
-    int modifications = 0;
-};
-
-//----------------------------------------------------------------------------
-// PrepareSlursParams
-//----------------------------------------------------------------------------
-
-/**
- * member 0: the doc
- **/
-
-class PrepareSlursParams : public FunctorParams {
-public:
-    PrepareSlursParams(Doc *doc) { m_doc = doc; }
-    Doc *m_doc;
+    bool m_resetCache;
 };
 
 } // namespace vrv

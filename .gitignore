@@ -1,9 +1,7 @@
 # xcode
-Verovio.xcodeproj
+xcshareddata
+xcuserdata
 Verovio.xccheckout
-Verovio.xcodeproj/project.xcworkspace/xcshareddata
-Verovio.xcodeproj/project.xcworkspace/xcuserdata
-Verovio.xcodeproj/xcuserdata/
 bin/
 
 # Qt Creator
@@ -94,6 +92,3 @@ Release/
 *.vcxproj*
 *.sln
 
-# Fonts
-fonts/tmp/
-/.idea/

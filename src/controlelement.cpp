@@ -29,31 +29,31 @@ namespace vrv {
 
 ControlElement::ControlElement() : FloatingObject(CONTROL_ELEMENT, "ce"), LinkingInterface(), AttLabelled(), AttTyped()
 {
-    RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 ControlElement::ControlElement(ClassId classId)
     : FloatingObject(classId, "ce"), LinkingInterface(), AttLabelled(), AttTyped()
 {
-    RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 ControlElement::ControlElement(ClassId classId, const std::string &classIdStr)
     : FloatingObject(classId, classIdStr), LinkingInterface(), AttLabelled(), AttTyped()
 {
-    RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 ControlElement::~ControlElement() {}
@@ -62,13 +62,13 @@ void ControlElement::Reset()
 {
     FloatingObject::Reset();
     LinkingInterface::Reset();
-    ResetLabelled();
-    ResetTyped();
+    this->ResetLabelled();
+    this->ResetTyped();
 }
 
-data_HORIZONTALALIGNMENT ControlElement::GetChildRendAlignment()
+data_HORIZONTALALIGNMENT ControlElement::GetChildRendAlignment() const
 {
-    Rend *rend = dynamic_cast<Rend *>(this->FindDescendantByType(REND));
+    const Rend *rend = dynamic_cast<const Rend *>(this->FindDescendantByType(REND));
     if (!rend || !rend->HasHalign()) return HORIZONTALALIGNMENT_NONE;
 
     return rend->GetHalign();

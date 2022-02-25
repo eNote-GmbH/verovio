@@ -34,38 +34,38 @@ namespace vrv {
 //----------------------------------------------------------------------------
 
 EditorialElement::EditorialElement()
-    : Object(EDITORIAL_ELEMENT, "ee-"), SystemElementStartInterface(), AttLabelled(), AttTyped()
+    : Object(EDITORIAL_ELEMENT, "ee-"), SystemMilestoneInterface(), AttLabelled(), AttTyped()
 {
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 EditorialElement::EditorialElement(ClassId classId)
-    : Object(classId, "ee-"), SystemElementStartInterface(), AttLabelled(), AttTyped()
+    : Object(classId, "ee-"), SystemMilestoneInterface(), AttLabelled(), AttTyped()
 {
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 EditorialElement::EditorialElement(ClassId classId, const std::string &classIdStr)
-    : Object(classId, classIdStr), SystemElementStartInterface(), AttLabelled(), AttTyped()
+    : Object(classId, classIdStr), SystemMilestoneInterface(), AttLabelled(), AttTyped()
 {
-    RegisterAttClass(ATT_LABELLED);
-    RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_TYPED);
 
-    Reset();
+    this->Reset();
 }
 
 void EditorialElement::Reset()
 {
     Object::Reset();
-    SystemElementStartInterface::Reset();
-    ResetLabelled();
-    ResetTyped();
+    SystemMilestoneInterface::Reset();
+    this->ResetLabelled();
+    this->ResetTyped();
 
     m_visibility = Visible;
 }
@@ -133,15 +133,15 @@ int EditorialElement::ConvertToPageBasedEnd(FunctorParams *functorParams)
     ConvertToPageBasedParams *params = vrv_params_cast<ConvertToPageBasedParams *>(functorParams);
     assert(params);
 
-    if (m_visibility == Visible) ConvertToPageBasedBoundary(this, params->m_currentSystem);
+    if (m_visibility == Visible) ConvertToPageBasedMilestone(this, params->m_currentSystem);
 
     return FUNCTOR_CONTINUE;
 }
 
-int EditorialElement::PrepareBoundaries(FunctorParams *functorParams)
+int EditorialElement::PrepareMilestones(FunctorParams *functorParams)
 {
-    if (this->IsSystemBoundary()) {
-        this->SystemElementStartInterface::InterfacePrepareBoundaries(functorParams);
+    if (this->IsSystemMilestone()) {
+        this->SystemMilestoneInterface::InterfacePrepareMilestones(functorParams);
     }
 
     return FUNCTOR_CONTINUE;
@@ -149,8 +149,8 @@ int EditorialElement::PrepareBoundaries(FunctorParams *functorParams)
 
 int EditorialElement::ResetDrawing(FunctorParams *functorParams)
 {
-    if (this->IsSystemBoundary()) {
-        this->SystemElementStartInterface::InterfaceResetDrawing(functorParams);
+    if (this->IsSystemMilestone()) {
+        this->SystemMilestoneInterface::InterfaceResetDrawing(functorParams);
     }
 
     return FUNCTOR_CONTINUE;

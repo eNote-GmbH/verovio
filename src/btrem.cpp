@@ -32,10 +32,10 @@ static const ClassRegistrar<BTrem> s_factory("btrem", BTREM);
 
 BTrem::BTrem() : LayerElement(BTREM, "btrem-"), AttBTremLog(), AttTremMeasured()
 {
-    RegisterAttClass(ATT_BTREMLOG);
-    RegisterAttClass(ATT_TREMMEASURED);
+    this->RegisterAttClass(ATT_BTREMLOG);
+    this->RegisterAttClass(ATT_TREMMEASURED);
 
-    Reset();
+    this->Reset();
 }
 
 BTrem::~BTrem() {}
@@ -43,8 +43,8 @@ BTrem::~BTrem() {}
 void BTrem::Reset()
 {
     LayerElement::Reset();
-    ResetBTremLog();
-    ResetTremMeasured();
+    this->ResetBTremLog();
+    this->ResetTremMeasured();
 }
 
 bool BTrem::IsSupportedChild(Object *child)
@@ -86,8 +86,7 @@ int BTrem::GenerateMIDI(FunctorParams *functorParams)
     auto expandNote = [params, noteInQuarterDur](Object *obj) {
         Note *note = vrv_cast<Note *>(obj);
         assert(note);
-        note->CalcMIDIPitch(params->m_transSemi);
-        const char pitch = note->GetMIDIPitch();
+        const int pitch = note->GetMIDIPitch(params->m_transSemi);
         const double totalInQuarterDur = note->GetScoreTimeDuration() + note->GetScoreTimeTiedDuration();
         const int multiplicity = totalInQuarterDur / noteInQuarterDur;
         (params->m_expandedNotes)[note] = MIDINoteSequence(multiplicity, { pitch, noteInQuarterDur });
@@ -109,7 +108,7 @@ int BTrem::GenerateMIDI(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-data_DURATION BTrem::CalcIndividualNoteDuration()
+data_DURATION BTrem::CalcIndividualNoteDuration() const
 {
     // Check if duration is given by attribute
     if (this->HasUnitdur()) {
@@ -119,13 +118,13 @@ data_DURATION BTrem::CalcIndividualNoteDuration()
     // Otherwise consider duration and stem modifier of first child chord/note
     data_DURATION childDur = DURATION_NONE;
     data_STEMMODIFIER stemMod = STEMMODIFIER_NONE;
-    Chord *chord = vrv_cast<Chord *>(this->FindDescendantByType(CHORD));
+    const Chord *chord = vrv_cast<const Chord *>(this->FindDescendantByType(CHORD));
     if (chord) {
         childDur = chord->GetDur();
         stemMod = chord->GetStemMod();
     }
     else {
-        Note *note = vrv_cast<Note *>(this->FindDescendantByType(NOTE));
+        const Note *note = vrv_cast<const Note *>(this->FindDescendantByType(NOTE));
         if (note) {
             childDur = note->GetDur();
             stemMod = note->GetStemMod();

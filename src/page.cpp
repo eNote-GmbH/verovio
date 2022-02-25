@@ -37,7 +37,7 @@ namespace vrv {
 
 Page::Page() : Object(PAGE, "page-")
 {
-    Reset();
+    this->Reset();
 }
 
 Page::~Page() {}
@@ -79,16 +79,21 @@ bool Page::IsSupportedChild(Object *child)
     return true;
 }
 
-RunningElement *Page::GetHeader() const
+RunningElement *Page::GetHeader()
+{
+    return const_cast<RunningElement *>(std::as_const(*this).GetHeader());
+}
+
+const RunningElement *Page::GetHeader() const
 {
     assert(m_score);
 
-    Doc *doc = dynamic_cast<Doc *>(this->GetFirstAncestor(DOC));
+    const Doc *doc = dynamic_cast<const Doc *>(this->GetFirstAncestor(DOC));
     if (!doc || (doc->GetOptions()->m_header.GetValue() == HEADER_none)) {
         return NULL;
     }
 
-    Pages *pages = doc->GetPages();
+    const Pages *pages = doc->GetPages();
     assert(pages);
 
     // first page or use the pgHeader for all pages?
@@ -100,16 +105,21 @@ RunningElement *Page::GetHeader() const
     }
 }
 
-RunningElement *Page::GetFooter() const
+RunningElement *Page::GetFooter()
+{
+    return const_cast<RunningElement *>(std::as_const(*this).GetFooter());
+}
+
+const RunningElement *Page::GetFooter() const
 {
     assert(m_scoreEnd);
 
-    Doc *doc = dynamic_cast<Doc *>(this->GetFirstAncestor(DOC));
+    const Doc *doc = dynamic_cast<const Doc *>(this->GetFirstAncestor(DOC));
     if (!doc || (doc->GetOptions()->m_footer.GetValue() == FOOTER_none)) {
         return NULL;
     }
 
-    Pages *pages = doc->GetPages();
+    const Pages *pages = doc->GetPages();
     assert(pages);
 
     // first page or use the pgFooter for all pages?
@@ -130,7 +140,7 @@ void Page::LayOut(bool force)
         return;
     }
 
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     this->LayOutHorizontally();
@@ -161,7 +171,7 @@ void Page::LayOutTranscription(bool force)
         return;
     }
 
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
@@ -230,7 +240,7 @@ void Page::LayOutTranscription(bool force)
 
 void Page::LayOutHorizontally()
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
@@ -438,11 +448,26 @@ void Page::LayOutHorizontally()
     PrepareSlursParams prepareSlursParams(doc);
     Functor prepareSlurs(&Object::PrepareSlurs);
     this->Process(&prepareSlurs, &prepareSlursParams);
+
+    FunctorDocParams resolveSpanningBeamSpansParams(doc);
+    Functor resolveSpanningBeamSpans(&Object::ResolveSpanningBeamSpans);
+    this->Process(&resolveSpanningBeamSpans, &resolveSpanningBeamSpansParams);
+}
+
+void Page::HorizontalLayoutCachePage(bool restore)
+{
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+    assert(doc);
+
+    HorizontalLayoutCacheParams horizontalLayoutCacheParams(doc);
+    horizontalLayoutCacheParams.m_restore = restore;
+    Functor horizontalLayoutCache(&Object::HorizontalLayoutCache);
+    this->Process(&horizontalLayoutCache, &horizontalLayoutCacheParams);
 }
 
 void Page::LayOutVertically()
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
@@ -561,7 +586,7 @@ void Page::LayOutVertically()
     // Adjust system Y position
     AlignSystemsParams alignSystemsParams(doc);
     alignSystemsParams.m_shift = doc->m_drawingPageContentHeight;
-    alignSystemsParams.m_systemMargin = (doc->GetOptions()->m_spacingSystem.GetValue()) * doc->GetDrawingUnit(100);
+    alignSystemsParams.m_systemSpacing = (doc->GetOptions()->m_spacingSystem.GetValue()) * doc->GetDrawingUnit(100);
     Functor alignSystems(&Object::AlignSystems);
     Functor alignSystemsEnd(&Object::AlignSystemsEnd);
     this->Process(&alignSystems, &alignSystemsParams, &alignSystemsEnd);
@@ -569,7 +594,7 @@ void Page::LayOutVertically()
 
 void Page::JustifyHorizontally()
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     if ((doc->GetOptions()->m_breaks.GetValue() == BREAKS_none) || doc->GetOptions()->m_noJustification.GetValue()) {
@@ -596,7 +621,7 @@ void Page::JustifyHorizontally()
 
 void Page::JustifyVertically()
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
@@ -618,7 +643,7 @@ void Page::JustifyVertically()
     assert(pages);
     if (pages->GetLast() == this) {
         int idx = this->GetIdx();
-        const int childSystems = GetChildCount(SYSTEM);
+        const int childSystems = this->GetChildCount(SYSTEM);
         if (idx > 0) {
             Page *penultimatePage = dynamic_cast<Page *>(pages->GetPrevious(this));
             assert(penultimatePage);
@@ -633,7 +658,7 @@ void Page::JustifyVertically()
             }
         }
         else {
-            const int stavesPerSystem = m_drawingScoreDef.GetChildCount(STAFFDEF, UNLIMITED_DEPTH);
+            const int stavesPerSystem = m_drawingScoreDef.GetDescendantCount(STAFFDEF);
             if (childSystems * stavesPerSystem < 8) return;
         }
     }
@@ -656,7 +681,7 @@ void Page::JustifyVertically()
 
 void Page::LayOutPitchPos()
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
@@ -675,23 +700,23 @@ void Page::LayOutPitchPos()
 
 int Page::GetContentHeight() const
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
 
     // Doc::SetDrawingPage should have been called before
     // Make sure we have the correct page
     assert(this == doc->GetDrawingPage());
 
-    if (!GetChildCount()) {
+    if (!this->GetChildCount()) {
         return 0;
     }
 
-    System *last = dynamic_cast<System *>(this->GetLast(SYSTEM));
+    const System *last = dynamic_cast<const System *>(this->GetLast(SYSTEM));
     assert(last);
     int height = doc->m_drawingPageContentHeight - last->GetDrawingYRel() + last->GetHeight();
 
     if (this->GetFooter()) {
-        height += this->GetFooter()->GetTotalHeight();
+        height += this->GetFooter()->GetTotalHeight(doc);
     }
 
     return height;
@@ -699,7 +724,7 @@ int Page::GetContentHeight() const
 
 int Page::GetContentWidth() const
 {
-    Doc *doc = vrv_cast<Doc *>(GetFirstAncestor(DOC));
+    const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
     // in non debug
     if (!doc) return 0;
@@ -709,8 +734,8 @@ int Page::GetContentWidth() const
     assert(this == doc->GetDrawingPage());
 
     int maxWidth = 0;
-    for (auto &child : *this->GetChildren()) {
-        System *system = dynamic_cast<System *>(child);
+    for (auto child : this->GetChildren()) {
+        const System *system = dynamic_cast<const System *>(child);
         if (system) {
             // we include the left margin and the right margin
             int systemWidth = system->m_drawingTotalWidth + system->m_systemLeftMar + system->m_systemRightMar;
@@ -852,11 +877,11 @@ int Page::AlignSystems(FunctorParams *functorParams)
 
     RunningElement *header = this->GetHeader();
     if (header) {
-        const int bottomMarginPgHead
-            = params->m_doc->GetOptions()->m_bottomMarginPgHead.GetValue() * params->m_doc->GetDrawingUnit(100);
-
         header->SetDrawingYRel(params->m_shift);
-        params->m_shift -= header->GetTotalHeight() + bottomMarginPgHead;
+        const int headerHeight = header->GetTotalHeight(params->m_doc);
+        if (headerHeight > 0) {
+            params->m_shift -= headerHeight;
+        }
     }
     return FUNCTOR_CONTINUE;
 }
@@ -871,18 +896,20 @@ int Page::AlignSystemsEnd(FunctorParams *functorParams)
 
     RunningElement *footer = this->GetFooter();
     if (footer) {
-        m_drawingJustifiableHeight -= footer->GetTotalHeight();
+        m_drawingJustifiableHeight -= footer->GetTotalHeight(params->m_doc);
 
         // Move it up below the last system
         if (params->m_doc->GetOptions()->m_adjustPageHeight.GetValue()) {
-            if (GetChildCount()) {
+            if (this->GetChildCount()) {
                 System *last = dynamic_cast<System *>(this->GetLast(SYSTEM));
                 assert(last);
-                footer->SetDrawingYRel(last->GetDrawingYRel() - last->GetHeight());
+                const int unit = params->m_doc->GetDrawingUnit(100);
+                const int topMargin = params->m_doc->GetOptions()->m_topMarginPgFooter.GetValue() * unit;
+                footer->SetDrawingYRel(last->GetDrawingYRel() - last->GetHeight() - topMargin);
             }
         }
         else {
-            footer->SetDrawingYRel(footer->GetTotalHeight());
+            footer->SetDrawingYRel(footer->GetContentHeight());
         }
     }
 

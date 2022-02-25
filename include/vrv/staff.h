@@ -33,7 +33,12 @@ class Tuning;
  * It contains Measure objects.
  * For unmeasured music, one single Measure is added for simplifying internal processing
  */
-class Staff : public Object, public FacsimileInterface, public AttNInteger, public AttTyped, public AttVisibility {
+class Staff : public Object,
+              public FacsimileInterface,
+              public AttCoordY1,
+              public AttNInteger,
+              public AttTyped,
+              public AttVisibility {
 
 public:
     /**
@@ -54,11 +59,6 @@ public:
     void CloneReset() override;
 
     FacsimileInterface *GetFacsimileInterface() override { return dynamic_cast<FacsimileInterface *>(this); }
-
-    /**
-     * Return a const pointer to the children
-     */
-    const ArrayOfObjects *GetChildren(bool docChildren = true) const override;
 
     /**
      * Delete all the legder line arrays.
@@ -87,6 +87,11 @@ public:
     void AdjustDrawingStaffSize();
 
     /**
+     * Return the drawing staff size for staff notation, including for tablature staves
+     */
+    int GetDrawingStaffNotationSize();
+
+    /**
      * Check if the staff is currently visible.
      * Looks for the parent system and its current drawing scoreDef
      */
@@ -99,6 +104,11 @@ public:
     bool IsMensural();
     bool IsNeume();
     bool IsTablature();
+    bool IsTabGuitar() { return m_drawingNotationType == NOTATIONTYPE_tab_guitar; }
+    bool IsTabLuteFrench() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_french; }
+    bool IsTabLuteGerman() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_german; }
+    bool IsTabLuteItalian() { return m_drawingNotationType == NOTATIONTYPE_tab_lute_italian; }
+    bool IsTabWithStemsOutside();
     ///@}
 
     /**
@@ -153,6 +163,11 @@ public:
      * exists).
      */
     virtual void SetFromFacsimile(Doc *doc);
+
+    /**
+     * Set beam adjustment for the corresponding staff alignment
+     */
+    void SetAlignmentBeamAdjustment(int adjust);
 
     //----------//
     // Functors //

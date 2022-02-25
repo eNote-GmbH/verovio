@@ -41,15 +41,17 @@ namespace vrv {
 
 static const ClassRegistrar<Staff> s_factory("staff", STAFF);
 
-Staff::Staff(int n) : Object(STAFF, "staff-"), FacsimileInterface(), AttNInteger(), AttTyped(), AttVisibility()
+Staff::Staff(int n)
+    : Object(STAFF, "staff-"), FacsimileInterface(), AttCoordY1(), AttNInteger(), AttTyped(), AttVisibility()
 {
-    RegisterAttClass(ATT_NINTEGER);
-    RegisterAttClass(ATT_TYPED);
-    RegisterAttClass(ATT_VISIBILITY);
-    RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
+    this->RegisterAttClass(ATT_COORDY1);
+    this->RegisterAttClass(ATT_NINTEGER);
+    this->RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_VISIBILITY);
+    this->RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
 
-    Reset();
-    SetN(n);
+    this->Reset();
+    this->SetN(n);
 }
 
 Staff::~Staff() {}
@@ -58,9 +60,10 @@ void Staff::Reset()
 {
     Object::Reset();
     FacsimileInterface::Reset();
-    ResetNInteger();
-    ResetTyped();
-    ResetVisibility();
+    this->ResetCoordY1();
+    this->ResetNInteger();
+    this->ResetTyped();
+    this->ResetVisibility();
 
     m_yAbs = VRV_UNSET;
 
@@ -86,11 +89,6 @@ void Staff::CloneReset()
     m_timeSpanningElements.clear();
     m_drawingStaffDef = NULL;
     m_drawingTuning = NULL;
-}
-
-const ArrayOfObjects *Staff::GetChildren(bool docChildren) const
-{
-    return Object::GetChildren(true);
 }
 
 void Staff::ClearLedgerLines()
@@ -124,7 +122,7 @@ bool Staff::IsSupportedChild(Object *child)
 int Staff::GetDrawingX() const
 {
     if (this->HasFacs()) {
-        Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+        const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
         assert(doc);
         if (doc->GetType() == Facs) {
             return FacsimileInterface::GetDrawingX();
@@ -136,7 +134,7 @@ int Staff::GetDrawingX() const
 int Staff::GetDrawingY() const
 {
     if (this->HasFacs()) {
-        Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+        const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
         assert(DOC);
         if (doc->GetType() == Facs) {
             return FacsimileInterface::GetDrawingY();
@@ -149,7 +147,7 @@ int Staff::GetDrawingY() const
 
     if (m_cachedDrawingY != VRV_UNSET) return m_cachedDrawingY;
 
-    System *system = vrv_cast<System *>(this->GetFirstAncestor(SYSTEM));
+    const System *system = vrv_cast<const System *>(this->GetFirstAncestor(SYSTEM));
     assert(system);
 
     m_cachedDrawingY = system->GetDrawingY() + m_staffAlignment->GetYRel();
@@ -159,7 +157,7 @@ int Staff::GetDrawingY() const
 double Staff::GetDrawingRotate() const
 {
     if (this->HasFacs()) {
-        Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+        const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
         assert(doc);
         if (doc->GetType() == Facs) {
             return FacsimileInterface::GetDrawingRotate();
@@ -182,6 +180,11 @@ void Staff::AdjustDrawingStaffSize()
             m_drawingStaffSize = 100 * yDiff / (doc->GetOptions()->m_unit.GetValue() * 2 * (m_drawingLines - 1));
         }
     }
+}
+
+int Staff::GetDrawingStaffNotationSize()
+{
+    return (this->IsTablature()) ? m_drawingStaffSize / TABLATURE_STAFF_RATIO : m_drawingStaffSize;
 }
 
 bool Staff::DrawingIsVisible()
@@ -216,6 +219,13 @@ bool Staff::IsTablature()
         || m_drawingNotationType == NOTATIONTYPE_tab_lute_french
         || m_drawingNotationType == NOTATIONTYPE_tab_lute_german);
     return isTablature;
+}
+
+bool Staff::IsTabWithStemsOutside()
+{
+    if (!m_drawingStaffDef) return false;
+    // Temporary implementation looking at staffDef@type
+    return (!this->IsTabGuitar() || !m_drawingStaffDef->HasType() || m_drawingStaffDef->GetType() != "stems.within");
 }
 
 int Staff::CalcPitchPosYRel(Doc *doc, int loc)
@@ -369,13 +379,18 @@ int Staff::GetNearestInterStaffPosition(int y, Doc *doc, data_STAFFREL place)
     }
 }
 
+void Staff::SetAlignmentBeamAdjustment(int adjust)
+{
+    m_staffAlignment->SetBeamAdjust(adjust);
+}
+
 //----------------------------------------------------------------------------
 // LedgerLine
 //----------------------------------------------------------------------------
 
 LedgerLine::LedgerLine()
 {
-    Reset();
+    this->Reset();
 }
 
 LedgerLine::~LedgerLine() {}
@@ -515,7 +530,7 @@ int Staff::AlignHorizontally(FunctorParams *functorParams)
     else {
         params->m_notationType = NOTATIONTYPE_cmn;
     }
-    Measure *parentMeasure = vrv_cast<Measure *>(GetFirstAncestor(MEASURE));
+    Measure *parentMeasure = vrv_cast<Measure *>(this->GetFirstAncestor(MEASURE));
     if (parentMeasure) m_drawingStaffDef->AlternateCurrentMeterSig(parentMeasure);
 
     return FUNCTOR_CONTINUE;

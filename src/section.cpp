@@ -32,13 +32,12 @@ namespace vrv {
 
 static const ClassRegistrar<Section> s_factory("section", SECTION);
 
-Section::Section()
-    : SystemElement(SECTION, "section-"), SystemElementStartInterface(), AttNNumberLike(), AttSectionVis()
+Section::Section() : SystemElement(SECTION, "section-"), SystemMilestoneInterface(), AttNNumberLike(), AttSectionVis()
 {
-    RegisterAttClass(ATT_NNUMBERLIKE);
-    RegisterAttClass(ATT_SECTIONVIS);
+    this->RegisterAttClass(ATT_NNUMBERLIKE);
+    this->RegisterAttClass(ATT_SECTIONVIS);
 
-    Reset();
+    this->Reset();
 }
 
 Section::~Section() {}
@@ -46,9 +45,9 @@ Section::~Section() {}
 void Section::Reset()
 {
     SystemElement::Reset();
-    SystemElementStartInterface::Reset();
-    ResetNNumberLike();
-    ResetSectionVis();
+    SystemMilestoneInterface::Reset();
+    this->ResetNNumberLike();
+    this->ResetSectionVis();
 }
 
 bool Section::IsSupportedChild(Object *child)
@@ -91,7 +90,7 @@ int Section::ConvertToPageBasedEnd(FunctorParams *functorParams)
     ConvertToPageBasedParams *params = vrv_params_cast<ConvertToPageBasedParams *>(functorParams);
     assert(params);
 
-    ConvertToPageBasedBoundary(this, params->m_currentSystem);
+    ConvertToPageBasedMilestone(this, params->m_currentSystem);
 
     return FUNCTOR_CONTINUE;
 }
@@ -107,10 +106,10 @@ int Section::ConvertToUnCastOffMensural(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Section::PrepareBoundaries(FunctorParams *functorParams)
+int Section::PrepareMilestones(FunctorParams *functorParams)
 {
-    if (this->IsSystemBoundary()) {
-        this->SystemElementStartInterface::InterfacePrepareBoundaries(functorParams);
+    if (this->IsSystemMilestone()) {
+        this->SystemMilestoneInterface::InterfacePrepareMilestones(functorParams);
     }
 
     return FUNCTOR_CONTINUE;
@@ -120,8 +119,32 @@ int Section::ResetDrawing(FunctorParams *functorParams)
 {
     FloatingObject::ResetDrawing(functorParams);
 
-    if (this->IsSystemBoundary()) {
-        this->SystemElementStartInterface::InterfaceResetDrawing(functorParams);
+    if (this->IsSystemMilestone()) {
+        this->SystemMilestoneInterface::InterfaceResetDrawing(functorParams);
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Section::AlignMeasures(FunctorParams *functorParams)
+{
+    AlignMeasuresParams *params = vrv_params_cast<AlignMeasuresParams *>(functorParams);
+    assert(params);
+
+    if (this->GetRestart() == BOOLEAN_true) {
+        params->m_applySectionRestartShift = true;
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Section::JustifyX(FunctorParams *functorParams)
+{
+    JustifyXParams *params = vrv_params_cast<JustifyXParams *>(functorParams);
+    assert(params);
+
+    if (this->GetRestart() == BOOLEAN_true) {
+        params->m_applySectionRestartShift = true;
     }
 
     return FUNCTOR_CONTINUE;

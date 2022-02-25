@@ -52,7 +52,7 @@ public:
     /**
      * Return the number of system (children are System object only)
      */
-    int GetSystemCount() const { return (int)GetChildren()->size(); }
+    int GetSystemCount() const { return (int)GetChildren().size(); }
 
     /**
      * @name Get and set the pixel per unit factor.
@@ -67,8 +67,10 @@ public:
      * Looks if the page is the first one or not
      */
     ///@{
-    RunningElement *GetHeader() const;
-    RunningElement *GetFooter() const;
+    RunningElement *GetHeader();
+    const RunningElement *GetHeader() const;
+    RunningElement *GetFooter();
+    const RunningElement *GetFooter() const;
     ///@}
 
     /**
@@ -98,6 +100,13 @@ public:
      * Lay out the content of the page (measures and their content) horizontally
      */
     void LayOutHorizontally();
+
+    /**
+     * Lay out the measures horizontally using the cached values.
+     * This should be done in preparation of cast-off which is based on measure positioning.
+     * The content of the measures is not laid out and keeps previously cached positioning.
+     */
+    void HorizontalLayoutCachePage(bool restore = false);
 
     /**
      * Justifiy the content of the page (measures and their content) horizontally

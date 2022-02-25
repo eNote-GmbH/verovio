@@ -35,6 +35,8 @@ class TimestampAttr;
  */
 class Measure : public Object,
                 public AttBarring,
+                public AttCoordX1,
+                public AttCoordX2,
                 public AttMeasureLog,
                 public AttMeterConformanceBar,
                 public AttNNumberLike,
@@ -81,6 +83,11 @@ public:
      * The TimestampAttr it not added as child of the measure but to the Measure::m_timestamps array.
      */
     void AddTimestamp(TimestampAttr *timestampAttr);
+
+    /**
+     * Return true if the Measure has cached values for the horizontal layout
+     */
+    bool HasCachedHorizontalLayout() const { return (m_cachedWidth != VRV_UNSET); }
 
     /**
      * Get the X drawing position
@@ -200,6 +207,11 @@ public:
      * Takes into account Dir, Dynam, and Tempo.
      */
     int GetDrawingOverflow();
+
+    /**
+     * Calculates the section restart shift
+     */
+    int GetSectionRestartShift(Doc *doc) const;
 
     /**
      * @name Setter and getter of the drawing scoreDef
@@ -430,40 +442,52 @@ public:
     int PrepareTimeSpanningEnd(FunctorParams *functorParams) override;
 
     /**
-     * See Object::PrepareBoundaries
+     * See Object::PrepareMilestones
      */
-    int PrepareBoundaries(FunctorParams *functorParams) override;
+    int PrepareMilestones(FunctorParams *functorParams) override;
 
     /**
-     * @name See Object::GenerateMIDI
+     * See Object::PrepareMIDI
      */
-    ///@{
+    int PrepareMIDI(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::GenerateMIDI
+     */
     int GenerateMIDI(FunctorParams *functorParams) override;
-    ///@}
 
     /**
-     * @name See Object::GenerateTimemap
+     * See Object::GenerateTimemap
      */
-    ///@{
     int GenerateTimemap(FunctorParams *functorParams) override;
-    ///@}
 
     /**
      * See Object::CalcMaxMeasureDuration
      */
+    ///@{
     int CalcMaxMeasureDuration(FunctorParams *functorParams) override;
+    int CalcMaxMeasureDurationEnd(FunctorParams *functorParams) override;
+    ///@}
 
     /**
      * See Object::CalcOnsetOffset
      */
-    ///@{
     int CalcOnsetOffset(FunctorParams *functorParams) override;
-    ///@}
 
     /**
      * See Object::PrepareTimestamps
      */
     int PrepareTimestampsEnd(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::UnCastOff
+     */
+    int UnCastOff(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::HorizontalLayoutCache
+     */
+    int HorizontalLayoutCache(FunctorParams *functorParams) override;
 
 public:
     // flags for drawing measure barline based on visibility or other conditions
@@ -496,6 +520,19 @@ protected:
      */
     int m_drawingXRel;
 
+    /**
+     * The cached value for m_drawingXRel for caching horizontal layout
+     */
+    int m_cachedXRel;
+
+    /**
+     * @name Cached values of overflow and width for caching the horizontal layout
+     */
+    ///@{
+    int m_cachedOverflow;
+    int m_cachedWidth;
+    ///@}
+
 private:
     bool m_measuredMusic;
 
@@ -515,7 +552,7 @@ private:
     ScoreDef *m_drawingScoreDef;
 
     /**
-     * A pointer to the ending to which the measure belongs. Set by PrepareBoundaries and passed to the System drawing
+     * A pointer to the ending to which the measure belongs. Set by PrepareMilestones and passed to the System drawing
      * list
      * in DrawMeasure
      */

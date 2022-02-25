@@ -124,12 +124,15 @@ public:
      * Will find it only when having read a pages-based MEI file,
      * or when a file was converted to page-based MEI.
      */
+    ///@{
     Pages *GetPages();
+    const Pages *GetPages() const;
+    ///@}
 
     /**
      * Get the total page count
      */
-    int GetPageCount();
+    int GetPageCount() const;
 
     /**
      * Return true if the MIDI generation is already done
@@ -222,7 +225,7 @@ public:
      * true before ExportMIDI() or ExportTimemap() can export anything (These two functions
      * will automatically run CalculateMidiTimemap() if HasMidiTimemap() return false.
      */
-    bool HasMidiTimemap();
+    bool HasMidiTimemap() const;
 
     /**
      * Export the document to a MIDI file.
@@ -234,10 +237,7 @@ public:
      * Extract a timemap from the document to a JSON string.
      * Run trough all the layers and fill the timemap file content.
      */
-    bool ExportTimemap(std::string &output);
-    void PrepareJsonTimemap(std::string &output, std::map<double, double> &realTimeToScoreTime,
-        std::map<double, std::vector<std::string>> &realTimeToOnElements,
-        std::map<double, std::vector<std::string>> &realTimeToOffElements, std::map<double, double> &realTimeToTempo);
+    bool ExportTimemap(std::string &output, bool includeRests, bool includeMeasures);
 
     /**
      * Extract music features to JSON string.
@@ -308,7 +308,7 @@ public:
      * Undo the cast off of the entire document.
      * The document will then contain one single page with one single system.
      */
-    void UnCastOffDoc();
+    void UnCastOffDoc(bool resetCache = true);
 
     /**
      * Cast off of the entire document according to the encoded data (pb and sb).
@@ -318,7 +318,7 @@ public:
 
     /**
      * Convert the doc from score-based to page-based MEI.
-     * Containers will be converted to systemElementStart / systemElementEnd.
+     * Containers will be converted to systemMilestone / systemMilestoneEnd.
      * Does not perform any check if the data needs or can be converted.
      */
     void ConvertToPageBasedDoc();
@@ -414,12 +414,13 @@ public:
      * @name Setter and getter for the current Score/ScoreDef.
      * If not set, then looks for the first Score in the Document and use that.
      * The currentScoreDef is also changed by the Object::Process whenever as Score is reached.
-     * When processing backward, the ScoreDef is changed when reaching the corresponding PageElementEnd
+     * When processing backward, the ScoreDef is changed when reaching the corresponding PageMilestoneEnd
      */
     ///@{
     Score *GetCurrentScore();
     ScoreDef *GetCurrentScoreDef();
     void SetCurrentScore(Score *score);
+    bool HasCurrentScore() const { return m_currentScore != NULL; }
     ///@}
 
     //----------//
