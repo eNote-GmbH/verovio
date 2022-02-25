@@ -89,7 +89,7 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
     dc->StartPage();
 
-    for (auto child : *m_currentPage->GetChildren()) {
+    for (auto child : m_currentPage->GetChildren()) {
         if (child->IsPageElement()) {
             // cast to PageElement check in DrawSystemEditorial element
             this->DrawPageElement(dc, dynamic_cast<PageElement *>(child));
@@ -954,22 +954,26 @@ void View::DrawBarLineDots(DeviceContext *dc, Staff *staff, BarLine *barLine)
     const int x1 = x - barLineWidth / 2 - (dotSeparation + dotWidth);
     const int x2 = x + xShift;
 
-    const int yBottom = staff->GetDrawingY() - staff->m_drawingLines * m_doc->GetDrawingUnit(staffSize);
-    const int yTop = yBottom + m_doc->GetDrawingDoubleUnit(staffSize);
+    const int numDots = 3 - staff->m_drawingLines % 2; // odd => 2 dots, even => 3 dots
+    const int yInc = m_doc->GetDrawingDoubleUnit(staffSize); // vertical distance between dots
+    const int yBottom = staff->GetDrawingY() - (staff->m_drawingLines + numDots % 2) * m_doc->GetDrawingUnit(staffSize);
+    const int yTop = yBottom + (numDots - 1) * yInc;
 
     if (barLine->GetForm() == BARRENDITION_rptstart) {
-        this->DrawSmuflCode(dc, x2 - thickBarLineWidth / 2, yTop, SMUFL_E044_repeatDot, staffSize, false);
-        this->DrawSmuflCode(dc, x2 - thickBarLineWidth / 2, yBottom, SMUFL_E044_repeatDot, staffSize, false);
+        for (int y = yTop; y >= yBottom; y -= yInc) {
+            this->DrawSmuflCode(dc, x2 - thickBarLineWidth / 2, y, SMUFL_E044_repeatDot, staffSize, false);
+        }
     }
     if (barLine->GetForm() == BARRENDITION_rptboth) {
-        this->DrawSmuflCode(
-            dc, x2 + barLineSeparation + barLineWidth / 2, yTop, SMUFL_E044_repeatDot, staffSize, false);
-        this->DrawSmuflCode(
-            dc, x2 + barLineSeparation + barLineWidth / 2, yBottom, SMUFL_E044_repeatDot, staffSize, false);
+        for (int y = yTop; y >= yBottom; y -= yInc) {
+            this->DrawSmuflCode(
+                dc, x2 + barLineSeparation + barLineWidth / 2, y, SMUFL_E044_repeatDot, staffSize, false);
+        }
     }
     if ((barLine->GetForm() == BARRENDITION_rptend) || (barLine->GetForm() == BARRENDITION_rptboth)) {
-        this->DrawSmuflCode(dc, x1, yTop, SMUFL_E044_repeatDot, staffSize, false);
-        this->DrawSmuflCode(dc, x1, yBottom, SMUFL_E044_repeatDot, staffSize, false);
+        for (int y = yTop; y >= yBottom; y -= yInc) {
+            this->DrawSmuflCode(dc, x1, y, SMUFL_E044_repeatDot, staffSize, false);
+        }
     }
 
     return;
@@ -1541,7 +1545,7 @@ void View::DrawSystemChildren(DeviceContext *dc, Object *parent, System *system)
     assert(parent);
     assert(system);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->Is(MEASURE)) {
             // cast to Measure check in DrawMeasure
             this->DrawMeasure(dc, dynamic_cast<Measure *>(current), system);
@@ -1580,7 +1584,7 @@ void View::DrawMeasureChildren(DeviceContext *dc, Object *parent, Measure *measu
     assert(measure);
     assert(system);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->Is(STAFF)) {
             // cast to Staff check in DrawStaff
             this->DrawStaff(dc, dynamic_cast<Staff *>(current), measure, system);
@@ -1607,7 +1611,7 @@ void View::DrawStaffChildren(DeviceContext *dc, Object *parent, Staff *staff, Me
     assert(staff);
     assert(measure);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->Is(LAYER)) {
             // cast to Layer check in DrawLayer
             this->DrawLayer(dc, dynamic_cast<Layer *>(current), staff, measure);
@@ -1630,7 +1634,7 @@ void View::DrawLayerChildren(DeviceContext *dc, Object *parent, Layer *layer, St
     assert(staff);
     assert(measure);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->IsLayerElement()) {
             this->DrawLayerElement(dc, dynamic_cast<LayerElement *>(current), layer, staff, measure);
         }
@@ -1660,7 +1664,7 @@ void View::DrawTextChildren(DeviceContext *dc, Object *parent, TextDrawingParams
         }
     }
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->IsTextElement()) {
             this->DrawTextElement(dc, dynamic_cast<TextElement *>(current), params);
         }
@@ -1679,7 +1683,7 @@ void View::DrawFbChildren(DeviceContext *dc, Object *parent, TextDrawingParams &
     assert(dc);
     assert(parent);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->IsTextElement()) {
             this->DrawTextElement(dc, dynamic_cast<TextElement *>(current), params);
         }
@@ -1698,7 +1702,7 @@ void View::DrawRunningChildren(DeviceContext *dc, Object *parent, TextDrawingPar
     assert(dc);
     assert(parent);
 
-    for (auto current : *parent->GetChildren()) {
+    for (auto current : parent->GetChildren()) {
         if (current->Is(FIG)) {
             this->DrawFig(dc, dynamic_cast<Fig *>(current), params);
         }
