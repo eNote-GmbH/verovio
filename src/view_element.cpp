@@ -1530,7 +1530,6 @@ void View::DrawStemMod(DeviceContext *dc, LayerElement *element, Staff *staff)
     // calculate additional adjustments for beamed elements
     Beam *beam = childElement->IsInBeam();
     if (beam) {
-        bool drawingCueSize = childElement->GetDrawingCueSize();
         const int beamStep = -sign
             * ((drawingDur - DUR_8) * (beam->m_beamWidthBlack + beam->m_beamWidthWhite) + beam->m_beamWidthWhite);
         if ((beamStep) > (sign * unit)) y += beamStep;
@@ -1576,6 +1575,9 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     }
     if (syl->HasFontstyle()) {
         currentFont.SetStyle(syl->GetFontstyle());
+    }
+    if (syl->GetStart()->GetDrawingCueSize()) {
+        currentFont.SetPointSize(m_doc->GetCueSize(currentFont.GetPointSize()));
     }
     dc->SetFont(&currentFont);
 
@@ -1648,11 +1650,18 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
             graphic = labelAbbr;
         }
 
+        LayerElement *layerElement
+            = vrv_cast<LayerElement *>(element->GetFirstAncestorInRange(LAYER_ELEMENT, LAYER_ELEMENT_max));
+
         FontInfo labelTxt;
         if (!dc->UseGlobalStyling()) {
             labelTxt.SetFaceName(m_options->m_textFont.GetValue().c_str());
         }
-        labelTxt.SetPointSize(m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize());
+        int pointSize = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize();
+        if (layerElement && layerElement->GetDrawingCueSize()) {
+            pointSize = m_doc->GetCueSize(pointSize);
+        }
+        labelTxt.SetPointSize(pointSize);
 
         TextDrawingParams params;
         params.m_x = verse->GetDrawingX() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
