@@ -94,6 +94,7 @@ public:
     ///@{
     void InitSameasRoles(Beam *sameasBeam, data_BEAMPLACE &drawingPlace);
     void UpdateSameasRoles(data_BEAMPLACE place);
+    void CalcNoteHeadShiftForStemSameas(Doc *doc, Beam *sameasBeam, data_BEAMPLACE place);
     ///@}
 
 private:
@@ -136,6 +137,9 @@ private:
 
     // Helper to calculate max/min beam points for the relative beam place
     std::pair<int, int> CalcBeamRelativeMinMax(data_BEAMPLACE place) const;
+
+    // Helper to calculate location and duration of the note that would be setting highest/lowest point for the beam
+    std::pair<int, int> CalcStemDefiningNote(Staff *staff, data_BEAMPLACE place);
 
     // Calculate positioning for the horizontal beams
     void CalcHorizontalBeam(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface);
@@ -266,7 +270,11 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    BeamDrawingInterface *GetBeamDrawingInterface() override { return dynamic_cast<BeamDrawingInterface *>(this); }
+    BeamDrawingInterface *GetBeamDrawingInterface() override { return vrv_cast<BeamDrawingInterface *>(this); }
+    const BeamDrawingInterface *GetBeamDrawingInterface() const override
+    {
+        return vrv_cast<const BeamDrawingInterface *>(this);
+    }
     ///@}
 
     int GetNoteCount() const { return this->GetChildCount(NOTE); }

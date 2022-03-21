@@ -1189,7 +1189,7 @@ bool Object::sortByUlx(Object *a, Object *b)
         a->FindAllDescendantsByComparison(&children, &comp);
         for (auto it = children.begin(); it != children.end(); ++it) {
             if ((*it)->Is(SYL)) continue;
-            FacsimileInterface *temp = dynamic_cast<FacsimileInterface *>(*it);
+            FacsimileInterface *temp = (*it)->GetFacsimileInterface();
             assert(temp);
             if (temp->HasFacs() && (fa == NULL || temp->GetZone()->GetUlx() < fa->GetZone()->GetUlx())) {
                 fa = temp;
@@ -1203,7 +1203,7 @@ bool Object::sortByUlx(Object *a, Object *b)
         b->FindAllDescendantsByComparison(&children, &comp);
         for (auto it = children.begin(); it != children.end(); ++it) {
             if ((*it)->Is(SYL)) continue;
-            FacsimileInterface *temp = dynamic_cast<FacsimileInterface *>(*it);
+            FacsimileInterface *temp = (*it)->GetFacsimileInterface();
             assert(temp);
             if (temp->HasFacs() && (fb == NULL || temp->GetZone()->GetUlx() < fb->GetZone()->GetUlx())) {
                 fb = temp;
@@ -2095,6 +2095,21 @@ int Object::ScoreDefSetCurrent(FunctorParams *functorParams)
         StaffDef *upcomingStaffDef = params->m_upcomingScoreDef.GetStaffDef(params->m_currentStaffDef->GetN());
         assert(upcomingStaffDef);
         upcomingStaffDef->SetCurrentKeySig(keySig);
+        params->m_upcomingScoreDef.m_setAsDrawing = true;
+        return FUNCTOR_CONTINUE;
+    }
+
+    // starting a new mensur
+    if (this->Is(MENSUR)) {
+        Mensur *mensur = vrv_cast<Mensur *>(this);
+        assert(mensur);
+        if (mensur->IsScoreDefElement()) {
+            return FUNCTOR_CONTINUE;
+        }
+        assert(params->m_currentStaffDef);
+        StaffDef *upcomingStaffDef = params->m_upcomingScoreDef.GetStaffDef(params->m_currentStaffDef->GetN());
+        assert(upcomingStaffDef);
+        upcomingStaffDef->SetCurrentMensur(mensur);
         params->m_upcomingScoreDef.m_setAsDrawing = true;
         return FUNCTOR_CONTINUE;
     }

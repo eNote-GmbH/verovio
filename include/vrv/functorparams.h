@@ -1679,7 +1679,7 @@ using MIDIChordSequence = std::list<MIDIChord>;
 
 class GenerateMIDIParams : public FunctorParams {
 public:
-    GenerateMIDIParams(smf::MidiFile *midiFile, Functor *functor)
+    GenerateMIDIParams(Doc *doc, smf::MidiFile *midiFile, Functor *functor)
     {
         m_midiFile = midiFile;
         m_midiChannel = 0;
@@ -1690,6 +1690,7 @@ public:
         m_lastNote = NULL;
         m_accentedGraceNote = false;
         m_functor = functor;
+        m_doc = doc;
     }
     smf::MidiFile *m_midiFile;
     int m_midiChannel;
@@ -1704,6 +1705,7 @@ public:
     bool m_accentedGraceNote;
     Functor *m_functor;
     std::vector<MIDIHeldNote> m_heldNotes;
+    Doc *m_doc;
 };
 
 //----------------------------------------------------------------------------
@@ -2544,17 +2546,20 @@ public:
 /**
  * member 0: a pointer to the transposer
  * member 1: a pointer to document
+ * member 2: the functor for redirection
  **/
 
 class TransposeParams : public FunctorParams {
 public:
-    TransposeParams(Doc *doc, Transposer *transposer)
+    TransposeParams(Doc *doc, Functor *functor, Transposer *transposer)
     {
         m_transposer = transposer;
         m_doc = doc;
+        m_functor = functor;
     }
     Transposer *m_transposer;
     Doc *m_doc;
+    Functor *m_functor;
 };
 
 //----------------------------------------------------------------------------
