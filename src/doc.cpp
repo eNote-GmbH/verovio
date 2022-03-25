@@ -486,7 +486,7 @@ void Doc::PrepareDrawing()
     // Display warning if some elements were not matched
     const size_t unmatchedElements = std::count_if(prepareTimeSpanningParams.m_timeSpanningInterfaces.cbegin(),
         prepareTimeSpanningParams.m_timeSpanningInterfaces.cend(),
-        [](const ListOfSpanningInterClassIdPairs::value_type &entry) {
+        [](const ListOfSpanningInterOwnerPairs::value_type &entry) {
             return (entry.first->HasStartid() && entry.first->HasEndid());
         });
     if (unmatchedElements > 0) {
@@ -1203,7 +1203,24 @@ void Doc::TransposeDoc()
         transpose.m_visibleOnly = false;
     }
 
-    this->Process(&transpose, &transposeParams);
+    if (m_options->m_transpose.IsSet()) {
+        // Transpose the entire document
+        if (m_options->m_transposeMdiv.IsSet()) {
+            LogWarning("\"%s\" is ignored when \"%s\" is set as well. Please use only one of the two options.",
+                m_options->m_transposeMdiv.GetKey().c_str(), m_options->m_transpose.GetKey().c_str());
+        }
+        transposeParams.m_transposition = m_options->m_transpose.GetValue();
+        this->Process(&transpose, &transposeParams);
+    }
+    else if (m_options->m_transposeMdiv.IsSet()) {
+        // Transpose mdivs individually
+        std::set<std::string> uuids = m_options->m_transposeMdiv.GetKeys();
+        for (const std::string &uuid : uuids) {
+            transposeParams.m_selectedMdivUuid = uuid;
+            transposeParams.m_transposition = m_options->m_transposeMdiv.GetStrValue({ uuid });
+            this->Process(&transpose, &transposeParams);
+        }
+    }
 }
 
 void Doc::ExpandExpansions()
