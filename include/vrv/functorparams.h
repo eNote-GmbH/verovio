@@ -2210,7 +2210,7 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: std::vector< Object*>* that holds the current elements to match
+ * member 0: interface list that holds the current elements to match
  **/
 
 class PrepareTimePointingParams : public FunctorParams {
@@ -2224,14 +2224,14 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: std::vector< Object*>* that holds the current elements to match
- * member 1: bool* fillList for indicating whether the elements have to be stacked or not
+ * member 0: interface list that holds the current elements to match
+ * member 1: bool fillList for indicating whether the elements have to be stacked or not
  **/
 
 class PrepareTimeSpanningParams : public FunctorParams {
 public:
     PrepareTimeSpanningParams() { m_fillList = true; }
-    ListOfSpanningInterClassIdPairs m_timeSpanningInterfaces;
+    ListOfSpanningInterOwnerPairs m_timeSpanningInterfaces;
     bool m_fillList;
 };
 
@@ -2240,8 +2240,8 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: std::vector< Object*>* that holds the current elements to match
- * member 1:  ListOfObjectBeatPairs* that holds the tstamp2 elements for attach to the end measure
+ * member 0: interface list that holds the current elements to match
+ * member 1: ListOfObjectBeatPairs that holds the tstamp2 elements for attach to the end measure
  **/
 
 class PrepareTimestampsParams : public FunctorParams {
@@ -2544,22 +2544,28 @@ public:
 //----------------------------------------------------------------------------
 
 /**
- * member 0: a pointer to the transposer
- * member 1: a pointer to document
- * member 2: the functor for redirection
+ * member 0: a pointer to the document
+ * member 1: the functor for redirection
+ * member 2: a pointer to the transposer
+ * member 3: the transposition to be applied
+ * member 4: the mdiv selected for transposition
+ * member 5: the list of current (nested) mdivs
  **/
 
 class TransposeParams : public FunctorParams {
 public:
     TransposeParams(Doc *doc, Functor *functor, Transposer *transposer)
     {
-        m_transposer = transposer;
         m_doc = doc;
         m_functor = functor;
+        m_transposer = transposer;
     }
-    Transposer *m_transposer;
     Doc *m_doc;
     Functor *m_functor;
+    Transposer *m_transposer;
+    std::string m_transposition;
+    std::string m_selectedMdivUuid;
+    std::list<std::string> m_currentMdivUuids;
 };
 
 //----------------------------------------------------------------------------

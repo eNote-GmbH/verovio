@@ -629,7 +629,7 @@ bool Alignment::HasGraceAligner(int id) const
     return (m_graceAligners.count(id) == 1);
 }
 
-bool Alignment::PerfomBoundingBoxAlignment() const
+bool Alignment::PerformBoundingBoxAlignment() const
 {
     return this->IsOfType({ ALIGNMENT_ACCID, ALIGNMENT_DOT, ALIGNMENT_DEFAULT });
 }
@@ -1123,7 +1123,7 @@ int Alignment::AdjustXPos(FunctorParams *functorParams)
 
     this->SetXRel(this->GetXRel() + params->m_cumulatedXShift);
 
-    if (m_type == ALIGNMENT_MEASURE_END) {
+    if (m_type == ALIGNMENT_MEASURE_END && this->GetXRel() < params->m_minPos) {
         this->SetXRel(params->m_minPos);
     }
 

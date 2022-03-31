@@ -13,6 +13,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "beamspan.h"
 #include "comparison.h"
 #include "dir.h"
 #include "doc.h"
@@ -880,6 +881,26 @@ int System::JustifyY(FunctorParams *functorParams)
     return FUNCTOR_SIBLINGS;
 }
 
+int System::AdjustCrossStaffYPos(FunctorParams *functorParams)
+{
+    FunctorDocParams *params = vrv_params_cast<FunctorDocParams *>(functorParams);
+    assert(params);
+
+    for (auto &item : m_drawingList) {
+        if (item->Is(BEAMSPAN)) {
+            // Here we could check that the beamSpan is actually cross-staff. Otherwise doing this is pointless
+            BeamSpan *beamSpan = vrv_cast<BeamSpan *>(item);
+            assert(beamSpan);
+            BeamSpanSegment *segment = beamSpan->GetSegmentForSystem(this);
+            if (segment)
+                segment->CalcBeam(
+                    segment->GetLayer(), segment->GetStaff(), params->m_doc, beamSpan, beamSpan->m_drawingPlace);
+        }
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
 int System::AdjustStaffOverlap(FunctorParams *functorParams)
 {
     AdjustStaffOverlapParams *params = vrv_params_cast<AdjustStaffOverlapParams *>(functorParams);
@@ -1153,6 +1174,21 @@ int System::UnCastOff(FunctorParams *functorParams)
     // Use the MoveChildrenFrom method that moves and relinquishes them
     // See Object::Relinquish
     params->m_currentSystem->MoveChildrenFrom(this);
+
+    return FUNCTOR_CONTINUE;
+}
+
+int System::Transpose(FunctorParams *functorParams)
+{
+    TransposeParams *params = vrv_params_cast<TransposeParams *>(functorParams);
+    assert(params);
+
+    // Check whether we are in the selected mdiv
+    if (!params->m_selectedMdivUuid.empty()
+        && (std::find(params->m_currentMdivUuids.begin(), params->m_currentMdivUuids.end(), params->m_selectedMdivUuid)
+            == params->m_currentMdivUuids.end())) {
+        return FUNCTOR_SIBLINGS;
+    }
 
     return FUNCTOR_CONTINUE;
 }
