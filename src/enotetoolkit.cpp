@@ -122,7 +122,7 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
     return measureRanges;
 }
 
-bool EnoteToolkit::ChangeNotePitch(
+bool EnoteToolkit::EditNote(
     const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave)
 {
     Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
@@ -130,6 +130,55 @@ bool EnoteToolkit::ChangeNotePitch(
         note->SetPname(pitch);
         note->SetOct(octave);
         return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::HasNoteAccidental(const std::string &noteUuid, const std::string &measureUuid)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    if (note) {
+        return (note->GetChildCount(ACCID) > 0);
+    }
+    return false;
+}
+
+bool EnoteToolkit::AddNoteAccidental(
+    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN accidType)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    if (note) {
+        Accid *accid = new Accid();
+        accid->SetAccid(accidType);
+        note->AddChild(accid);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditNoteAccidental(
+    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    if (note) {
+        Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
+        if (accid) {
+            accid->SetAccid(type);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::string &measureUuid)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    if (note) {
+        Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
+        if (accid) {
+            note->DeleteChild(accid);
+            return true;
+        }
     }
     return false;
 }

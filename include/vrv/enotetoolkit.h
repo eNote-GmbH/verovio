@@ -87,11 +87,21 @@ public:
      ***************************/
 
     /**
-     * Edit notes
+     * Edit notes (restricted, only pitch changes for now)
      */
     ///@{
-    bool ChangeNotePitch(
+    bool EditNote(
         const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave);
+    ///@}
+
+    /**
+     * Edit note accidentals
+     */
+    ///@{
+    bool HasNoteAccidental(const std::string &noteUuid, const std::string &measureUuid);
+    bool AddNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type);
+    bool EditNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type);
+    bool RemoveNoteAccidental(const std::string &noteUuid, const std::string &measureUuid);
     ///@}
 
     /******************************
