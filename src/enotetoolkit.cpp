@@ -31,14 +31,18 @@ EnoteToolkit::~EnoteToolkit() {}
 
 Measure *EnoteToolkit::FindMeasureByUuid(const std::string &uuid)
 {
-    Object *measure = m_doc.FindDescendantByUuid(uuid);
-    return dynamic_cast<Measure *>(measure);
+    std::vector<Measure *> measures = this->FindAllMeasures(&m_doc);
+    UuidComparison comparison(MEASURE, uuid);
+    auto iter = std::find_if(measures.cbegin(), measures.cend(), comparison);
+    return (iter != measures.cend()) ? *iter : NULL;
 }
 
 Measure *EnoteToolkit::FindMeasureByN(const std::string &n)
 {
+    std::vector<Measure *> measures = this->FindAllMeasures(&m_doc);
     AttNNumberLikeComparison comparison(MEASURE, n);
-    return vrv_cast<Measure *>(m_doc.FindDescendantByComparison(&comparison));
+    auto iter = std::find_if(measures.cbegin(), measures.cend(), comparison);
+    return (iter != measures.cend()) ? *iter : NULL;
 }
 
 std::vector<Measure *> EnoteToolkit::FindAllMeasures()
@@ -62,6 +66,13 @@ std::vector<Page *> EnoteToolkit::FindAllPages()
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(pages),
         [](Object *object) { return vrv_cast<Page *>(object); });
     return pages;
+}
+
+Object *EnoteToolkit::FindElementInMeasure(const std::string &elementUuid, const std::string &measureUuid)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (!measure) return NULL;
+    return measure->FindDescendantByUuid(elementUuid);
 }
 
 std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
@@ -111,6 +122,18 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
     return measureRanges;
 }
 
+bool EnoteToolkit::ChangeNotePitch(
+    const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    if (note) {
+        note->SetPname(pitch);
+        note->SetOct(octave);
+        return true;
+    }
+    return false;
+}
+
 bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
     data_MEASUREBEAT endTstamp, hairpinLog_FORM form)
 {
@@ -149,17 +172,6 @@ bool EnoteToolkit::ChangeHairpinLength(const std::string &uuid, double startTsta
         hairpin->SetTstamp(startTstamp);
         hairpin->SetTstamp2(endTstamp);
         this->UpdateTimeSpanning(hairpin);
-        return true;
-    }
-    return false;
-}
-
-bool EnoteToolkit::ChangeNotePitch(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave)
-{
-    Note *note = dynamic_cast<Note *>(m_doc.FindDescendantByUuid(uuid));
-    if (note) {
-        note->SetPname(pitch);
-        note->SetOct(octave);
         return true;
     }
     return false;

@@ -64,6 +64,7 @@ public:
     Measure *FindMeasureByN(const std::string &n);
     std::vector<Measure *> FindAllMeasures();
     std::vector<Page *> FindAllPages();
+    Object *FindElementInMeasure(const std::string &elementUuid, const std::string &measureUuid);
     ///@}
 
     /**
@@ -81,6 +82,22 @@ public:
      */
     ///@{
 
+    /****************************
+     *  Editing layer elements  *
+     ***************************/
+
+    /**
+     * Edit notes
+     */
+    ///@{
+    bool ChangeNotePitch(
+        const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave);
+    ///@}
+
+    /******************************
+     *  Editing control elements  *
+     *****************************/
+
     /**
      * Edit hairpins
      */
@@ -89,13 +106,6 @@ public:
         data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
     bool ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form);
     bool ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
-    ///@}
-
-    /**
-     * Edit notes
-     */
-    ///@{
-    bool ChangeNotePitch(const std::string &uuid, data_PITCHNAME pitch, data_OCTAVE octave);
     ///@}
 
     /**
