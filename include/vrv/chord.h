@@ -58,10 +58,12 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    DurationInterface *GetDurationInterface() override { return dynamic_cast<DurationInterface *>(this); }
-    StemmedDrawingInterface *GetStemmedDrawingInterface() override
+    DurationInterface *GetDurationInterface() override { return vrv_cast<DurationInterface *>(this); }
+    const DurationInterface *GetDurationInterface() const override { return vrv_cast<const DurationInterface *>(this); }
+    StemmedDrawingInterface *GetStemmedDrawingInterface() override { return vrv_cast<StemmedDrawingInterface *>(this); }
+    const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
-        return dynamic_cast<StemmedDrawingInterface *>(this);
+        return vrv_cast<const StemmedDrawingInterface *>(this);
     }
     ///@}
 
@@ -110,7 +112,7 @@ public:
     /**
      * Return true if the chord has some cross staff notes.
      */
-    bool HasCrossStaff();
+    bool HasCrossStaff() override;
 
     /**
      * Returns list of notes that have accidentals
@@ -212,19 +214,19 @@ public:
     int PrepareLyrics(FunctorParams *functorParams) override;
 
     /**
-     * See Object::CalcOnsetOffsetEnd
+     * See Object::InitOnsetOffsetEnd
      */
-    int CalcOnsetOffsetEnd(FunctorParams *functorParams) override;
+    int InitOnsetOffsetEnd(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
     /**
-     * See Object::AdjustCrossStaffContent
+     * See Object::JustifyYAdjustCrossStaff
      */
-    int AdjustCrossStaffContent(FunctorParams *functorParams) override;
+    int JustifyYAdjustCrossStaff(FunctorParams *functorParams) override;
 
     /**
      * See Object::GenerateMIDI
