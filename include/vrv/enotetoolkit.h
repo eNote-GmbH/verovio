@@ -104,6 +104,25 @@ public:
     bool RemoveNoteAccidental(const std::string &noteUuid, const std::string &measureUuid);
     ///@}
 
+    /**
+     * Edit note/chord articulations
+     */
+    ///@{
+    bool HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
+    data_ARTICULATION_List GetArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool AddArticulation(
+        const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type);
+    bool AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+        const std::string &measureUuid, const data_ARTICULATION_List &type);
+    bool EditArticulation(
+        const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type);
+    bool EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+        const std::string &measureUuid, const data_ARTICULATION_List &type);
+    bool RemoveArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool RemoveArticulation(
+        const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);
+    ///@}
+
     /******************************
      *  Editing control elements  *
      *****************************/

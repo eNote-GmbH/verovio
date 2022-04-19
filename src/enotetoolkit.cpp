@@ -183,6 +183,90 @@ bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::
     return false;
 }
 
+bool EnoteToolkit::HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid)
+{
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+        return (parent->GetChildCount(ARTIC) > 0);
+    }
+    return false;
+}
+
+data_ARTICULATION_List EnoteToolkit::GetArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid)
+{
+    data_ARTICULATION_List articList;
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+        Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
+        if (artic) {
+            articList = artic->GetArtic();
+        }
+    }
+    return articList;
+}
+
+bool EnoteToolkit::AddArticulation(
+    const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type)
+{
+    return this->AddArticulation("", noteOrChordUuid, measureUuid, type);
+}
+
+bool EnoteToolkit::AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+    const std::string &measureUuid, const data_ARTICULATION_List &type)
+{
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+        Artic *artic = new Artic();
+        artic->SetArtic(type);
+        if (!articUuid.empty()) artic->SetUuid(articUuid);
+        parent->AddChild(artic);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditArticulation(
+    const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type)
+{
+    return this->EditArticulation("", noteOrChordUuid, measureUuid, type);
+}
+
+bool EnoteToolkit::EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+    const std::string &measureUuid, const data_ARTICULATION_List &type)
+{
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+        Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
+        if (!articUuid.empty()) artic = vrv_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
+        if (artic) {
+            artic->SetArtic(type);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid)
+{
+    return this->RemoveArticulation("", noteOrChordUuid, measureUuid);
+}
+
+bool EnoteToolkit::RemoveArticulation(
+    const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid)
+{
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+        Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
+        if (!articUuid.empty()) artic = vrv_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
+        if (artic) {
+            // At this point parent must not necessarily be the parent of artic
+            artic->GetParent()->DeleteChild(artic);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
     data_MEASUREBEAT endTstamp, hairpinLog_FORM form)
 {
