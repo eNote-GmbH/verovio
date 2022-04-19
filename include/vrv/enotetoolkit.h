@@ -109,15 +109,13 @@ public:
      */
     ///@{
     bool HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
-    data_ARTICULATION_List GetArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
-    bool AddArticulation(
-        const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type);
+    int GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool AddArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
     bool AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-        const std::string &measureUuid, const data_ARTICULATION_List &type);
-    bool EditArticulation(
-        const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type);
+        const std::string &measureUuid, data_ARTICULATION type);
+    bool EditArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
     bool EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-        const std::string &measureUuid, const data_ARTICULATION_List &type);
+        const std::string &measureUuid, data_ARTICULATION type);
     bool RemoveArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
     bool RemoveArticulation(
         const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);

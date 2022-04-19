@@ -185,39 +185,31 @@ bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::
 
 bool EnoteToolkit::HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid)
 {
-    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
-    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
-        return (parent->GetChildCount(ARTIC) > 0);
-    }
-    return false;
+    return (this->GetArticulationCount(noteOrChordUuid, measureUuid) > 0);
 }
 
-data_ARTICULATION_List EnoteToolkit::GetArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid)
+int EnoteToolkit::GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid)
 {
-    data_ARTICULATION_List articList;
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
     if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
-        Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
-        if (artic) {
-            articList = artic->GetArtic();
-        }
+        return parent->GetChildCount(ARTIC);
     }
-    return articList;
+    return 0;
 }
 
 bool EnoteToolkit::AddArticulation(
-    const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type)
+    const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type)
 {
     return this->AddArticulation("", noteOrChordUuid, measureUuid, type);
 }
 
 bool EnoteToolkit::AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-    const std::string &measureUuid, const data_ARTICULATION_List &type)
+    const std::string &measureUuid, data_ARTICULATION type)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
     if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
         Artic *artic = new Artic();
-        artic->SetArtic(type);
+        artic->SetArtic({ type });
         if (!articUuid.empty()) artic->SetUuid(articUuid);
         parent->AddChild(artic);
         return true;
@@ -226,20 +218,20 @@ bool EnoteToolkit::AddArticulation(const std::string &articUuid, const std::stri
 }
 
 bool EnoteToolkit::EditArticulation(
-    const std::string &noteOrChordUuid, const std::string &measureUuid, const data_ARTICULATION_List &type)
+    const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type)
 {
     return this->EditArticulation("", noteOrChordUuid, measureUuid, type);
 }
 
 bool EnoteToolkit::EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-    const std::string &measureUuid, const data_ARTICULATION_List &type)
+    const std::string &measureUuid, data_ARTICULATION type)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
     if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
         if (!articUuid.empty()) artic = vrv_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
         if (artic) {
-            artic->SetArtic(type);
+            artic->SetArtic({ type });
             return true;
         }
     }
