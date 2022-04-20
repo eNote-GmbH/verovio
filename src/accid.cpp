@@ -80,7 +80,7 @@ std::wstring Accid::GetSymbolStr(const data_NOTATIONTYPE notationType) const
     }
     // If there is glyph.name (second priority)
     else if (this->HasGlyphName()) {
-        wchar_t code = Resources::GetGlyphCode(this->GetGlyphName());
+        code = Resources::GetGlyphCode(this->GetGlyphName());
         if (NULL == Resources::GetGlyph(code)) code = 0;
     }
 
@@ -267,11 +267,11 @@ wchar_t Accid::GetAccidGlyph(data_ACCIDENTAL_WRITTEN accid)
 // Functor methods
 //----------------------------------------------------------------------------
 
-int Accid::ResetDrawing(FunctorParams *functorParams)
+int Accid::ResetData(FunctorParams *functorParams)
 {
     // Call parent one too
-    LayerElement::ResetDrawing(functorParams);
-    PositionInterface::InterfaceResetDrawing(functorParams, this);
+    LayerElement::ResetData(functorParams);
+    PositionInterface::InterfaceResetData(functorParams, this);
 
     return FUNCTOR_CONTINUE;
 }
