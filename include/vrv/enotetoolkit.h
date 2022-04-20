@@ -100,7 +100,8 @@ public:
     ///@{
     bool HasNoteAccidental(const std::string &noteUuid, const std::string &measureUuid);
     bool AddNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type);
-    bool EditNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type);
+    bool EditNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type,
+        bool resetAccidGes = true);
     bool RemoveNoteAccidental(const std::string &noteUuid, const std::string &measureUuid);
     ///@}
 
@@ -109,6 +110,8 @@ public:
      */
     ///@{
     bool HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool HasArticulation(
+        const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);
     int GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid);
     bool AddArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
     bool AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,

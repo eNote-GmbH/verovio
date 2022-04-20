@@ -157,13 +157,14 @@ bool EnoteToolkit::AddNoteAccidental(
 }
 
 bool EnoteToolkit::EditNoteAccidental(
-    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type)
+    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type, bool resetAccidGes)
 {
     Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
     if (note) {
         Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
         if (accid) {
             accid->SetAccid(type);
+            if (resetAccidGes) accid->ResetAccidentalGestural();
             return true;
         }
     }
@@ -188,10 +189,20 @@ bool EnoteToolkit::HasArticulation(const std::string &noteOrChordUuid, const std
     return (this->GetArticulationCount(noteOrChordUuid, measureUuid) > 0);
 }
 
+bool EnoteToolkit::HasArticulation(
+    const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid)
+{
+    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    if (parent && parent->Is({ CHORD, NOTE })) {
+        return (dynamic_cast<Artic *>(parent->FindDescendantByUuid(articUuid)) != NULL);
+    }
+    return false;
+}
+
 int EnoteToolkit::GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
-    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+    if (parent && parent->Is({ CHORD, NOTE })) {
         return parent->GetChildCount(ARTIC);
     }
     return 0;
@@ -207,7 +218,7 @@ bool EnoteToolkit::AddArticulation(const std::string &articUuid, const std::stri
     const std::string &measureUuid, data_ARTICULATION type)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
-    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+    if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = new Artic();
         artic->SetArtic({ type });
         if (!articUuid.empty()) artic->SetUuid(articUuid);
@@ -227,9 +238,9 @@ bool EnoteToolkit::EditArticulation(const std::string &articUuid, const std::str
     const std::string &measureUuid, data_ARTICULATION type)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
-    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+    if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
-        if (!articUuid.empty()) artic = vrv_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
+        if (!articUuid.empty()) artic = dynamic_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
         if (artic) {
             artic->SetArtic({ type });
             return true;
@@ -247,9 +258,9 @@ bool EnoteToolkit::RemoveArticulation(
     const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
-    if (parent && (parent->Is(NOTE) || parent->Is(CHORD))) {
+    if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
-        if (!articUuid.empty()) artic = vrv_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
+        if (!articUuid.empty()) artic = dynamic_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
         if (artic) {
             // At this point parent must not necessarily be the parent of artic
             artic->GetParent()->DeleteChild(artic);
