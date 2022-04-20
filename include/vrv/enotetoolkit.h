@@ -132,17 +132,16 @@ public:
      * Edit hairpins
      */
     ///@{
-    bool AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
-        data_MEASUREBEAT endTstamp, hairpinLog_FORM form);
-    bool ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form);
-    bool ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp);
-    ///@}
-
-    /**
-     * Edit ties
-     */
-    ///@{
-    bool RemoveTie(const std::string &uuid);
+    bool HasHairpin(const std::string &hairpinUuid);
+    bool HasHairpin(const std::string &hairpinUuid, const std::string &measureUuid);
+    bool AddHairpin(const std::string &measureUuid, double tstamp, data_MEASUREBEAT tstamp2,
+        const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form);
+    bool AddHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
+        data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form);
+    bool EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
+        data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form);
+    bool RemoveHairpin(const std::string &hairpinUuid);
+    bool RemoveHairpin(const std::string &hairpinUuid, const std::string &measureUuid);
     ///@}
 
     ///@}
@@ -152,7 +151,9 @@ private:
      * Prepare rerendering
      */
     ///@{
+    bool MoveToMeasure(ControlElement *element, const std::string &measureUuid);
     void UpdateTimeSpanning(ControlElement *element);
+    void RemoveTimeSpanning(ControlElement *element);
     ///@}
 
     // Find all measures in subtree

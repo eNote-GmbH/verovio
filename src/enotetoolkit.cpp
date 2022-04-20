@@ -270,17 +270,33 @@ bool EnoteToolkit::RemoveArticulation(
     return false;
 }
 
-bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int staffN, double startTstamp,
-    data_MEASUREBEAT endTstamp, hairpinLog_FORM form)
+bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid)
 {
+    return (dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid, const std::string &measureUuid)
+{
+    return (dynamic_cast<Hairpin *>(this->FindElementInMeasure(hairpinUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::AddHairpin(const std::string &measureUuid, double tstamp, data_MEASUREBEAT tstamp2,
+    const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
+{
+    return this->AddHairpin("", measureUuid, tstamp, tstamp2, staffNs, place, form);
+}
+
+bool EnoteToolkit::AddHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
+    data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
         Hairpin *hairpin = new Hairpin();
-        hairpin->SetUuid(uuid);
-        hairpin->SetStaff({ staffN });
-        hairpin->SetTstamp(startTstamp);
-        hairpin->SetTstamp2(endTstamp);
+        if (!hairpinUuid.empty()) hairpin->SetUuid(hairpinUuid);
+        hairpin->SetTstamp(tstamp);
+        hairpin->SetTstamp2(tstamp2);
+        hairpin->SetStaff(staffNs);
         hairpin->SetForm(form);
-
         measure->AddChild(hairpin);
         this->UpdateTimeSpanning(hairpin);
         return true;
@@ -288,37 +304,56 @@ bool EnoteToolkit::AddHairpin(Measure *measure, const std::string &uuid, int sta
     return false;
 }
 
-bool EnoteToolkit::ChangeHairpinForm(const std::string &uuid, hairpinLog_FORM form)
+bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
+    data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
 {
-    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
+    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid));
     if (hairpin) {
-        hairpin->SetForm(form);
+        if (this->MoveToMeasure(hairpin, measureUuid)) {
+            hairpin->TimeSpanningInterface::Reset();
+            hairpin->SetTstamp(tstamp);
+            hairpin->SetTstamp2(tstamp2);
+            hairpin->SetStaff(staffNs);
+            hairpin->SetForm(form);
+            this->UpdateTimeSpanning(hairpin);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid)
+{
+    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid));
+    if (hairpin) {
+        this->RemoveTimeSpanning(hairpin);
+        hairpin->GetParent()->DeleteChild(hairpin);
         return true;
     }
     return false;
 }
 
-bool EnoteToolkit::ChangeHairpinLength(const std::string &uuid, double startTstamp, data_MEASUREBEAT endTstamp)
+bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid, const std::string &measureUuid)
 {
-    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(uuid));
+    Hairpin *hairpin = dynamic_cast<Hairpin *>(this->FindElementInMeasure(hairpinUuid, measureUuid));
     if (hairpin) {
-        const xsdPositiveInteger_List staffNs = hairpin->GetStaff();
-        hairpin->TimeSpanningInterface::Reset();
-        hairpin->SetStaff(staffNs);
-        hairpin->SetTstamp(startTstamp);
-        hairpin->SetTstamp2(endTstamp);
-        this->UpdateTimeSpanning(hairpin);
+        this->RemoveTimeSpanning(hairpin);
+        hairpin->GetParent()->DeleteChild(hairpin);
         return true;
     }
     return false;
 }
 
-bool EnoteToolkit::RemoveTie(const std::string &uuid)
+bool EnoteToolkit::MoveToMeasure(ControlElement *element, const std::string &measureUuid)
 {
-    Tie *tie = dynamic_cast<Tie *>(m_doc.FindDescendantByUuid(uuid));
-    if (tie) {
-        tie->GetParent()->DeleteChild(tie);
-        return true;
+    Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
+    if (measure->GetUuid() != measureUuid) {
+        // Find the target measure
+        measure = this->FindMeasureByUuid(measureUuid);
+        if (measure) {
+            element->MoveItselfTo(measure);
+            return true;
+        }
     }
     return false;
 }
@@ -365,9 +400,8 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
                 Staff *staff = vrv_cast<Staff *>(child);
                 assert(staff);
 
-                if (!interface->IsOnStaff(staff->GetN())) continue;
-
-                const bool shouldExist = ((index >= startIndex) && (index <= endIndex));
+                const bool shouldExist
+                    = ((index >= startIndex) && (index <= endIndex) && interface->IsOnStaff(staff->GetN()));
                 auto iter
                     = std::find(staff->m_timeSpanningElements.cbegin(), staff->m_timeSpanningElements.cend(), element);
                 const bool doesExist = (iter != staff->m_timeSpanningElements.cend());
@@ -375,6 +409,35 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
                     staff->m_timeSpanningElements.push_back(element);
                 }
                 if (!shouldExist && doesExist) {
+                    staff->m_timeSpanningElements.erase(iter, iter + 1);
+                }
+            }
+        }
+    }
+}
+
+void EnoteToolkit::RemoveTimeSpanning(ControlElement *element)
+{
+    TimeSpanningInterface *interface = element->GetTimeSpanningInterface();
+    if (interface) {
+        // Retrieve all measures
+        std::vector<Measure *> measures = this->FindAllMeasures();
+        const int measureCount = static_cast<int>(measures.size());
+
+        // See Object::FillStaffCurrentTimeSpanning
+        // Remove element from m_timeSpanningElements in the staves
+        for (int index = 0; index < measureCount; ++index) {
+            ArrayOfObjects &children = measures.at(index)->GetChildrenForModification();
+            for (Object *child : children) {
+                if (!child->Is(STAFF)) continue;
+                Staff *staff = vrv_cast<Staff *>(child);
+                assert(staff);
+
+                if (!interface->IsOnStaff(staff->GetN())) continue;
+
+                auto iter
+                    = std::find(staff->m_timeSpanningElements.cbegin(), staff->m_timeSpanningElements.cend(), element);
+                if (iter != staff->m_timeSpanningElements.cend()) {
                     staff->m_timeSpanningElements.erase(iter, iter + 1);
                 }
             }
