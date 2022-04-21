@@ -1,74 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bounding-boxes font-family="Legato" units-per-em="1000">
-  <g c="E527" x="-102.0" y="-142.0" w="2230.0" h="416.0" h-a-x="2124" n="dynamicPPPPPP">
-    <a n="opticalCenter" x="4.25" y="0.0"/>
-  </g>
-  <g c="E528" x="-102.0" y="-142.0" w="1875.0" h="416.0" h-a-x="1776" n="dynamicPPPPP">
-    <a n="opticalCenter" x="3.55" y="0.0"/>
-  </g>
-  <g c="E529" x="-102.0" y="-142.0" w="1520.0" h="416.0" h-a-x="1417" n="dynamicPPPP">
-    <a n="opticalCenter" x="3.0" y="0.0"/>
-  </g>
-  <g c="E52A" x="-92.0" y="-142.0" w="1165.0" h="416.0" h-a-x="1072" n="dynamicPPP">
-    <a n="opticalCenter" x="2.37" y="0.0"/>
-  </g>
-  <g c="E52B" x="-82.0" y="-142.0" w="810.0" h="416.0" h-a-x="727" n="dynamicPP">
-    <a n="opticalCenter" x="1.71" y="0.0"/>
-  </g>
-  <g c="E52C" x="-20.0" y="-142.0" w="845.0" h="416.0" h-a-x="826" n="dynamicMP">
-    <a n="opticalCenter" x="1.85" y="0.0"/>
-  </g>
-  <g c="E52D" x="-20.0" y="-165.0" w="838.0" h="596.0" h-a-x="797" n="dynamicMF">
-    <a n="opticalCenter" x="1.8" y="0.0"/>
-  </g>
-  <g c="E52E" x="-72.0" y="-152.0" w="842.0" h="596.0" h-a-x="770" n="dynamicPF">
-    <a n="opticalCenter" x="1.68" y="0.0"/>
-  </g>
-  <g c="E52F" x="-135.0" y="-152.0" w="745.0" h="596.0" h-a-x="609" n="dynamicFF">
-    <a n="opticalCenter" x="1.85" y="0.0"/>
-  </g>
-  <g c="E530" x="-155.0" y="-152.0" w="985.0" h="596.0" h-a-x="831" n="dynamicFFF">
-    <a n="opticalCenter" x="2.47" y="0.0"/>
-  </g>
-  <g c="E531" x="-155.0" y="-152.0" w="1225.0" h="596.0" h-a-x="1070" n="dynamicFFFF">
-    <a n="opticalCenter" x="2.82" y="0.0"/>
-  </g>
-  <g c="E532" x="-155.0" y="-152.0" w="1465.0" h="596.0" h-a-x="1310" n="dynamicFFFFF">
-    <a n="opticalCenter" x="2.98" y="0.0"/>
-  </g>
-  <g c="E533" x="-155.0" y="-152.0" w="1705.0" h="596.0" h-a-x="1550" n="dynamicFFFFFF">
-    <a n="opticalCenter" x="3.5" y="0.0"/>
-  </g>
-  <g c="E534" x="-141.0" y="-152.0" w="760.0" h="596.0" h-a-x="619" n="dynamicFortePiano">
-    <a n="opticalCenter" x="1.5" y="0.0"/>
-  </g>
-  <g c="E535" x="-141.0" y="-152.0" w="638.0" h="596.0" h-a-x="497" n="dynamicForzando">
-    <a n="opticalCenter" x="1.35" y="0.0"/>
-  </g>
-  <g c="E536" x="0.0" y="-152.0" w="604.0" h="596.0" h-a-x="604" n="dynamicSforzando1">
-    <a n="opticalCenter" x="1.3" y="0.0"/>
-  </g>
-  <g c="E537" x="0.0" y="-152.0" w="845.0" h="596.0" h-a-x="846" n="dynamicSforzandoPiano">
-    <a n="opticalCenter" x="1.9" y="0.0"/>
-  </g>
-  <g c="E538" x="0.0" y="-152.0" w="1199.0" h="596.0" h-a-x="1198" n="dynamicSforzandoPianissimo">
-    <a n="opticalCenter" x="1.97" y="0.0"/>
-  </g>
-  <g c="E539" x="0.0" y="-152.0" w="733.0" h="596.0" h-a-x="732" n="dynamicSforzato">
-    <a n="opticalCenter" x="1.76" y="0.0"/>
-  </g>
-  <g c="E53A" x="0.0" y="-152.0" w="1076.0" h="596.0" h-a-x="1075" n="dynamicSforzatoPiano">
-    <a n="opticalCenter" x="1.85" y="0.0"/>
-  </g>
-  <g c="E53B" x="0.0" y="-152.0" w="964.0" h="596.0" h-a-x="964" n="dynamicSforzatoFF">
-    <a n="opticalCenter" x="2.28" y="0.0"/>
-  </g>
-  <g c="E53C" x="-20.0" y="-152.0" w="645.0" h="596.0" h-a-x="625" n="dynamicRinforzando1">
-    <a n="opticalCenter" x="1.56" y="0.0"/>
-  </g>
-  <g c="E53D" x="-20.0" y="-152.0" w="764.0" h="596.0" h-a-x="744" n="dynamicRinforzando2">
-    <a n="opticalCenter" x="2.08" y="0.0"/>
-  </g>
+  <g c="E527" x="-102.0" y="-142.0" w="2230.0" h="416.0" h-a-x="2124" n="dynamicPPPPPP"/>
+  <g c="E528" x="-102.0" y="-142.0" w="1875.0" h="416.0" h-a-x="1776" n="dynamicPPPPP"/>
+  <g c="E529" x="-102.0" y="-142.0" w="1520.0" h="416.0" h-a-x="1417" n="dynamicPPPP"/>
+  <g c="E52A" x="-92.0" y="-142.0" w="1165.0" h="416.0" h-a-x="1072" n="dynamicPPP"/>
+  <g c="E52B" x="-82.0" y="-142.0" w="810.0" h="416.0" h-a-x="727" n="dynamicPP"/>
+  <g c="E52C" x="-20.0" y="-142.0" w="845.0" h="416.0" h-a-x="826" n="dynamicMP"/>
+  <g c="E52D" x="-20.0" y="-165.0" w="838.0" h="596.0" h-a-x="797" n="dynamicMF"/>
+  <g c="E52E" x="-72.0" y="-152.0" w="842.0" h="596.0" h-a-x="770" n="dynamicPF"/>
+  <g c="E52F" x="-135.0" y="-152.0" w="745.0" h="596.0" h-a-x="609" n="dynamicFF"/>
+  <g c="E530" x="-155.0" y="-152.0" w="985.0" h="596.0" h-a-x="831" n="dynamicFFF"/>
+  <g c="E531" x="-155.0" y="-152.0" w="1225.0" h="596.0" h-a-x="1070" n="dynamicFFFF"/>
+  <g c="E532" x="-155.0" y="-152.0" w="1465.0" h="596.0" h-a-x="1310" n="dynamicFFFFF"/>
+  <g c="E533" x="-155.0" y="-152.0" w="1705.0" h="596.0" h-a-x="1550" n="dynamicFFFFFF"/>
+  <g c="E534" x="-141.0" y="-152.0" w="760.0" h="596.0" h-a-x="619" n="dynamicFortePiano"/>
+  <g c="E535" x="-141.0" y="-152.0" w="638.0" h="596.0" h-a-x="497" n="dynamicForzando"/>
+  <g c="E536" x="0.0" y="-152.0" w="604.0" h="596.0" h-a-x="604" n="dynamicSforzando1"/>
+  <g c="E537" x="0.0" y="-152.0" w="845.0" h="596.0" h-a-x="846" n="dynamicSforzandoPiano"/>
+  <g c="E538" x="0.0" y="-152.0" w="1199.0" h="596.0" h-a-x="1198" n="dynamicSforzandoPianissimo"/>
+  <g c="E539" x="0.0" y="-152.0" w="733.0" h="596.0" h-a-x="732" n="dynamicSforzato"/>
+  <g c="E53A" x="0.0" y="-152.0" w="1076.0" h="596.0" h-a-x="1075" n="dynamicSforzatoPiano"/>
+  <g c="E53B" x="0.0" y="-152.0" w="964.0" h="596.0" h-a-x="964" n="dynamicSforzatoFF"/>
+  <g c="E53C" x="-20.0" y="-152.0" w="645.0" h="596.0" h-a-x="625" n="dynamicRinforzando1"/>
+  <g c="E53D" x="-20.0" y="-152.0" w="764.0" h="596.0" h-a-x="744" n="dynamicRinforzando2"/>
   <g c="E000" x="2.0" y="0.0" w="80.0" h="997.0" h-a-x="84" n="brace"/>
   <g c="E003" x="0.0" y="0.0" w="469.0" h="295.0" h-a-x="469" n="bracketTop"/>
   <g c="E004" x="0.0" y="-295.0" w="469.0" h="295.0" h-a-x="469" n="bracketBottom"/>
@@ -125,282 +79,160 @@
   <g c="E093" x="0.0" y="-251.0" w="110.0" h="500.0" h-a-x="110" n="timeSigParensRightSmall"/>
   <g c="E094" x="0.0" y="-490.0" w="184.0" h="980.0" h-a-x="184" n="timeSigParensLeft"/>
   <g c="E095" x="0.0" y="-490.0" w="184.0" h="980.0" h-a-x="184" n="timeSigParensRight"/>
-  <g c="E0A0" x="0.0" y="-155.0" w="594.0" h="310.0" h-a-x="594" n="noteheadDoubleWhole">
-    <a n="noteheadOrigin" x="0.36" y="0.0"/>
+  <g c="E0A0" x="0.0" y="-175.0" w="612.0" h="350.0" h-a-x="612" n="noteheadDoubleWhole">
+    <a n="stemDownNW" x="0.0" y="0.0"/>
+    <a n="stemUpSE" x="2.45" y="0.0"/>
   </g>
-  <g c="E0A1" x="0.0" y="-195.0" w="385.0" h="390.0" h-a-x="385" n="noteheadDoubleWholeSquare"/>
+  <g c="E0A1" x="0.0" y="-195.0" w="385.0" h="390.0" h-a-x="385" n="noteheadDoubleWholeSquare">
+    <a n="stemDownNW" x="0.0" y="0.0"/>
+    <a n="stemUpSE" x="1.54" y="0.0"/>
+  </g>
   <g c="E0A2" x="0.0" y="-125.0" w="422.0" h="250.0" h-a-x="422" n="noteheadWhole">
     <a n="cutOutNW" x="0.17" y="0.33"/>
-    <a n="cutOutSE" x="1.53" y="-0.36"/>
+    <a n="cutOutSE" x="1.46" y="-0.39"/>
   </g>
   <g c="E0A3" x="0.0" y="-125.0" w="295.0" h="250.0" h-a-x="295" n="noteheadHalf">
     <a n="cutOutNW" x="0.2" y="0.3"/>
     <a n="cutOutSE" x="0.98" y="-0.3"/>
-    <a n="splitStemDownNE" x="0.96" y="-0.3"/>
-    <a n="splitStemDownNW" x="0.13" y="-0.43"/>
-    <a n="splitStemUpSE" x="1.11" y="0.37"/>
-    <a n="splitStemUpSW" x="0.33" y="0.38"/>
     <a n="stemDownNW" x="0.0" y="-0.17"/>
     <a n="stemUpSE" x="1.18" y="0.17"/>
   </g>
   <g c="E0A4" x="0.0" y="-125.0" w="295.0" h="250.0" h-a-x="295" n="noteheadBlack">
-    <a n="cutOutNW" x="0.21" y="0.3"/>
-    <a n="cutOutSE" x="0.94" y="-0.3"/>
-    <a n="splitStemDownNE" x="0.97" y="-0.25"/>
-    <a n="splitStemDownNW" x="0.12" y="-0.42"/>
-    <a n="splitStemUpSE" x="1.09" y="0.39"/>
-    <a n="splitStemUpSW" x="0.31" y="0.36"/>
+    <a n="cutOutNW" x="0.2" y="0.28"/>
+    <a n="cutOutSE" x="0.98" y="-0.28"/>
     <a n="stemDownNW" x="0.0" y="-0.17"/>
     <a n="stemUpSE" x="1.18" y="0.17"/>
   </g>
   <g c="E0A5" x="0.0" y="0.0" w="295" h="0.0" h-a-x="295" n="noteheadNull"/>
   <g c="E0A9" x="0.0" y="-125.0" w="290.0" h="250.0" h-a-x="290" n="noteheadXBlack">
-    <a n="stemDownNW" x="0.0" y="-0.44"/>
+    <a n="stemDownNW" x="-0.0" y="-0.44"/>
     <a n="stemUpSE" x="1.16" y="0.44"/>
   </g>
-  <g c="E0AF" x="-1.0" y="-125.0" w="250.0" h="250.0" h-a-x="249" n="noteheadPlusBlack">
-    <a n="stemDownNW" x="-0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.0" y="0.0"/>
-  </g>
+  <g c="E0AF" x="-1.0" y="-125.0" w="250.0" h="250.0" h-a-x="249" n="noteheadPlusBlack"/>
   <g c="E0B5" x="0.0" y="-125.0" w="420.0" h="250.0" h-a-x="420" n="noteheadWholeWithX"/>
-  <g c="E0B6" x="0.0" y="-125.0" w="294.0" h="250.0" h-a-x="294" n="noteheadHalfWithX">
-    <a n="stemDownNW" x="0.0" y="-0.17"/>
-    <a n="stemUpSE" x="1.18" y="0.16"/>
-  </g>
+  <g c="E0B6" x="0.0" y="-125.0" w="294.0" h="250.0" h-a-x="294" n="noteheadHalfWithX"/>
   <g c="E0B7" x="0.0" y="-125.0" w="289.0" h="250.0" h-a-x="289" n="noteheadVoidWithX">
-    <a n="stemDownNW" x="0.0" y="-0.15"/>
-    <a n="stemUpSE" x="1.16" y="0.15"/>
+    <a n="cutOutNW" x="0.18" y="0.28"/>
+    <a n="cutOutSE" x="0.98" y="-0.28"/>
+    <a n="stemDownNW" x="0.0" y="-0.17"/>
+    <a n="stemUpSE" x="1.16" y="0.17"/>
   </g>
-  <g c="E0D9" x="0.0" y="-125.0" w="251.0" h="250.0" h-a-x="251" n="noteheadDiamondHalf">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.0" y="0.0"/>
-  </g>
-  <g c="E0DA" x="0.0" y="-125.0" w="351.0" h="250.0" h-a-x="351" n="noteheadDiamondHalfWide">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.4" y="0.0"/>
-  </g>
-  <g c="E0DB" x="0.0" y="-125.0" w="250.0" h="250.0" n="noteheadDiamondBlack">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.0" y="0.0"/>
-  </g>
-  <g c="E0DC" x="0.0" y="-125.0" w="350.0" h="250.0" h-a-x="350" n="noteheadDiamondBlackWide">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.4" y="0.0"/>
-  </g>
-  <g c="E0DD" x="0.0" y="-125.0" w="250.0" h="250.0" n="noteheadDiamondWhite">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.0" y="0.0"/>
-  </g>
-  <g c="E0DE" x="0.0" y="-125.0" w="350.0" h="250.0" h-a-x="350" n="noteheadDiamondWhiteWide">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.4" y="0.0"/>
-  </g>
+  <g c="E0D9" x="0.0" y="-125.0" w="251.0" h="250.0" h-a-x="251" n="noteheadDiamondHalf"/>
+  <g c="E0DA" x="0.0" y="-125.0" w="351.0" h="250.0" h-a-x="351" n="noteheadDiamondHalfWide"/>
+  <g c="E0DB" x="0.0" y="-125.0" w="250.0" h="250.0" n="noteheadDiamondBlack"/>
+  <g c="E0DC" x="0.0" y="-125.0" w="350.0" h="250.0" h-a-x="350" n="noteheadDiamondBlackWide"/>
+  <g c="E0DD" x="0.0" y="-125.0" w="250.0" h="250.0" n="noteheadDiamondWhite"/>
+  <g c="E0DE" x="0.0" y="-125.0" w="350.0" h="250.0" h-a-x="350" n="noteheadDiamondWhiteWide"/>
   <g c="E0F5" x="0.0" y="-181.0" w="109.0" h="362.0" h-a-x="73" n="noteheadParenthesisLeft"/>
   <g c="E0F6" x="-36.0" y="-181.0" w="109.0" h="362.0" h-a-x="73" n="noteheadParenthesisRight"/>
   <g c="E0FA" x="0.0" y="-125.0" w="422.0" h="250.0" h-a-x="422" n="noteheadWholeFilled"/>
-  <g c="E101" x="0.0" y="-250.0" w="530.0" h="500.0" h-a-x="531" n="noteheadSlashHorizontalEnds">
-    <a n="stemDownNW" x="0.0" y="-1.0"/>
-    <a n="stemUpSE" x="2.12" y="1.0"/>
-  </g>
+  <g c="E101" x="0.0" y="-250.0" w="530.0" h="500.0" h-a-x="531" n="noteheadSlashHorizontalEnds"/>
   <g c="E102" x="0.0" y="-250.0" w="980.0" h="500.0" h-a-x="980" n="noteheadSlashWhiteWhole"/>
-  <g c="E103" x="0.0" y="-250.0" w="780.0" h="500.0" h-a-x="780" n="noteheadSlashWhiteHalf">
-    <a n="stemDownNW" x="0.0" y="-1.0"/>
-    <a n="stemUpSE" x="3.12" y="1.0"/>
-  </g>
-  <g c="E220" x="-150.0" y="-93.0" w="300.0" h="187.0" h-a-x="150" n="tremolo1"/>
-  <g c="E221" x="-151.0" y="-187.0" w="300.0" h="374.0" h-a-x="149" n="tremolo2"/>
-  <g c="E222" x="-150.0" y="-280.0" w="300.0" h="558.0" h-a-x="150" n="tremolo3"/>
-  <g c="E223" x="-150.0" y="-370.0" w="300.0" h="744.0" h-a-x="149" n="tremolo4"/>
-  <g c="E224" x="-151.0" y="-460.0" w="301.0" h="930.0" h-a-x="149" n="tremolo5"/>
+  <g c="E103" x="0.0" y="-250.0" w="780.0" h="500.0" h-a-x="780" n="noteheadSlashWhiteHalf"/>
+  <g c="E220" x="-150.0" y="-91.0" w="300.0" h="182.0" h-a-x="150" n="tremolo1"/>
+  <g c="E221" x="-150.0" y="-186.0" w="300.0" h="372.0" h-a-x="150" n="tremolo2"/>
+  <g c="E222" x="-150.0" y="-281.0" w="300.0" h="562.0" h-a-x="150" n="tremolo3"/>
+  <g c="E223" x="-150.0" y="-376.0" w="300.0" h="752.0" h-a-x="150" n="tremolo4"/>
+  <g c="E224" x="-150.0" y="-471.0" w="300.0" h="942.0" h-a-x="150" n="tremolo5"/>
   <g c="E22A" x="-155.0" y="-116.0" w="311.0" h="232.0" h-a-x="156" n="buzzRoll"/>
-  <g c="E240" x="0.0" y="-810.0" w="264.0" h="819.0" h-a-x="264" n="flag8thUp">
-    <a n="graceNoteSlashNE" x="1.28" y="-0.8"/>
-    <a n="graceNoteSlashSW" x="-0.64" y="-2.46"/>
-    <a n="stemUpNW" x="0.0" y="-0.04"/>
-  </g>
-  <g c="E241" x="0.0" y="-14.0" w="306.0" h="822.0" h-a-x="306" n="flag8thDown">
-    <a n="graceNoteSlashNW" x="-0.6" y="2.17"/>
-    <a n="graceNoteSlashSE" x="1.33" y="0.63"/>
-    <a n="stemDownSW" x="0.0" y="0.13"/>
-  </g>
-  <g c="E242" x="0.0" y="-813.0" w="279.0" h="815.0" h-a-x="279" n="flag16thUp">
-    <a n="stemUpNW" x="0.0" y="-0.09"/>
-  </g>
-  <g c="E243" x="0.0" y="-9.0" w="291.0" h="821.0" h-a-x="292" n="flag16thDown">
-    <a n="stemDownSW" x="0.0" y="0.13"/>
-  </g>
-  <g c="E244" x="0.0" y="-812.0" w="261.0" h="961.0" h-a-x="262" n="flag32ndUp">
-    <a n="stemUpNW" x="0.0" y="0.38"/>
-  </g>
-  <g c="E245" x="0.0" y="-172.0" w="273.0" h="984.0" h-a-x="274" n="flag32ndDown">
-    <a n="stemDownSW" x="0.0" y="-0.45"/>
-  </g>
-  <g c="E246" x="0.0" y="-812.0" w="261.0" h="1159.0" h-a-x="262" n="flag64thUp">
-    <a n="stemUpNW" x="0.0" y="1.17"/>
-  </g>
-  <g c="E247" x="0.0" y="-376.0" w="273.0" h="1188.0" h-a-x="275" n="flag64thDown">
-    <a n="stemDownSW" x="0.0" y="-1.24"/>
-  </g>
-  <g c="E248" x="0.0" y="-812.0" w="261.0" h="1345.0" h-a-x="259" n="flag128thUp">
-    <a n="stemUpNW" x="0.0" y="1.9"/>
-  </g>
-  <g c="E249" x="0.0" y="-580.0" w="273.0" h="1392.0" h-a-x="275" n="flag128thDown">
-    <a n="stemDownSW" x="0.0" y="-2.08"/>
-  </g>
-  <g c="E24A" x="0.0" y="-812.0" w="264.0" h="1516.0" h-a-x="268" n="flag256thUp">
-    <a n="stemUpNW" x="0.0" y="2.59"/>
-  </g>
-  <g c="E24B" x="0.0" y="-751.0" w="299.0" h="1563.0" h-a-x="301" n="flag256thDown">
-    <a n="stemDownSW" x="0.0" y="-2.81"/>
-  </g>
-  <g c="E24C" x="0.0" y="-812.0" w="265.0" h="1703.0" h-a-x="268" n="flag512thUp">
-    <a n="stemUpNW" x="0.0" y="3.32"/>
-  </g>
-  <g c="E24D" x="0.0" y="-939.0" w="300.0" h="1750.0" h-a-x="301" n="flag512thDown">
-    <a n="stemDownSW" x="0.0" y="-3.61"/>
-  </g>
-  <g c="E24E" x="0.0" y="-812.0" w="265.0" h="1891.0" h-a-x="272" n="flag1024thUp">
-    <a n="stemUpNW" x="0.0" y="4.06"/>
-  </g>
-  <g c="E24F" x="0.0" y="-1202.0" w="301.0" h="1944.0" h-a-x="310" n="flag1024thDown">
-    <a n="stemDownSW" x="0.0" y="-4.68"/>
-  </g>
+  <g c="E240" x="0.0" y="-810.0" w="264.0" h="819.0" h-a-x="264" n="flag8thUp"/>
+  <g c="E241" x="0.0" y="-14.0" w="306.0" h="822.0" h-a-x="306" n="flag8thDown"/>
+  <g c="E242" x="0.0" y="-813.0" w="279.0" h="815.0" h-a-x="279" n="flag16thUp"/>
+  <g c="E243" x="0.0" y="-9.0" w="291.0" h="821.0" h-a-x="292" n="flag16thDown"/>
+  <g c="E244" x="0.0" y="-812.0" w="261.0" h="961.0" h-a-x="262" n="flag32ndUp"/>
+  <g c="E245" x="0.0" y="-172.0" w="273.0" h="984.0" h-a-x="274" n="flag32ndDown"/>
+  <g c="E246" x="0.0" y="-812.0" w="261.0" h="1159.0" h-a-x="262" n="flag64thUp"/>
+  <g c="E247" x="0.0" y="-376.0" w="273.0" h="1188.0" h-a-x="275" n="flag64thDown"/>
+  <g c="E248" x="0.0" y="-812.0" w="261.0" h="1345.0" h-a-x="259" n="flag128thUp"/>
+  <g c="E249" x="0.0" y="-580.0" w="273.0" h="1392.0" h-a-x="275" n="flag128thDown"/>
+  <g c="E24A" x="0.0" y="-812.0" w="264.0" h="1516.0" h-a-x="268" n="flag256thUp"/>
+  <g c="E24B" x="0.0" y="-751.0" w="299.0" h="1563.0" h-a-x="301" n="flag256thDown"/>
+  <g c="E24C" x="0.0" y="-812.0" w="265.0" h="1703.0" h-a-x="268" n="flag512thUp"/>
+  <g c="E24D" x="0.0" y="-939.0" w="300.0" h="1750.0" h-a-x="301" n="flag512thDown"/>
+  <g c="E24E" x="0.0" y="-812.0" w="265.0" h="1891.0" h-a-x="272" n="flag1024thUp"/>
+  <g c="E24F" x="0.0" y="-1202.0" w="301.0" h="1944.0" h-a-x="310" n="flag1024thDown"/>
   <g c="E260" x="0.0" y="-175.0" w="226.0" h="614.0" h-a-x="226" n="accidentalFlat">
     <a n="cutOutNE" x="0.25" y="0.66"/>
-    <a n="cutOutSE" x="0.5" y="-0.48"/>
+    <a n="cutOutSE" x="0.46" y="-0.46"/>
   </g>
   <g c="E261" x="0.0" y="-345.0" w="168.0" h="696.0" h-a-x="168" n="accidentalNatural">
-    <a n="cutOutNE" x="0.19" y="0.78"/>
-    <a n="cutOutSW" x="0.48" y="-0.83"/>
+    <a n="cutOutNE" x="0.19" y="0.82"/>
+    <a n="cutOutSW" x="0.5" y="-0.84"/>
   </g>
   <g c="E262" x="0.0" y="-348.0" w="249.0" h="698.0" h-a-x="249" n="accidentalSharp">
-    <a n="cutOutNE" x="0.84" y="0.9"/>
-    <a n="cutOutNW" x="0.14" y="0.57"/>
-    <a n="cutOutSE" x="0.84" y="-0.6"/>
-    <a n="cutOutSW" x="0.14" y="-0.9"/>
+    <a n="cutOutNE" x="0.83" y="0.9"/>
+    <a n="cutOutNW" x="0.17" y="0.62"/>
+    <a n="cutOutSE" x="0.83" y="-0.57"/>
+    <a n="cutOutSW" x="0.16" y="-0.9"/>
   </g>
   <g c="E263" x="0.0" y="-125.0" w="247.0" h="252.0" n="accidentalDoubleSharp"/>
   <g c="E264" x="0.0" y="-175.0" w="406.0" h="614.0" h-a-x="406" n="accidentalDoubleFlat">
-    <a n="cutOutNE" x="0.99" y="0.64"/>
-    <a n="cutOutSE" x="1.34" y="-0.4"/>
+    <a n="cutOutNE" x="0.97" y="0.66"/>
+    <a n="cutOutSE" x="1.18" y="-0.46"/>
   </g>
   <g c="E265" x="0.0" y="-348.0" w="513.0" h="698.0" h-a-x="513" n="accidentalTripleSharp">
-    <a n="cutOutNE" x="0.86" y="0.92"/>
-    <a n="cutOutNW" x="0.12" y="0.6"/>
-    <a n="cutOutSE" x="0.86" y="-0.59"/>
-    <a n="cutOutSW" x="0.12" y="-0.9"/>
+    <a n="cutOutNE" x="1.04" y="0.56"/>
+    <a n="cutOutNW" x="0.16" y="0.62"/>
+    <a n="cutOutSE" x="0.88" y="-0.56"/>
+    <a n="cutOutSW" x="0.16" y="-0.9"/>
   </g>
   <g c="E266" x="0.0" y="-175.0" w="586.0" h="614.0" h-a-x="586" n="accidentalTripleFlat">
-    <a n="cutOutNE" x="1.75" y="0.66"/>
-    <a n="cutOutSE" x="2.05" y="-0.44"/>
+    <a n="cutOutNE" x="1.69" y="0.66"/>
+    <a n="cutOutSE" x="1.9" y="-0.46"/>
   </g>
   <g c="E267" x="0.0" y="-345.0" w="436.0" h="784.0" h-a-x="436" n="accidentalNaturalFlat">
-    <a n="cutOutNE" x="1.18" y="0.65"/>
-    <a n="cutOutSE" x="0.75" y="-0.83"/>
-    <a n="cutOutSW" x="0.44" y="-0.83"/>
+    <a n="cutOutNE" x="1.09" y="0.66"/>
+    <a n="cutOutSE" x="1.3" y="-0.46"/>
+    <a n="cutOutSW" x="0.48" y="-0.84"/>
   </g>
   <g c="E268" x="0.0" y="-348.0" w="461.0" h="699.0" h-a-x="460" n="accidentalNaturalSharp">
-    <a n="cutOutNE" x="1.78" y="0.9"/>
-    <a n="cutOutSE" x="1.78" y="-0.61"/>
-    <a n="cutOutSW" x="0.45" y="-0.84"/>
+    <a n="cutOutNE" x="1.68" y="0.94"/>
+    <a n="cutOutSE" x="1.68" y="-0.57"/>
+    <a n="cutOutSW" x="0.5" y="-0.84"/>
   </g>
   <g c="E269" x="0.0" y="-348.0" w="519.0" h="698.0" h-a-x="519" n="accidentalSharpSharp">
-    <a n="cutOutNE" x="1.93" y="0.9"/>
-    <a n="cutOutNW" x="0.14" y="0.6"/>
-    <a n="cutOutSE" x="1.94" y="-0.6"/>
-    <a n="cutOutSW" x="0.14" y="-0.9"/>
+    <a n="cutOutNE" x="1.92" y="0.94"/>
+    <a n="cutOutNW" x="0.16" y="0.62"/>
+    <a n="cutOutSE" x="1.92" y="-0.57"/>
+    <a n="cutOutSW" x="0.16" y="-0.9"/>
   </g>
   <g c="E26A" x="0.0" y="-248.0" w="141.0" h="495.0" h-a-x="141" n="accidentalParensLeft"/>
   <g c="E26B" x="0.0" y="-248.0" w="141.0" h="495.0" h-a-x="141" n="accidentalParensRight"/>
-  <g c="E26C" x="0.0" y="-187.0" w="77.0" h="375.0" h-a-x="77" n="accidentalBracketLeft"/>
-  <g c="E26D" x="0.0" y="-187.0" w="77.0" h="375.0" h-a-x="77" n="accidentalBracketRight"/>
+  <g c="E26C" x="0.0" y="-189.0" w="77.0" h="377.0" h-a-x="77" n="accidentalBracketLeft"/>
+  <g c="E26D" x="0.0" y="-189.0" w="77.0" h="378.0" h-a-x="77" n="accidentalBracketRight"/>
   <g c="E270" x="-42.0" y="-177.0" w="290.0" h="756.0" h-a-x="248" n="accidentalQuarterToneFlatArrowUp">
-    <a n="cutOutNE" x="0.6" y="0.66"/>
-    <a n="cutOutSE" x="0.62" y="-0.45"/>
+    <a n="cutOutNE" x="0.61" y="0.66"/>
+    <a n="cutOutSE" x="0.58" y="-0.46"/>
   </g>
   <g c="E271" x="-39.0" y="-418.0" w="290.0" h="860.0" h-a-x="251" n="accidentalThreeQuarterTonesFlatArrowDown">
-    <a n="cutOutNE" x="0.36" y="0.65"/>
-    <a n="cutOutNW" x="0.03" y="-0.8"/>
-    <a n="cutOutSE" x="0.65" y="-0.5"/>
+    <a n="cutOutNE" x="0.37" y="0.66"/>
+    <a n="cutOutSE" x="0.66" y="-0.42"/>
   </g>
   <g c="E272" x="-26.0" y="-340.0" w="238.0" h="887.0" h-a-x="212" n="accidentalQuarterToneSharpNaturalArrowUp">
-    <a n="cutOutSW" x="0.62" y="-0.87"/>
+    <a n="cutOutNE" x="0.67" y="0.82"/>
+    <a n="cutOutSW" x="0.66" y="-0.84"/>
   </g>
   <g c="E273" x="3.0" y="-543.0" w="247.0" h="879.0" h-a-x="171" n="accidentalQuarterToneFlatNaturalArrowDown">
-    <a n="cutOutNE" x="0.23" y="0.79"/>
+    <a n="cutOutNE" x="0.19" y="0.82"/>
+    <a n="cutOutSW" x="0.18" y="-0.84"/>
   </g>
-  <g c="E274" x="0.0" y="-347.0" w="275.0" h="877.0" h-a-x="249" n="accidentalThreeQuarterTonesSharpArrowUp">
-    <a n="cutOutNW" x="0.27" y="1.3"/>
-    <a n="cutOutSE" x="0.86" y="-0.58"/>
-    <a n="cutOutSW" x="0.13" y="-0.89"/>
-  </g>
-  <g c="E275" x="-28.0" y="-534.0" w="277.0" h="883.0" h-a-x="249" n="accidentalQuarterToneSharpArrowDown">
-    <a n="cutOutNE" x="0.86" y="0.91"/>
-    <a n="cutOutNW" x="0.13" y="0.61"/>
-    <a n="cutOutSE" x="0.86" y="-0.59"/>
-  </g>
+  <g c="E274" x="0.0" y="-347.0" w="275.0" h="877.0" h-a-x="249" n="accidentalThreeQuarterTonesSharpArrowUp"/>
+  <g c="E275" x="-28.0" y="-534.0" w="277.0" h="883.0" h-a-x="249" n="accidentalQuarterToneSharpArrowDown"/>
   <g c="E280" x="0.0" y="-175.0" w="226.0" h="614.0" h-a-x="226" n="accidentalQuarterToneFlatStein">
-    <a n="cutOutNW" x="0.63" y="0.68"/>
-    <a n="cutOutSW" x="0.34" y="-0.43"/>
+    <a n="cutOutNW" x="0.62" y="0.68"/>
+    <a n="cutOutSW" x="0.38" y="-0.44"/>
   </g>
-  <g c="E281" x="0.0" y="-175.0" w="466.0" h="614.0" h-a-x="466" n="accidentalThreeQuarterTonesFlatZimmermann">
-    <a n="cutOutNE" x="1.22" y="0.67"/>
-    <a n="cutOutNW" x="0.64" y="0.67"/>
-  </g>
-  <g c="E282" x="0.0" y="-353.0" w="179.0" h="660.0" h-a-x="179" n="accidentalQuarterToneSharpStein">
-    <a n="cutOutNE" x="0.48" y="0.75"/>
-    <a n="cutOutNW" x="0.22" y="0.6"/>
-    <a n="cutOutSE" x="0.49" y="-0.8"/>
-    <a n="cutOutSW" x="0.22" y="-0.92"/>
-  </g>
-  <g c="E283" x="3.0" y="-347.0" w="314.0" h="716.0" h-a-x="317" n="accidentalThreeQuarterTonesSharpStein">
-    <a n="cutOutNE" x="1.13" y="1.0"/>
-    <a n="cutOutNW" x="0.14" y="0.6"/>
-    <a n="cutOutSE" x="1.13" y="-0.5"/>
-    <a n="cutOutSW" x="0.14" y="-0.9"/>
-  </g>
-  <g c="E440" x="1.0" y="-174.0" w="286.0" h="612.0" h-a-x="287" n="accidentalBuyukMucennebFlat">
-    <a n="cutOutSE" x="0.81" y="-0.42"/>
-    <a n="cutOutSW" x="0.18" y="0.54"/>
-  </g>
-  <g c="E441" x="0.0" y="-175.0" w="226.0" h="614.0" h-a-x="227" n="accidentalKucukMucennebFlat">
-    <a n="cutOutNE" x="0.28" y="0.7"/>
-    <a n="cutOutSE" x="0.58" y="-0.42"/>
-  </g>
-  <g c="E442" x="-1.0" y="-175.0" w="287.0" h="614.0" h-a-x="287" n="accidentalBakiyeFlat">
-    <a n="cutOutNE" x="0.54" y="1.39"/>
-    <a n="cutOutNW" x="0.15" y="1.11"/>
-    <a n="cutOutSE" x="0.82" y="-0.44"/>
-    <a n="cutOutSW" x="0.15" y="0.5"/>
-  </g>
-  <g c="E443" x="1.0" y="-175.0" w="226.0" h="614.0" h-a-x="229" n="accidentalKomaFlat">
-    <a n="cutOutNW" x="0.61" y="0.72"/>
-    <a n="cutOutSW" x="0.36" y="-0.45"/>
-  </g>
-  <g c="E444" x="0.0" y="-337.0" w="229.0" h="659.0" h-a-x="231" n="accidentalKomaSharp">
-    <a n="cutOutNE" x="0.6" y="0.88"/>
-    <a n="cutOutNW" x="0.28" y="0.71"/>
-    <a n="cutOutSE" x="0.6" y="-0.78"/>
-    <a n="cutOutSW" x="0.28" y="-0.92"/>
-  </g>
-  <g c="E445" x="0.0" y="-348.0" w="249.0" h="698.0" n="accidentalBakiyeSharp">
-    <a n="cutOutNE" x="0.86" y="0.94"/>
-    <a n="cutOutNW" x="0.12" y="0.62"/>
-    <a n="cutOutSE" x="0.86" y="-0.62"/>
-    <a n="cutOutSW" x="0.12" y="-0.92"/>
-  </g>
-  <g c="E446" x="-1.0" y="-338.0" w="340.0" h="659.0" h-a-x="339" n="accidentalKucukMucennebSharp">
-    <a n="cutOutNE" x="0.82" y="0.88"/>
-    <a n="cutOutNW" x="0.49" y="0.71"/>
-    <a n="cutOutSE" x="0.84" y="-0.77"/>
-    <a n="cutOutSW" x="0.5" y="-0.95"/>
-  </g>
-  <g c="E447" x="0.0" y="-350.0" w="341.0" h="698.0" h-a-x="343" n="accidentalBuyukMucennebSharp">
-    <a n="cutOutNE" x="1.05" y="0.94"/>
-    <a n="cutOutNW" x="0.26" y="0.63"/>
-    <a n="cutOutSE" x="1.05" y="-0.62"/>
-    <a n="cutOutSW" x="0.26" y="-0.96"/>
-  </g>
+  <g c="E281" x="0.0" y="-175.0" w="466.0" h="614.0" h-a-x="466" n="accidentalThreeQuarterTonesFlatZimmermann"/>
+  <g c="E282" x="0.0" y="-353.0" w="179.0" h="660.0" h-a-x="179" n="accidentalQuarterToneSharpStein"/>
+  <g c="E283" x="3.0" y="-347.0" w="314.0" h="716.0" h-a-x="317" n="accidentalThreeQuarterTonesSharpStein"/>
+  <g c="E440" x="1.0" y="-174.0" w="286.0" h="612.0" h-a-x="287" n="accidentalBuyukMucennebFlat"/>
+  <g c="E441" x="0.0" y="-175.0" w="226.0" h="614.0" h-a-x="227" n="accidentalKucukMucennebFlat"/>
+  <g c="E442" x="-1.0" y="-175.0" w="287.0" h="614.0" h-a-x="287" n="accidentalBakiyeFlat"/>
+  <g c="E443" x="1.0" y="-175.0" w="226.0" h="614.0" h-a-x="229" n="accidentalKomaFlat"/>
+  <g c="E444" x="0.0" y="-337.0" w="229.0" h="659.0" h-a-x="231" n="accidentalKomaSharp"/>
+  <g c="E445" x="0.0" y="-348.0" w="249.0" h="698.0" n="accidentalBakiyeSharp"/>
+  <g c="E446" x="-1.0" y="-338.0" w="340.0" h="659.0" h-a-x="339" n="accidentalKucukMucennebSharp"/>
+  <g c="E447" x="0.0" y="-350.0" w="341.0" h="698.0" h-a-x="343" n="accidentalBuyukMucennebSharp"/>
   <g c="E4A0" x="0.0" y="0.0" w="460.0" h="268.0" h-a-x="460" n="articAccentAbove"/>
   <g c="E4A1" x="0.0" y="-268.0" w="460.0" h="268.0" h-a-x="460" n="articAccentBelow"/>
   <g c="E4A2" x="0.0" y="0.0" w="120.0" h="120.0" h-a-x="120" n="articStaccatoAbove"/>
@@ -479,27 +311,13 @@
   <g c="E51C" x="0.0" y="-10.0" w="796.0" h="473.0" h-a-x="796" n="ottavaBassaVb"/>
   <g c="E51D" x="0.0" y="-10.0" w="1232.0" h="471.0" h-a-x="1231" n="quindicesimaBassaMb"/>
   <g c="E51E" x="4.0" y="-7.0" w="1331.0" h="470.0" h-a-x="1335" n="ventiduesimaBassaMb"/>
-  <g c="E520" x="-89.0" y="-142.0" w="455.0" h="416.0" h-a-x="365" n="dynamicPiano">
-    <a n="opticalCenter" x="1.22" y="0.0"/>
-  </g>
-  <g c="E521" x="-20.0" y="-10.0" w="466.0" h="284.0" h-a-x="437" n="dynamicMezzo">
-    <a n="opticalCenter" x="0.87" y="0.0"/>
-  </g>
-  <g c="E522" x="-141.0" y="-152.0" w="505.0" h="596.0" h-a-x="364" n="dynamicForte">
-    <a n="opticalCenter" x="1.26" y="0.0"/>
-  </g>
-  <g c="E523" x="-20.0" y="0.0" w="297.0" h="274.0" h-a-x="277" n="dynamicRinforzando">
-    <a n="opticalCenter" x="0.61" y="0.0"/>
-  </g>
-  <g c="E524" x="0.0" y="-10.0" w="229.0" h="283.0" h-a-x="229" n="dynamicSforzando">
-    <a n="opticalCenter" x="0.44" y="0.0"/>
-  </g>
-  <g c="E525" x="-30.0" y="-10.0" w="274.0" h="278.0" h-a-x="244" n="dynamicZ">
-    <a n="opticalCenter" x="0.5" y="0.0"/>
-  </g>
-  <g c="E526" x="-23.0" y="-10.0" w="331.0" h="284.0" h-a-x="308" n="dynamicNiente">
-    <a n="opticalCenter" x="0.62" y="0.0"/>
-  </g>
+  <g c="E520" x="-89.0" y="-142.0" w="455.0" h="416.0" h-a-x="365" n="dynamicPiano"/>
+  <g c="E521" x="-20.0" y="-10.0" w="466.0" h="284.0" h-a-x="437" n="dynamicMezzo"/>
+  <g c="E522" x="-141.0" y="-152.0" w="505.0" h="596.0" h-a-x="364" n="dynamicForte"/>
+  <g c="E523" x="-20.0" y="0.0" w="297.0" h="274.0" h-a-x="277" n="dynamicRinforzando"/>
+  <g c="E524" x="0.0" y="-10.0" w="229.0" h="283.0" h-a-x="229" n="dynamicSforzando"/>
+  <g c="E525" x="-30.0" y="-10.0" w="274.0" h="278.0" h-a-x="244" n="dynamicZ"/>
+  <g c="E526" x="-23.0" y="-10.0" w="331.0" h="284.0" h-a-x="308" n="dynamicNiente"/>
   <g c="E566" x="0.0" y="-10.0" w="521.0" h="400.0" h-a-x="521" n="ornamentTrill"/>
   <g c="E567" x="0.0" y="0.0" w="460.0" h="238.0" h-a-x="460" n="ornamentTurn"/>
   <g c="E568" x="0.0" y="0.0" w="460.0" h="238.0" h-a-x="460" n="ornamentTurnInverted"/>
@@ -512,12 +330,8 @@
   <g c="E56F" x="0.0" y="-40.0" w="499.0" h="253.0" h-a-x="500" n="ornamentHaydn"/>
   <g c="E583" x="1.0" y="109.0" w="24.0" h="280.0" h-a-x="27" n="ornamentVerticalLine"/>
   <g c="E587" x="0.0" y="0.0" w="1143.0" h="660.0" h-a-x="1143" n="ornamentSchleifer"/>
-  <g c="E59D" x="-52.0" y="0.0" w="337.0" h="245.0" h-a-x="262" n="ornamentZigZagLineNoRightEnd">
-    <a n="repeatOffset" x="1.05" y="0.0"/>
-  </g>
-  <g c="E59E" x="-54.0" y="0.0" w="460.0" h="245.0" h-a-x="357" n="ornamentZigZagLineWithRightEnd">
-    <a n="repeatOffset" x="1.43" y="0.0"/>
-  </g>
+  <g c="E59D" x="-52.0" y="0.0" w="337.0" h="245.0" h-a-x="262" n="ornamentZigZagLineNoRightEnd"/>
+  <g c="E59E" x="-54.0" y="0.0" w="460.0" h="245.0" h-a-x="357" n="ornamentZigZagLineWithRightEnd"/>
   <g c="E5B0" x="0.0" y="0.0" w="1108.0" h="308.0" h-a-x="1108" n="ornamentPrecompSlide"/>
   <g c="E5B1" x="0.0" y="-185.0" w="1129.0" h="429.0" h-a-x="1128" n="ornamentPrecompDescendingSlide"/>
   <g c="E5B2" x="0.0" y="0.0" w="1119.0" h="481.0" h-a-x="1119" n="ornamentPrecompAppoggTrill"/>
@@ -606,14 +420,11 @@
   <g c="E925" x="0.0" y="-360.0" w="60.0" h="720.0" h-a-x="60" n="mensuralProlationCombiningStroke"/>
   <g c="E938" x="0.0" y="-141.0" w="282.0" h="282.0" h-a-x="282" n="mensuralNoteheadSemibrevisBlack"/>
   <g c="E939" x="1.0" y="-141.0" w="282.0" h="282.0" h-a-x="283" n="mensuralNoteheadSemibrevisVoid"/>
-  <g c="E93C" x="0.0" y="-184.0" w="320.0" h="369.0" h-a-x="320" n="mensuralNoteheadMinimaWhite">
-    <a n="stemDownNW" x="0.0" y="0.0"/>
-    <a n="stemUpSE" x="1.28" y="0.0"/>
-  </g>
+  <g c="E93C" x="0.0" y="-184.0" w="320.0" h="369.0" h-a-x="320" n="mensuralNoteheadMinimaWhite"/>
   <g c="E93D" x="0.0" y="-184.0" w="320.0" h="369.0" h-a-x="320" n="mensuralNoteheadSemiminimaWhite"/>
   <g c="E93E" x="0.0" y="0.0" w="32.0" h="782.0" h-a-x="32" n="mensuralCombStemUp"/>
   <g c="E93F" x="0.0" y="-782.0" w="32.0" h="782.0" h-a-x="32" n="mensuralCombStemDown"/>
-  <g c="E940" x="-194.0" y="-193.0" w="386.0" h="385.0" h-a-x="1" n="mensuralCombStemDiagonal"/>
+  <g c="E940" x="-194.0" y="-193.0" w="386.0" h="385.0" h-a-x="0" n="mensuralCombStemDiagonal"/>
   <g c="E941" x="0.0" y="0.0" w="220.0" h="782.0" h-a-x="220" n="mensuralCombStemUpFlagRight"/>
   <g c="E942" x="0.0" y="-782.0" w="220.0" h="782.0" h-a-x="220" n="mensuralCombStemDownFlagRight"/>
   <g c="E943" x="-188.0" y="0.0" w="220.0" h="782.0" h-a-x="32" n="mensuralCombStemUpFlagLeft"/>
@@ -655,24 +466,12 @@
   <g c="E9F8" x="0.0" y="0.0" w="138.0" h="165.0" h-a-x="138" n="mensuralRestSemifusa"/>
   <g c="EA02" x="1.0" y="0.0" w="613.0" h="411.0" h-a-x="615" n="mensuralCustosUp"/>
   <g c="EA06" x="0.0" y="-101.0" w="60.0" h="416.0" h-a-x="60" n="chantCustosStemUpPosMiddle"/>
-  <g c="EAA4" x="-36.0" y="98.0" w="306.0" h="111.0" h-a-x="237" n="wiggleTrill">
-    <a n="repeatOffset" x="0.95" y="0.0"/>
-  </g>
-  <g c="EAA9" x="-33.0" y="0.0" w="325.0" h="119.0" h-a-x="255" n="wiggleArpeggiatoUp">
-    <a n="repeatOffset" x="1.02" y="0.0"/>
-  </g>
-  <g c="EAAA" x="-33.0" y="0.0" w="325.0" h="119.0" h-a-x="255" n="wiggleArpeggiatoDown">
-    <a n="repeatOffset" x="1.02" y="0.0"/>
-  </g>
-  <g c="EAAD" x="-33.0" y="-62.0" w="559.0" h="235.0" h-a-x="526" n="wiggleArpeggiatoUpArrow">
-    <a n="repeatOffset" x="2.06" y="0.0"/>
-  </g>
-  <g c="EAAE" x="0.0" y="-62.0" w="559.0" h="235.0" h-a-x="526" n="wiggleArpeggiatoDownArrow">
-    <a n="repeatOffset" x="2.06" y="0.0"/>
-  </g>
-  <g c="EAAF" x="-25.0" y="0.0" w="306.0" h="111.0" h-a-x="240" n="wiggleGlissando">
-    <a n="repeatOffset" x="0.96" y="0.0"/>
-  </g>
+  <g c="EAA4" x="-36.0" y="98.0" w="306.0" h="111.0" h-a-x="237" n="wiggleTrill"/>
+  <g c="EAA9" x="-33.0" y="0.0" w="325.0" h="119.0" h-a-x="255" n="wiggleArpeggiatoUp"/>
+  <g c="EAAA" x="-33.0" y="0.0" w="325.0" h="119.0" h-a-x="255" n="wiggleArpeggiatoDown"/>
+  <g c="EAAD" x="-33.0" y="-62.0" w="559.0" h="235.0" h-a-x="526" n="wiggleArpeggiatoUpArrow"/>
+  <g c="EAAE" x="0.0" y="-62.0" w="559.0" h="235.0" h-a-x="526" n="wiggleArpeggiatoDownArrow"/>
+  <g c="EAAF" x="-25.0" y="0.0" w="306.0" h="111.0" h-a-x="240" n="wiggleGlissando"/>
   <g c="EBA7" x="0.0" y="0.0" w="36.0" h="790.0" h-a-x="36" n="luteDurationWhole"/>
   <g c="EBA8" x="0.0" y="0.0" w="228.0" h="786.0" h-a-x="228" n="luteDurationHalf"/>
   <g c="EBA9" x="0.0" y="0.0" w="228.0" h="786.0" h-a-x="228" n="luteDurationQuarter"/>
@@ -749,6 +548,10 @@
   <g c="ED8B" x="-29.0" y="-24.0" w="127.0" h="295.0" h-a-x="101" n="fingeringRightParenthesisItalic"/>
   <g c="ED8C" x="0.0" y="-20.0" w="127.0" h="289.0" h-a-x="109" n="fingeringLeftBracketItalic"/>
   <g c="ED8D" x="-21.0" y="-20.0" w="129.0" h="289.0" h-a-x="107" n="fingeringRightBracketItalic"/>
+  <g c="F406" x="0.0" y="-585.0" w="850.0" h="846.0" h-a-x="850" n="fClefFrench"/>
+  <g c="F407" x="0.0" y="-582.0" w="1050.0" h="855.0" h-a-x="1050" n="fClef19thCentury"/>
+  <g c="F408" x="0.0" y="-641.0" w="593.0" h="1282.0" h-a-x="593" n="cClefFrench"/>
+  <g c="F4BF" x="0.0" y="-559.0" w="620.0" h="1107.0" h-a-x="620" n="cClefFrench20C"/>
   <g c="ED8E" x="0.0" y="-138.0" w="249.0" h="395.0" h-a-x="249" n="fingeringQLower"/>
   <g c="ED8F" x="0.0" y="-7.0" w="210.0" h="270.0" h-a-x="210" n="fingeringSLower"/>
 </bounding-boxes>
