@@ -116,9 +116,10 @@ public:
     bool AddArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
     bool AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
         const std::string &measureUuid, data_ARTICULATION type);
-    bool EditArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
+    bool EditArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type,
+        bool resetPlace = true);
     bool EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-        const std::string &measureUuid, data_ARTICULATION type);
+        const std::string &measureUuid, data_ARTICULATION type, bool resetPlace = true);
     bool RemoveArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
     bool RemoveArticulation(
         const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);

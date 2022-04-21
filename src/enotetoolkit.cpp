@@ -229,13 +229,13 @@ bool EnoteToolkit::AddArticulation(const std::string &articUuid, const std::stri
 }
 
 bool EnoteToolkit::EditArticulation(
-    const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type)
+    const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type, bool resetPlace)
 {
-    return this->EditArticulation("", noteOrChordUuid, measureUuid, type);
+    return this->EditArticulation("", noteOrChordUuid, measureUuid, type, resetPlace);
 }
 
 bool EnoteToolkit::EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
-    const std::string &measureUuid, data_ARTICULATION type)
+    const std::string &measureUuid, data_ARTICULATION type, bool resetPlace)
 {
     Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
@@ -243,6 +243,7 @@ bool EnoteToolkit::EditArticulation(const std::string &articUuid, const std::str
         if (!articUuid.empty()) artic = dynamic_cast<Artic *>(parent->FindDescendantByUuid(articUuid));
         if (artic) {
             artic->SetArtic({ type });
+            if (resetPlace) artic->ResetPlacementRelEvent();
             return true;
         }
     }
