@@ -145,14 +145,43 @@ public:
     bool RemoveHairpin(const std::string &hairpinUuid, const std::string &measureUuid);
     ///@}
 
+    /**
+     * Edit slurs
+     */
+    ///@{
+    bool HasSlur(const std::string &slurUuid);
+    bool HasSlur(const std::string &slurUuid, const std::string &measureUuid);
+    bool AddSlur(const std::string &measureUuid, const std::string &startUuid, const std::string &endUuid,
+        curvature_CURVEDIR curveDir);
+    bool AddSlur(const std::string &measureUuid, const std::string &startUuid, data_MEASUREBEAT tstamp2,
+        curvature_CURVEDIR curveDir);
+    bool AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+        const std::string &endUuid, curvature_CURVEDIR curveDir);
+    bool AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+        data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir);
+    bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+        const std::string &endUuid);
+    bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+        data_MEASUREBEAT tstamp2);
+    bool RemoveSlur(const std::string &slurUuid);
+    bool RemoveSlur(const std::string &slurUuid, const std::string &measureUuid);
+    ///@}
+
     ///@}
 
 private:
     /**
-     * Prepare rerendering
+     * Moving elements in the object tree
      */
     ///@{
     bool MoveToMeasure(ControlElement *element, const std::string &measureUuid);
+    bool MoveToMeasure(ControlElement *element, Measure *measure);
+    ///@}
+
+    /**
+     * Prepare rerendering
+     */
+    ///@{
     void UpdateTimeSpanning(ControlElement *element);
     void RemoveTimeSpanning(ControlElement *element);
     ///@}

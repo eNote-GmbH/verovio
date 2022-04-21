@@ -13,8 +13,8 @@
 #include "hairpin.h"
 #include "measure.h"
 #include "page.h"
+#include "slur.h"
 #include "staff.h"
-#include "tie.h"
 #include "timestamp.h"
 
 //----------------------------------------------------------------------------
@@ -345,16 +345,154 @@ bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid, const std::stri
     return false;
 }
 
+bool EnoteToolkit::HasSlur(const std::string &slurUuid)
+{
+    return (dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasSlur(const std::string &slurUuid, const std::string &measureUuid)
+{
+    return (dynamic_cast<Slur *>(this->FindElementInMeasure(slurUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::AddSlur(const std::string &measureUuid, const std::string &startUuid, const std::string &endUuid,
+    curvature_CURVEDIR curveDir)
+{
+    return this->AddSlur("", measureUuid, startUuid, endUuid, curveDir);
+}
+
+bool EnoteToolkit::AddSlur(
+    const std::string &measureUuid, const std::string &startUuid, data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir)
+{
+    return this->AddSlur("", measureUuid, startUuid, tstamp2, curveDir);
+}
+
+bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+    const std::string &endUuid, curvature_CURVEDIR curveDir)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+        LayerElement *endElement = dynamic_cast<LayerElement *>(m_doc.FindDescendantByUuid(endUuid));
+        if (startElement && endElement && Object::IsPreOrdered(startElement, endElement)) {
+            Slur *slur = new Slur();
+            if (!slurUuid.empty()) slur->SetUuid(slurUuid);
+            slur->SetStartid(startUuid);
+            slur->SetEndid(endUuid);
+            slur->SetCurvedir(curveDir);
+            measure->AddChild(slur);
+            this->UpdateTimeSpanning(slur);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+    const data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+        if (startElement) {
+            Slur *slur = new Slur();
+            if (!slurUuid.empty()) slur->SetUuid(slurUuid);
+            slur->SetStartid(startUuid);
+            slur->SetTstamp2(tstamp2);
+            slur->SetCurvedir(curveDir);
+            measure->AddChild(slur);
+            this->UpdateTimeSpanning(slur);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
+    const std::string &endUuid)
+{
+    Slur *slur = dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid));
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (slur && measure) {
+        LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+        LayerElement *endElement = dynamic_cast<LayerElement *>(m_doc.FindDescendantByUuid(endUuid));
+        if (startElement && endElement && Object::IsPreOrdered(startElement, endElement)) {
+            if (this->MoveToMeasure(slur, measure)) {
+                slur->TimeSpanningInterface::Reset();
+                slur->SetStartid(startUuid);
+                slur->SetEndid(endUuid);
+                this->UpdateTimeSpanning(slur);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditSlur(
+    const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid, data_MEASUREBEAT tstamp2)
+{
+    Slur *slur = dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid));
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (slur && measure) {
+        LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+        if (startElement) {
+            if (this->MoveToMeasure(slur, measure)) {
+                slur->TimeSpanningInterface::Reset();
+                slur->SetStartid(startUuid);
+                slur->SetTstamp2(tstamp2);
+                this->UpdateTimeSpanning(slur);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveSlur(const std::string &slurUuid)
+{
+    Slur *slur = dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid));
+    if (slur) {
+        this->RemoveTimeSpanning(slur);
+        slur->GetParent()->DeleteChild(slur);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveSlur(const std::string &slurUuid, const std::string &measureUuid)
+{
+    Slur *slur = dynamic_cast<Slur *>(this->FindElementInMeasure(slurUuid, measureUuid));
+    if (slur) {
+        this->RemoveTimeSpanning(slur);
+        slur->GetParent()->DeleteChild(slur);
+        return true;
+    }
+    return false;
+}
+
 bool EnoteToolkit::MoveToMeasure(ControlElement *element, const std::string &measureUuid)
 {
     Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
-    if (measure->GetUuid() != measureUuid) {
-        // Find the target measure
-        measure = this->FindMeasureByUuid(measureUuid);
-        if (measure) {
-            element->MoveItselfTo(measure);
-            return true;
-        }
+    if (measure->GetUuid() == measureUuid) return true;
+
+    // Find the target measure
+    measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        element->MoveItselfTo(measure);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::MoveToMeasure(ControlElement *element, Measure *measure)
+{
+    Measure *parentMeasure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
+    if (parentMeasure == measure) return true;
+
+    if (measure) {
+        element->MoveItselfTo(measure);
+        return true;
     }
     return false;
 }
@@ -368,29 +506,54 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
         const int measureCount = static_cast<int>(measures.size());
 
         // See Object::PrepareTimestamps
-        // Set the first timestamp
+        // Set the start or first timestamp
         Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
         const auto iterStart = std::find(measures.cbegin(), measures.cend(), measure);
         assert(iterStart != measures.cend());
         const int startIndex = static_cast<int>(iterStart - measures.cbegin());
-        TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(interface->GetTstamp());
-        interface->SetStart(timestampAttr);
-
-        // Set the second timestamp
-        const data_MEASUREBEAT endTstamp = interface->GetTstamp2();
-        int endIndex = startIndex;
-        if (endTstamp.first > 0) {
-            if (startIndex + endTstamp.first < measureCount) {
-                const auto iterEnd = std::next(iterStart, endTstamp.first);
-                measure = *iterEnd;
-                endIndex += endTstamp.first;
+        if (interface->HasStartid()) {
+            const std::string startUuid = interface->GetStartid();
+            LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+            if (startElement) {
+                interface->SetStart(startElement);
             }
             else {
-                vrv::LogWarning("Measure of end timestamp not found, shift is ignored.");
+                vrv::LogWarning("Start element not found. Please check that the control element is encoded in the "
+                                "measure of its start element!");
             }
         }
-        timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(endTstamp.second);
-        interface->SetEnd(timestampAttr);
+        else if (interface->HasTstamp()) {
+            TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(interface->GetTstamp());
+            interface->SetStart(timestampAttr);
+        }
+
+        // Set the end or second timestamp
+        int endIndex = startIndex;
+        if (interface->HasEndid()) {
+            const std::string endUuid = interface->GetEndid();
+            LayerElement *endElement = dynamic_cast<LayerElement *>(m_doc.FindDescendantByUuid(endUuid));
+            if (endElement) {
+                measure = vrv_cast<Measure *>(endElement->GetFirstAncestor(MEASURE));
+                const auto iterEnd = std::find(measures.cbegin(), measures.cend(), measure);
+                endIndex = static_cast<int>(iterEnd - measures.cbegin());
+                interface->SetEnd(endElement);
+            }
+        }
+        else if (interface->HasTstamp2()) {
+            const data_MEASUREBEAT endTstamp = interface->GetTstamp2();
+            if (endTstamp.first > 0) {
+                if (startIndex + endTstamp.first < measureCount) {
+                    const auto iterEnd = std::next(iterStart, endTstamp.first);
+                    measure = *iterEnd;
+                    endIndex += endTstamp.first;
+                }
+                else {
+                    vrv::LogWarning("Measure of end timestamp not found, shift is ignored.");
+                }
+            }
+            TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(endTstamp.second);
+            interface->SetEnd(timestampAttr);
+        }
 
         // See Object::FillStaffCurrentTimeSpanning
         // Check if element must be added or removed to m_timeSpanningElements in the staves
