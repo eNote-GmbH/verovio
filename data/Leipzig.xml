@@ -349,16 +349,16 @@
   <g c="E91A" x="30.0" y="-240.0" w="450.0" h="480.0" n="mensuralProlation11"/>
   <g c="E91F" x="-26.0" y="-266.0" w="532.0" h="532.0" n="mensuralProportionProportioQuadrupla"/>
   <g c="E91D" x="-26.0" y="-266.0" w="532.0" h="532.0" n="mensuralProportionProportioDupla2"/>
-  <g c="EBE0" x="-3.0" y="-3.0" w="226.0" h="252.0" h-a-x="220" n="luteItalianFret0"/>
-  <g c="EBE1" x="-2.09" y="-4.0" w="155.09" h="253.0" h-a-x="148" n="luteItalianFret1"/>
-  <g c="EBE2" x="-3.9" y="-3.0" w="172.9" h="252.0" h-a-x="166" n="luteItalianFret2"/>
-  <g c="EBE3" x="-3.0" y="-3.0" w="172.0" h="252.0" h-a-x="166" n="luteItalianFret3"/>
-  <g c="EBE4" x="-4.0" y="-3.03" w="205.0" h="252.03" h-a-x="198" n="luteItalianFret4"/>
-  <g c="EBE5" x="-3.0" y="-3.0" w="155.0" h="257.0" h-a-x="149" n="luteItalianFret5"/>
-  <g c="EBE6" x="-3.0" y="-3.0" w="182.0" h="252.0" h-a-x="176" n="luteItalianFret6"/>
-  <g c="EBE7" x="-3.02" y="-3.0" w="168.02" h="252.0" h-a-x="162" n="luteItalianFret7"/>
-  <g c="EBE8" x="-3.0" y="-3.0" w="194.0" h="252.0" h-a-x="188" n="luteItalianFret8"/>
-  <g c="EBE9" x="-3.0" y="-3.15" w="185.0" h="252.15" h-a-x="179" n="luteItalianFret9"/>
+  <g c="EBE0" x="17.0" y="-3.0" w="226.0" h="252.0" h-a-x="220" n="luteItalianFret0"/>
+  <g c="EBE1" x="18.0" y="-4.0" w="155.0" h="253.0" h-a-x="148" n="luteItalianFret1"/>
+  <g c="EBE2" x="16.0" y="-3.0" w="173.0" h="252.0" h-a-x="166" n="luteItalianFret2"/>
+  <g c="EBE3" x="17.0" y="-3.0" w="172.0" h="252.0" h-a-x="166" n="luteItalianFret3"/>
+  <g c="EBE4" x="16.0" y="-3.0" w="205.0" h="252.0" h-a-x="198" n="luteItalianFret4"/>
+  <g c="EBE5" x="17.0" y="-3.0" w="155.0" h="257.0" h-a-x="149" n="luteItalianFret5"/>
+  <g c="EBE6" x="17.0" y="-3.0" w="182.0" h="252.0" h-a-x="176" n="luteItalianFret6"/>
+  <g c="EBE7" x="17.0" y="-3.0" w="168.0" h="252.0" h-a-x="162" n="luteItalianFret7"/>
+  <g c="EBE8" x="17.0" y="-3.0" w="194.0" h="252.0" h-a-x="188" n="luteItalianFret8"/>
+  <g c="EBE9" x="17.0" y="-3.0" w="185.0" h="252.0" h-a-x="179" n="luteItalianFret9"/>
   <g c="EBA7" x="0.0" y="0.0" w="88.0" h="791.0" h-a-x="88" n="luteDurationWhole"/>
   <g c="EBA8" x="-1.0" y="0.0" w="405.0" h="795.0" h-a-x="403" n="luteDurationHalf"/>
   <g c="EBAA" x="0.0" y="0.0" w="392.0" h="781.0" h-a-x="393" n="luteDuration8th"/>
@@ -591,4 +591,6 @@
   <g c="E946" x="0.0" y="-760.0" w="200.0" h="760.0" h-a-x="200" n="mensuralCombStemDownFlagFlared"/>
   <g c="E947" x="-120.0" y="0.0" w="320.0" h="760.0" h-a-x="211" n="mensuralCombStemUpFlagExtended"/>
   <g c="E948" x="-120.0" y="-760.0" w="320.0" h="760.0" h-a-x="211" n="mensuralCombStemDownFlagExtended"/>
+  <g c="F408" x="0.0" y="-676.0" w="610.0" h="1264.0" h-a-x="610" n="cClefFrench"/>
+  <g c="F4BF" x="0.0" y="-550.0" w="465.0" h="1100.0" h-a-x="465" n="cClefFrench20C"/>
 </bounding-boxes>
