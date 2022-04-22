@@ -10,11 +10,13 @@
 //----------------------------------------------------------------------------
 
 #include "comparison.h"
+#include "fing.h"
 #include "hairpin.h"
 #include "measure.h"
 #include "page.h"
 #include "slur.h"
 #include "staff.h"
+#include "text.h"
 #include "timestamp.h"
 
 //----------------------------------------------------------------------------
@@ -75,6 +77,21 @@ Object *EnoteToolkit::FindElementInMeasure(const std::string &elementUuid, const
     return measure->FindDescendantByUuid(elementUuid);
 }
 
+Object *EnoteToolkit::FindElementStartingInMeasure(const std::string &startUuid, const std::string &measureUuid)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (!measure) return NULL;
+    LayerElement *start = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+    if (!start) return NULL;
+
+    const ArrayOfObjects &children = measure->GetChildren();
+    auto iter = std::find_if(children.begin(), children.end(), [&startUuid](Object *child) {
+        TimePointInterface *interface = child->GetTimePointInterface();
+        return (interface && (interface->GetStartid() == startUuid));
+    });
+    return (iter != children.end()) ? *iter : NULL;
+}
+
 std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
 {
     std::vector<Page *> pages = this->FindAllPages();
@@ -120,6 +137,16 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
         }
     }
     return measureRanges;
+}
+
+bool EnoteToolkit::HasNote(const std::string &noteUuid)
+{
+    return (dynamic_cast<Note *>(m_doc.FindDescendantByUuid(noteUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasNote(const std::string &noteUuid, const std::string &measureUuid)
+{
+    return (dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid)) != NULL);
 }
 
 bool EnoteToolkit::EditNote(
@@ -471,6 +498,129 @@ bool EnoteToolkit::RemoveSlur(const std::string &slurUuid, const std::string &me
     return false;
 }
 
+bool EnoteToolkit::HasFing(const std::string &fingUuid)
+{
+    return (dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasFing(const std::string &fingUuid, const std::string &measureUuid)
+{
+    return (dynamic_cast<Fing *>(this->FindElementInMeasure(fingUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasFingOfNote(const std::string &noteUuid, const std::string &measureUuid)
+{
+    if (!this->HasNote(noteUuid, measureUuid)) return false;
+    return (dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasFingOfNote(
+    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid)
+{
+    Fing *fing = dynamic_cast<Fing *>(this->FindElementInMeasure(fingUuid, measureUuid));
+    return (fing && (fing->GetStartid() == noteUuid) && (this->HasNote(noteUuid, measureUuid)));
+}
+
+bool EnoteToolkit::AddFingToNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+{
+    return this->AddFingToNote("", noteUuid, measureUuid, value);
+}
+
+bool EnoteToolkit::AddFingToNote(
+    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
+        if (note) {
+            Fing *fing = new Fing();
+            if (!fingUuid.empty()) fing->SetUuid(fingUuid);
+            fing->SetStartid(noteUuid);
+            fing->SetN(value);
+            this->SetTextChildren(fing, { value });
+            measure->AddChild(fing);
+            this->UpdateTimePoint(fing);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditFingOfNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+{
+    Fing *fing = dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid));
+    if (fing) {
+        return this->EditFingOfNote(fing->GetUuid(), noteUuid, measureUuid, value);
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditFingOfNote(
+    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Fing *fing = dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid));
+        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
+        if (fing && note && (this->MoveToMeasure(fing, measure))) {
+            fing->TimePointInterface::Reset();
+            fing->SetStartid(noteUuid);
+            fing->SetN(value);
+            this->SetTextChildren(fing, { value });
+            this->UpdateTimePoint(fing);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveFing(const std::string &fingUuid)
+{
+    Fing *fing = dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid));
+    if (fing) {
+        fing->GetParent()->DeleteChild(fing);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveFing(const std::string &fingUuid, const std::string &measureUuid)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Fing *fing = dynamic_cast<Fing *>(measure->FindDescendantByUuid(fingUuid));
+        if (fing) {
+            fing->GetParent()->DeleteChild(fing);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveFingOfNote(const std::string &noteUuid, const std::string &measureUuid)
+{
+    Fing *fing = dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid));
+    if (fing) {
+        return this->RemoveFingOfNote(fing->GetUuid(), noteUuid, measureUuid);
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveFingOfNote(
+    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Fing *fing = dynamic_cast<Fing *>(measure->FindDescendantByUuid(fingUuid));
+        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
+        if (fing && note && (fing->GetStartid() == noteUuid)) {
+            fing->GetParent()->DeleteChild(fing);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool EnoteToolkit::MoveToMeasure(ControlElement *element, const std::string &measureUuid)
 {
     Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
@@ -495,6 +645,47 @@ bool EnoteToolkit::MoveToMeasure(ControlElement *element, Measure *measure)
         return true;
     }
     return false;
+}
+
+void EnoteToolkit::SetTextChildren(ControlElement *element, const std::list<std::string> &textEntries)
+{
+    // Delete existing text children
+    ListOfObjects textChildren;
+    const ArrayOfObjects &allChildren = element->GetChildren();
+    std::copy_if(allChildren.cbegin(), allChildren.cend(), std::back_inserter(textChildren),
+        [](Object *child) { return child->IsTextElement(); });
+    std::for_each(textChildren.begin(), textChildren.end(), [element](Object *child) { element->DeleteChild(child); });
+
+    // Add new text children
+    std::for_each(textEntries.cbegin(), textEntries.cend(), [element](const std::string &entry) {
+        Text *text = new Text();
+        text->SetText(UTF8to16(entry));
+        element->AddChild(text);
+    });
+}
+
+void EnoteToolkit::UpdateTimePoint(ControlElement *element)
+{
+    TimePointInterface *interface = element->GetTimePointInterface();
+    if (interface) {
+        // Set the start or first timestamp
+        Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
+        if (interface->HasStartid()) {
+            const std::string startUuid = interface->GetStartid();
+            LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
+            if (startElement) {
+                interface->SetStart(startElement);
+            }
+            else {
+                vrv::LogWarning("Start element not found. Please check that the control element is encoded in the "
+                                "measure of its start element!");
+            }
+        }
+        else if (interface->HasTstamp()) {
+            TimestampAttr *timestampAttr = measure->m_timestampAligner.GetTimestampAtTime(interface->GetTstamp());
+            interface->SetStart(timestampAttr);
+        }
+    }
 }
 
 void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)

@@ -65,6 +65,7 @@ public:
     std::vector<Measure *> FindAllMeasures();
     std::vector<Page *> FindAllPages();
     Object *FindElementInMeasure(const std::string &elementUuid, const std::string &measureUuid);
+    Object *FindElementStartingInMeasure(const std::string &startUuid, const std::string &measureUuid);
     ///@}
 
     /**
@@ -90,6 +91,8 @@ public:
      * Edit notes (restricted, only pitch changes for now)
      */
     ///@{
+    bool HasNote(const std::string &noteUuid);
+    bool HasNote(const std::string &noteUuid, const std::string &measureUuid);
     bool EditNote(
         const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave);
     ///@}
@@ -167,21 +170,43 @@ public:
     bool RemoveSlur(const std::string &slurUuid, const std::string &measureUuid);
     ///@}
 
+    /**
+     * Edit fingering
+     */
+    ///@{
+    bool HasFing(const std::string &fingUuid);
+    bool HasFing(const std::string &fingUuid, const std::string &measureUuid);
+    bool HasFingOfNote(const std::string &noteUuid, const std::string &measureUuid);
+    bool HasFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid);
+    bool AddFingToNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value);
+    bool AddFingToNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
+        const std::string &value);
+    bool EditFingOfNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value);
+    bool EditFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
+        const std::string &value);
+    bool RemoveFing(const std::string &fingUuid);
+    bool RemoveFing(const std::string &fingUuid, const std::string &measureUuid);
+    bool RemoveFingOfNote(const std::string &noteUuid, const std::string &measureUuid);
+    bool RemoveFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid);
+    ///@}
+
     ///@}
 
 private:
     /**
-     * Moving elements in the object tree
+     * Manipulating the object tree
      */
     ///@{
     bool MoveToMeasure(ControlElement *element, const std::string &measureUuid);
     bool MoveToMeasure(ControlElement *element, Measure *measure);
+    void SetTextChildren(ControlElement *element, const std::list<std::string> &textEntries);
     ///@}
 
     /**
      * Prepare rerendering
      */
     ///@{
+    void UpdateTimePoint(ControlElement *element);
     void UpdateTimeSpanning(ControlElement *element);
     void RemoveTimeSpanning(ControlElement *element);
     ///@}
