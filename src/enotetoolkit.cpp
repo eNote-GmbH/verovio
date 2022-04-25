@@ -291,19 +291,14 @@ bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid, const std::string 
     return (dynamic_cast<Hairpin *>(this->FindElementInMeasure(hairpinUuid, measureUuid)) != NULL);
 }
 
-bool EnoteToolkit::AddHairpin(const std::string &measureUuid, double tstamp, data_MEASUREBEAT tstamp2,
-    const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
-{
-    return this->AddHairpin("", measureUuid, tstamp, tstamp2, staffNs, place, form);
-}
-
-bool EnoteToolkit::AddHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
-    data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
+bool EnoteToolkit::AddHairpin(const std::optional<std::string> &hairpinUuid, const std::string &measureUuid,
+    double tstamp, data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place,
+    hairpinLog_FORM form)
 {
     Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
         Hairpin *hairpin = new Hairpin();
-        if (!hairpinUuid.empty()) hairpin->SetUuid(hairpinUuid);
+        if (hairpinUuid) hairpin->SetUuid(*hairpinUuid);
         hairpin->SetTstamp(tstamp);
         hairpin->SetTstamp2(tstamp2);
         hairpin->SetStaff(staffNs);
@@ -315,17 +310,21 @@ bool EnoteToolkit::AddHairpin(const std::string &hairpinUuid, const std::string 
     return false;
 }
 
-bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid, double tstamp,
-    data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form)
+bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid,
+    const std::optional<double> &tstamp, const std::optional<data_MEASUREBEAT> &tstamp2,
+    const std::optional<xsdPositiveInteger_List> &staffNs, const std::optional<data_STAFFREL> &place,
+    const std::optional<hairpinLog_FORM> &form)
 {
     Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid));
     if (hairpin) {
         if (this->MoveToMeasure(hairpin, measureUuid)) {
+            const double prevTstamp = hairpin->GetTstamp();
+            const data_MEASUREBEAT prevTstamp2 = hairpin->GetTstamp2();
             hairpin->TimeSpanningInterface::Reset();
-            hairpin->SetTstamp(tstamp);
-            hairpin->SetTstamp2(tstamp2);
-            hairpin->SetStaff(staffNs);
-            hairpin->SetForm(form);
+            hairpin->SetTstamp(tstamp ? *tstamp : prevTstamp);
+            hairpin->SetTstamp2(tstamp2 ? *tstamp2 : prevTstamp2);
+            if (staffNs) hairpin->SetStaff(*staffNs);
+            if (form) hairpin->SetForm(*form);
             this->UpdateTimeSpanning(hairpin);
             return true;
         }
