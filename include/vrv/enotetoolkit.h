@@ -14,6 +14,10 @@
 
 //----------------------------------------------------------------------------
 
+#include <optional>
+
+//----------------------------------------------------------------------------
+
 namespace vrv {
 
 //----------------------------------------------------------------------------
@@ -112,20 +116,15 @@ public:
      * Edit note/chord articulations
      */
     ///@{
-    bool HasArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
-    bool HasArticulation(
-        const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool HasArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
+        const std::string &measureUuid);
     int GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid);
-    bool AddArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type);
-    bool AddArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+    bool AddArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
         const std::string &measureUuid, data_ARTICULATION type);
-    bool EditArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid, data_ARTICULATION type,
-        bool resetPlace = true);
-    bool EditArticulation(const std::string &articUuid, const std::string &noteOrChordUuid,
+    bool EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
         const std::string &measureUuid, data_ARTICULATION type, bool resetPlace = true);
-    bool RemoveArticulation(const std::string &noteOrChordUuid, const std::string &measureUuid);
-    bool RemoveArticulation(
-        const std::string &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid);
+    bool RemoveArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
+        const std::string &measureUuid);
     ///@}
 
     /******************************
