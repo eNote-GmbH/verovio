@@ -134,7 +134,7 @@ public:
     bool HasHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid);
     bool AddHairpin(const std::optional<std::string> &hairpinUuid, const std::string &measureUuid, double tstamp,
         data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form);
-    bool EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid,
+    bool EditHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid,
         const std::optional<double> &tstamp, const std::optional<data_MEASUREBEAT> &tstamp2,
         const std::optional<xsdPositiveInteger_List> &staffNs, const std::optional<data_STAFFREL> &place,
         const std::optional<hairpinLog_FORM> &form);

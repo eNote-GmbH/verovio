@@ -23,6 +23,8 @@
 
 namespace vrv {
 
+const std::string UserContentType = "UserContent";
+
 //----------------------------------------------------------------------------
 // EnoteToolkit
 //----------------------------------------------------------------------------
@@ -156,6 +158,7 @@ bool EnoteToolkit::EditNote(
     if (note) {
         note->SetPname(pitch);
         note->SetOct(octave);
+        note->SetType(UserContentType);
         return true;
     }
     return false;
@@ -177,6 +180,7 @@ bool EnoteToolkit::AddNoteAccidental(
     if (note) {
         Accid *accid = new Accid();
         accid->SetAccid(accidType);
+        accid->SetType(UserContentType);
         note->AddChild(accid);
         return true;
     }
@@ -192,6 +196,7 @@ bool EnoteToolkit::EditNoteAccidental(const std::string &noteUuid, const std::op
         if (accid) {
             accid->SetAccid(type);
             if (resetAccidGes) accid->ResetAccidentalGestural();
+            accid->SetType(UserContentType);
             return true;
         }
     }
@@ -244,6 +249,7 @@ bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, 
         Artic *artic = new Artic();
         artic->SetArtic({ type });
         if (articUuid) artic->SetUuid(*articUuid);
+        artic->SetType(UserContentType);
         parent->AddChild(artic);
         return true;
     }
@@ -260,6 +266,7 @@ bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articUuid,
         if (artic) {
             artic->SetArtic({ type });
             if (resetPlace) artic->ResetPlacementRelEvent();
+            artic->SetType(UserContentType);
             return true;
         }
     }
@@ -299,6 +306,7 @@ bool EnoteToolkit::AddHairpin(const std::optional<std::string> &hairpinUuid, con
         hairpin->SetTstamp2(tstamp2);
         hairpin->SetStaff(staffNs);
         hairpin->SetForm(form);
+        hairpin->SetType(UserContentType);
         measure->AddChild(hairpin);
         this->UpdateTimeSpanning(hairpin);
         return true;
@@ -306,14 +314,15 @@ bool EnoteToolkit::AddHairpin(const std::optional<std::string> &hairpinUuid, con
     return false;
 }
 
-bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string &measureUuid,
+bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid,
     const std::optional<double> &tstamp, const std::optional<data_MEASUREBEAT> &tstamp2,
     const std::optional<xsdPositiveInteger_List> &staffNs, const std::optional<data_STAFFREL> &place,
     const std::optional<hairpinLog_FORM> &form)
 {
     Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid));
     if (hairpin) {
-        if (this->MoveToMeasure(hairpin, measureUuid)) {
+        const bool ok = measureUuid ? this->MoveToMeasure(hairpin, *measureUuid) : true;
+        if (ok) {
             const double prevTstamp = hairpin->GetTstamp();
             const data_MEASUREBEAT prevTstamp2 = hairpin->GetTstamp2();
             hairpin->TimeSpanningInterface::Reset();
@@ -321,6 +330,7 @@ bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string
             hairpin->SetTstamp2(tstamp2 ? *tstamp2 : prevTstamp2);
             if (staffNs) hairpin->SetStaff(*staffNs);
             if (form) hairpin->SetForm(*form);
+            hairpin->SetType(UserContentType);
             this->UpdateTimeSpanning(hairpin);
             return true;
         }
@@ -357,6 +367,7 @@ bool EnoteToolkit::AddSlur(const std::optional<std::string> &slurUuid, const std
             slur->SetStartid(startUuid);
             slur->SetEndid(endUuid);
             if (curveDir) slur->SetCurvedir(*curveDir);
+            slur->SetType(UserContentType);
             measure->AddChild(slur);
             this->UpdateTimeSpanning(slur);
             return true;
@@ -377,6 +388,7 @@ bool EnoteToolkit::AddSlur(const std::optional<std::string> &slurUuid, const std
             slur->SetStartid(startUuid);
             slur->SetTstamp2(tstamp2);
             if (curveDir) slur->SetCurvedir(*curveDir);
+            slur->SetType(UserContentType);
             measure->AddChild(slur);
             this->UpdateTimeSpanning(slur);
             return true;
@@ -398,6 +410,7 @@ bool EnoteToolkit::EditSlur(const std::string &slurUuid, const std::string &meas
                 slur->TimeSpanningInterface::Reset();
                 slur->SetStartid(startUuid);
                 slur->SetEndid(endUuid);
+                slur->SetType(UserContentType);
                 this->UpdateTimeSpanning(slur);
                 return true;
             }
@@ -418,6 +431,7 @@ bool EnoteToolkit::EditSlur(
                 slur->TimeSpanningInterface::Reset();
                 slur->SetStartid(startUuid);
                 slur->SetTstamp2(tstamp2);
+                slur->SetType(UserContentType);
                 this->UpdateTimeSpanning(slur);
                 return true;
             }
@@ -432,6 +446,7 @@ bool EnoteToolkit::EditSlur(
     Slur *slur = dynamic_cast<Slur *>(this->FindElement(slurUuid, measureUuid));
     if (slur) {
         slur->SetCurvedir(curveDir);
+        slur->SetType(UserContentType);
         return true;
     }
     return false;
@@ -480,6 +495,7 @@ bool EnoteToolkit::AddFingToNote(const std::optional<std::string> &fingUuid, con
         if (place) fing->SetPlace(*place);
         fing->SetN(value);
         this->SetTextChildren(fing, { value });
+        fing->SetType(UserContentType);
         measure->AddChild(fing);
         this->UpdateTimePoint(fing);
         return true;
@@ -503,6 +519,7 @@ bool EnoteToolkit::EditFingOfNote(const std::optional<std::string> &fingUuid, co
                 fing->SetN(*value);
                 this->SetTextChildren(fing, { *value });
             }
+            fing->SetType(UserContentType);
             return true;
         }
     }
