@@ -646,6 +646,7 @@ bool EnoteToolkit::MoveToMeasure(ControlElement *element, Measure *measure)
 
     if (measure) {
         element->MoveItselfTo(measure);
+        parentMeasure->ClearRelinquishedChildren();
         return true;
     }
     return false;
