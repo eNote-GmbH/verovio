@@ -70,11 +70,16 @@ std::vector<Page *> EnoteToolkit::FindAllPages()
     return pages;
 }
 
-Object *EnoteToolkit::FindElementInMeasure(const std::string &elementUuid, const std::string &measureUuid)
+Object *EnoteToolkit::FindElement(const std::string &elementUuid, const std::optional<std::string> &measureUuid)
 {
-    Measure *measure = this->FindMeasureByUuid(measureUuid);
-    if (!measure) return NULL;
-    return measure->FindDescendantByUuid(elementUuid);
+    if (measureUuid) {
+        Measure *measure = this->FindMeasureByUuid(*measureUuid);
+        if (!measure) return NULL;
+        return measure->FindDescendantByUuid(elementUuid);
+    }
+    else {
+        return m_doc.FindDescendantByUuid(elementUuid);
+    }
 }
 
 Object *EnoteToolkit::FindElementStartingInMeasure(const std::string &startUuid, const std::string &measureUuid)
@@ -139,20 +144,15 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
     return measureRanges;
 }
 
-bool EnoteToolkit::HasNote(const std::string &noteUuid)
+bool EnoteToolkit::HasNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid)
 {
-    return (dynamic_cast<Note *>(m_doc.FindDescendantByUuid(noteUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasNote(const std::string &noteUuid, const std::string &measureUuid)
-{
-    return (dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid)) != NULL);
+    return (dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid)) != NULL);
 }
 
 bool EnoteToolkit::EditNote(
     const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave)
 {
-    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         note->SetPname(pitch);
         note->SetOct(octave);
@@ -161,9 +161,9 @@ bool EnoteToolkit::EditNote(
     return false;
 }
 
-bool EnoteToolkit::HasNoteAccidental(const std::string &noteUuid, const std::string &measureUuid)
+bool EnoteToolkit::HasNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid)
 {
-    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         return (note->GetChildCount(ACCID) > 0);
     }
@@ -173,7 +173,7 @@ bool EnoteToolkit::HasNoteAccidental(const std::string &noteUuid, const std::str
 bool EnoteToolkit::AddNoteAccidental(
     const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN accidType)
 {
-    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         Accid *accid = new Accid();
         accid->SetAccid(accidType);
@@ -186,7 +186,7 @@ bool EnoteToolkit::AddNoteAccidental(
 bool EnoteToolkit::EditNoteAccidental(
     const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type, bool resetAccidGes)
 {
-    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
         if (accid) {
@@ -198,9 +198,9 @@ bool EnoteToolkit::EditNoteAccidental(
     return false;
 }
 
-bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::string &measureUuid)
+bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid)
 {
-    Note *note = dynamic_cast<Note *>(this->FindElementInMeasure(noteUuid, measureUuid));
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
         if (accid) {
@@ -211,11 +211,11 @@ bool EnoteToolkit::RemoveNoteAccidental(const std::string &noteUuid, const std::
     return false;
 }
 
-bool EnoteToolkit::HasArticulation(
-    const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid)
+bool EnoteToolkit::HasArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
+    const std::optional<std::string> &measureUuid)
 {
     if (articUuid) {
-        Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+        Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
         if (parent && parent->Is({ CHORD, NOTE })) {
             return (dynamic_cast<Artic *>(parent->FindDescendantByUuid(*articUuid)) != NULL);
         }
@@ -226,9 +226,10 @@ bool EnoteToolkit::HasArticulation(
     }
 }
 
-int EnoteToolkit::GetArticulationCount(const std::string &noteOrChordUuid, const std::string &measureUuid)
+int EnoteToolkit::GetArticulationCount(
+    const std::string &noteOrChordUuid, const std::optional<std::string> &measureUuid)
 {
-    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
         return parent->GetChildCount(ARTIC);
     }
@@ -238,7 +239,7 @@ int EnoteToolkit::GetArticulationCount(const std::string &noteOrChordUuid, const
 bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
     const std::string &measureUuid, data_ARTICULATION type)
 {
-    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = new Artic();
         artic->SetArtic({ type });
@@ -252,7 +253,7 @@ bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, 
 bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
     const std::string &measureUuid, data_ARTICULATION type, bool resetPlace)
 {
-    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
         if (articUuid) artic = dynamic_cast<Artic *>(parent->FindDescendantByUuid(*articUuid));
@@ -265,10 +266,10 @@ bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articUuid,
     return false;
 }
 
-bool EnoteToolkit::RemoveArticulation(
-    const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid, const std::string &measureUuid)
+bool EnoteToolkit::RemoveArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
+    const std::optional<std::string> &measureUuid)
 {
-    Object *parent = this->FindElementInMeasure(noteOrChordUuid, measureUuid);
+    Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
         if (articUuid) artic = dynamic_cast<Artic *>(parent->FindDescendantByUuid(*articUuid));
@@ -281,14 +282,9 @@ bool EnoteToolkit::RemoveArticulation(
     return false;
 }
 
-bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid)
+bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid)
 {
-    return (dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasHairpin(const std::string &hairpinUuid, const std::string &measureUuid)
-{
-    return (dynamic_cast<Hairpin *>(this->FindElementInMeasure(hairpinUuid, measureUuid)) != NULL);
+    return (dynamic_cast<Hairpin *>(this->FindElement(hairpinUuid, measureUuid)) != NULL);
 }
 
 bool EnoteToolkit::AddHairpin(const std::optional<std::string> &hairpinUuid, const std::string &measureUuid,
@@ -332,9 +328,9 @@ bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::string
     return false;
 }
 
-bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid)
+bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid)
 {
-    Hairpin *hairpin = dynamic_cast<Hairpin *>(m_doc.FindDescendantByUuid(hairpinUuid));
+    Hairpin *hairpin = dynamic_cast<Hairpin *>(this->FindElement(hairpinUuid, measureUuid));
     if (hairpin) {
         this->RemoveTimeSpanning(hairpin);
         hairpin->GetParent()->DeleteChild(hairpin);
@@ -343,25 +339,9 @@ bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid)
     return false;
 }
 
-bool EnoteToolkit::RemoveHairpin(const std::string &hairpinUuid, const std::string &measureUuid)
+bool EnoteToolkit::HasSlur(const std::string &slurUuid, const std::optional<std::string> &measureUuid)
 {
-    Hairpin *hairpin = dynamic_cast<Hairpin *>(this->FindElementInMeasure(hairpinUuid, measureUuid));
-    if (hairpin) {
-        this->RemoveTimeSpanning(hairpin);
-        hairpin->GetParent()->DeleteChild(hairpin);
-        return true;
-    }
-    return false;
-}
-
-bool EnoteToolkit::HasSlur(const std::string &slurUuid)
-{
-    return (dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasSlur(const std::string &slurUuid, const std::string &measureUuid)
-{
-    return (dynamic_cast<Slur *>(this->FindElementInMeasure(slurUuid, measureUuid)) != NULL);
+    return (dynamic_cast<Slur *>(this->FindElement(slurUuid, measureUuid)) != NULL);
 }
 
 bool EnoteToolkit::AddSlur(const std::string &measureUuid, const std::string &startUuid, const std::string &endUuid,
@@ -458,9 +438,9 @@ bool EnoteToolkit::EditSlur(
     return false;
 }
 
-bool EnoteToolkit::RemoveSlur(const std::string &slurUuid)
+bool EnoteToolkit::RemoveSlur(const std::string &slurUuid, const std::optional<std::string> &measureUuid)
 {
-    Slur *slur = dynamic_cast<Slur *>(m_doc.FindDescendantByUuid(slurUuid));
+    Slur *slur = dynamic_cast<Slur *>(this->FindElement(slurUuid, measureUuid));
     if (slur) {
         this->RemoveTimeSpanning(slur);
         slur->GetParent()->DeleteChild(slur);
@@ -469,38 +449,23 @@ bool EnoteToolkit::RemoveSlur(const std::string &slurUuid)
     return false;
 }
 
-bool EnoteToolkit::RemoveSlur(const std::string &slurUuid, const std::string &measureUuid)
+bool EnoteToolkit::HasFing(const std::string &fingUuid, const std::optional<std::string> &measureUuid)
 {
-    Slur *slur = dynamic_cast<Slur *>(this->FindElementInMeasure(slurUuid, measureUuid));
-    if (slur) {
-        this->RemoveTimeSpanning(slur);
-        slur->GetParent()->DeleteChild(slur);
-        return true;
+    return (dynamic_cast<Fing *>(this->FindElement(fingUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::HasFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+    const std::optional<std::string> &measureUuid)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
+    if (note) {
+        Measure *measure = vrv_cast<Measure *>(note->GetFirstAncestor(MEASURE));
+        assert(measure);
+        Fing *fing = dynamic_cast<Fing *>(fingUuid ? measure->FindDescendantByUuid(*fingUuid)
+                                                   : this->FindElementStartingInMeasure(noteUuid, measure->GetUuid()));
+        return (fing && (fing->GetStartid() == noteUuid));
     }
     return false;
-}
-
-bool EnoteToolkit::HasFing(const std::string &fingUuid)
-{
-    return (dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasFing(const std::string &fingUuid, const std::string &measureUuid)
-{
-    return (dynamic_cast<Fing *>(this->FindElementInMeasure(fingUuid, measureUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasFingOfNote(const std::string &noteUuid, const std::string &measureUuid)
-{
-    if (!this->HasNote(noteUuid, measureUuid)) return false;
-    return (dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid)) != NULL);
-}
-
-bool EnoteToolkit::HasFingOfNote(
-    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid)
-{
-    Fing *fing = dynamic_cast<Fing *>(this->FindElementInMeasure(fingUuid, measureUuid));
-    return (fing && (fing->GetStartid() == noteUuid) && (this->HasNote(noteUuid, measureUuid)));
 }
 
 bool EnoteToolkit::AddFingToNote(
@@ -560,9 +525,9 @@ bool EnoteToolkit::EditFingOfNote(const std::string &fingUuid, const std::string
     return false;
 }
 
-bool EnoteToolkit::RemoveFing(const std::string &fingUuid)
+bool EnoteToolkit::RemoveFing(const std::string &fingUuid, const std::optional<std::string> &measureUuid)
 {
-    Fing *fing = dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid));
+    Fing *fing = dynamic_cast<Fing *>(this->FindElement(fingUuid, measureUuid));
     if (fing) {
         fing->GetParent()->DeleteChild(fing);
         return true;
@@ -570,33 +535,16 @@ bool EnoteToolkit::RemoveFing(const std::string &fingUuid)
     return false;
 }
 
-bool EnoteToolkit::RemoveFing(const std::string &fingUuid, const std::string &measureUuid)
+bool EnoteToolkit::RemoveFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+    const std::optional<std::string> &measureUuid)
 {
-    Fing *fing = dynamic_cast<Fing *>(this->FindElementInMeasure(fingUuid, measureUuid));
-    if (fing) {
-        fing->GetParent()->DeleteChild(fing);
-        return true;
-    }
-    return false;
-}
-
-bool EnoteToolkit::RemoveFingOfNote(const std::string &noteUuid, const std::string &measureUuid)
-{
-    Fing *fing = dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid));
-    if (fing) {
-        return this->RemoveFingOfNote(fing->GetUuid(), noteUuid, measureUuid);
-    }
-    return false;
-}
-
-bool EnoteToolkit::RemoveFingOfNote(
-    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid)
-{
-    Measure *measure = this->FindMeasureByUuid(measureUuid);
-    if (measure) {
-        Fing *fing = dynamic_cast<Fing *>(measure->FindDescendantByUuid(fingUuid));
-        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
-        if (fing && note && (fing->GetStartid() == noteUuid)) {
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
+    if (note) {
+        Measure *measure = vrv_cast<Measure *>(note->GetFirstAncestor(MEASURE));
+        assert(measure);
+        Fing *fing = dynamic_cast<Fing *>(fingUuid ? measure->FindDescendantByUuid(*fingUuid)
+                                                   : this->FindElementStartingInMeasure(noteUuid, measure->GetUuid()));
+        if (fing && (fing->GetStartid() == noteUuid)) {
             fing->GetParent()->DeleteChild(fing);
             return true;
         }
