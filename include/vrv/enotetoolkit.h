@@ -178,12 +178,14 @@ public:
     bool HasFing(const std::string &fingUuid, const std::string &measureUuid);
     bool HasFingOfNote(const std::string &noteUuid, const std::string &measureUuid);
     bool HasFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid);
-    bool AddFingToNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value);
+    bool AddFingToNote(
+        const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value);
     bool AddFingToNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
-        const std::string &value);
-    bool EditFingOfNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value);
+        data_STAFFREL place, const std::string &value);
+    bool EditFingOfNote(
+        const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value);
     bool EditFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
-        const std::string &value);
+        data_STAFFREL place, const std::string &value);
     bool RemoveFing(const std::string &fingUuid);
     bool RemoveFing(const std::string &fingUuid, const std::string &measureUuid);
     bool RemoveFingOfNote(const std::string &noteUuid, const std::string &measureUuid);

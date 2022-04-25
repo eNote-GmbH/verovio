@@ -521,13 +521,14 @@ bool EnoteToolkit::HasFingOfNote(
     return (fing && (fing->GetStartid() == noteUuid) && (this->HasNote(noteUuid, measureUuid)));
 }
 
-bool EnoteToolkit::AddFingToNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+bool EnoteToolkit::AddFingToNote(
+    const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value)
 {
-    return this->AddFingToNote("", noteUuid, measureUuid, value);
+    return this->AddFingToNote("", noteUuid, measureUuid, place, value);
 }
 
-bool EnoteToolkit::AddFingToNote(
-    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+bool EnoteToolkit::AddFingToNote(const std::string &fingUuid, const std::string &noteUuid,
+    const std::string &measureUuid, data_STAFFREL place, const std::string &value)
 {
     Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
@@ -536,6 +537,7 @@ bool EnoteToolkit::AddFingToNote(
             Fing *fing = new Fing();
             if (!fingUuid.empty()) fing->SetUuid(fingUuid);
             fing->SetStartid(noteUuid);
+            fing->SetPlace(place);
             fing->SetN(value);
             this->SetTextChildren(fing, { value });
             measure->AddChild(fing);
@@ -546,17 +548,18 @@ bool EnoteToolkit::AddFingToNote(
     return false;
 }
 
-bool EnoteToolkit::EditFingOfNote(const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+bool EnoteToolkit::EditFingOfNote(
+    const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value)
 {
     Fing *fing = dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid));
     if (fing) {
-        return this->EditFingOfNote(fing->GetUuid(), noteUuid, measureUuid, value);
+        return this->EditFingOfNote(fing->GetUuid(), noteUuid, measureUuid, place, value);
     }
     return false;
 }
 
-bool EnoteToolkit::EditFingOfNote(
-    const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid, const std::string &value)
+bool EnoteToolkit::EditFingOfNote(const std::string &fingUuid, const std::string &noteUuid,
+    const std::string &measureUuid, data_STAFFREL place, const std::string &value)
 {
     Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
@@ -565,6 +568,7 @@ bool EnoteToolkit::EditFingOfNote(
         if (fing && note && (this->MoveToMeasure(fing, measure))) {
             fing->TimePointInterface::Reset();
             fing->SetStartid(noteUuid);
+            fing->SetPlace(place);
             fing->SetN(value);
             this->SetTextChildren(fing, { value });
             this->UpdateTimePoint(fing);
