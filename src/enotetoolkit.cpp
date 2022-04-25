@@ -171,7 +171,7 @@ bool EnoteToolkit::HasNoteAccidental(const std::string &noteUuid, const std::opt
 }
 
 bool EnoteToolkit::AddNoteAccidental(
-    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN accidType)
+    const std::string &noteUuid, const std::optional<std::string> &measureUuid, data_ACCIDENTAL_WRITTEN accidType)
 {
     Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
@@ -183,8 +183,8 @@ bool EnoteToolkit::AddNoteAccidental(
     return false;
 }
 
-bool EnoteToolkit::EditNoteAccidental(
-    const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type, bool resetAccidGes)
+bool EnoteToolkit::EditNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid,
+    data_ACCIDENTAL_WRITTEN type, bool resetAccidGes)
 {
     Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
@@ -237,7 +237,7 @@ int EnoteToolkit::GetArticulationCount(
 }
 
 bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
-    const std::string &measureUuid, data_ARTICULATION type)
+    const std::optional<std::string> &measureUuid, data_ARTICULATION type)
 {
     Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
@@ -251,7 +251,7 @@ bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, 
 }
 
 bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
-    const std::string &measureUuid, data_ARTICULATION type, bool resetPlace)
+    const std::optional<std::string> &measureUuid, data_ARTICULATION type, bool resetPlace)
 {
     Object *parent = this->FindElement(noteOrChordUuid, measureUuid);
     if (parent && parent->Is({ CHORD, NOTE })) {
@@ -467,57 +467,42 @@ bool EnoteToolkit::HasFingOfNote(const std::optional<std::string> &fingUuid, con
     return false;
 }
 
-bool EnoteToolkit::AddFingToNote(
-    const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value)
+bool EnoteToolkit::AddFingToNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+    const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place, const std::string &value)
 {
-    return this->AddFingToNote("", noteUuid, measureUuid, place, value);
-}
-
-bool EnoteToolkit::AddFingToNote(const std::string &fingUuid, const std::string &noteUuid,
-    const std::string &measureUuid, data_STAFFREL place, const std::string &value)
-{
-    Measure *measure = this->FindMeasureByUuid(measureUuid);
-    if (measure) {
-        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
-        if (note) {
-            Fing *fing = new Fing();
-            if (!fingUuid.empty()) fing->SetUuid(fingUuid);
-            fing->SetStartid(noteUuid);
-            fing->SetPlace(place);
-            fing->SetN(value);
-            this->SetTextChildren(fing, { value });
-            measure->AddChild(fing);
-            this->UpdateTimePoint(fing);
-            return true;
-        }
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
+    if (note) {
+        Measure *measure = vrv_cast<Measure *>(note->GetFirstAncestor(MEASURE));
+        assert(measure);
+        Fing *fing = new Fing();
+        if (fingUuid) fing->SetUuid(*fingUuid);
+        fing->SetStartid(noteUuid);
+        if (place) fing->SetPlace(*place);
+        fing->SetN(value);
+        this->SetTextChildren(fing, { value });
+        measure->AddChild(fing);
+        this->UpdateTimePoint(fing);
+        return true;
     }
     return false;
 }
 
-bool EnoteToolkit::EditFingOfNote(
-    const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value)
+bool EnoteToolkit::EditFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+    const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
+    const std::optional<std::string> &value)
 {
-    Fing *fing = dynamic_cast<Fing *>(this->FindElementStartingInMeasure(noteUuid, measureUuid));
-    if (fing) {
-        return this->EditFingOfNote(fing->GetUuid(), noteUuid, measureUuid, place, value);
-    }
-    return false;
-}
-
-bool EnoteToolkit::EditFingOfNote(const std::string &fingUuid, const std::string &noteUuid,
-    const std::string &measureUuid, data_STAFFREL place, const std::string &value)
-{
-    Measure *measure = this->FindMeasureByUuid(measureUuid);
-    if (measure) {
-        Fing *fing = dynamic_cast<Fing *>(m_doc.FindDescendantByUuid(fingUuid));
-        Note *note = dynamic_cast<Note *>(measure->FindDescendantByUuid(noteUuid));
-        if (fing && note && (this->MoveToMeasure(fing, measure))) {
-            fing->TimePointInterface::Reset();
-            fing->SetStartid(noteUuid);
-            fing->SetPlace(place);
-            fing->SetN(value);
-            this->SetTextChildren(fing, { value });
-            this->UpdateTimePoint(fing);
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
+    if (note) {
+        Measure *measure = vrv_cast<Measure *>(note->GetFirstAncestor(MEASURE));
+        assert(measure);
+        Fing *fing = dynamic_cast<Fing *>(fingUuid ? measure->FindDescendantByUuid(*fingUuid)
+                                                   : this->FindElementStartingInMeasure(noteUuid, measure->GetUuid()));
+        if (fing && (fing->GetStartid() == noteUuid)) {
+            if (place) fing->SetPlace(*place);
+            if (value) {
+                fing->SetN(*value);
+                this->SetTextChildren(fing, { *value });
+            }
             return true;
         }
     }

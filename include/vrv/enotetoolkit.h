@@ -14,10 +14,6 @@
 
 //----------------------------------------------------------------------------
 
-#include <optional>
-
-//----------------------------------------------------------------------------
-
 namespace vrv {
 
 //----------------------------------------------------------------------------
@@ -105,9 +101,10 @@ public:
      */
     ///@{
     bool HasNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid);
-    bool AddNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type);
-    bool EditNoteAccidental(const std::string &noteUuid, const std::string &measureUuid, data_ACCIDENTAL_WRITTEN type,
-        bool resetAccidGes = true);
+    bool AddNoteAccidental(
+        const std::string &noteUuid, const std::optional<std::string> &measureUuid, data_ACCIDENTAL_WRITTEN type);
+    bool EditNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid,
+        data_ACCIDENTAL_WRITTEN type, bool resetAccidGes = true);
     bool RemoveNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid);
     ///@}
 
@@ -119,9 +116,9 @@ public:
         const std::optional<std::string> &measureUuid);
     int GetArticulationCount(const std::string &noteOrChordUuid, const std::optional<std::string> &measureUuid);
     bool AddArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
-        const std::string &measureUuid, data_ARTICULATION type);
+        const std::optional<std::string> &measureUuid, data_ARTICULATION type);
     bool EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
-        const std::string &measureUuid, data_ARTICULATION type, bool resetPlace = true);
+        const std::optional<std::string> &measureUuid, data_ARTICULATION type, bool resetPlace = true);
     bool RemoveArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
         const std::optional<std::string> &measureUuid);
     ///@}
@@ -169,14 +166,12 @@ public:
     bool HasFing(const std::string &fingUuid, const std::optional<std::string> &measureUuid);
     bool HasFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
         const std::optional<std::string> &measureUuid);
-    bool AddFingToNote(
-        const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value);
-    bool AddFingToNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
-        data_STAFFREL place, const std::string &value);
-    bool EditFingOfNote(
-        const std::string &noteUuid, const std::string &measureUuid, data_STAFFREL place, const std::string &value);
-    bool EditFingOfNote(const std::string &fingUuid, const std::string &noteUuid, const std::string &measureUuid,
-        data_STAFFREL place, const std::string &value);
+    bool AddFingToNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+        const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
+        const std::string &value);
+    bool EditFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
+        const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
+        const std::optional<std::string> &value);
     bool RemoveFing(const std::string &fingUuid, const std::optional<std::string> &measureUuid);
     bool RemoveFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
         const std::optional<std::string> &measureUuid);
