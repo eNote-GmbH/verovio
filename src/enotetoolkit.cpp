@@ -344,20 +344,8 @@ bool EnoteToolkit::HasSlur(const std::string &slurUuid, const std::optional<std:
     return (dynamic_cast<Slur *>(this->FindElement(slurUuid, measureUuid)) != NULL);
 }
 
-bool EnoteToolkit::AddSlur(const std::string &measureUuid, const std::string &startUuid, const std::string &endUuid,
-    curvature_CURVEDIR curveDir)
-{
-    return this->AddSlur("", measureUuid, startUuid, endUuid, curveDir);
-}
-
-bool EnoteToolkit::AddSlur(
-    const std::string &measureUuid, const std::string &startUuid, data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir)
-{
-    return this->AddSlur("", measureUuid, startUuid, tstamp2, curveDir);
-}
-
-bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
-    const std::string &endUuid, curvature_CURVEDIR curveDir)
+bool EnoteToolkit::AddSlur(const std::optional<std::string> &slurUuid, const std::string &measureUuid,
+    const std::string &startUuid, const std::string &endUuid, const std::optional<curvature_CURVEDIR> &curveDir)
 {
     Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
@@ -365,10 +353,10 @@ bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measu
         LayerElement *endElement = dynamic_cast<LayerElement *>(m_doc.FindDescendantByUuid(endUuid));
         if (startElement && endElement && Object::IsPreOrdered(startElement, endElement)) {
             Slur *slur = new Slur();
-            if (!slurUuid.empty()) slur->SetUuid(slurUuid);
+            if (slurUuid) slur->SetUuid(*slurUuid);
             slur->SetStartid(startUuid);
             slur->SetEndid(endUuid);
-            slur->SetCurvedir(curveDir);
+            if (curveDir) slur->SetCurvedir(*curveDir);
             measure->AddChild(slur);
             this->UpdateTimeSpanning(slur);
             return true;
@@ -377,18 +365,18 @@ bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measu
     return false;
 }
 
-bool EnoteToolkit::AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
-    const data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir)
+bool EnoteToolkit::AddSlur(const std::optional<std::string> &slurUuid, const std::string &measureUuid,
+    const std::string &startUuid, data_MEASUREBEAT tstamp2, const std::optional<curvature_CURVEDIR> &curveDir)
 {
     Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
         LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
         if (startElement) {
             Slur *slur = new Slur();
-            if (!slurUuid.empty()) slur->SetUuid(slurUuid);
+            if (slurUuid) slur->SetUuid(*slurUuid);
             slur->SetStartid(startUuid);
             slur->SetTstamp2(tstamp2);
-            slur->SetCurvedir(curveDir);
+            if (curveDir) slur->SetCurvedir(*curveDir);
             measure->AddChild(slur);
             this->UpdateTimeSpanning(slur);
             return true;
@@ -434,6 +422,17 @@ bool EnoteToolkit::EditSlur(
                 return true;
             }
         }
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditSlur(
+    const std::string &slurUuid, const std::optional<std::string> &measureUuid, curvature_CURVEDIR curveDir)
+{
+    Slur *slur = dynamic_cast<Slur *>(this->FindElement(slurUuid, measureUuid));
+    if (slur) {
+        slur->SetCurvedir(curveDir);
+        return true;
     }
     return false;
 }

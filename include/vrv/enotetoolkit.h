@@ -149,18 +149,16 @@ public:
      */
     ///@{
     bool HasSlur(const std::string &slurUuid, const std::optional<std::string> &measureUuid);
-    bool AddSlur(const std::string &measureUuid, const std::string &startUuid, const std::string &endUuid,
-        curvature_CURVEDIR curveDir);
-    bool AddSlur(const std::string &measureUuid, const std::string &startUuid, data_MEASUREBEAT tstamp2,
-        curvature_CURVEDIR curveDir);
-    bool AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
-        const std::string &endUuid, curvature_CURVEDIR curveDir);
-    bool AddSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
-        data_MEASUREBEAT tstamp2, curvature_CURVEDIR curveDir);
+    bool AddSlur(const std::optional<std::string> &slurUuid, const std::string &measureUuid,
+        const std::string &startUuid, const std::string &endUuid, const std::optional<curvature_CURVEDIR> &curveDir);
+    bool AddSlur(const std::optional<std::string> &slurUuid, const std::string &measureUuid,
+        const std::string &startUuid, data_MEASUREBEAT tstamp2, const std::optional<curvature_CURVEDIR> &curveDir);
     bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
         const std::string &endUuid);
     bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
         data_MEASUREBEAT tstamp2);
+    bool EditSlur(
+        const std::string &slurUuid, const std::optional<std::string> &measureUuid, curvature_CURVEDIR curveDir);
     bool RemoveSlur(const std::string &slurUuid, const std::optional<std::string> &measureUuid);
     ///@}
 
