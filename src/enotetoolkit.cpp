@@ -10,6 +10,7 @@
 //----------------------------------------------------------------------------
 
 #include "comparison.h"
+#include "dynam.h"
 #include "fing.h"
 #include "hairpin.h"
 #include "measure.h"
@@ -144,6 +145,17 @@ std::list<MeasureRange> EnoteToolkit::GetMeasureRangeForPage(int index)
         }
     }
     return measureRanges;
+}
+
+bool EnoteToolkit::WasEdited(const std::string &elementUuid, const std::optional<std::string> &measureUuid)
+{
+    Object *element = this->FindElement(elementUuid, measureUuid);
+    if (element && element->HasAttClass(ATT_TYPED)) {
+        AttTyped *att = dynamic_cast<AttTyped *>(element);
+        assert(att);
+        return (att->GetType() == UserContentType);
+    }
+    return false;
 }
 
 bool EnoteToolkit::HasNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid)
@@ -549,6 +561,62 @@ bool EnoteToolkit::RemoveFingOfNote(const std::optional<std::string> &fingUuid, 
             fing->GetParent()->DeleteChild(fing);
             return true;
         }
+    }
+    return false;
+}
+
+bool EnoteToolkit::HasDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid)
+{
+    return (dynamic_cast<Dynam *>(this->FindElement(dynamUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::AddDynam(const std::optional<std::string> &dynamUuid, const std::string &measureUuid, double tstamp,
+    const xsdPositiveInteger_List &staffNs, data_STAFFREL place, const std::string &value)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Dynam *dynam = new Dynam();
+        if (dynamUuid) dynam->SetUuid(*dynamUuid);
+        dynam->SetTstamp(tstamp);
+        dynam->SetStaff(staffNs);
+        dynam->SetPlace(place);
+        this->SetTextChildren(dynam, { value });
+        dynam->SetType(UserContentType);
+        measure->AddChild(dynam);
+        this->UpdateTimePoint(dynam);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid,
+    const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
+    const std::optional<data_STAFFREL> &place, const std::optional<std::string> &value)
+{
+    Dynam *dynam = dynamic_cast<Dynam *>(m_doc.FindDescendantByUuid(dynamUuid));
+    if (dynam) {
+        const bool ok = measureUuid ? this->MoveToMeasure(dynam, *measureUuid) : true;
+        if (ok) {
+            const double prevTstamp = dynam->GetTstamp();
+            dynam->TimeSpanningInterface::Reset();
+            dynam->SetTstamp(tstamp ? *tstamp : prevTstamp);
+            if (staffNs) dynam->SetStaff(*staffNs);
+            if (place) dynam->SetPlace(*place);
+            if (value) this->SetTextChildren(dynam, { *value });
+            dynam->SetType(UserContentType);
+            this->UpdateTimePoint(dynam);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemoveDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid)
+{
+    Dynam *dynam = dynamic_cast<Dynam *>(this->FindElement(dynamUuid, measureUuid));
+    if (dynam) {
+        dynam->GetParent()->DeleteChild(dynam);
+        return true;
     }
     return false;
 }

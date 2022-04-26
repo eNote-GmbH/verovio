@@ -83,6 +83,11 @@ public:
      */
     ///@{
 
+    /**
+     * Check for changes
+     */
+    bool WasEdited(const std::string &elementUuid, const std::optional<std::string> &measureUuid);
+
     /****************************
      *  Editing layer elements  *
      ***************************/
@@ -177,6 +182,17 @@ public:
         const std::optional<std::string> &measureUuid);
     ///@}
 
+    /**
+     * Edit dynamics
+     */
+    ///@{
+    bool HasDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid);
+    bool AddDynam(const std::optional<std::string> &dynamUuid, const std::string &measureUuid, double tstamp,
+        const xsdPositiveInteger_List &staffNs, data_STAFFREL place, const std::string &value);
+    bool EditDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid,
+        const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
+        const std::optional<data_STAFFREL> &place, const std::optional<std::string> &value);
+    bool RemoveDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid);
     ///@}
 
 private:
