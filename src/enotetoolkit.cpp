@@ -335,12 +335,13 @@ bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::option
     if (hairpin) {
         const bool ok = measureUuid ? this->MoveToMeasure(hairpin, *measureUuid) : true;
         if (ok) {
+            const xsdPositiveInteger_List prevStaffNs = hairpin->GetStaff();
             const double prevTstamp = hairpin->GetTstamp();
             const data_MEASUREBEAT prevTstamp2 = hairpin->GetTstamp2();
             hairpin->TimeSpanningInterface::Reset();
             hairpin->SetTstamp(tstamp ? *tstamp : prevTstamp);
             hairpin->SetTstamp2(tstamp2 ? *tstamp2 : prevTstamp2);
-            if (staffNs) hairpin->SetStaff(*staffNs);
+            hairpin->SetStaff(staffNs ? *staffNs : prevStaffNs);
             if (form) hairpin->SetForm(*form);
             hairpin->SetType(UserContentType);
             this->UpdateTimeSpanning(hairpin);
@@ -583,7 +584,7 @@ bool EnoteToolkit::AddDynam(const std::optional<std::string> &dynamUuid, const s
         this->SetTextChildren(dynam, { value });
         dynam->SetType(UserContentType);
         measure->AddChild(dynam);
-        this->UpdateTimePoint(dynam);
+        this->UpdateTimeSpanning(dynam);
         return true;
     }
     return false;
@@ -597,14 +598,17 @@ bool EnoteToolkit::EditDynam(const std::string &dynamUuid, const std::optional<s
     if (dynam) {
         const bool ok = measureUuid ? this->MoveToMeasure(dynam, *measureUuid) : true;
         if (ok) {
+            const xsdPositiveInteger_List prevStaffNs = dynam->GetStaff();
             const double prevTstamp = dynam->GetTstamp();
+            const data_MEASUREBEAT prevTstamp2 = dynam->GetTstamp2();
             dynam->TimeSpanningInterface::Reset();
             dynam->SetTstamp(tstamp ? *tstamp : prevTstamp);
-            if (staffNs) dynam->SetStaff(*staffNs);
+            dynam->SetTstamp2(prevTstamp2);
+            dynam->SetStaff(staffNs ? *staffNs : prevStaffNs);
             if (place) dynam->SetPlace(*place);
             if (value) this->SetTextChildren(dynam, { *value });
             dynam->SetType(UserContentType);
-            this->UpdateTimePoint(dynam);
+            this->UpdateTimeSpanning(dynam);
             return true;
         }
     }
@@ -615,6 +619,7 @@ bool EnoteToolkit::RemoveDynam(const std::string &dynamUuid, const std::optional
 {
     Dynam *dynam = dynamic_cast<Dynam *>(this->FindElement(dynamUuid, measureUuid));
     if (dynam) {
+        this->RemoveTimeSpanning(dynam);
         dynam->GetParent()->DeleteChild(dynam);
         return true;
     }
@@ -623,14 +628,9 @@ bool EnoteToolkit::RemoveDynam(const std::string &dynamUuid, const std::optional
 
 bool EnoteToolkit::MoveToMeasure(ControlElement *element, const std::string &measureUuid)
 {
-    Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
-    if (measure->GetUuid() == measureUuid) return true;
-
-    // Find the target measure
-    measure = this->FindMeasureByUuid(measureUuid);
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
     if (measure) {
-        element->MoveItselfTo(measure);
-        return true;
+        return this->MoveToMeasure(element, measure);
     }
     return false;
 }
