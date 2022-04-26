@@ -195,6 +195,21 @@ public:
     bool RemoveDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid);
     ///@}
 
+    /**
+     * Edit pedals
+     */
+    ///@{
+    bool HasPedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid);
+    bool AddPedal(const std::optional<std::string> &pedalUuid, const std::string &measureUuid, double tstamp,
+        const xsdPositiveInteger_List &staffNs, const std::optional<data_STAFFREL> &place,
+        const std::optional<int> &vgrp, pedalLog_DIR dir);
+    bool EditPedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid,
+        const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
+        const std::optional<data_STAFFREL> &place, const std::optional<int> &vgrp,
+        const std::optional<pedalLog_DIR> &dir);
+    bool RemovePedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid);
+    ///@}
+
 private:
     /**
      * Manipulating the object tree

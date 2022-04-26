@@ -15,6 +15,7 @@
 #include "hairpin.h"
 #include "measure.h"
 #include "page.h"
+#include "pedal.h"
 #include "slur.h"
 #include "staff.h"
 #include "text.h"
@@ -621,6 +622,69 @@ bool EnoteToolkit::RemoveDynam(const std::string &dynamUuid, const std::optional
     if (dynam) {
         this->RemoveTimeSpanning(dynam);
         dynam->GetParent()->DeleteChild(dynam);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::HasPedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid)
+{
+    return (dynamic_cast<Pedal *>(this->FindElement(pedalUuid, measureUuid)) != NULL);
+}
+
+bool EnoteToolkit::AddPedal(const std::optional<std::string> &pedalUuid, const std::string &measureUuid, double tstamp,
+    const xsdPositiveInteger_List &staffNs, const std::optional<data_STAFFREL> &place, const std::optional<int> &vgrp,
+    pedalLog_DIR dir)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        Pedal *pedal = new Pedal();
+        if (pedalUuid) pedal->SetUuid(*pedalUuid);
+        pedal->SetTstamp(tstamp);
+        pedal->SetStaff(staffNs);
+        if (place) pedal->SetPlace(*place);
+        if (vgrp) pedal->SetVgrp(*vgrp);
+        pedal->SetDir(dir);
+        pedal->SetType(UserContentType);
+        measure->AddChild(pedal);
+        this->UpdateTimeSpanning(pedal);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditPedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid,
+    const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
+    const std::optional<data_STAFFREL> &place, const std::optional<int> &vgrp, const std::optional<pedalLog_DIR> &dir)
+{
+    Pedal *pedal = dynamic_cast<Pedal *>(m_doc.FindDescendantByUuid(pedalUuid));
+    if (pedal) {
+        const bool ok = measureUuid ? this->MoveToMeasure(pedal, *measureUuid) : true;
+        if (ok) {
+            const xsdPositiveInteger_List prevStaffNs = pedal->GetStaff();
+            const double prevTstamp = pedal->GetTstamp();
+            const data_MEASUREBEAT prevTstamp2 = pedal->GetTstamp2();
+            pedal->TimeSpanningInterface::Reset();
+            pedal->SetTstamp(tstamp ? *tstamp : prevTstamp);
+            pedal->SetTstamp2(prevTstamp2);
+            pedal->SetStaff(staffNs ? *staffNs : prevStaffNs);
+            if (place) pedal->SetPlace(*place);
+            if (vgrp) pedal->SetVgrp(*vgrp);
+            if (dir) pedal->SetDir(*dir);
+            pedal->SetType(UserContentType);
+            this->UpdateTimeSpanning(pedal);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EnoteToolkit::RemovePedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid)
+{
+    Pedal *pedal = dynamic_cast<Pedal *>(this->FindElement(pedalUuid, measureUuid));
+    if (pedal) {
+        this->RemoveTimeSpanning(pedal);
+        pedal->GetParent()->DeleteChild(pedal);
         return true;
     }
     return false;
