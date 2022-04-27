@@ -13,6 +13,7 @@
 #include "dynam.h"
 #include "fing.h"
 #include "hairpin.h"
+#include "iomei.h"
 #include "measure.h"
 #include "page.h"
 #include "pedal.h"
@@ -159,18 +160,54 @@ bool EnoteToolkit::WasEdited(const std::string &elementUuid, const std::optional
     return false;
 }
 
+void EnoteToolkit::SetEdited(const std::string &elementUuid, const std::optional<std::string> &measureUuid,
+    bool wasEdited, bool includeDescendants)
+{
+    Object *element = this->FindElement(elementUuid, measureUuid);
+    if (element) {
+        this->SetEdited(element, wasEdited, includeDescendants);
+    }
+}
+
+void EnoteToolkit::SetEdited(Object *object, bool wasEdited, bool recursive)
+{
+    if (object->HasAttClass(ATT_TYPED)) {
+        AttTyped *att = dynamic_cast<AttTyped *>(object);
+        assert(att);
+        att->SetType(wasEdited ? UserContentType : "");
+    }
+    if (recursive) {
+        for (Object *child : object->GetChildren()) {
+            this->SetEdited(child, wasEdited, true);
+        }
+    }
+}
+
 bool EnoteToolkit::HasNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid)
 {
     return (dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid)) != NULL);
 }
 
-bool EnoteToolkit::EditNote(
-    const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave)
+bool EnoteToolkit::EditNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid,
+    data_PITCHNAME pitch, data_OCTAVE octave)
 {
     Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
     if (note) {
         note->SetPname(pitch);
         note->SetOct(octave);
+        note->SetType(UserContentType);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::EditNote(
+    const std::string &noteUuid, const std::optional<std::string> &measureUuid, pugi::xml_node xmlNote)
+{
+    Note *note = dynamic_cast<Note *>(this->FindElement(noteUuid, measureUuid));
+    if (note) {
+        note->ReadPitch(xmlNote);
+        note->ReadOctave(xmlNote);
         note->SetType(UserContentType);
         return true;
     }
@@ -196,6 +233,17 @@ bool EnoteToolkit::AddNoteAccidental(
         accid->SetType(UserContentType);
         note->AddChild(accid);
         return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::AddNoteAccidental(
+    const std::string &noteUuid, const std::optional<std::string> &measureUuid, pugi::xml_node xmlNoteOrAccid)
+{
+    Accid tempAccid;
+    tempAccid.ReadAccidental(xmlNoteOrAccid);
+    if (tempAccid.HasAccid()) {
+        return this->AddNoteAccidental(noteUuid, measureUuid, tempAccid.GetAccid());
     }
     return false;
 }
@@ -267,6 +315,18 @@ bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articUuid, 
         return true;
     }
     return false;
+}
+
+bool EnoteToolkit::AddArticulation(
+    const std::string &noteOrChordUuid, const std::optional<std::string> &measureUuid, pugi::xml_node xmlNoteOrArtic)
+{
+    Artic tempArtic;
+    tempArtic.ReadArticulation(xmlNoteOrArtic);
+    const data_ARTICULATION_List artics = tempArtic.GetArtic();
+    if (artics.empty()) return false;
+    return std::all_of(artics.begin(), artics.end(), [&](data_ARTICULATION articType) {
+        return this->AddArticulation(std::nullopt, noteOrChordUuid, measureUuid, articType);
+    });
 }
 
 bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,

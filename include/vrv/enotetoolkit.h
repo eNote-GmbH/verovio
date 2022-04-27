@@ -86,7 +86,12 @@ public:
     /**
      * Check for changes
      */
+    ///@{
     bool WasEdited(const std::string &elementUuid, const std::optional<std::string> &measureUuid);
+    void SetEdited(const std::string &elementUuid, const std::optional<std::string> &measureUuid, bool wasEdited,
+        bool includeDescendants = false);
+    void SetEdited(Object *object, bool wasEdited, bool recursive = false);
+    ///@}
 
     /****************************
      *  Editing layer elements  *
@@ -97,8 +102,9 @@ public:
      */
     ///@{
     bool HasNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid);
-    bool EditNote(
-        const std::string &noteUuid, const std::string &measureUuid, data_PITCHNAME pitch, data_OCTAVE octave);
+    bool EditNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid, data_PITCHNAME pitch,
+        data_OCTAVE octave);
+    bool EditNote(const std::string &noteUuid, const std::optional<std::string> &measureUuid, pugi::xml_node xmlNote);
     ///@}
 
     /**
@@ -108,6 +114,8 @@ public:
     bool HasNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid);
     bool AddNoteAccidental(
         const std::string &noteUuid, const std::optional<std::string> &measureUuid, data_ACCIDENTAL_WRITTEN type);
+    bool AddNoteAccidental(
+        const std::string &noteUuid, const std::optional<std::string> &measureUuid, pugi::xml_node xmlNoteOrAccid);
     bool EditNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid,
         data_ACCIDENTAL_WRITTEN type, bool resetAccidGes = true);
     bool RemoveNoteAccidental(const std::string &noteUuid, const std::optional<std::string> &measureUuid);
@@ -122,6 +130,8 @@ public:
     int GetArticulationCount(const std::string &noteOrChordUuid, const std::optional<std::string> &measureUuid);
     bool AddArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
         const std::optional<std::string> &measureUuid, data_ARTICULATION type);
+    bool AddArticulation(const std::string &noteOrChordUuid, const std::optional<std::string> &measureUuid,
+        pugi::xml_node xmlNoteOrArtic);
     bool EditArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
         const std::optional<std::string> &measureUuid, data_ARTICULATION type, bool resetPlace = true);
     bool RemoveArticulation(const std::optional<std::string> &articUuid, const std::string &noteOrChordUuid,
