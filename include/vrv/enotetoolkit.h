@@ -149,6 +149,7 @@ public:
     bool HasHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid);
     bool AddHairpin(const std::optional<std::string> &hairpinUuid, const std::string &measureUuid, double tstamp,
         data_MEASUREBEAT tstamp2, const xsdPositiveInteger_List &staffNs, data_STAFFREL place, hairpinLog_FORM form);
+    bool AddHairpin(const std::string &measureUuid, pugi::xml_node xmlHairpin);
     bool EditHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid,
         const std::optional<double> &tstamp, const std::optional<data_MEASUREBEAT> &tstamp2,
         const std::optional<xsdPositiveInteger_List> &staffNs, const std::optional<data_STAFFREL> &place,
@@ -165,6 +166,7 @@ public:
         const std::string &startUuid, const std::string &endUuid, const std::optional<curvature_CURVEDIR> &curveDir);
     bool AddSlur(const std::optional<std::string> &slurUuid, const std::string &measureUuid,
         const std::string &startUuid, data_MEASUREBEAT tstamp2, const std::optional<curvature_CURVEDIR> &curveDir);
+    bool AddSlur(const std::string &measureUuid, pugi::xml_node xmlSlur);
     bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
         const std::string &endUuid);
     bool EditSlur(const std::string &slurUuid, const std::string &measureUuid, const std::string &startUuid,
@@ -184,6 +186,7 @@ public:
     bool AddFingToNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
         const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
         const std::string &value);
+    bool AddFing(const std::string &measureUuid, pugi::xml_node xmlFing);
     bool EditFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
         const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
         const std::optional<std::string> &value);
@@ -199,6 +202,7 @@ public:
     bool HasDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid);
     bool AddDynam(const std::optional<std::string> &dynamUuid, const std::string &measureUuid, double tstamp,
         const xsdPositiveInteger_List &staffNs, data_STAFFREL place, const std::string &value);
+    bool AddDynam(const std::string &measureUuid, pugi::xml_node xmlDynam);
     bool EditDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid,
         const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
         const std::optional<data_STAFFREL> &place, const std::optional<std::string> &value);
@@ -213,6 +217,7 @@ public:
     bool AddPedal(const std::optional<std::string> &pedalUuid, const std::string &measureUuid, double tstamp,
         const xsdPositiveInteger_List &staffNs, const std::optional<data_STAFFREL> &place,
         const std::optional<int> &vgrp, pedalLog_DIR dir);
+    bool AddPedal(const std::string &measureUuid, pugi::xml_node xmlPedal);
     bool EditPedal(const std::string &pedalUuid, const std::optional<std::string> &measureUuid,
         const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
         const std::optional<data_STAFFREL> &place, const std::optional<int> &vgrp,

@@ -387,6 +387,19 @@ bool EnoteToolkit::AddHairpin(const std::optional<std::string> &hairpinUuid, con
     return false;
 }
 
+bool EnoteToolkit::AddHairpin(const std::string &measureUuid, pugi::xml_node xmlHairpin)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        MEIInput input(&m_doc);
+        input.ReadHairpin(measure, xmlHairpin);
+        Hairpin *hairpin = vrv_cast<Hairpin *>(measure->GetLast(HAIRPIN));
+        if (hairpin) this->UpdateTimeSpanning(hairpin);
+        return true;
+    }
+    return false;
+}
+
 bool EnoteToolkit::EditHairpin(const std::string &hairpinUuid, const std::optional<std::string> &measureUuid,
     const std::optional<double> &tstamp, const std::optional<data_MEASUREBEAT> &tstamp2,
     const std::optional<xsdPositiveInteger_List> &staffNs, const std::optional<data_STAFFREL> &place,
@@ -467,6 +480,19 @@ bool EnoteToolkit::AddSlur(const std::optional<std::string> &slurUuid, const std
             this->UpdateTimeSpanning(slur);
             return true;
         }
+    }
+    return false;
+}
+
+bool EnoteToolkit::AddSlur(const std::string &measureUuid, pugi::xml_node xmlSlur)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        MEIInput input(&m_doc);
+        input.ReadSlur(measure, xmlSlur);
+        Slur *slur = vrv_cast<Slur *>(measure->GetLast(SLUR));
+        if (slur) this->UpdateTimeSpanning(slur);
+        return true;
     }
     return false;
 }
@@ -577,6 +603,19 @@ bool EnoteToolkit::AddFingToNote(const std::optional<std::string> &fingUuid, con
     return false;
 }
 
+bool EnoteToolkit::AddFing(const std::string &measureUuid, pugi::xml_node xmlFing)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        MEIInput input(&m_doc);
+        input.ReadFing(measure, xmlFing);
+        Fing *fing = vrv_cast<Fing *>(measure->GetLast(FING));
+        if (fing) this->UpdateTimePoint(fing);
+        return true;
+    }
+    return false;
+}
+
 bool EnoteToolkit::EditFingOfNote(const std::optional<std::string> &fingUuid, const std::string &noteUuid,
     const std::optional<std::string> &measureUuid, const std::optional<data_STAFFREL> &place,
     const std::optional<std::string> &value)
@@ -651,6 +690,19 @@ bool EnoteToolkit::AddDynam(const std::optional<std::string> &dynamUuid, const s
     return false;
 }
 
+bool EnoteToolkit::AddDynam(const std::string &measureUuid, pugi::xml_node xmlDynam)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        MEIInput input(&m_doc);
+        input.ReadDynam(measure, xmlDynam);
+        Dynam *dynam = vrv_cast<Dynam *>(measure->GetLast(DYNAM));
+        if (dynam) this->UpdateTimeSpanning(dynam);
+        return true;
+    }
+    return false;
+}
+
 bool EnoteToolkit::EditDynam(const std::string &dynamUuid, const std::optional<std::string> &measureUuid,
     const std::optional<double> &tstamp, const std::optional<xsdPositiveInteger_List> &staffNs,
     const std::optional<data_STAFFREL> &place, const std::optional<std::string> &value)
@@ -708,6 +760,19 @@ bool EnoteToolkit::AddPedal(const std::optional<std::string> &pedalUuid, const s
         pedal->SetType(UserContentType);
         measure->AddChild(pedal);
         this->UpdateTimeSpanning(pedal);
+        return true;
+    }
+    return false;
+}
+
+bool EnoteToolkit::AddPedal(const std::string &measureUuid, pugi::xml_node xmlPedal)
+{
+    Measure *measure = this->FindMeasureByUuid(measureUuid);
+    if (measure) {
+        MEIInput input(&m_doc);
+        input.ReadPedal(measure, xmlPedal);
+        Pedal *pedal = vrv_cast<Pedal *>(measure->GetLast(PEDAL));
+        if (pedal) this->UpdateTimeSpanning(pedal);
         return true;
     }
     return false;
