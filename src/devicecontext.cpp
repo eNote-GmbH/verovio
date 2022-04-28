@@ -36,6 +36,13 @@ void BezierCurve::Rotate(float angle, const Point &rotationPoint)
     c2 = BoundingBox::CalcPositionAfterRotation(c2, angle, rotationPoint);
 }
 
+void BezierCurve::CalcInitialControlPointParams()
+{
+    const int dist = abs(p2.x - p1.x);
+    this->SetControlOffset(dist / 3.0);
+    this->SetControlHeight(0);
+}
+
 void BezierCurve::CalcInitialControlPointParams(Doc *doc, float angle, int staffSize)
 {
     // Note: For convex curves (both control points on the same side) we assume that the curve is rotated
@@ -115,6 +122,12 @@ std::pair<double, double> BezierCurve::EstimateCurveParamForControlPoints() cons
 //----------------------------------------------------------------------------
 // DeviceContext
 //----------------------------------------------------------------------------
+
+const Resources *DeviceContext::GetResources(bool showWarning) const
+{
+    if (!m_resources && showWarning) LogWarning("Requested resources unavailable.");
+    return m_resources;
+}
 
 void DeviceContext::SetPen(int colour, int width, int opacity, int dashLength, int lineCap)
 {
@@ -222,32 +235,35 @@ void DeviceContext::GetTextExtent(const std::wstring &string, TextExtend *extend
     assert(m_fontStack.top());
     assert(extend);
 
+    const Resources *resources = this->GetResources();
+    assert(resources);
+
     extend->m_width = 0;
     extend->m_height = 0;
 
     if (typeSize) {
-        AddGlyphToTextExtend(Resources::GetTextGlyph(L'p'), extend);
-        AddGlyphToTextExtend(Resources::GetTextGlyph(L'M'), extend);
+        AddGlyphToTextExtend(resources->GetTextGlyph(L'p'), extend);
+        AddGlyphToTextExtend(resources->GetTextGlyph(L'M'), extend);
         extend->m_width = 0;
     }
 
-    Glyph *unkown = Resources::GetTextGlyph(L'o');
+    const Glyph *unknown = resources->GetTextGlyph(L'o');
 
     for (unsigned int i = 0; i < string.length(); ++i) {
         wchar_t c = string[i];
-        Glyph *glyph = Resources::GetTextGlyph(c);
+        const Glyph *glyph = resources->GetTextGlyph(c);
         if (!glyph) {
-            glyph = Resources::GetGlyph(c);
+            glyph = resources->GetGlyph(c);
         }
         if (!glyph) {
             // There is no glyph for space, and we would use 'o' to increase extend width. However 'o' is wider than
             // space, which led to incorrect rendering. For the time being, set width to that of '.' instead.
             // This will probably need to be improved to change with font size/style
             if (c == L' ') {
-                glyph = Resources::GetTextGlyph(L'.');
+                glyph = resources->GetTextGlyph(L'.');
             }
             else {
-                glyph = unkown;
+                glyph = unknown;
             }
         }
         AddGlyphToTextExtend(glyph, extend);
@@ -259,12 +275,15 @@ void DeviceContext::GetSmuflTextExtent(const std::wstring &string, TextExtend *e
     assert(m_fontStack.top());
     assert(extend);
 
+    const Resources *resources = this->GetResources();
+    assert(resources);
+
     extend->m_width = 0;
     extend->m_height = 0;
 
     for (unsigned int i = 0; i < string.length(); ++i) {
         wchar_t c = string[i];
-        Glyph *glyph = Resources::GetGlyph(c);
+        const Glyph *glyph = resources->GetGlyph(c);
         if (!glyph) {
             continue;
         }
@@ -272,7 +291,7 @@ void DeviceContext::GetSmuflTextExtent(const std::wstring &string, TextExtend *e
     }
 }
 
-void DeviceContext::AddGlyphToTextExtend(Glyph *glyph, TextExtend *extend)
+void DeviceContext::AddGlyphToTextExtend(const Glyph *glyph, TextExtend *extend)
 {
     assert(glyph);
     assert(extend);

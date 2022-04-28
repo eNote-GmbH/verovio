@@ -290,6 +290,7 @@ int main(int argc, char **argv)
     int option_index = 0;
     vrv::Option *opt = NULL;
     vrv::OptionBool *optBool = NULL;
+    std::string resourcePath = toolkit.GetResourcePath();
     while ((c = getopt_long(argc, argv, "ab:f:ho:p:r:s:t:vx:z", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
@@ -337,7 +338,7 @@ int main(int argc, char **argv)
 
             case 'p': page = atoi(optarg); break;
 
-            case 'r': vrv::Resources::SetPath(optarg); break;
+            case 'r': resourcePath = optarg; break;
 
             case 't':
                 outformat = std::string(optarg);
@@ -406,9 +407,8 @@ int main(int argc, char **argv)
 
     // Make sure the user uses a valid Resource path
     // Save many headaches for empty SVGs
-    if (!dir_exists(vrv::Resources::GetPath())) {
-        std::cerr << "The resources path " << vrv::Resources::GetPath() << " could not be found; please use -r option."
-                  << std::endl;
+    if (!dir_exists(resourcePath)) {
+        std::cerr << "The resource path " << resourcePath << " could not be found; please use -r option." << std::endl;
         exit(1);
     }
 
