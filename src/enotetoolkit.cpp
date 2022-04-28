@@ -861,7 +861,7 @@ void EnoteToolkit::UpdateTimePoint(ControlElement *element)
         // Set the start or first timestamp
         Measure *measure = vrv_cast<Measure *>(element->GetFirstAncestor(MEASURE));
         if (interface->HasStartid()) {
-            const std::string startUuid = interface->GetStartid();
+            const std::string startUuid = ExtractUuidFragment(interface->GetStartid());
             LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
             if (startElement) {
                 interface->SetStart(startElement);
@@ -893,7 +893,7 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
         assert(iterStart != measures.cend());
         const int startIndex = static_cast<int>(iterStart - measures.cbegin());
         if (interface->HasStartid()) {
-            const std::string startUuid = interface->GetStartid();
+            const std::string startUuid = ExtractUuidFragment(interface->GetStartid());
             LayerElement *startElement = dynamic_cast<LayerElement *>(measure->FindDescendantByUuid(startUuid));
             if (startElement) {
                 interface->SetStart(startElement);
@@ -911,7 +911,7 @@ void EnoteToolkit::UpdateTimeSpanning(ControlElement *element)
         // Set the end or second timestamp
         int endIndex = startIndex;
         if (interface->HasEndid()) {
-            const std::string endUuid = interface->GetEndid();
+            const std::string endUuid = ExtractUuidFragment(interface->GetEndid());
             LayerElement *endElement = dynamic_cast<LayerElement *>(m_doc.FindDescendantByUuid(endUuid));
             if (endElement) {
                 measure = vrv_cast<Measure *>(endElement->GetFirstAncestor(MEASURE));
