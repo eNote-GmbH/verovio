@@ -85,7 +85,8 @@ Toolkit::Toolkit(bool initFont)
 #endif
 
     if (initFont) {
-        Resources::InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+        Resources &resources = m_doc.GetResourcesForModification();
+        resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
     }
 }
 
@@ -118,14 +119,23 @@ std::string Toolkit::GetResourcePath() const
 
 bool Toolkit::SetResourcePath(const std::string &path)
 {
-    Resources::SetPath(path);
-    return Resources::InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+    Resources &resources = m_doc.GetResourcesForModification();
+    resources.SetPath(path);
+    return resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
 }
 
-bool Toolkit::SetFont(const std::string &fontName)
+bool Toolkit::SetMusicFont(const std::string &fontName)
 {
     Resources &resources = m_doc.GetResourcesForModification();
-    const bool ok = resources.SetFont(fontName);
+    const bool ok = resources.SetMusicFont(fontName);
+    if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
+    return ok;
+}
+
+bool Toolkit::SetTextFont(const std::string &fontName)
+{
+    Resources &resources = m_doc.GetResourcesForModification();
+    const bool ok = resources.SetTextFont(fontName);
     if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
     return ok;
 }
@@ -1082,12 +1092,8 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     m_options->Sync();
 
     // Reset fonts
-    if (!Resources::SetMusicFont(m_options->m_font.GetValue())) {
-        LogWarning("Font '%s' could not be loaded", m_options->m_font.GetValue().c_str());
-    }
-    if (!Resources::SetTextFont(m_options->m_textFont.GetValue())) {
-        LogWarning("Font '%s' could not be loaded", m_options->m_textFont.GetValue().c_str());
-    }
+    this->SetMusicFont(m_options->m_font.GetValue());
+    this->SetTextFont(m_options->m_textFont.GetValue());
 
     return true;
 }
@@ -1117,14 +1123,10 @@ bool Toolkit::SetOption(const std::string &option, const std::string &value)
     // Reset fonts if necessary
     if (ok) {
         if (opt == &m_options->m_font) {
-            if (!Resources::SetMusicFont(value)) {
-                LogWarning("Font '%s' could not be loaded", value.c_str());
-            }
+            this->SetMusicFont(value);
         }
         else if (opt == &m_options->m_textFont) {
-            if (!Resources::SetTextFont(value)) {
-                LogWarning("Font '%s' could not be loaded", value.c_str());
-            }
+            this->SetTextFont(value);
         }
     }
 
@@ -1136,8 +1138,9 @@ void Toolkit::ResetOptions()
     std::for_each(m_options->GetItems()->begin(), m_options->GetItems()->end(),
         [](const MapOfStrOptions::value_type &opt) { opt.second->Reset(); });
 
-    // Set the (default) font
-    Resources::SetMusicFont(m_options->m_font.GetValue());
+    // Set the (default) fonts
+    this->SetMusicFont(m_options->m_font.GetValue());
+    this->SetTextFont(m_options->m_textFont.GetValue());
 }
 
 std::string Toolkit::GetElementAttr(const std::string &xmlId)

@@ -104,7 +104,10 @@ public:
     /**
      * Set the font in the resources
      */
-    bool SetFont(const std::string &fontName);
+    ///@{
+    bool SetMusicFont(const std::string &fontName);
+    bool SetTextFont(const std::string &fontName);
+    ///@}
 
     /**
      * Get the log content for the latest operation

@@ -413,7 +413,7 @@ int main(int argc, char **argv)
     }
 
     // Load the music font from the resource directory
-    if (!vrv::Resources::InitFonts(options->m_font.GetValue(), options->m_textFont.GetValue())) {
+    if (!toolkit.SetResourcePath(resourcePath)) {
         std::cerr << "Fonts could not be initialized successfully; please check the contents of the resource directory."
                   << std::endl;
         exit(1);
