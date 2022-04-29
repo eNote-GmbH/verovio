@@ -318,8 +318,6 @@ typedef std::list<Object *> ListOfObjects;
 
 typedef std::list<const Object *> ListOfConstObjects;
 
-typedef std::vector<Comparison *> ArrayOfComparisons;
-
 typedef std::vector<Note *> ChordCluster;
 
 typedef std::vector<std::tuple<Alignment *, Alignment *, int>> ArrayOfAdjustmentTuples;
@@ -369,6 +367,8 @@ typedef std::vector<std::pair<std::wstring, bool>> ArrayOfStringDynamTypePairs;
 typedef std::map<std::string, std::function<Object *(void)>> MapOfStrConstructors;
 
 typedef std::map<std::string, ClassId> MapOfStrClassIds;
+
+typedef std::vector<std::pair<LayerElement *, LayerElement *>> MeasureTieEndpoints;
 
 typedef bool (*NotePredicate)(Note *);
 

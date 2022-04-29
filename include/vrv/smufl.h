@@ -334,7 +334,9 @@ enum {
     SMUFL_E88A_tupletColon = 0xE88A,
     SMUFL_E901_mensuralGclefPetrucci = 0xE901,
     SMUFL_E902_chantFclef = 0xE902,
+    SMUFL_E903_mensuralFclef = 0xE903,
     SMUFL_E904_mensuralFclefPetrucci = 0xE904,
+    SMUFL_E905_mensuralCclef = 0xE905,
     SMUFL_E906_chantCclef = 0xE906,
     SMUFL_E907_mensuralCclefPetrucciPosLowest = 0xE907,
     SMUFL_E908_mensuralCclefPetrucciPosLow = 0xE908,
@@ -446,6 +448,13 @@ enum {
     SMUFL_EBE7_luteItalianFret7 = 0xEBE7,
     SMUFL_EBE8_luteItalianFret8 = 0xEBE8,
     SMUFL_EBE9_luteItalianFret9 = 0xEBE9,
+    SMUFL_EC80_timeSigBracketLeft = 0xEC80,
+    SMUFL_EC81_timeSigBracketRight = 0xEC81,
+    SMUFL_EC82_timeSigBracketLeftSmall = 0xEC82,
+    SMUFL_EC83_timeSigBracketRightSmall = 0xEC83,
+    SMUFL_EC84_timeSigSlash = 0xEC84,
+    SMUFL_EC85_timeSigCut2 = 0xEC85,
+    SMUFL_EC86_timeSigCut3 = 0xEC86,
     SMUFL_ED10_fingering0 = 0xED10,
     SMUFL_ED11_fingering1 = 0xED11,
     SMUFL_ED12_fingering2 = 0xED12,
@@ -498,7 +507,7 @@ enum {
 };
 
 /** The number of glyphs for verification **/
-#define SMUFL_COUNT 473
+#define SMUFL_COUNT 482
 
 } // namespace vrv
 

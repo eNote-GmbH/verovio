@@ -16,6 +16,7 @@
 #include "expansionmap.h"
 #include "facsimile.h"
 #include "options.h"
+#include "resources.h"
 #include "scoredef.h"
 
 namespace smf {
@@ -76,8 +77,18 @@ public:
     /**
      * Getter for the options
      */
+    ///@{
     Options *GetOptions() const { return m_options; }
-    void SetOptions(Options *options) { (*m_options) = *options; };
+    void SetOptions(Options *options) { (*m_options) = *options; }
+    ///@}
+
+    /**
+     * Getter for the resources
+     */
+    ///@{
+    const Resources &GetResources() const { return m_resources; }
+    Resources &GetResourcesForModification() { return m_resources; }
+    ///@}
 
     /**
      * @name Access the abort flag
@@ -112,8 +123,10 @@ public:
      * Getter and setter for the DocType.
      * The setter resets the document.
      */
+    ///@{
     DocType GetType() const { return m_type; }
     void SetType(DocType type);
+    ///@}
 
     /**
      * Check if the document has a page with the specified value
@@ -534,6 +547,11 @@ private:
      * This could be saved somewhere as preferences (todo).
      */
     Options *m_options;
+
+    /**
+     * The resources (glyph table).
+     */
+    Resources m_resources;
 
     /**
      * Abort flag which triggers the cancellation of layout from another thread

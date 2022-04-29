@@ -349,12 +349,18 @@ protected:
      * Filter the flat list and keep only Note and Chords elements.
      * This also initializes the m_beamElementCoords vector
      */
-    void FilterList(ArrayOfObjects *childList) override;
+    void FilterList(ListOfConstObjects &childList) const override;
 
     /**
      * See LayerElement::SetElementShortening
      */
     void SetElementShortening(int shortening) override;
+
+    /**
+     * Return duration of beam part for specified X coordinate. Duration of two closest elements is taken for this
+     * purpose.
+     */
+    int GetBeamPartDuration(int x) const;
 
 private:
     /**
