@@ -210,9 +210,10 @@ private:
     // Get cross staff by only considering the slur boundary
     Staff *GetBoundaryCrossStaff();
     // Determine curve direction for the slurs that start at grace note
-    curvature_CURVEDIR GetGraceCurveDirection(Doc *doc);
+    curvature_CURVEDIR GetGraceCurveDirection() const;
     // Get preferred curve direction based on various conditions
-    curvature_CURVEDIR GetPreferredCurveDirection(Doc *doc, data_STEMDIRECTION noteStemDir, bool isAboveStaffCenter);
+    curvature_CURVEDIR GetPreferredCurveDirection(
+        data_STEMDIRECTION noteStemDir, bool isAboveStaffCenter, bool isGraceToNoteSlur);
     ///@}
 
     /**
@@ -235,8 +236,10 @@ private:
     void FilterSpannedElements(FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, int margin);
 
     // Calculate the vertical shift of the slur end points
-    std::pair<int, int> CalcEndPointShift(
-        FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, int margin, int unit);
+    std::pair<int, int> CalcEndPointShift(FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, int margin);
+
+    // Calculate slur from bulge values
+    void AdjustSlurFromBulge(FloatingCurvePositioner *curve, BezierCurve &bezierCurve, int unit);
 
     // Calculate the horizontal control point offset
     std::tuple<bool, int, int> CalcControlPointOffset(
@@ -259,9 +262,6 @@ private:
     ///@{
     // Shift end points for collisions nearby
     void ShiftEndPoints(int &shiftLeft, int &shiftRight, double ratio, int intersection, bool isBelow) const;
-
-    // Rebalance shifts to avoid awkward tilting of short slurs
-    void RebalanceShifts(int &shiftLeft, int &shiftRight, double distance, int unit) const;
 
     // Rotate the slope by a given number of degrees, but choose smaller angles if already close to the vertical axis
     // Choose doublingBound as the positive slope value where doubling has the same effect as rotating:

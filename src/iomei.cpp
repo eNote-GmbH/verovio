@@ -2135,6 +2135,8 @@ void MEIOutput::WriteBTrem(pugi::xml_node currentNode, BTrem *bTrem)
 
     this->WriteLayerElement(currentNode, bTrem);
     bTrem->WriteBTremLog(currentNode);
+    bTrem->WriteNumbered(currentNode);
+    bTrem->WriteNumberPlacement(currentNode);
     bTrem->WriteTremMeasured(currentNode);
 }
 
@@ -2356,6 +2358,8 @@ void MEIOutput::WriteMRpt(pugi::xml_node currentNode, MRpt *mRpt)
 
     this->WriteLayerElement(currentNode, mRpt);
     mRpt->WriteColor(currentNode);
+    mRpt->WriteNumbered(currentNode);
+    mRpt->WriteNumberPlacement(currentNode);
 }
 
 void MEIOutput::WriteMRpt2(pugi::xml_node currentNode, MRpt2 *mRpt2)
@@ -5801,6 +5805,8 @@ bool MEIInput::ReadBTrem(Object *parent, pugi::xml_node bTrem)
     this->ReadLayerElement(bTrem, vrvBTrem);
 
     vrvBTrem->ReadBTremLog(bTrem);
+    vrvBTrem->ReadNumbered(bTrem);
+    vrvBTrem->ReadNumberPlacement(bTrem);
     vrvBTrem->ReadTremMeasured(bTrem);
 
     parent->AddChild(vrvBTrem);
@@ -6081,6 +6087,8 @@ bool MEIInput::ReadMRpt(Object *parent, pugi::xml_node mRpt)
     this->ReadLayerElement(mRpt, vrvMRpt);
 
     vrvMRpt->ReadColor(mRpt);
+    vrvMRpt->ReadNumbered(mRpt);
+    vrvMRpt->ReadNumberPlacement(mRpt);
 
     parent->AddChild(vrvMRpt);
     this->ReadUnsupportedAttr(mRpt, vrvMRpt);

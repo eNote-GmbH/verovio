@@ -346,7 +346,7 @@ void Note::SetCluster(ChordCluster *cluster, int position)
     m_clusterPosition = position;
 }
 
-Point Note::GetStemUpSE(Doc *doc, int staffSize, bool isCueSize)
+Point Note::GetStemUpSE(const Doc *doc, int staffSize, bool isCueSize) const
 {
     int defaultYShift = doc->GetDrawingUnit(staffSize) / 4;
     if (isCueSize) defaultYShift = doc->GetCueSize(defaultYShift);
@@ -366,7 +366,8 @@ Point Note::GetStemUpSE(Doc *doc, int staffSize, bool isCueSize)
         p.x = doc->GetGlyphWidth(code, staffSize, isCueSize);
     }
 
-    Glyph *glyph = Resources::GetGlyph(code);
+    const Resources &resources = doc->GetResources();
+    const Glyph *glyph = resources.GetGlyph(code);
     assert(glyph);
 
     if (glyph->HasAnchor(SMUFL_stemUpSE)) {
@@ -378,7 +379,7 @@ Point Note::GetStemUpSE(Doc *doc, int staffSize, bool isCueSize)
     return p;
 }
 
-Point Note::GetStemDownNW(Doc *doc, int staffSize, bool isCueSize)
+Point Note::GetStemDownNW(const Doc *doc, int staffSize, bool isCueSize) const
 {
     int defaultYShift = doc->GetDrawingUnit(staffSize) / 4;
     if (isCueSize) defaultYShift = doc->GetCueSize(defaultYShift);
@@ -397,7 +398,8 @@ Point Note::GetStemDownNW(Doc *doc, int staffSize, bool isCueSize)
         p.x = doc->GetGlyphWidth(code, staffSize, isCueSize);
     }
 
-    Glyph *glyph = Resources::GetGlyph(code);
+    const Resources &resources = doc->GetResources();
+    const Glyph *glyph = resources.GetGlyph(code);
     assert(glyph);
 
     if (glyph->HasAnchor(SMUFL_stemDownNW)) {
@@ -409,7 +411,7 @@ Point Note::GetStemDownNW(Doc *doc, int staffSize, bool isCueSize)
     return p;
 }
 
-int Note::CalcStemLenInThirdUnits(Staff *staff, data_STEMDIRECTION stemDir)
+int Note::CalcStemLenInThirdUnits(const Staff *staff, data_STEMDIRECTION stemDir) const
 {
     assert(staff);
 
@@ -547,14 +549,14 @@ wchar_t Note::GetNoteheadGlyph(const int duration) const
     return SMUFL_E0A4_noteheadBlack;
 }
 
-bool Note::IsVisible()
+bool Note::IsVisible() const
 {
     if (this->HasVisible()) {
         return this->GetVisible() == BOOLEAN_true;
     }
     // if the chord doens't have it, see if all the children are invisible
     else if (this->GetParent() && this->GetParent()->Is(CHORD)) {
-        Chord *chord = vrv_cast<Chord *>(this->GetParent());
+        const Chord *chord = vrv_cast<const Chord *>(this->GetParent());
         assert(chord);
         return chord->IsVisible();
     }
@@ -789,10 +791,9 @@ void Note::DeferMIDINote(FunctorParams *functorParams, double shift, bool includ
     // Recursive call for chords
     Chord *chord = this->IsChordTone();
     if (chord && includeChordSiblings) {
-        const ArrayOfObjects *notes = chord->GetList(chord);
-        assert(notes);
+        const ListOfObjects &notes = chord->GetList(chord);
 
-        for (Object *obj : *notes) {
+        for (Object *obj : notes) {
             Note *note = vrv_cast<Note *>(obj);
             assert(note);
             note->DeferMIDINote(functorParams, shift, false);
@@ -1426,7 +1427,7 @@ int Note::GenerateMIDI(FunctorParams *functorParams)
     }
 
     // Skip cue notes when midiNoCue is activated
-    if (this->GetCue() == BOOLEAN_true && params->m_doc->GetOptions()->m_midiNoCue.GetValue()) {
+    if (this->GetCue() == BOOLEAN_true && params->m_cueExclusion) {
         return FUNCTOR_SIBLINGS;
     }
 
@@ -1538,6 +1539,13 @@ int Note::GenerateTimemap(FunctorParams *functorParams)
 {
     GenerateTimemapParams *params = vrv_params_cast<GenerateTimemapParams *>(functorParams);
     assert(params);
+
+    if (this->HasGrace()) return FUNCTOR_SIBLINGS;
+
+    // Skip cue notes when midiNoCue is activated
+    if (this->GetCue() == BOOLEAN_true && params->m_cueExclusion) {
+        return FUNCTOR_SIBLINGS;
+    }
 
     Note *note = vrv_cast<Note *>(this->ThisOrSameasAsLink());
     assert(note);

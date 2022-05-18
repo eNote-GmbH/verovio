@@ -198,7 +198,7 @@ bool Staff::DrawingIsVisible()
     return (staffDef->GetDrawingVisibility() != OPTIMIZATION_HIDDEN);
 }
 
-bool Staff::IsMensural()
+bool Staff::IsMensural() const
 {
     bool isMensural
         = (m_drawingNotationType == NOTATIONTYPE_mensural || m_drawingNotationType == NOTATIONTYPE_mensural_white
@@ -206,13 +206,13 @@ bool Staff::IsMensural()
     return isMensural;
 }
 
-bool Staff::IsNeume()
+bool Staff::IsNeume() const
 {
     bool isNeume = (m_drawingNotationType == NOTATIONTYPE_neume);
     return isNeume;
 }
 
-bool Staff::IsTablature()
+bool Staff::IsTablature() const
 {
     bool isTablature = (m_drawingNotationType == NOTATIONTYPE_tab || m_drawingNotationType == NOTATIONTYPE_tab_guitar
         || m_drawingNotationType == NOTATIONTYPE_tab_lute_italian
@@ -221,7 +221,7 @@ bool Staff::IsTablature()
     return isTablature;
 }
 
-bool Staff::IsTabWithStemsOutside()
+bool Staff::IsTabWithStemsOutside() const
 {
     if (!m_drawingStaffDef) return false;
     // Temporary implementation looking at staffDef@type
@@ -381,7 +381,7 @@ int Staff::GetNearestInterStaffPosition(int y, Doc *doc, data_STAFFREL place)
 
 void Staff::SetAlignmentBeamAdjustment(int adjust)
 {
-    m_staffAlignment->SetBeamAdjust(adjust);
+    if (m_staffAlignment) m_staffAlignment->SetBeamAdjust(adjust);
 }
 
 //----------------------------------------------------------------------------
@@ -647,7 +647,10 @@ int Staff::PrepareRpt(FunctorParams *functorParams)
 
     // This is happening only for the first staff element of the staff @n
     if (StaffDef *staffDef = params->m_doc->GetCurrentScoreDef()->GetStaffDef(this->GetN())) {
-        if ((staffDef->HasMultiNumber()) && (staffDef->GetMultiNumber() == BOOLEAN_false)) {
+        const bool hideNumber = (staffDef->GetMultiNumber() == BOOLEAN_false)
+            || ((staffDef->GetMultiNumber() != BOOLEAN_true)
+                && (params->m_doc->GetCurrentScoreDef()->GetMultiNumber() == BOOLEAN_false));
+        if (hideNumber) {
             // Set it just in case, but stopping the functor should do it for this staff @n
             params->m_multiNumber = BOOLEAN_false;
             return FUNCTOR_STOP;

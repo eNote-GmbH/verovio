@@ -59,7 +59,7 @@ const char *ZIP_SIGNATURE = "\x50\x4B\x03\x04";
 
 void SetDefaultResourcePath(const std::string &path)
 {
-    Resources::SetPath(path);
+    Resources::SetDefaultPath(path);
 }
 
 //----------------------------------------------------------------------------
@@ -85,7 +85,8 @@ Toolkit::Toolkit(bool initFont)
 #endif
 
     if (initFont) {
-        Resources::InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+        Resources &resources = m_doc.GetResourcesForModification();
+        resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
     }
 }
 
@@ -111,10 +112,32 @@ Toolkit::~Toolkit()
 #endif
 }
 
+std::string Toolkit::GetResourcePath() const
+{
+    return m_doc.GetResources().GetPath();
+}
+
 bool Toolkit::SetResourcePath(const std::string &path)
 {
-    Resources::SetPath(path);
-    return Resources::InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+    Resources &resources = m_doc.GetResourcesForModification();
+    resources.SetPath(path);
+    return resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+}
+
+bool Toolkit::SetMusicFont(const std::string &fontName)
+{
+    Resources &resources = m_doc.GetResourcesForModification();
+    const bool ok = resources.SetMusicFont(fontName);
+    if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
+    return ok;
+}
+
+bool Toolkit::SetTextFont(const std::string &fontName)
+{
+    Resources &resources = m_doc.GetResourcesForModification();
+    const bool ok = resources.SetTextFont(fontName);
+    if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
+    return ok;
 }
 
 bool Toolkit::SetScale(int scale)
@@ -272,11 +295,11 @@ FileFormat Toolkit::IdentifyInputFrom(const std::string &data)
 
 bool Toolkit::LoadFile(const std::string &filename)
 {
-    if (IsUTF16(filename)) {
-        return LoadUTF16File(filename);
+    if (this->IsUTF16(filename)) {
+        return this->LoadUTF16File(filename);
     }
-    if (IsZip(filename)) {
-        return LoadZipFile(filename);
+    if (this->IsZip(filename)) {
+        return this->LoadZipFile(filename);
     }
 
     std::ifstream in(filename.c_str());
@@ -295,7 +318,7 @@ bool Toolkit::LoadFile(const std::string &filename)
 
     m_doc.m_expansionMap.Reset();
 
-    return LoadData(content);
+    return this->LoadData(content);
 }
 
 bool Toolkit::IsUTF16(const std::string &filename)
@@ -350,7 +373,7 @@ bool Toolkit::LoadUTF16File(const std::string &filename)
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
     std::string utf8line = convert.to_bytes(u16data);
 
-    return LoadData(utf8line);
+    return this->LoadData(utf8line);
 }
 
 bool Toolkit::IsZip(const std::string &filename)
@@ -390,7 +413,7 @@ bool Toolkit::LoadZipFile(const std::string &filename)
         bytes.push_back(buffer);
     }
 
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
@@ -415,7 +438,7 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
 
     if (!filename.empty()) {
         LogMessage("Loading file '%s' in the archive", filename.c_str());
-        return LoadData(file.read(filename));
+        return this->LoadData(file.read(filename));
     }
     else {
         LogError("No file to load found in the archive");
@@ -430,13 +453,13 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
 bool Toolkit::LoadZipDataBase64(const std::string &data)
 {
     std::vector<unsigned char> bytes = Base64Decode(data);
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadZipDataBuffer(const unsigned char *data, int length)
 {
     std::vector<unsigned char> bytes(data, data + length);
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadData(const std::string &data)
@@ -451,7 +474,7 @@ bool Toolkit::LoadData(const std::string &data)
     }
 
 #ifndef NO_HUMDRUM_SUPPORT
-    ClearHumdrumBuffer();
+    this->ClearHumdrumBuffer();
 #endif
 
     auto inputFormat = m_inputFrom;
@@ -945,7 +968,7 @@ std::string Toolkit::GetAvailableOptions() const
 
     grps << "0-base" << m_options->GetBaseOptGrp();
 
-    std::vector<OptionGrp *> *optionGrps = m_options->GetGrps();
+    const std::vector<OptionGrp *> *optionGrps = m_options->GetGrps();
     for (auto const &optionGrp : *optionGrps) {
 
         jsonxx::Object grp;
@@ -1069,12 +1092,8 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     m_options->Sync();
 
     // Reset fonts
-    if (!Resources::SetMusicFont(m_options->m_font.GetValue())) {
-        LogWarning("Font '%s' could not be loaded", m_options->m_font.GetValue().c_str());
-    }
-    if (!Resources::SetTextFont(m_options->m_textFont.GetValue())) {
-        LogWarning("Font '%s' could not be loaded", m_options->m_textFont.GetValue().c_str());
-    }
+    this->SetMusicFont(m_options->m_font.GetValue());
+    this->SetTextFont(m_options->m_textFont.GetValue());
 
     return true;
 }
@@ -1104,14 +1123,10 @@ bool Toolkit::SetOption(const std::string &option, const std::string &value)
     // Reset fonts if necessary
     if (ok) {
         if (opt == &m_options->m_font) {
-            if (!Resources::SetMusicFont(value)) {
-                LogWarning("Font '%s' could not be loaded", value.c_str());
-            }
+            this->SetMusicFont(value);
         }
         else if (opt == &m_options->m_textFont) {
-            if (!Resources::SetTextFont(value)) {
-                LogWarning("Font '%s' could not be loaded", value.c_str());
-            }
+            this->SetTextFont(value);
         }
     }
 
@@ -1123,8 +1138,9 @@ void Toolkit::ResetOptions()
     std::for_each(m_options->GetItems()->begin(), m_options->GetItems()->end(),
         [](const MapOfStrOptions::value_type &opt) { opt.second->Reset(); });
 
-    // Set the (default) font
-    Resources::SetMusicFont(m_options->m_font.GetValue());
+    // Set the (default) fonts
+    this->SetMusicFont(m_options->m_font.GetValue());
+    this->SetTextFont(m_options->m_textFont.GetValue());
 }
 
 std::string Toolkit::GetElementAttr(const std::string &xmlId)
@@ -1353,6 +1369,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     // Create the SVG object, h & w come from the system
     // We will need to set the size of the page after having drawn it depending on the options
     SvgDeviceContext svg;
+    svg.SetResources(&m_doc.GetResources());
     svg.SetDefaultFontName(m_options->m_textFont.GetValue());
 
     int indent = (m_options->m_outputIndentTab.GetValue()) ? -1 : m_options->m_outputIndent.GetValue();
@@ -1386,7 +1403,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     svg.SetAdditionalAttributes(m_options->m_svgAdditionalAttribute.GetValue());
 
     // render the page
-    RenderToDeviceContext(pageNo, &svg);
+    this->RenderToDeviceContext(pageNo, &svg);
 
     std::string out_str = svg.GetStringSVG(xmlDeclaration);
     if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);
@@ -1397,7 +1414,7 @@ bool Toolkit::RenderToSVGFile(const std::string &filename, int pageNo)
 {
     this->ResetLogBuffer();
 
-    std::string output = RenderToSVG(pageNo, true);
+    std::string output = this->RenderToSVG(pageNo, true);
 
     std::ofstream outfile;
     outfile.open(filename.c_str());
@@ -1789,7 +1806,7 @@ std::string Toolkit::GetMIDIValuesForElement(const std::string &xmlId)
 
 void Toolkit::SetHumdrumBuffer(const char *data)
 {
-    ClearHumdrumBuffer();
+    this->ClearHumdrumBuffer();
     size_t size = strlen(data) + 1;
     m_humdrumBuffer = (char *)malloc(size);
     if (!m_humdrumBuffer) {
@@ -1852,7 +1869,7 @@ const char *Toolkit::GetCString()
     }
 }
 
-void Toolkit::ClearHumdrumBuffer(void)
+void Toolkit::ClearHumdrumBuffer()
 {
 #ifndef NO_HUMDRUM_SUPPORT
     if (m_humdrumBuffer) {
