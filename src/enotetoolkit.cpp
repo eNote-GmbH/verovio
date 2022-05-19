@@ -16,6 +16,7 @@
 #include "iomei.h"
 #include "measure.h"
 #include "page.h"
+#include "pages.h"
 #include "pedal.h"
 #include "slur.h"
 #include "staff.h"
@@ -73,6 +74,65 @@ std::vector<Page *> EnoteToolkit::FindAllPages()
     std::transform(objects.cbegin(), objects.cend(), std::back_inserter(pages),
         [](Object *object) { return vrv_cast<Page *>(object); });
     return pages;
+}
+
+std::optional<int> EnoteToolkit::FindPageIndex(Page *page)
+{
+    Pages *pages = m_doc.GetPages();
+    if (pages) {
+        const int index = pages->GetChildIndex(page);
+        if (index >= 0) return index;
+    }
+    return std::nullopt;
+}
+
+std::set<int> EnoteToolkit::FindPageIndices(const std::string &uuid)
+{
+    std::set<int> indices;
+    Object *element = this->FindElement(uuid, std::nullopt);
+    if (element) {
+        // Determine the first and last page of the element
+        Page *firstPage = vrv_cast<Page *>(element->GetFirstAncestor(PAGE));
+        Page *lastPage = firstPage;
+        TimeSpanningInterface *timespanningInterface = element->GetTimeSpanningInterface();
+        if (timespanningInterface) {
+            Object *start = timespanningInterface->GetStart();
+            Object *end = timespanningInterface->GetEnd();
+            if (start && end) {
+                firstPage = vrv_cast<Page *>(start->GetFirstAncestor(PAGE));
+                lastPage = vrv_cast<Page *>(end->GetFirstAncestor(PAGE));
+            }
+        }
+        else {
+            TimePointInterface *timePointInterface = element->GetTimePointInterface();
+            if (timePointInterface) {
+                Object *start = timePointInterface->GetStart();
+                if (start) {
+                    firstPage = vrv_cast<Page *>(start->GetFirstAncestor(PAGE));
+                    lastPage = firstPage;
+                }
+            }
+        }
+        // Fill the page indices
+        const auto firstIndex = this->FindPageIndex(firstPage);
+        const auto lastIndex = this->FindPageIndex(lastPage);
+        if (firstIndex && lastIndex) {
+            for (int index = *firstIndex; index <= *lastIndex; ++index) {
+                indices.insert(index);
+            }
+        }
+    }
+    return indices;
+}
+
+std::set<int> EnoteToolkit::FindPageIndices(const std::list<std::string> &uuids)
+{
+    std::set<int> indices;
+    for (const auto &uuid : uuids) {
+        const std::set<int> elementIndices = this->FindPageIndices(uuid);
+        indices.insert(elementIndices.begin(), elementIndices.end());
+    }
+    return indices;
 }
 
 Object *EnoteToolkit::FindElement(const std::string &elementUuid, const std::optional<std::string> &measureUuid)

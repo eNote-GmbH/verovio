@@ -64,6 +64,9 @@ public:
     Measure *FindMeasureByN(const std::string &n);
     std::vector<Measure *> FindAllMeasures();
     std::vector<Page *> FindAllPages();
+    std::optional<int> FindPageIndex(Page *page);
+    std::set<int> FindPageIndices(const std::string &uuid);
+    std::set<int> FindPageIndices(const std::list<std::string> &uuids);
     Object *FindElement(const std::string &elementUuid, const std::optional<std::string> &measureUuid);
     Object *FindElementStartingInMeasure(const std::string &startUuid, const std::string &measureUuid);
     ///@}
