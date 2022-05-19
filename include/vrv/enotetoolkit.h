@@ -64,6 +64,7 @@ public:
     Measure *FindMeasureByN(const std::string &n);
     std::vector<Measure *> FindAllMeasures();
     std::vector<Page *> FindAllPages();
+    // All page indices are 1-based
     std::optional<int> FindPageIndex(Page *page);
     std::set<int> FindPageIndices(const std::string &uuid);
     std::set<int> FindPageIndices(const std::list<std::string> &uuids);

@@ -81,7 +81,7 @@ std::optional<int> EnoteToolkit::FindPageIndex(Page *page)
     Pages *pages = m_doc.GetPages();
     if (pages) {
         const int index = pages->GetChildIndex(page);
-        if (index >= 0) return index;
+        if (index >= 0) return index + 1;
     }
     return std::nullopt;
 }
