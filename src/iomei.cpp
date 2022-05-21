@@ -595,8 +595,10 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
         this->WriteHalfmRpt(m_currentNode, vrv_cast<HalfmRpt *>(object));
     }
     else if (object->Is(KEYACCID)) {
-        m_currentNode = m_currentNode.append_child("keyAccid");
-        this->WriteKeyAccid(m_currentNode, vrv_cast<KeyAccid *>(object));
+        if (!object->IsAttribute()) {
+            m_currentNode = m_currentNode.append_child("keyAccid");
+            this->WriteKeyAccid(m_currentNode, vrv_cast<KeyAccid *>(object));
+        }
     }
     else if (object->Is(KEYSIG)) {
         if (!object->IsAttribute()) m_currentNode = m_currentNode.append_child("keySig");
@@ -2077,6 +2079,8 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
     accid->WriteColor(currentNode);
     accid->WriteEnclosingChars(currentNode);
     accid->WriteExtSym(currentNode);
+    accid->WritePlacementOnStaff(currentNode);
+    accid->WritePlacementRelEvent(currentNode);
 }
 
 void MEIOutput::WriteArtic(pugi::xml_node currentNode, Artic *artic)
@@ -2181,6 +2185,7 @@ void MEIOutput::WriteClef(pugi::xml_node currentNode, Clef *clef)
     clef->WriteExtSym(currentNode);
     clef->WriteLineLoc(currentNode);
     clef->WriteOctaveDisplacement(currentNode);
+    clef->WriteStaffIdent(currentNode);
     clef->WriteVisibility(currentNode);
 }
 
@@ -2239,6 +2244,7 @@ void MEIOutput::WriteKeyAccid(pugi::xml_node currentNode, KeyAccid *keyAccid)
 
     this->WriteLayerElement(currentNode, keyAccid);
     this->WritePitchInterface(currentNode, keyAccid);
+    this->WritePositionInterface(currentNode, keyAccid);
     keyAccid->WriteAccidental(currentNode);
     keyAccid->WriteColor(currentNode);
     keyAccid->WriteEnclosingChars(currentNode);
@@ -5725,6 +5731,8 @@ bool MEIInput::ReadAccid(Object *parent, pugi::xml_node accid)
     vrvAccid->ReadColor(accid);
     vrvAccid->ReadEnclosingChars(accid);
     vrvAccid->ReadExtSym(accid);
+    vrvAccid->ReadPlacementOnStaff(accid);
+    vrvAccid->ReadPlacementRelEvent(accid);
 
     parent->AddChild(vrvAccid);
     this->ReadUnsupportedAttr(accid, vrvAccid);
@@ -5865,6 +5873,7 @@ bool MEIInput::ReadClef(Object *parent, pugi::xml_node clef)
     vrvClef->ReadExtSym(clef);
     vrvClef->ReadLineLoc(clef);
     vrvClef->ReadOctaveDisplacement(clef);
+    vrvClef->ReadStaffIdent(clef);
     vrvClef->ReadVisibility(clef);
 
     parent->AddChild(vrvClef);
@@ -5968,6 +5977,7 @@ bool MEIInput::ReadKeyAccid(Object *parent, pugi::xml_node keyAccid)
     this->ReadLayerElement(keyAccid, vrvKeyAccid);
 
     this->ReadPitchInterface(keyAccid, vrvKeyAccid);
+    this->ReadPositionInterface(keyAccid, vrvKeyAccid);
     vrvKeyAccid->ReadAccidental(keyAccid);
     vrvKeyAccid->ReadColor(keyAccid);
     vrvKeyAccid->ReadEnclosingChars(keyAccid);

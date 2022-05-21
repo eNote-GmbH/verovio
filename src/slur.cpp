@@ -173,6 +173,22 @@ Staff *Slur::GetBoundaryCrossStaff()
     }
 }
 
+void Slur::CalcSpannedElements(FloatingCurvePositioner *curve)
+{
+    Staff *staff = dynamic_cast<Staff *>(curve->GetObjectY());
+    if (!staff) return;
+
+    // Determine x1 and x2
+    Point points[4];
+    curve->GetPoints(points);
+    const int x1 = points[0].x;
+    const int x2 = points[3].x;
+
+    // Collect, filter and store the spanned elements
+    const SpannedElements spannedElements = this->CollectSpannedElements(staff, x1, x2);
+    this->AddSpannedElements(curve, spannedElements, staff, x1, x2);
+}
+
 SpannedElements Slur::CollectSpannedElements(Staff *staff, int xMin, int xMax)
 {
     // Decide whether we search the whole parent system or just one measure which is much faster
@@ -352,6 +368,51 @@ void Slur::AddSpannedElements(
     }
 }
 
+void Slur::AddPositionerToArticulations(FloatingCurvePositioner *curve)
+{
+    LayerElement *start = this->GetStart();
+    LayerElement *end = this->GetEnd();
+    if (!start || !end) return;
+
+    const char spanningType = curve->GetSpanningType();
+    const curvature_CURVEDIR curveDir = this->CalcDrawingCurveDir(spanningType);
+
+    // the normal case or start
+    if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_START)) {
+        ListOfObjects artics = start->FindAllDescendantsByType(ARTIC);
+        // Then the @n of each first staffDef
+        for (auto &object : artics) {
+            Artic *artic = vrv_cast<Artic *>(object);
+            assert(artic);
+            if (artic->IsOutsideArtic()) {
+                if ((artic->GetPlace() == STAFFREL_above) && (curveDir == curvature_CURVEDIR_above)) {
+                    artic->AddSlurPositioner(curve, true);
+                }
+                else if ((artic->GetPlace() == STAFFREL_below) && (curveDir == curvature_CURVEDIR_below)) {
+                    artic->AddSlurPositioner(curve, true);
+                }
+            }
+        }
+    }
+    // normal case or end
+    if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_END)) {
+        ListOfObjects artics = end->FindAllDescendantsByType(ARTIC);
+        // Then the @n of each first staffDef
+        for (auto &object : artics) {
+            Artic *artic = vrv_cast<Artic *>(object);
+            assert(artic);
+            if (artic->IsOutsideArtic()) {
+                if ((artic->GetPlace() == STAFFREL_above) && (curveDir == curvature_CURVEDIR_above)) {
+                    artic->AddSlurPositioner(curve, false);
+                }
+                else if ((artic->GetPlace() == STAFFREL_below) && (curveDir == curvature_CURVEDIR_below)) {
+                    artic->AddSlurPositioner(curve, false);
+                }
+            }
+        }
+    }
+}
+
 Staff *Slur::CalculateExtremalStaff(Staff *staff, int xMin, int xMax)
 {
     Staff *extremalStaff = staff;
@@ -436,15 +497,34 @@ void Slur::AdjustSlur(Doc *doc, FloatingCurvePositioner *curve, Staff *staff)
 
     const int unit = doc->GetDrawingUnit(100);
     const int margin = doc->GetOptions()->m_slurMargin.GetValue() * unit;
+    const double flexibility = doc->GetOptions()->m_slurEndpointFlexibility.GetValue();
+    const double symmetry = doc->GetOptions()->m_slurSymmetry.GetValue();
 
     // STEP 1: Filter spanned elements and discard certain bounding boxes even though they collide
     this->FilterSpannedElements(curve, bezier, margin);
 
-    // STEP 2: Calculate the vertical adjustment of end points. This shifts the slur vertically.
+    // STEP 2: Detect collisions near the endpoints and switch to secondary endpoints if necessary
+    NearEndCollision nearEndCollision = this->DetectCollisionsNearEnd(curve, bezier, margin);
+    this->CalcInitialCurve(doc, curve, &nearEndCollision);
+    if (nearEndCollision.endPointsAdjusted) {
+        curve->GetPoints(points);
+        bezier.p1 = points[0];
+        bezier.c1 = points[1];
+        bezier.c2 = points[2];
+        bezier.p2 = points[3];
+        bezier.UpdateControlPointParams();
+        this->CalcSpannedElements(curve);
+        this->FilterSpannedElements(curve, bezier, margin);
+    }
+    else {
+        curve->UpdatePoints(bezier);
+    }
+
+    // STEP 3: Calculate the vertical adjustment of endpoints. This shifts the slur vertically.
     // Only collisions near the endpoints are taken into account.
     int endPointShiftLeft = 0;
     int endPointShiftRight = 0;
-    std::tie(endPointShiftLeft, endPointShiftRight) = this->CalcEndPointShift(curve, bezier, margin);
+    std::tie(endPointShiftLeft, endPointShiftRight) = this->CalcEndPointShift(curve, bezier, flexibility, margin);
     if ((endPointShiftLeft != 0) || (endPointShiftRight != 0)) {
         const int signLeft = bezier.IsLeftControlAbove() ? 1 : -1;
         const int signRight = bezier.IsRightControlAbove() ? 1 : -1;
@@ -466,27 +546,30 @@ void Slur::AdjustSlur(Doc *doc, FloatingCurvePositioner *curve, Staff *staff)
         return;
     }
 
-    // STEP 3: Calculate the horizontal offset of the control points.
+    // STEP 4: Calculate the horizontal offset of the control points.
     // The idea is to shift control points to the outside if there is an obstacle in the vicinity of the corresponding
     // endpoint. For C1 we consider the largest angle <)BP1P2 where B is a colliding left bounding box corner and choose
     // C1 in this direction. Similar for C2.
-    bool ok = false;
-    int controlPointOffsetLeft = 0;
-    int controlPointOffsetRight = 0;
-    std::tie(ok, controlPointOffsetLeft, controlPointOffsetRight) = this->CalcControlPointOffset(curve, bezier, margin);
-    if (ok) {
-        bezier.SetLeftControlOffset(controlPointOffsetLeft);
-        bezier.SetRightControlOffset(controlPointOffsetRight);
-        bezier.UpdateControlPoints();
-        curve->UpdatePoints(bezier);
+    if (this->AllowControlOffsetAdjustment(bezier, symmetry, unit)) {
+        bool ok = false;
+        int controlPointOffsetLeft = 0;
+        int controlPointOffsetRight = 0;
+        std::tie(ok, controlPointOffsetLeft, controlPointOffsetRight)
+            = this->CalcControlPointOffset(curve, bezier, margin);
+        if (ok) {
+            bezier.SetLeftControlOffset(controlPointOffsetLeft);
+            bezier.SetRightControlOffset(controlPointOffsetRight);
+            bezier.UpdateControlPoints();
+            curve->UpdatePoints(bezier);
+        }
     }
 
-    // STEP 4: Calculate the vertical shift of the control points.
+    // STEP 5: Calculate the vertical shift of the control points.
     // For each colliding bounding box we formulate a constraint ax + by >= c
     // where x, y denote the vertical adjustments of the control points and c is the size of the collision.
     // The coefficients a, b are calculated from the Bezier curve equation.
     // After collecting all constraints we calculate a solution.
-    const ControlPointAdjustment adjustment = this->CalcControlPointVerticalShift(curve, bezier, margin);
+    const ControlPointAdjustment adjustment = this->CalcControlPointVerticalShift(curve, bezier, symmetry, margin);
     const int leftSign = (bezier.IsLeftControlAbove() == adjustment.moveUpwards) ? 1 : -1;
     bezier.SetLeftControlHeight(bezier.GetLeftControlHeight() + leftSign * adjustment.leftShift);
     const int rightSign = (bezier.IsRightControlAbove() == adjustment.moveUpwards) ? 1 : -1;
@@ -495,7 +578,7 @@ void Slur::AdjustSlur(Doc *doc, FloatingCurvePositioner *curve, Staff *staff)
     curve->UpdatePoints(bezier);
     curve->SetRequestedStaffSpace(adjustment.requestedStaffSpace);
 
-    // STEP 5: Adjust the slur shape
+    // STEP 6: Adjust the slur shape
     // Through the control point adjustments in step 3 and 4 it can happen that the slur looses its desired shape.
     // We correct the shape if the slur is too flat or not convex.
     if (curve->GetDir() != curvature_CURVEDIR_mixed) {
@@ -539,8 +622,52 @@ void Slur::FilterSpannedElements(FloatingCurvePositioner *curve, const BezierCur
     }
 }
 
+NearEndCollision Slur::DetectCollisionsNearEnd(
+    FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, int margin)
+{
+    NearEndCollision nearEndCollision({ 0.0, 0.0, false });
+    if (bezierCurve.p1.x >= bezierCurve.p2.x) return nearEndCollision;
+
+    const ArrayOfCurveSpannedElements *spannedElements = curve->GetSpannedElements();
+    for (auto spannedElement : *spannedElements) {
+        if (spannedElement->m_discarded) {
+            continue;
+        }
+
+        bool discard = false;
+        int intersectionLeft, intersectionRight;
+        std::tie(intersectionLeft, intersectionRight) = curve->CalcDirectionalLeftRightAdjustment(
+            spannedElement->m_boundingBox, spannedElement->m_isBelow, discard, margin);
+
+        if ((intersectionLeft > 0) || (intersectionRight > 0)) {
+            Point points[4];
+            points[0] = bezierCurve.p1;
+            points[1] = bezierCurve.c1;
+            points[2] = bezierCurve.c2;
+            points[3] = bezierCurve.p2;
+
+            // Adjust the collision metrics
+            const int xLeft = std::max(bezierCurve.p1.x, spannedElement->m_boundingBox->GetSelfLeft());
+            Point pLeft(xLeft, BoundingBox::CalcBezierAtPosition(points, xLeft));
+            double distStart = std::max(BoundingBox::CalcDistance(bezierCurve.p1, pLeft), 1.0);
+            double distEnd = std::max(BoundingBox::CalcDistance(bezierCurve.p2, pLeft), 1.0);
+            nearEndCollision.metricAtStart = std::max(intersectionLeft / distStart, nearEndCollision.metricAtStart);
+            nearEndCollision.metricAtEnd = std::max(intersectionLeft / distEnd, nearEndCollision.metricAtEnd);
+
+            const int xRight = std::min(bezierCurve.p2.x, spannedElement->m_boundingBox->GetSelfRight());
+            Point pRight(xRight, BoundingBox::CalcBezierAtPosition(points, xRight));
+            distStart = std::max(BoundingBox::CalcDistance(bezierCurve.p1, pRight), 1.0);
+            distEnd = std::max(BoundingBox::CalcDistance(bezierCurve.p2, pRight), 1.0);
+            nearEndCollision.metricAtStart = std::max(intersectionRight / distStart, nearEndCollision.metricAtStart);
+            nearEndCollision.metricAtEnd = std::max(intersectionRight / distEnd, nearEndCollision.metricAtEnd);
+        }
+    }
+
+    return nearEndCollision;
+}
+
 std::pair<int, int> Slur::CalcEndPointShift(
-    FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, const int margin)
+    FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, const double flexibility, const int margin)
 {
     if (bezierCurve.p1.x >= bezierCurve.p2.x) return { 0, 0 };
 
@@ -570,39 +697,53 @@ std::pair<int, int> Slur::CalcEndPointShift(
             // Now apply the intersections on the left and right hand side of the bounding box
             const int xLeft = std::max(bezierCurve.p1.x, spannedElement->m_boundingBox->GetSelfLeft());
             const float distanceRatioLeft = float(xLeft - bezierCurve.p1.x) / float(dist);
-            this->ShiftEndPoints(shiftLeft, shiftRight, distanceRatioLeft, intersectionLeft, spannedElement->m_isBelow);
+            this->ShiftEndPoints(
+                shiftLeft, shiftRight, distanceRatioLeft, intersectionLeft, flexibility, spannedElement->m_isBelow);
 
             const int xRight = std::min(bezierCurve.p2.x, spannedElement->m_boundingBox->GetSelfRight());
             const float distanceRatioRight = float(xRight - bezierCurve.p1.x) / float(dist);
             this->ShiftEndPoints(
-                shiftLeft, shiftRight, distanceRatioRight, intersectionRight, spannedElement->m_isBelow);
+                shiftLeft, shiftRight, distanceRatioRight, intersectionRight, flexibility, spannedElement->m_isBelow);
         }
     }
 
     return { shiftLeft, shiftRight };
 }
 
-void Slur::ShiftEndPoints(int &shiftLeft, int &shiftRight, double ratio, int intersection, bool isBelow) const
+void Slur::ShiftEndPoints(
+    int &shiftLeft, int &shiftRight, double ratio, int intersection, double flexibility, bool isBelow) const
 {
     // Filter collisions near the endpoints
-    // Collisions with 0.15 <= ratio <= 0.85 do not contribute to shifts
+    // Collisions with ratio beyond the partialShiftRadius do not contribute to shifts
     // They are compensated later by shifting the control points
-    if ((ratio < 0.15) && (this->HasEndpointAboveStart() == isBelow)) {
-        if (ratio > 0.05) {
-            // For 0.05 <= ratio <= 0.15 collisions only partially contribute to shifts
+    const double fullShiftRadius = 0.05 + flexibility * 0.15;
+    const double partialShiftRadius = fullShiftRadius * 3.0;
+
+    if ((ratio < partialShiftRadius) && (this->HasEndpointAboveStart() == isBelow)) {
+        if (ratio > fullShiftRadius) {
+            // Collisions here only partially contribute to shifts
             // We multiply with a function that interpolates between 1 and 0
-            intersection *= pow(1.5 - 10.0 * ratio, 2.0);
+            intersection *= this->CalcQuadraticInterpolation(partialShiftRadius, fullShiftRadius, ratio);
         }
         shiftLeft = std::max(shiftLeft, intersection);
     }
-    else if ((ratio > 0.85) && (this->HasEndpointAboveEnd() == isBelow)) {
-        if (ratio < 0.95) {
-            // For 0.85 <= ratio <= 0.95 collisions only partially contribute to shifts
+
+    if ((ratio > 1.0 - partialShiftRadius) && (this->HasEndpointAboveEnd() == isBelow)) {
+        if (ratio < 1.0 - fullShiftRadius) {
+            // Collisions here only partially contribute to shifts
             // We multiply with a function that interpolates between 0 and 1
-            intersection *= pow(10.0 * ratio - 8.5, 2.0);
+            intersection *= this->CalcQuadraticInterpolation(1.0 - partialShiftRadius, 1.0 - fullShiftRadius, ratio);
         }
         shiftRight = std::max(shiftRight, intersection);
     }
+}
+
+double Slur::CalcQuadraticInterpolation(double zeroAt, double oneAt, double arg) const
+{
+    assert(zeroAt != oneAt);
+    const double a = 1.0 / (oneAt - zeroAt);
+    const double b = zeroAt / (zeroAt - oneAt);
+    return pow(a * arg + b, 2.0);
 }
 
 void Slur::AdjustSlurFromBulge(FloatingCurvePositioner *curve, BezierCurve &bezierCurve, const int unit)
@@ -667,6 +808,13 @@ void Slur::AdjustSlurFromBulge(FloatingCurvePositioner *curve, BezierCurve &bezi
 
     // Since we are going to redraw it, reset its bounding box
     curve->BoundingBox::ResetBoundingBox();
+}
+
+bool Slur::AllowControlOffsetAdjustment(const BezierCurve &bezierCurve, double symmetry, int unit) const
+{
+    const double distance = BoundingBox::CalcDistance(bezierCurve.p1, bezierCurve.p2);
+
+    return (distance > symmetry * 40 * unit);
 }
 
 std::tuple<bool, int, int> Slur::CalcControlPointOffset(
@@ -736,7 +884,7 @@ std::tuple<bool, int, int> Slur::CalcControlPointOffset(
 }
 
 ControlPointAdjustment Slur::CalcControlPointVerticalShift(
-    FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, int margin)
+    FloatingCurvePositioner *curve, const BezierCurve &bezierCurve, double symmetry, int margin)
 {
     ControlPointAdjustment adjustment{ 0, 0, false, 0 };
     if (bezierCurve.p1.x >= bezierCurve.p2.x) return adjustment;
@@ -803,11 +951,13 @@ ControlPointAdjustment Slur::CalcControlPointVerticalShift(
 
     // Solve the constraints and calculate the adjustment
     if (maxIntersectionAbove > maxIntersectionBelow) {
-        std::tie(adjustment.leftShift, adjustment.rightShift) = this->SolveControlPointConstraints(aboveConstraints);
+        std::tie(adjustment.leftShift, adjustment.rightShift)
+            = this->SolveControlPointConstraints(aboveConstraints, symmetry);
         adjustment.moveUpwards = false;
     }
     else {
-        std::tie(adjustment.leftShift, adjustment.rightShift) = this->SolveControlPointConstraints(belowConstraints);
+        std::tie(adjustment.leftShift, adjustment.rightShift)
+            = this->SolveControlPointConstraints(belowConstraints, symmetry);
         adjustment.moveUpwards = true;
     }
 
@@ -826,7 +976,8 @@ ControlPointAdjustment Slur::CalcControlPointVerticalShift(
     return adjustment;
 }
 
-std::pair<int, int> Slur::SolveControlPointConstraints(const std::list<ControlPointConstraint> &constraints)
+std::pair<int, int> Slur::SolveControlPointConstraints(
+    const std::list<ControlPointConstraint> &constraints, double symmetry)
 {
     if (constraints.empty()) return { 0, 0 };
 
@@ -841,7 +992,11 @@ std::pair<int, int> Slur::SolveControlPointConstraints(const std::list<ControlPo
         weightedAngleSum += weight * atan(constraint.b / constraint.a);
         weightSum += weight;
     }
-    const double slope = tan(weightedAngleSum / weightSum);
+    // Depending on symmetry we want the angle to be near PI/4
+    double angle = weightedAngleSum / weightSum;
+    angle = std::max(symmetry * M_PI / 4.0, angle);
+    angle = std::min((2.0 - symmetry) * M_PI / 4.0, angle);
+    const double slope = tan(angle);
 
     // Now follow the line with the averaged slope until we have hit all halfplanes.
     // For each constraint we must solve: slope * x = c/b - a/b * x
@@ -1061,8 +1216,8 @@ curvature_CURVEDIR Slur::GetPreferredCurveDirection(
     return drawingCurveDir;
 }
 
-std::pair<Point, Point> Slur::AdjustCoordinates(
-    Doc *doc, Staff *staff, std::pair<Point, Point> points, char spanningType)
+std::pair<Point, Point> Slur::CalcEndPoints(Doc *doc, Staff *staff, NearEndCollision *nearEndCollision, int x1, int x2,
+    curvature_CURVEDIR drawingCurveDir, char spanningType)
 {
     StemmedDrawingInterface *startStemDrawInterface = this->GetStart()->GetStemmedDrawingInterface();
     StemmedDrawingInterface *endStemDrawInterface = this->GetEnd()->GetStemmedDrawingInterface();
@@ -1117,8 +1272,8 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
 
     const PortatoSlurType portatoSlurType = this->IsPortatoSlur(doc, startNote, startChord);
 
-    int x1, x2, y1, y2;
-    std::tie(x1, x2, y1, y2) = std::tie(points.first.x, points.second.x, points.first.y, points.second.y);
+    int y1 = staff->GetDrawingY();
+    int y2 = y1;
 
     bool isShortSlur = false;
     if (x2 - x1 < doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize)) isShortSlur = true;
@@ -1167,12 +1322,20 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
             }
             // d(^)
             else {
-                // put it on the side, move it right
-                if (startStemLen != 0) x1 += unit * 2;
-                if (startChord)
-                    y1 = yChordMax + unit * 3;
-                else
-                    y1 = start->GetDrawingY() + unit * 3;
+                if (nearEndCollision && nearEndCollision->metricAtStart > 0.3) {
+                    // Secondary endpoint on top
+                    y1 = start->GetDrawingTop(doc, staff->m_drawingStaffSize);
+                    x1 += startRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                    nearEndCollision->endPointsAdjusted = true;
+                }
+                else {
+                    // Primary endpoint on the side, move it right
+                    if (startStemLen != 0) x1 += unit * 2;
+                    if (startChord)
+                        y1 = yChordMax + unit * 3;
+                    else
+                        y1 = start->GetDrawingY() + unit * 3;
+                }
             }
         }
         // slur is down
@@ -1217,12 +1380,20 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
             }
             // P(_)
             else {
-                // put it on the side, but no need to move it right
-                if (startChord) {
-                    y1 = yChordMin - unit * 3;
+                if (nearEndCollision && nearEndCollision->metricAtStart > 0.3) {
+                    // Secondary endpoint on bottom
+                    y1 = start->GetDrawingBottom(doc, staff->m_drawingStaffSize);
+                    x1 -= startRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                    nearEndCollision->endPointsAdjusted = true;
                 }
                 else {
-                    y1 = start->GetDrawingY() - unit * 3;
+                    // Primary endpoint on the side, but no need to move it right
+                    if (startChord) {
+                        y1 = yChordMin - unit * 3;
+                    }
+                    else {
+                        y1 = start->GetDrawingY() - unit * 3;
+                    }
                 }
             }
         }
@@ -1277,12 +1448,20 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
             }
             // (^)d
             else {
-                // put it on the side, no need to move it left
-                if (endChord) {
-                    y2 = yChordMax + unit * 3;
+                if (nearEndCollision && nearEndCollision->metricAtEnd > 0.3) {
+                    // Secondary endpoint on top
+                    y2 = end->GetDrawingTop(doc, staff->m_drawingStaffSize);
+                    x2 += endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                    nearEndCollision->endPointsAdjusted = true;
                 }
                 else {
-                    y2 = end->GetDrawingY() + unit * 3;
+                    // Primary endpoint on the side, no need to move it left
+                    if (endChord) {
+                        y2 = yChordMax + unit * 3;
+                    }
+                    else {
+                        y2 = end->GetDrawingY() + unit * 3;
+                    }
                 }
             }
         }
@@ -1329,13 +1508,21 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
             }
             // (_)P
             else {
-                // put it on the side, move it left
-                if (endStemLen != 0) x2 -= unit * 2;
-                if (endChord) {
-                    y2 = yChordMin - unit * 3;
+                if (nearEndCollision && nearEndCollision->metricAtEnd > 0.3) {
+                    // Secondary endpoint on bottom
+                    y2 = end->GetDrawingBottom(doc, staff->m_drawingStaffSize);
+                    x2 -= endRadius - doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
+                    nearEndCollision->endPointsAdjusted = true;
                 }
                 else {
-                    y2 = end->GetDrawingY() - unit * 3;
+                    // Primary endpoint on the side, move it left
+                    if (endStemLen != 0) x2 -= unit * 2;
+                    if (endChord) {
+                        y2 = yChordMin - unit * 3;
+                    }
+                    else {
+                        y2 = end->GetDrawingY() - unit * 3;
+                    }
                 }
             }
         }
@@ -1411,6 +1598,17 @@ std::pair<Point, Point> Slur::AdjustCoordinates(
         y2 = y1;
     }
 
+    // Final vertical adjustment based on drawing curve direction
+    int sign = (drawingCurveDir == curvature_CURVEDIR_above) ? 1 : -1;
+    if (drawingCurveDir == curvature_CURVEDIR_mixed) {
+        sign = this->HasEndpointAboveStart() ? 1 : -1;
+    }
+    y1 += 1.25 * sign * unit;
+    if (drawingCurveDir == curvature_CURVEDIR_mixed) {
+        sign = this->HasEndpointAboveEnd() ? 1 : -1;
+    }
+    y2 += 1.25 * sign * unit;
+
     return std::make_pair(Point(x1, y1), Point(x2, y2));
 }
 
@@ -1479,6 +1677,64 @@ PortatoSlurType Slur::IsPortatoSlur(Doc *doc, Note *startNote, Chord *startChord
         }
     }
     return type;
+}
+
+void Slur::CalcInitialCurve(Doc *doc, FloatingCurvePositioner *curve, NearEndCollision *nearEndCollision)
+{
+    LayerElement *start = this->GetStart();
+    LayerElement *end = this->GetEnd();
+    if (!start || !end) return;
+
+    Staff *staff = dynamic_cast<Staff *>(curve->GetObjectY());
+    if (!staff) return;
+
+    const char spanningType = curve->GetSpanningType();
+    const curvature_CURVEDIR curveDir = this->CalcDrawingCurveDir(spanningType);
+
+    // Calculate endpoints
+    assert(curve->HasCachedX12());
+    const std::pair<int, int> cachedX12 = curve->GetCachedX12();
+    const std::pair<Point, Point> endPoints
+        = this->CalcEndPoints(doc, staff, nearEndCollision, cachedX12.first, cachedX12.second, curveDir, spanningType);
+
+    // For now we pick C1 = P1 and C2 = P2
+    BezierCurve bezier(endPoints.first, endPoints.first, endPoints.second, endPoints.second);
+    this->InitBezierControlSides(bezier, curveDir);
+
+    // Angle adjustment
+    const bool dontAdjustAngle = curve->IsCrossStaff() || start->IsGraceNote();
+    const float nonAdjustedAngle
+        = (bezier.p2 == bezier.p1) ? 0 : atan2(bezier.p2.y - bezier.p1.y, bezier.p2.x - bezier.p1.x);
+    const float slurAngle
+        = dontAdjustAngle ? nonAdjustedAngle : this->GetAdjustedSlurAngle(doc, bezier.p1, bezier.p2, curveDir);
+    if (curveDir != curvature_CURVEDIR_mixed) {
+        bezier.p2 = BoundingBox::CalcPositionAfterRotation(bezier.p2, -slurAngle, bezier.p1);
+    }
+
+    // Calculate control points
+    if (this->HasBulge()) {
+        bezier.CalcInitialControlPointParams();
+    }
+    else {
+        bezier.CalcInitialControlPointParams(doc, slurAngle, staff->m_drawingStaffSize);
+    }
+    bezier.UpdateControlPoints();
+    if (curveDir != curvature_CURVEDIR_mixed) {
+        bezier.Rotate(slurAngle, bezier.p1);
+    }
+
+    Point points[4];
+    points[0] = bezier.p1;
+    points[1] = bezier.c1;
+    points[2] = bezier.c2;
+    points[3] = bezier.p2;
+
+    // Calculate thickness
+    const int thickness
+        = doc->GetDrawingUnit(staff->m_drawingStaffSize) * doc->GetOptions()->m_slurMidpointThickness.GetValue();
+
+    // Store everything in floating curve positioner
+    curve->UpdateCurveParams(points, thickness, curveDir);
 }
 
 //----------------------------------------------------------------------------
