@@ -609,4 +609,6 @@
   <g c="E22F" x="0.0" y="0.0" w="396.0" h="96.0" h-a-x="396" n="tremoloDivisiDots3"/>
   <g c="E230" x="0.0" y="0.0" w="546.0" h="96.0" h-a-x="546" n="tremoloDivisiDots4"/>
   <g c="E231" x="0.0" y="0.0" w="396.0" h="246.0" h-a-x="396" n="tremoloDivisiDots6"/>
+  <g c="E4BE" x="0.0" y="0.0" w="347.0" h="236.0" h-a-x="347" n="articReversedAccentAbove"/>
+  <g c="E4BF" x="0.0" y="-236.0" w="347.0" h="236.0" h-a-x="347" n="articReversedAccentBelow"/>
 </bounding-boxes>

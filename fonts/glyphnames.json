@@ -2453,6 +2453,14 @@
 		"codepoint": "U+E4BD",
 		"description": "Marcato-tenuto below"
 	},
+	"articReversedAccentAbove": {
+		"codepoint": "U+E4BE",
+		"description": "Reversed accent above"
+	},
+	"articReversedAccentBelow": {
+		"codepoint": "U+E4BF",
+		"description": "Reversed accent below"
+	},
 	"articSoftAccentAbove": {
 		"codepoint": "U+ED40",
 		"description": "Soft accent above"
