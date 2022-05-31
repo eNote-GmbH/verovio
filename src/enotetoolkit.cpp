@@ -94,23 +94,13 @@ std::set<int> EnoteToolkit::FindPageIndices(const std::string &uuid)
         // Determine the first and last page of the element
         Page *firstPage = vrv_cast<Page *>(element->GetFirstAncestor(PAGE));
         Page *lastPage = firstPage;
-        TimeSpanningInterface *timespanningInterface = element->GetTimeSpanningInterface();
-        if (timespanningInterface) {
-            Object *start = timespanningInterface->GetStart();
-            Object *end = timespanningInterface->GetEnd();
+        TimeSpanningInterface *interface = element->GetTimeSpanningInterface();
+        if (interface) {
+            Object *start = interface->GetStart();
+            Object *end = interface->GetEnd();
             if (start && end) {
                 firstPage = vrv_cast<Page *>(start->GetFirstAncestor(PAGE));
                 lastPage = vrv_cast<Page *>(end->GetFirstAncestor(PAGE));
-            }
-        }
-        else {
-            TimePointInterface *timepointInterface = element->GetTimePointInterface();
-            if (timepointInterface) {
-                Object *start = timepointInterface->GetStart();
-                if (start) {
-                    firstPage = vrv_cast<Page *>(start->GetFirstAncestor(PAGE));
-                    lastPage = firstPage;
-                }
             }
         }
         // Fill the page indices
