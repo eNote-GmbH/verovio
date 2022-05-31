@@ -104,9 +104,9 @@ std::set<int> EnoteToolkit::FindPageIndices(const std::string &uuid)
             }
         }
         else {
-            TimePointInterface *timePointInterface = element->GetTimePointInterface();
-            if (timePointInterface) {
-                Object *start = timePointInterface->GetStart();
+            TimePointInterface *timepointInterface = element->GetTimePointInterface();
+            if (timepointInterface) {
+                Object *start = timepointInterface->GetStart();
                 if (start) {
                     firstPage = vrv_cast<Page *>(start->GetFirstAncestor(PAGE));
                     lastPage = firstPage;
