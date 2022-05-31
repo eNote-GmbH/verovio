@@ -56,6 +56,9 @@ enum {
     SMUFL_E075_cClefReversed = 0xE075,
     SMUFL_E076_fClefReversed = 0xE076,
     SMUFL_E077_fClefTurned = 0xE077,
+    SMUFL_E07A_gClefChange = 0xE07A,
+    SMUFL_E07B_cClefChange = 0xE07B,
+    SMUFL_E07C_fClefChange = 0xE07C,
     SMUFL_E080_timeSig0 = 0xE080,
     SMUFL_E081_timeSig1 = 0xE081,
     SMUFL_E082_timeSig2 = 0xE082,
@@ -189,6 +192,8 @@ enum {
     SMUFL_E4BB_articLaissezVibrerBelow = 0xE4BB,
     SMUFL_E4BC_articMarcatoTenutoAbove = 0xE4BC,
     SMUFL_E4BD_articMarcatoTenutoBelow = 0xE4BD,
+    SMUFL_E4BE_articReversedAccentAbove = 0xE4BE,
+    SMUFL_E4BF_articReversedAccentBelow = 0xE4BF,
     SMUFL_E4C0_fermataAbove = 0xE4C0,
     SMUFL_E4C1_fermataBelow = 0xE4C1,
     SMUFL_E4C2_fermataVeryShortAbove = 0xE4C2,
@@ -511,7 +516,7 @@ enum {
 };
 
 /** The number of glyphs for verification **/
-#define SMUFL_COUNT 486
+#define SMUFL_COUNT 491
 
 } // namespace vrv
 

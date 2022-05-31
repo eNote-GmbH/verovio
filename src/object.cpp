@@ -1769,7 +1769,7 @@ int Object::FindAllReferencedObjects(FunctorParams *functorParams)
     if (this->HasInterface(INTERFACE_PLIST)) {
         PlistInterface *interface = this->GetPlistInterface();
         assert(interface);
-        for (auto &object : *interface->GetRefs()) {
+        for (auto &object : interface->GetRefs()) {
             params->m_elements->push_back(object);
         }
     }
@@ -2154,7 +2154,8 @@ int Object::ScoreDefSetCurrent(FunctorParams *functorParams)
             return FUNCTOR_CONTINUE;
         }
         assert(params->m_currentStaffDef);
-        StaffDef *upcomingStaffDef = params->m_upcomingScoreDef.GetStaffDef(params->m_currentStaffDef->GetN());
+        const int n = clef->m_crossStaff ? clef->m_crossStaff->GetN() : params->m_currentStaffDef->GetN();
+        StaffDef *upcomingStaffDef = params->m_upcomingScoreDef.GetStaffDef(n);
         assert(upcomingStaffDef);
         upcomingStaffDef->SetCurrentClef(clef);
         params->m_upcomingScoreDef.m_setAsDrawing = true;

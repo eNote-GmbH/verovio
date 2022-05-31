@@ -207,7 +207,8 @@ void BeamSegment::CalcSetStemValues(Staff *staff, Doc *doc, BeamDrawingInterface
             }
             // handle cross-staff fTrem cases
             const auto [beams, beamsFloat] = beamInterface->GetFloatingBeamCount();
-            if ((coord->GetStemDir() == STEMDIRECTION_down) && ((beams > 0) || (beamsFloat > 0))) {
+            if ((coord->m_stem && coord->m_stem->GetDrawingStemDir() == STEMDIRECTION_down)
+                && ((beams > 0) || (beamsFloat > 0))) {
                 int beamsCount = std::max(beams, beamsFloat);
                 if (beamsFloat <= 0) beamsCount--;
                 stemOffset = beamsCount * beamInterface->m_beamWidth;
@@ -250,6 +251,8 @@ void BeamSegment::CalcSetStemValues(Staff *staff, Doc *doc, BeamDrawingInterface
     if (doc->GetOptions()->m_beamFrenchStyle.GetValue() && (m_beamElementCoordRefs.size() > 2)) {
         this->AdjustBeamToFrenchStyle(beamInterface);
     }
+
+    this->AdjustBeamToTremolos(doc, staff, beamInterface);
 }
 
 void BeamSegment::CalcSetStemValuesTab(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface)
@@ -488,25 +491,26 @@ void BeamSegment::AdjustBeamToFrenchStyle(BeamDrawingInterface *beamInterface)
     }
 }
 
-void BeamSegment::AdjustBeamToLedgerLines(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface)
+void BeamSegment::AdjustBeamToLedgerLines(
+    Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface, bool isHorizontal)
 {
     int adjust = 0;
     const int staffTop = staff->GetDrawingY();
     const int staffHeight = doc->GetDrawingStaffSize(staff->m_drawingStaffSize);
     const int doubleUnit = doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
+    const int staffMargin = isHorizontal ? doubleUnit / 2 : 0;
     for (auto coord : m_beamElementCoordRefs) {
         if (beamInterface->m_drawingPlace == BEAMPLACE_below) {
             const int topPosition = coord->m_yBeam + beamInterface->GetTotalBeamWidth();
-            const int topMargin = staffTop - doubleUnit / 2;
-            if (topPosition >= topMargin) {
-                adjust = ((topPosition - topMargin) / doubleUnit + 1) * doubleUnit;
+            if (topPosition > staffTop - staffMargin) {
+                adjust = ((topPosition - staffTop) / doubleUnit + 1) * doubleUnit;
                 break;
             }
         }
         else if (beamInterface->m_drawingPlace == BEAMPLACE_above) {
             const int bottomPosition = coord->m_yBeam - beamInterface->GetTotalBeamWidth();
-            const int bottomMargin = staffTop - staffHeight + doubleUnit / 2;
-            if (bottomPosition <= bottomMargin) {
+            const int bottomMargin = staffTop - staffHeight;
+            if (bottomPosition < bottomMargin + staffMargin) {
                 adjust = ((bottomPosition - bottomMargin) / doubleUnit - 1) * doubleUnit;
                 break;
             }
@@ -516,6 +520,36 @@ void BeamSegment::AdjustBeamToLedgerLines(Doc *doc, Staff *staff, BeamDrawingInt
     if (adjust) {
         std::for_each(m_beamElementCoordRefs.begin(), m_beamElementCoordRefs.end(),
             [adjust](BeamElementCoord *coord) { coord->m_yBeam -= adjust; });
+    }
+}
+
+void BeamSegment::AdjustBeamToTremolos(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface)
+{
+    // iterate over all coords and find maximum required adjustment for stems and beam; additional beams should be taken
+    // into account to make sure that correct value is calculated
+    int maxAdjustment = 0;
+    for (auto coord : m_beamElementCoordRefs) {
+        // Get the interface for the chord or note
+        StemmedDrawingInterface *stemmedInterface = coord->GetStemHolderInterface();
+        if (!stemmedInterface) continue;
+
+        Stem *stem = stemmedInterface->GetDrawingStem();
+        const int offset = (coord->m_dur - DUR_8) * beamInterface->m_beamWidth + beamInterface->m_beamWidthBlack;
+        const int currentAdjustment = stem->CalculateStemModAdjustment(doc, staff, offset);
+        if (std::abs(currentAdjustment) > std::abs(maxAdjustment)) maxAdjustment = currentAdjustment;
+    }
+    // exit in case no adjustment is required
+    if (maxAdjustment == 0) return;
+    // otherwise apply adjustment to all stems within beam and all beam positions
+    for (auto coord : m_beamElementCoordRefs) {
+        coord->m_yBeam -= maxAdjustment;
+
+        // Get the interface for the chord or note
+        StemmedDrawingInterface *stemmedInterface = coord->GetStemHolderInterface();
+        if (!stemmedInterface) continue;
+
+        Stem *stem = stemmedInterface->GetDrawingStem();
+        stem->SetDrawingStemLen(stem->GetDrawingStemLen() + maxAdjustment);
     }
 }
 
@@ -950,7 +984,7 @@ void BeamSegment::CalcBeamPosition(Doc *doc, Staff *staff, BeamDrawingInterface 
         this->CalcHorizontalBeam(doc, staff, beamInterface);
     }
 
-    if (!beamInterface->m_crossStaffContent) this->AdjustBeamToLedgerLines(doc, staff, beamInterface);
+    if (!beamInterface->m_crossStaffContent) this->AdjustBeamToLedgerLines(doc, staff, beamInterface, isHorizontal);
 }
 
 void BeamSegment::CalcAdjustSlope(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, int &step)
@@ -1252,9 +1286,10 @@ std::pair<int, int> BeamSegment::CalcStemDefiningNote(Staff *staff, data_BEAMPLA
         coord->SetClosestNoteOrTabDurSym(stemDir, staff->IsTabWithStemsOutside());
         // Nothing else to do if we have no closest note (that includes tab beams outside the staff)
         if (!coord->m_closestNote) continue;
+        const int currentLoc = coord->m_closestNote->GetDrawingLoc();
         // set initial values for both locations and durations to that of first note
         if (relevantLoc == VRV_UNSET) {
-            relevantLoc = coord->m_closestNote->GetDrawingLoc();
+            relevantLoc = currentLoc;
             shortestLoc = relevantLoc;
             relevantDuration = coord->m_dur;
             shortestDuration = relevantDuration;
@@ -1262,18 +1297,25 @@ std::pair<int, int> BeamSegment::CalcStemDefiningNote(Staff *staff, data_BEAMPLA
         }
         // save location and duration of the note, if it is closer to the beam (i.e. placed higher on the staff for
         // above beams and vice versa for below beams)
-        if ((place == BEAMPLACE_above) && (coord->m_closestNote->GetDrawingLoc() > relevantLoc)) {
-            relevantLoc = coord->m_closestNote->GetDrawingLoc();
+        if ((place == BEAMPLACE_above) && (currentLoc > relevantLoc)) {
+            relevantLoc = currentLoc;
             relevantDuration = coord->m_dur;
         }
-        else if ((place == BEAMPLACE_below) && (coord->m_closestNote->GetDrawingLoc() < relevantLoc)) {
-            relevantLoc = coord->m_closestNote->GetDrawingLoc();
+        else if ((place == BEAMPLACE_below) && (currentLoc < relevantLoc)) {
+            relevantLoc = currentLoc;
             relevantDuration = coord->m_dur;
         }
         // save location and duration of the note that have shortest duration
-        if (coord->m_dur >= shortestDuration) {
+        if (coord->m_dur > shortestDuration) {
             shortestDuration = coord->m_dur;
-            shortestLoc = coord->m_closestNote->GetDrawingLoc();
+            shortestLoc = currentLoc;
+        }
+        else if (coord->m_dur == shortestDuration) {
+            if (((stemDir == STEMDIRECTION_up) && (currentLoc > shortestLoc))
+                || ((stemDir == STEMDIRECTION_down) && (currentLoc < shortestLoc))) {
+                shortestDuration = coord->m_dur;
+                shortestLoc = currentLoc;
+            }
         }
     }
 
@@ -1972,6 +2014,11 @@ int Beam::GetBeamPartDuration(int x) const
     }
 
     return std::min((*it)->m_dur, (*std::prev(it))->m_dur);
+}
+
+int Beam::GetBeamPartDuration(Object *object) const
+{
+    return this->GetBeamPartDuration(object->GetDrawingX());
 }
 
 //----------------------------------------------------------------------------

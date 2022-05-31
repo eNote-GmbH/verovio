@@ -102,7 +102,13 @@ private:
     void AdjustBeamToFrenchStyle(BeamDrawingInterface *beamInterface);
 
     // Helper to adjust beam positioning with regards to ledger lines (top and bottom of the staff)
-    void AdjustBeamToLedgerLines(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface);
+    void AdjustBeamToLedgerLines(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface, bool isHorizontal);
+
+    /**
+     * Helper to calculate required adjustment to beam position and stem length for beams that have tremolos or notes
+     * with stem modifiers
+     */
+    void AdjustBeamToTremolos(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface);
 
     void CalcBeamInit(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
 
@@ -314,6 +320,11 @@ public:
      * See DrawingInterface::GetAdditionalBeamCount
      */
     std::pair<int, int> GetAdditionalBeamCount() const override;
+
+    /**
+     * Return duration of beam part that are closest to the specified object X position
+     */
+    int GetBeamPartDuration(Object *object) const;
 
     //----------//
     // Functors //

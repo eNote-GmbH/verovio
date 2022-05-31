@@ -205,7 +205,12 @@ LayerElement *Layer::GetAtPos(int x)
 
 Clef *Layer::GetClef(LayerElement *test)
 {
-    Object *testObject = test;
+    return const_cast<Clef *>(std::as_const(*this).GetClef(test));
+}
+
+const Clef *Layer::GetClef(const LayerElement *test) const
+{
+    const Object *testObject = test;
 
     if (!test) {
         return this->GetCurrentClef();
@@ -218,11 +223,11 @@ Clef *Layer::GetClef(LayerElement *test)
     }
 
     if (testObject && testObject->Is(CLEF)) {
-        Clef *clef = vrv_cast<Clef *>(testObject);
+        const Clef *clef = vrv_cast<const Clef *>(testObject);
         assert(clef);
         return clef;
     }
-    Clef *facsClef = this->GetClefFacs(test);
+    const Clef *facsClef = this->GetClefFacs(test);
     if (facsClef != NULL) {
         return facsClef;
     }
@@ -231,24 +236,44 @@ Clef *Layer::GetClef(LayerElement *test)
 
 Clef *Layer::GetClefFacs(LayerElement *test)
 {
-    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+    return const_cast<Clef *>(std::as_const(*this).GetClefFacs(test));
+}
+
+const Clef *Layer::GetClefFacs(const LayerElement *test) const
+{
+    const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
     if (doc->GetType() == Facs) {
-        ListOfObjects clefs;
+        ListOfConstObjects clefs;
         ClassIdComparison ac(CLEF);
         doc->FindAllDescendantsBetween(&clefs, &ac, doc->GetFirst(CLEF), test);
         if (clefs.size() > 0) {
-            return dynamic_cast<Clef *>(*clefs.rbegin());
+            return dynamic_cast<const Clef *>(*clefs.rbegin());
         }
     }
     return NULL;
 }
 
-int Layer::GetClefLocOffset(LayerElement *test)
+int Layer::GetClefLocOffset(const LayerElement *test) const
 {
-    Clef *clef = this->GetClef(test);
+    const Clef *clef = this->GetClef(test);
     if (!clef) return 0;
     return clef->GetClefLocOffset();
+}
+
+int Layer::GetCrossStaffClefLocOffset(const LayerElement *element, int currentOffset) const
+{
+    if (element->m_crossStaff) {
+        ResetList(this);
+        if (!element->Is(CLEF)) {
+            const Clef *clef = vrv_cast<const Clef *>(GetListFirstBackward(element, CLEF));
+            if (clef && clef->m_crossStaff) {
+                return clef->GetClefLocOffset();
+            }
+        }
+    }
+
+    return currentOffset;
 }
 
 data_STEMDIRECTION Layer::GetDrawingStemDir(LayerElement *element)
@@ -411,7 +436,12 @@ ListOfObjects Layer::GetLayerElementsInTimeSpan(
 
 Clef *Layer::GetCurrentClef()
 {
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+    return const_cast<Clef *>(std::as_const(*this).GetCurrentClef());
+}
+
+const Clef *Layer::GetCurrentClef() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff && staff->m_drawingStaffDef && staff->m_drawingStaffDef->GetCurrentClef());
     return staff->m_drawingStaffDef->GetCurrentClef();
 }

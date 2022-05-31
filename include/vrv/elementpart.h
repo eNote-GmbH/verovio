@@ -35,6 +35,7 @@ public:
     virtual ~Dots();
     void Reset() override;
     std::string GetClassName() const override { return "Dots"; }
+    Object *Clone() const override { return new Dots(*this); }
     ///@}
 
     /** Override the method since alignment is required */
@@ -111,6 +112,7 @@ public:
     virtual ~Flag();
     void Reset() override;
     std::string GetClassName() const override { return "Flag"; }
+    Object *Clone() const override { return new Flag(*this); }
     ///@}
 
     /** Override the method since alignment is required */
@@ -169,13 +171,18 @@ public:
     ///@}
 
     /**
-     * @name Setter and getter for darwing rel positions
+     * @name Setter and getter for drawing rel positions
      */
     ///@{
     int GetDrawingXRelLeft() { return m_drawingXRelLeft; }
     void SetDrawingXRelLeft(int drawingXRelLeft) { m_drawingXRelLeft = drawingXRelLeft; }
     int GetDrawingXRelRight() { return m_drawingXRelRight; }
     void SetDrawingXRelRight(int drawingXRelRight) { m_drawingXRelRight = drawingXRelRight; }
+    // Vertical positions
+    int GetDrawingYRelLeft() const { return m_drawingYRelLeft; }
+    void SetDrawingYRelLeft(int drawingYRelLeft) { m_drawingYRelLeft = drawingYRelLeft; }
+    int GetDrawingYRelRight() const { return m_drawingYRelRight; }
+    void SetDrawingYRelRight(int drawingYRelRight) { m_drawingYRelRight = drawingYRelRight; }
     ///@}
 
     /**
@@ -236,6 +243,14 @@ private:
      * The right X position is the one of the last Chord / Note / Rest in the tuplet
      */
     int m_drawingXRelRight;
+    /**
+     * The YRel shift for the left X position.
+     */
+    int m_drawingYRelLeft = 0;
+    /**
+     * The YRel shift for the right X position.
+     */
+    int m_drawingYRelRight = 0;
     /** A pointer to the num with which the TupletBracket is aligned (if any) */
     TupletNum *m_alignedNum;
 };
@@ -330,6 +345,7 @@ public:
     virtual ~Stem();
     void Reset() override;
     std::string GetClassName() const override { return "Stem"; }
+    Object *Clone() const override { return new Stem(*this); }
     ///@}
 
     /** Override the method since alignment is required */
@@ -350,6 +366,7 @@ public:
     void SetDrawingStemLen(int drawingStemLen) { m_drawingStemLen = drawingStemLen; }
     int GetDrawingStemAdjust() { return m_drawingStemAdjust; }
     void SetDrawingStemAdjust(int drawingStemAdjust) { m_drawingStemAdjust = drawingStemAdjust; }
+    int GetStemModRelY() const { return m_stemModRelY; }
     ///@}
 
     /**
@@ -364,6 +381,11 @@ public:
      * Helper to adjust overlaping layers for stems
      */
     int CompareToElementPosition(Doc *doc, LayerElement *otherElement, int margin);
+
+    /**
+     * Helper to calculate stem modifier relative Y rel and required adjustment for stem length
+     */
+    int CalculateStemModAdjustment(Doc *doc, Staff *staff, int flagOffset = 0);
 
     //----------//
     // Functors //
@@ -396,7 +418,12 @@ private:
     /**
      * Helper to adjust length of stem based on presence of slashes
      */
-    void AdjustSlashes(Doc *doc, int staffSize, int flagOffset, bool isSameAs);
+    int AdjustSlashes(Doc *doc, Staff *staff, int flagOffset);
+
+    /**
+     * Helper to calculate relative position for the stem modifier
+     */
+    void CalculateStemModRelY(Doc *doc, Staff *staff);
 
 public:
     //
@@ -409,6 +436,10 @@ private:
      * The drawing length of stem
      */
     int m_drawingStemLen;
+    /**
+     * Relative Y position for the stem modifier
+     */
+    int m_stemModRelY;
     /**
      * The adjustment of the drawing stem length (used with french style of beams)
      */
