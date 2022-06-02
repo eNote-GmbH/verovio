@@ -52,14 +52,14 @@
   <g c="E06A" x="0.0" y="-465.0" w="312.0" h="926.0" h-a-x="312" n="unpitchedPercussionClef2"/>
   <g c="E06D" x="-3.0" y="-748.0" w="411.0" h="1512.0" h-a-x="409" n="6stringTabClef"/>
   <g c="E06E" x="-3.0" y="-508.0" w="275.0" h="1012.0" h-a-x="271" n="4stringTabClef"/>
-  <g c="E073" x="6.0" y="-658.0" w="671.0" h="1756.0" h-a-x="674" n="gClefReversed"/>
-  <g c="E074" x="6.0" y="-602.0" w="671.0" h="1756.0" h-a-x="674" n="gClefTurned"/>
+  <g c="E073" x="0.0" y="-658.0" w="671.0" h="1756.0" h-a-x="671" n="gClefReversed"/>
+  <g c="E074" x="0.0" y="-1098.0" w="671.0" h="1756.0" h-a-x="671" n="gClefTurned"/>
   <g c="E075" x="0.0" y="-506.0" w="699.0" h="1012.0" h-a-x="699" n="cClefReversed"/>
   <g c="E076" x="0.0" y="-635.0" w="684.0" h="897.0" h-a-x="684" n="fClefReversed"/>
   <g c="E077" x="0.0" y="-262.0" w="684.0" h="897.0" h-a-x="684" n="fClefTurned"/>
-  <g c="E07A" x="0.0" y="-455.0" w="440.0" h="1162.0" h-a-x="440" n="gClefChange"/>
-  <g c="E07B" x="0.0" y="-332.0" w="506.0" h="664.0" h-a-x="506" n="cClefChange"/>
-  <g c="E07C" x="-15.0" y="-414.0" w="478.0" h="584.0" h-a-x="462" n="fClefChange"/>
+  <g c="E07A" x="0.0" y="-516.0" w="526.0" h="1377.0" h-a-x="526" n="gClefChange"/>
+  <g c="E07B" x="0.0" y="-353.0" w="488.0" h="706.0" h-a-x="488" n="cClefChange"/>
+  <g c="E07C" x="0.0" y="-511.0" w="550.0" h="722.0" h-a-x="550" n="fClefChange"/>
   <g c="E080" x="20.0" y="-250.0" w="430.0" h="501.0" h-a-x="470" n="timeSig0"/>
   <g c="E081" x="20.0" y="-250.0" w="294.0" h="501.0" h-a-x="334" n="timeSig1"/>
   <g c="E082" x="20.0" y="-257.0" w="406.0" h="511.0" h-a-x="446" n="timeSig2"/>
@@ -67,13 +67,13 @@
   <g c="E084" x="20.0" y="-250.0" w="430.0" h="501.0" h-a-x="470" n="timeSig4"/>
   <g c="E085" x="20.0" y="-251.0" w="363.0" h="497.0" h-a-x="403" n="timeSig5"/>
   <g c="E086" x="20.0" y="-249.0" w="394.0" h="500.0" h-a-x="434" n="timeSig6"/>
-  <g c="E087" x="20.0" y="-250.0" w="401.0" h="499.0" h-a-x="441" n="timeSig7"/>
+  <g c="E087" x="20.0" y="-250.0" w="401.0" h="494.0" h-a-x="441" n="timeSig7"/>
   <g c="E088" x="20.0" y="-259.0" w="396.0" h="518.0" h-a-x="436" n="timeSig8"/>
   <g c="E089" x="20.0" y="-249.0" w="394.0" h="500.0" h-a-x="434" n="timeSig9"/>
   <g c="E08A" x="5.0" y="-249.0" w="419.0" h="500.0" h-a-x="424" n="timeSigCommon"/>
   <g c="E08B" x="0.0" y="-359.0" w="418.0" h="720.0" h-a-x="417" n="timeSigCutCommon"/>
   <g c="E08C" x="-1.0" y="-250.0" w="500.0" h="500.0" h-a-x="500" n="timeSigPlus"/>
-  <g c="E08D" x="-1.0" y="-133.0" w="256.0" h="256.0" h-a-x="254" n="timeSigPlusSmall"/>
+  <g c="E08D" x="-1.0" y="-128.0" w="256.0" h="256.0" h-a-x="254" n="timeSigPlusSmall"/>
   <g c="E08E" x="0.0" y="-190.0" w="378.0" h="379.0" h-a-x="378" n="timeSigFractionalSlash"/>
   <g c="E08F" x="0.0" y="-125.0" w="448.0" h="249.0" h-a-x="448" n="timeSigEquals"/>
   <g c="E090" x="0.0" y="-35.0" w="448.0" h="75.0" h-a-x="448" n="timeSigMinus"/>
@@ -172,12 +172,12 @@
     <a n="cutOutSE" x="0.83" y="-0.57"/>
     <a n="cutOutSW" x="0.16" y="-0.9"/>
   </g>
-  <g c="E263" x="0.0" y="-125.0" w="247.0" h="252.0" n="accidentalDoubleSharp"/>
+  <g c="E263" x="0.0" y="-124.0" w="248.0" h="248.0" h-a-x="248" n="accidentalDoubleSharp"/>
   <g c="E264" x="0.0" y="-175.0" w="406.0" h="614.0" h-a-x="406" n="accidentalDoubleFlat">
     <a n="cutOutNE" x="0.97" y="0.66"/>
     <a n="cutOutSE" x="1.18" y="-0.46"/>
   </g>
-  <g c="E265" x="0.0" y="-348.0" w="513.0" h="698.0" h-a-x="513" n="accidentalTripleSharp">
+  <g c="E265" x="0.0" y="-348.0" w="514.0" h="698.0" h-a-x="514" n="accidentalTripleSharp">
     <a n="cutOutNE" x="1.04" y="0.56"/>
     <a n="cutOutNW" x="0.16" y="0.62"/>
     <a n="cutOutSE" x="0.88" y="-0.56"/>
@@ -207,8 +207,7 @@
   <g c="E26B" x="0.0" y="-248.0" w="141.0" h="495.0" h-a-x="141" n="accidentalParensRight"/>
   <g c="E26C" x="0.0" y="-189.0" w="77.0" h="377.0" h-a-x="77" n="accidentalBracketLeft"/>
   <g c="E26D" x="0.0" y="-189.0" w="77.0" h="378.0" h-a-x="77" n="accidentalBracketRight"/>
-  <g c="E270" x="-42.0" y="-177.0" w="290.0" h="756.0" h-a-x="248" n="accidentalQuarterToneFlatArrowUp">
-    <a n="cutOutNE" x="0.61" y="0.66"/>
+  <g c="E270" x="-42.0" y="-175.0" w="290.0" h="754.0" h-a-x="226" n="accidentalQuarterToneFlatArrowUp">
     <a n="cutOutSE" x="0.58" y="-0.46"/>
   </g>
   <g c="E271" x="-39.0" y="-418.0" w="290.0" h="860.0" h-a-x="251" n="accidentalThreeQuarterTonesFlatArrowDown">
@@ -396,7 +395,7 @@
   <g c="E88A" x="10.0" y="58.0" w="111.0" h="210.0" h-a-x="111" n="tupletColon"/>
   <g c="E901" x="0.0" y="-169.0" w="339.0" h="1091.0" h-a-x="339" n="mensuralGclefPetrucci"/>
   <g c="E902" x="0.0" y="-231.0" w="264.0" h="452.0" h-a-x="264" n="chantFclef"/>
-  <g c="E903" x="0.0" y="-172.0" w="297.0" h="344.0" h-a-x="298" n="mensuralFclef"/>
+  <g c="E903" x="0.0" y="-171.0" w="297.0" h="345.0" h-a-x="298" n="mensuralFclef"/>
   <g c="E904" x="0.0" y="-1069.0" w="488.0" h="1660.0" h-a-x="488" n="mensuralFclefPetrucci"/>
   <g c="E905" x="0.0" y="-500.0" w="650.0" h="1000.0" h-a-x="650" n="mensuralCclef"/>
   <g c="E906" x="0.0" y="-221.0" w="134.0" h="442.0" h-a-x="134" n="chantCclef"/>
