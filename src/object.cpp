@@ -757,6 +757,24 @@ bool Object::DeleteChild(Object *child)
     }
 }
 
+int Object::DeleteChildrenByComparison(Comparison *comparison)
+{
+    int count = 0;
+    ArrayOfObjects::iterator iter;
+    for (iter = m_children.begin(); iter != m_children.end();) {
+        if ((*comparison)(*iter)) {
+            if (!m_isReferenceObject) delete *iter;
+            iter = m_children.erase(iter);
+            ++count;
+        }
+        else {
+            ++iter;
+        }
+    }
+    if (count > 0) this->Modify();
+    return count;
+}
+
 void Object::GenerateUuid()
 {
     m_uuid = m_classIdStr.at(0) + Object::GenerateRandUuid();
@@ -2294,13 +2312,13 @@ int Object::CalcBBoxOverflows(FunctorParams *functorParams)
     if (this->Is(STEM)) {
         LayerElement *noteOrChord = dynamic_cast<LayerElement *>(this->GetParent());
         if (noteOrChord && noteOrChord->m_crossStaff) {
-            if (noteOrChord->IsInBeam()) {
+            if (noteOrChord->GetAncestorBeam()) {
                 Beam *beam = vrv_cast<Beam *>(noteOrChord->GetFirstAncestor(BEAM));
                 assert(beam);
                 // Ignore it but only if the beam is not entirely cross-staff itself
                 if (!beam->m_crossStaff) return FUNCTOR_CONTINUE;
             }
-            else if (noteOrChord->IsInBeamSpan()) {
+            else if (noteOrChord->GetIsInBeamSpan()) {
                 return FUNCTOR_CONTINUE;
             }
         }
