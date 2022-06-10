@@ -537,12 +537,18 @@ public:
      * Return the last ancestor that is NOT of the specified type.
      * The maxSteps parameter limits the search to a certain number of level if not -1.
      */
+    ///@{
     Object *GetLastAncestorNot(const ClassId classId, int maxSteps = -1);
+    const Object *GetLastAncestorNot(const ClassId classId, int maxSteps = -1) const;
+    ///@}
 
     /**
      * Return the first child that is NOT of the specified type.
      */
+    ///@{
     Object *GetFirstChildNot(const ClassId classId);
+    const Object *GetFirstChildNot(const ClassId classId) const;
+    ///@}
 
     /**
      * Fill the list of all the children LayerElement.
@@ -710,17 +716,22 @@ public:
     /**
      * Look if the time / duration passed as parameter overlap with a space in the alignment references.
      */
-    virtual int LayerCountInTimeSpan(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int LayerCountInTimeSpan(FunctorParams *) const { return FUNCTOR_CONTINUE; }
 
     /**
      * Look for all the layer elements that overlap with the time / duration within certain layer passed as parameter.
      */
-    virtual int LayerElementsInTimeSpan(FunctorParams *functorParams) { return FUNCTOR_CONTINUE; }
+    virtual int LayerElementsInTimeSpan(FunctorParams *functorParams) const { return FUNCTOR_CONTINUE; }
 
     /**
      * Retrieve the layer elements spanned by two points
      */
     virtual int FindSpannedLayerElements(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
+     * Look for element by UUID in StaffDef elements (Clef, KeySig, etc.) of all layers within
+     */
+    virtual int FindElementInLayerStaffDefsByUUID(FunctorParams *) const { return FUNCTOR_CONTINUE; }
 
     /**
      * Retrieve the minimum left and maximum right for an alignment.
@@ -734,7 +745,7 @@ public:
      * It will search recursively through children elements until note, chord or ftrem is found.
      * It can be used to look in neighboring layers for the similar search, but only first element will be checked.
      */
-    virtual int GetRelativeLayerElement(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int GetRelativeLayerElement(FunctorParams *) const { return FUNCTOR_CONTINUE; }
 
     ///@}
 
@@ -1083,7 +1094,7 @@ public:
     /**
      * Calculate the Y relative position of tupletNum based on overlaps with other elements
      */
-    virtual int AdjustTupletNumOverlap(FunctorParams *) { return FUNCTOR_CONTINUE; }
+    virtual int AdjustTupletNumOverlap(FunctorParams *) const { return FUNCTOR_CONTINUE; }
 
     /**
      * Adjust the position of the StaffAlignment.

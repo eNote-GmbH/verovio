@@ -122,6 +122,8 @@ Object::Object(const Object &object) : BoundingBox(object)
         Object *current = object.m_children.at(i);
         Object *clone = current->Clone();
         if (clone) {
+            LinkingInterface *link = clone->GetLinkingInterface();
+            if (link) link->AddBackLink(current);
             clone->SetParent(this);
             clone->CloneReset();
             m_children.push_back(clone);
@@ -158,6 +160,8 @@ Object &Object::operator=(const Object &object)
         this->GenerateUuid();
         // For now do now copy them
         // m_unsupported = object.m_unsupported;
+        LinkingInterface *link = this->GetLinkingInterface();
+        if (link) link->AddBackLink(&object);
 
         if (object.CopyChildren()) {
             int i;
@@ -165,6 +169,8 @@ Object &Object::operator=(const Object &object)
                 Object *current = object.m_children.at(i);
                 Object *clone = current->Clone();
                 if (clone) {
+                    LinkingInterface *link = clone->GetLinkingInterface();
+                    if (link) link->AddBackLink(current);
                     clone->SetParent(this);
                     clone->CloneReset();
                     m_children.push_back(clone);
@@ -924,6 +930,11 @@ const Object *Object::GetFirstAncestorInRange(const ClassId classIdMin, const Cl
 
 Object *Object::GetLastAncestorNot(const ClassId classId, int maxDepth)
 {
+    return const_cast<Object *>(std::as_const(*this).GetLastAncestorNot(classId, maxDepth));
+}
+
+const Object *Object::GetLastAncestorNot(const ClassId classId, int maxDepth) const
+{
     if ((maxDepth == 0) || !m_parent) {
         return NULL;
     }
@@ -937,6 +948,11 @@ Object *Object::GetLastAncestorNot(const ClassId classId, int maxDepth)
 }
 
 Object *Object::GetFirstChildNot(const ClassId classId)
+{
+    return const_cast<Object *>(std::as_const(*this).GetFirstChildNot(classId));
+}
+
+const Object *Object::GetFirstChildNot(const ClassId classId) const
 {
     for (const auto child : m_children) {
         if (!child->Is(classId)) {
@@ -2147,7 +2163,7 @@ int Object::ScoreDefSetCurrent(FunctorParams *functorParams)
     if (this->Is(CLEF)) {
         LayerElement *element = vrv_cast<LayerElement *>(this);
         assert(element);
-        LayerElement *elementOrLink = element->ThisOrSameasAsLink();
+        LayerElement *elementOrLink = element->ThisOrSameasLink();
         if (!elementOrLink || !elementOrLink->Is(CLEF)) return FUNCTOR_CONTINUE;
         Clef *clef = vrv_cast<Clef *>(elementOrLink);
         if (clef->IsScoreDefElement()) {

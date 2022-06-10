@@ -293,6 +293,7 @@ class BoundingBox;
 class Comparison;
 class CurveSpannedElement;
 class FloatingPositioner;
+class FloatingCurvePositioner;
 class GraceAligner;
 class InterfaceComparison;
 class LayerElement;
@@ -346,15 +347,17 @@ typedef std::list<std::pair<TimeSpanningInterface *, Object *>> ListOfSpanningIn
 
 typedef std::vector<FloatingPositioner *> ArrayOfFloatingPositioners;
 
+typedef std::vector<FloatingCurvePositioner *> ArrayOfFloatingCurvePositioners;
+
 typedef std::vector<BoundingBox *> ArrayOfBoundingBoxes;
 
 typedef std::vector<LedgerLine> ArrayOfLedgerLines;
 
 typedef std::vector<TextElement *> ArrayOfTextElements;
 
-typedef std::map<Staff *, std::multiset<int>> MapOfNoteLocs;
+typedef std::map<const Staff *, std::multiset<int>> MapOfNoteLocs;
 
-typedef std::map<Staff *, std::set<int>> MapOfDotLocs;
+typedef std::map<const Staff *, std::set<int>> MapOfDotLocs;
 
 typedef std::map<std::string, Option *> MapOfStrOptions;
 
@@ -370,7 +373,7 @@ typedef std::map<std::string, ClassId> MapOfStrClassIds;
 
 typedef std::vector<std::pair<LayerElement *, LayerElement *>> MeasureTieEndpoints;
 
-typedef bool (*NotePredicate)(Note *);
+typedef bool (*NotePredicate)(const Note *);
 
 /**
  * Generic int map recursive structure for storing hierachy of values

@@ -356,7 +356,7 @@ void Staff::SetFromFacsimile(Doc *doc)
     this->AdjustDrawingStaffSize();
 }
 
-bool Staff::IsOnStaffLine(int y, Doc *doc)
+bool Staff::IsOnStaffLine(int y, const Doc *doc) const
 {
     assert(doc);
 
@@ -468,6 +468,11 @@ int Staff::ScoreDefOptimize(FunctorParams *functorParams)
         LogDebug(
             "Could not find staffDef for staff (%d) when optimizing scoreDef in Staff::ScoreDefOptimize", this->GetN());
         return FUNCTOR_SIBLINGS;
+    }
+
+    // Always show staves with a clef change
+    if (this->FindDescendantByType(CLEF)) {
+        staffDef->SetDrawingVisibility(OPTIMIZATION_SHOW);
     }
 
     // Always show all staves when there is a fermata or a tempo
