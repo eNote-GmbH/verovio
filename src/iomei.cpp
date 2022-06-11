@@ -2840,6 +2840,16 @@ void MEIOutput::WriteTimeSpanningInterface(pugi::xml_node element, TimeSpanningI
     interface->WriteTimestamp2Logical(element);
 }
 
+void MEIOutput::WriteVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface)
+{
+    assert(interface);
+
+    interface->WriteVisualOffsetHo(element);
+    interface->WriteVisualOffsetVo(element);
+    interface->WriteVisualOffset2Ho(element);
+    interface->WriteVisualOffset2Vo(element);
+}
+
 void MEIOutput::WriteUnsupportedAttr(pugi::xml_node element, Object *object)
 {
     for (auto &pair : object->m_unsupported) {
@@ -6714,6 +6724,16 @@ bool MEIInput::ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInt
     this->ReadTimePointInterface(element, interface);
     interface->ReadStartEndId(element);
     interface->ReadTimestamp2Logical(element);
+    return true;
+}
+
+bool MEIInput::ReadVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface)
+{
+    interface->ReadVisualOffsetHo(element);
+    interface->ReadVisualOffsetVo(element);
+    interface->ReadVisualOffset2Ho(element);
+    interface->ReadVisualOffset2Vo(element);
+
     return true;
 }
 

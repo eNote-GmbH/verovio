@@ -502,6 +502,7 @@ private:
     void WriteTextDirInterface(pugi::xml_node currentNode, TextDirInterface *interface);
     void WriteTimePointInterface(pugi::xml_node currentNode, TimePointInterface *interface);
     void WriteTimeSpanningInterface(pugi::xml_node currentNode, TimeSpanningInterface *interface);
+    void WriteVisualOffsetInterface(pugi::xml_node currentNode, VisualOffsetInterface *interface);
     ///@}
 
     /**
@@ -789,6 +790,7 @@ private:
     bool ReadTextDirInterface(pugi::xml_node element, TextDirInterface *interface);
     bool ReadTimePointInterface(pugi::xml_node element, TimePointInterface *interface);
     bool ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInterface *interface);
+    bool ReadVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface);
     ///@}
 
     /**

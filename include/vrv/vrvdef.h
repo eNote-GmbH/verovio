@@ -278,7 +278,8 @@ enum InterfaceId {
     INTERFACE_SCOREDEF,
     INTERFACE_TEXT_DIR,
     INTERFACE_TIME_POINT,
-    INTERFACE_TIME_SPANNING
+    INTERFACE_TIME_SPANNING,
+    INTERFACE_VISUAL_OFFSET
 };
 
 //----------------------------------------------------------------------------
