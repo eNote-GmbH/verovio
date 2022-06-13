@@ -2148,6 +2148,7 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
 
     this->WriteLayerElement(currentNode, accid);
     this->WritePositionInterface(currentNode, accid);
+    this->WriteVisualOffsetInterface(currentNode, accid);
     accid->WriteAccidental(currentNode);
     accid->WriteAccidentalGestural(currentNode);
     accid->WriteAccidLog(currentNode);
@@ -2169,6 +2170,7 @@ void MEIOutput::WriteArtic(pugi::xml_node currentNode, Artic *artic)
     }
 
     this->WriteLayerElement(currentNode, artic);
+    this->WriteVisualOffsetInterface(currentNode, artic);
     artic->WriteArticulation(currentNode);
     artic->WriteColor(currentNode);
     artic->WriteEnclosingChars(currentNode);
@@ -2254,6 +2256,7 @@ void MEIOutput::WriteClef(pugi::xml_node currentNode, Clef *clef)
 
     this->WriteLayerElement(currentNode, clef);
     this->WriteFacsimileInterface(currentNode, clef);
+    this->WriteVisualOffsetInterface(currentNode, clef);
     clef->WriteClefShape(currentNode);
     clef->WriteColor(currentNode);
     clef->WriteEnclosingChars(currentNode);
@@ -2510,6 +2513,7 @@ void MEIOutput::WriteNote(pugi::xml_node currentNode, Note *note)
     this->WriteDurationInterface(currentNode, note);
     this->WritePitchInterface(currentNode, note);
     this->WritePositionInterface(currentNode, note);
+    this->WriteVisualOffsetInterface(currentNode, note);
     note->WriteColor(currentNode);
     note->WriteColoration(currentNode);
     note->WriteCue(currentNode);
@@ -2532,6 +2536,7 @@ void MEIOutput::WriteRest(pugi::xml_node currentNode, Rest *rest)
     this->WriteLayerElement(currentNode, rest);
     this->WriteDurationInterface(currentNode, rest);
     this->WritePositionInterface(currentNode, rest);
+    this->WriteVisualOffsetInterface(currentNode, rest);
     rest->WriteColor(currentNode);
     rest->WriteCue(currentNode);
     rest->WriteExtSym(currentNode);
@@ -5807,6 +5812,7 @@ bool MEIInput::ReadAccid(Object *parent, pugi::xml_node accid)
     this->ReadLayerElement(accid, vrvAccid);
 
     this->ReadPositionInterface(accid, vrvAccid);
+    this->ReadVisualOffsetInterface(accid, vrvAccid);
     vrvAccid->ReadAccidental(accid);
     vrvAccid->ReadAccidentalGestural(accid);
     vrvAccid->ReadAccidLog(accid);
@@ -5826,6 +5832,7 @@ bool MEIInput::ReadArtic(Object *parent, pugi::xml_node artic)
     Artic *vrvArtic = new Artic();
     this->ReadLayerElement(artic, vrvArtic);
 
+    this->ReadVisualOffsetInterface(artic, vrvArtic);
     vrvArtic->ReadArticulation(artic);
     vrvArtic->ReadColor(artic);
     vrvArtic->ReadEnclosingChars(artic);
@@ -5948,6 +5955,7 @@ bool MEIInput::ReadClef(Object *parent, pugi::xml_node clef)
     Clef *vrvClef = new Clef();
     this->ReadLayerElement(clef, vrvClef);
     this->ReadFacsimileInterface(clef, vrvClef);
+    this->ReadVisualOffsetInterface(clef, vrvClef);
 
     vrvClef->ReadClefShape(clef);
     vrvClef->ReadColor(clef);
@@ -6282,6 +6290,7 @@ bool MEIInput::ReadNote(Object *parent, pugi::xml_node note)
     this->ReadDurationInterface(note, vrvNote);
     this->ReadPitchInterface(note, vrvNote);
     this->ReadPositionInterface(note, vrvNote);
+    this->ReadVisualOffsetInterface(note, vrvNote);
     vrvNote->ReadColor(note);
     vrvNote->ReadColoration(note);
     vrvNote->ReadCue(note);
@@ -6333,6 +6342,7 @@ bool MEIInput::ReadRest(Object *parent, pugi::xml_node rest)
 
     this->ReadDurationInterface(rest, vrvRest);
     this->ReadPositionInterface(rest, vrvRest);
+    this->ReadVisualOffsetInterface(rest, vrvRest);
     vrvRest->ReadColor(rest);
     vrvRest->ReadCue(rest);
     vrvRest->ReadExtSym(rest);

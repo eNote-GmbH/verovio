@@ -56,6 +56,7 @@ Note::Note()
     , DurationInterface()
     , PitchInterface()
     , PositionInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttColoration()
     , AttCue()
@@ -73,6 +74,7 @@ Note::Note()
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
     this->RegisterInterface(PitchInterface::GetAttClasses(), PitchInterface::IsInterface());
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_COLORATION);
     this->RegisterAttClass(ATT_CUE);
@@ -99,6 +101,7 @@ void Note::Reset()
     DurationInterface::Reset();
     PitchInterface::Reset();
     PositionInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetColoration();
     this->ResetCue();

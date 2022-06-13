@@ -13,6 +13,7 @@
 #include "durationinterface.h"
 #include "layerelement.h"
 #include "positioninterface.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -36,6 +37,7 @@ enum RestNotePlace { RNP_UNSET = -1, RNP_noteInSpace, RNP_noteOnLine };
 class Rest : public LayerElement,
              public DurationInterface,
              public PositionInterface,
+             public VisualOffsetInterface,
              public AttColor,
              public AttCue,
              public AttExtSym,
@@ -72,6 +74,10 @@ public:
     const PositionInterface *GetPositionInterface() const override { return vrv_cast<const PositionInterface *>(this); }
     DurationInterface *GetDurationInterface() override { return vrv_cast<DurationInterface *>(this); }
     const DurationInterface *GetDurationInterface() const override { return vrv_cast<const DurationInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
+    }
     ///@}
 
     /** Override the method since alignment is required */
