@@ -14,6 +14,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 //----------------------------------------------------------------------------
@@ -24,6 +25,7 @@
 //----------------------------------------------------------------------------
 
 class Glyph;
+class VisualOffsetInterface;
 
 namespace vrv {
 
@@ -237,6 +239,15 @@ public:
         }
     }
 
+    /**
+     * @name Method for starting, ending andd applying visual offsets
+     */
+    ///@{
+    void StartVisualOffset(const Object *object, int drawingUnit) override;
+    void EndVisualOffset(const Object *object) override;
+    void ApplyVisualOffset(int &x, int &y) override;
+    ///@}
+
 private:
     /**
      * Copy the content of a file to the output stream.
@@ -309,6 +320,7 @@ private:
     pugi::xml_node m_pageNode;
     pugi::xml_node m_currentNode;
     std::list<pugi::xml_node> m_svgNodeStack;
+    std::list<std::tuple<std::string, const VisualOffsetInterface *, int>> m_offsetList;
 
     // output as mm (for pdf generation with a 72 dpi)
     bool m_mmOutput;

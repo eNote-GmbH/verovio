@@ -37,6 +37,8 @@ public:
     void Reset() override;
     InterfaceId IsInterface() const override { return INTERFACE_VISUAL_OFFSET; }
     ///@}
+
+    bool HasOffsetValues() const { return this->HasHo() || this->HasVo(); }
 };
 } // namespace vrv
 

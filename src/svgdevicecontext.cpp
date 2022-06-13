@@ -20,6 +20,7 @@
 #include "staff.h"
 #include "staffdef.h"
 #include "view.h"
+#include "visualoffsetinterface.h"
 #include "vrv.h"
 
 //----------------------------------------------------------------------------
@@ -453,6 +454,34 @@ void SvgDeviceContext::EndPage()
     // end page-scale
     // m_svgNodeStack.pop_back();
     m_currentNode = m_svgNodeStack.back();
+}
+
+void SvgDeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
+{
+    const VisualOffsetInterface *vo = object->GetVisualOffsetInterface();
+    // make sure that we have interface we correct values first
+    if (!vo || !vo->HasOffsetValues()) return;
+
+    m_offsetList.push_back({ object->GetUuid(), vo, drawingUnit });
+}
+
+void SvgDeviceContext::EndVisualOffset(const Object *object)
+{
+    if (!m_offsetList.empty() && std::get<0>(m_offsetList.back()) == object->GetUuid()) {
+        m_offsetList.pop_back();
+    }
+}
+
+void SvgDeviceContext::ApplyVisualOffset(int &x, int &y)
+{
+    if (m_offsetList.empty()) return;
+
+    const auto [id, vo, unit] = m_offsetList.back();
+    const int xAdjust = vo->GetHo() > 0.0 ? vo->GetHo() * unit : 0;
+    const int yAdjust = vo->GetVo() > 0.0 ? vo->GetVo() * unit : 0;
+
+    x += xAdjust;
+    y += yAdjust;
 }
 
 void SvgDeviceContext::SetBackground(int colour, int style)

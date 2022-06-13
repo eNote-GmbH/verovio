@@ -146,6 +146,8 @@ void View::DrawFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2
 {
     assert(dc);
 
+    dc->ApplyVisualOffset(x1, y1);
+    dc->ApplyVisualOffset(x2, y2);
     this->DrawFilledRoundedRectangle(dc, x1, y1, x2, y2, 0);
 
     return;
@@ -295,6 +297,7 @@ void View::DrawSmuflCode(DeviceContext *dc, int x, int y, wchar_t code, int staf
     dc->SetBrush(m_currentColour, AxSOLID);
     dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, dimin));
 
+    dc->ApplyVisualOffset(x, y);
     dc->DrawMusicText(str, ToDeviceContextX(x), ToDeviceContextY(y), setBBGlyph);
 
     dc->ResetFont();
@@ -363,6 +366,7 @@ void View::DrawSmuflString(DeviceContext *dc, int x, int y, std::wstring s, data
         xDC -= extend.m_width;
     }
 
+    dc->ApplyVisualOffset(xDC, y);
     dc->DrawMusicText(s, xDC, ToDeviceContextY(y), setBBGlyph);
 
     dc->ResetFont();

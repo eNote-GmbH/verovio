@@ -297,6 +297,15 @@ public:
      */
     virtual bool UseGlobalStyling() { return false; }
 
+    /**
+     * @name Method for starting, ending andd applying visual offsets
+     */
+    ///@{
+    virtual void StartVisualOffset(const Object *object, int drawingUnit) = 0;
+    virtual void EndVisualOffset(const Object *object) = 0;
+    virtual void ApplyVisualOffset(int &x, int &y) = 0;
+    ///@}
+
     //----------------//
     // Static methods //
     //----------------//

@@ -152,6 +152,15 @@ public:
     void AddDescription(const std::string &text) override{};
     ///@}
 
+    /**
+     * @name Method for starting, ending andd applying visual offsets
+     */
+    ///@{
+    void StartVisualOffset(const Object *object, int drawingUnit) override{ /*Do nothing*/ };
+    void EndVisualOffset(const Object *object) override{ /*Do nothing*/ };
+    void ApplyVisualOffset(int &x, int &y) override{ /*Do nothing*/ };
+    ///@}
+
 private:
     /**
      *
