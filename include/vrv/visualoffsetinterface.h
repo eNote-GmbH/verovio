@@ -39,6 +39,12 @@ public:
     ///@}
 
     bool HasOffsetValues() const { return this->HasHo() || this->HasVo(); }
+    bool HasOffset2Values() const
+    {
+        return this->HasStartho() || this->HasEndho() || this->HasStartvo() || this->HasEndvo();
+    }
+
+    void AlterPosition(std::vector<std::pair<int *, int *>> &points, ClassId classId, int unit) const;
 };
 } // namespace vrv
 

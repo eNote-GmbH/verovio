@@ -240,12 +240,12 @@ public:
     }
 
     /**
-     * @name Method for starting, ending andd applying visual offsets
+     * @name Method for starting, ending and applying visual offsets
      */
     ///@{
     void StartVisualOffset(const Object *object, int drawingUnit) override;
     void EndVisualOffset(const Object *object) override;
-    void ApplyVisualOffset(int &x, int &y) override;
+    void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) override;
     ///@}
 
 private:
@@ -320,7 +320,7 @@ private:
     pugi::xml_node m_pageNode;
     pugi::xml_node m_currentNode;
     std::list<pugi::xml_node> m_svgNodeStack;
-    std::list<std::tuple<std::string, const VisualOffsetInterface *, int>> m_offsetList;
+    std::list<std::tuple<std::string, const VisualOffsetInterface *, ClassId, int>> m_offsetList;
 
     // output as mm (for pdf generation with a 72 dpi)
     bool m_mmOutput;

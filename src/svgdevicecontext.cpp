@@ -460,9 +460,9 @@ void SvgDeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
 {
     const VisualOffsetInterface *vo = object->GetVisualOffsetInterface();
     // make sure that we have interface we correct values first
-    if (!vo || !vo->HasOffsetValues()) return;
+    if (!vo || (!vo->HasOffsetValues() && !vo->HasOffset2Values())) return;
 
-    m_offsetList.push_back({ object->GetUuid(), vo, drawingUnit });
+    m_offsetList.push_back({ object->GetUuid(), vo, object->GetClassId(), drawingUnit });
 }
 
 void SvgDeviceContext::EndVisualOffset(const Object *object)
@@ -472,16 +472,12 @@ void SvgDeviceContext::EndVisualOffset(const Object *object)
     }
 }
 
-void SvgDeviceContext::ApplyVisualOffset(int &x, int &y)
+void SvgDeviceContext::ApplyVisualOffset(std::vector<std::pair<int *, int *>> points)
 {
     if (m_offsetList.empty()) return;
 
-    const auto [id, vo, unit] = m_offsetList.back();
-    const int xAdjust = vo->HasHo() ? vo->GetHo() * unit : 0;
-    const int yAdjust = vo->HasVo() ? vo->GetVo() * unit : 0;
-
-    x += xAdjust;
-    y += yAdjust;
+    const auto [id, vo, classId, unit] = m_offsetList.back();
+    vo->AlterPosition(points, classId, unit);
 }
 
 void SvgDeviceContext::SetBackground(int colour, int style)

@@ -75,6 +75,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
     assert(measure);
     assert(element);
 
+    dc->StartVisualOffset(element, m_doc->GetDrawingUnit(100));
     // For dir, dynam, fermata, and harm, we do not consider the @tstamp2 for rendering
     if (element->Is(
             { BEAMSPAN, BRACKETSPAN, FIGURE, GLISS, HAIRPIN, LV, OCTAVE, PHRASE, PITCHINFLECTION, SLUR, TIE })) {
@@ -152,6 +153,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
         assert(turn);
         this->DrawTurn(dc, turn, measure, system);
     }
+    dc->EndVisualOffset(element);
 }
 
 void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *system)
@@ -307,6 +309,7 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
             }
         }
 
+        dc->StartVisualOffset(element, m_doc->GetDrawingUnit((*staffIter)->m_drawingStaffSize));
         if (element->Is(DIR)) {
             // cast to Dir check in DrawControlElementConnector
             this->DrawControlElementConnector(
@@ -389,6 +392,7 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
             // cast to Trill check in DrawTrill
             this->DrawTrillExtension(dc, dynamic_cast<Trill *>(element), x1, x2, *staffIter, spanningType, graphic);
         }
+        dc->EndVisualOffset(element);
     }
 }
 
@@ -651,25 +655,41 @@ void View::DrawHairpin(
     dc->SetPen(m_currentColour, hairpinThickness, AxSOLID, 0, 0, AxCAP_SQUARE, AxJOIN_BEVEL);
     if (startY == 0) {
         Point p[3];
-        p[0] = { ToDeviceContextX(x2), ToDeviceContextY(y2 - endY / 2) };
+        int yTop = y2 + endY / 2;
+        int yBottom = y2 - endY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &x2, &yBottom }, { &x1, &y1 }, { &ignore, &yTop } });
+        p[0] = { ToDeviceContextX(x2), ToDeviceContextY(yBottom) };
         p[1] = { ToDeviceContextX(x1), ToDeviceContextY(y1) };
-        p[2] = { p[0].x, ToDeviceContextY(y2 + endY / 2) };
+        p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
     else if (endY == 0) {
         Point p[3];
-        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(y1 - startY / 2) };
+        int yTop = y1 + startY / 2;
+        int yBottom = y1 - startY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &x1, &yBottom }, { &x2, &y2 }, { &ignore, &yTop } });
+        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yBottom) };
         p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y2) };
-        p[2] = { p[0].x, ToDeviceContextY(y1 + startY / 2) };
+        p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
     else {
         Point p[2];
-        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(y1 - startY / 2) };
-        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y2 - endY / 2) };
+        int yLeft = y1 - startY / 2;
+        int yRight = y2 - endY / 2;
+        dc->ApplyVisualOffset({ { &x1, &yLeft }, { &x2, &yRight } });
+        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yLeft) };
+        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(yRight) };
         dc->DrawPolyline(2, p);
-        p[0].y = ToDeviceContextY(y1 + startY / 2);
-        p[1].y = ToDeviceContextY(y2 + endY / 2);
+
+        yLeft = y1 + startY / 2;
+        yRight = y2 + endY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &ignore, &yLeft }, { &ignore, &yRight } });
+        p[0].y = ToDeviceContextY(yLeft);
+        p[1].y = ToDeviceContextY(yRight);
         dc->DrawPolyline(2, p);
     }
     dc->ResetPen();
@@ -817,6 +837,7 @@ void View::DrawOctave(
             // make sure we have a minimal extender line
             x2 = x1 + extend.m_height / 4;
         }
+        dc->ApplyVisualOffset({ { &x1, &y1 }, { &x2, &y2 } });
         dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1 + lineShift), ToDeviceContextX(x2),
             ToDeviceContextY(y1 + lineShift));
 
