@@ -563,10 +563,6 @@
   <g c="ED8B" x="-29.0" y="-24.0" w="127.0" h="295.0" h-a-x="101" n="fingeringRightParenthesisItalic"/>
   <g c="ED8C" x="0.0" y="-20.0" w="127.0" h="289.0" h-a-x="109" n="fingeringLeftBracketItalic"/>
   <g c="ED8D" x="-21.0" y="-20.0" w="129.0" h="289.0" h-a-x="107" n="fingeringRightBracketItalic"/>
-  <g c="F406" x="0.0" y="-585.0" w="850.0" h="846.0" h-a-x="850" n="fClefFrench"/>
-  <g c="F407" x="0.0" y="-582.0" w="1050.0" h="855.0" h-a-x="1050" n="fClef19thCentury"/>
-  <g c="F408" x="0.0" y="-641.0" w="593.0" h="1282.0" h-a-x="593" n="cClefFrench"/>
-  <g c="F4BF" x="0.0" y="-559.0" w="620.0" h="1107.0" h-a-x="620" n="cClefFrench20C"/>
   <g c="ED8E" x="0.0" y="-138.0" w="249.0" h="395.0" h-a-x="249" n="fingeringQLower"/>
   <g c="ED8F" x="0.0" y="-7.0" w="210.0" h="270.0" h-a-x="210" n="fingeringSLower"/>
 </bounding-boxes>

@@ -420,6 +420,7 @@ void Doc::ExportMIDI(smf::MidiFile *midiFile)
             GenerateMIDIParams generateMIDIParams(midiFile, &generateMIDI);
             generateMIDIParams.m_midiChannel = midiChannel;
             generateMIDIParams.m_midiTrack = midiTrack;
+            generateMIDIParams.m_staffN = staves->first;
             generateMIDIParams.m_transSemi = transSemi;
             generateMIDIParams.m_currentTempo = tempo;
             generateMIDIParams.m_deferredNotes = initMIDIParams.m_deferredNotes;
