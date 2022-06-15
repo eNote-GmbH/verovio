@@ -40,12 +40,14 @@ static const ClassRegistrar<Slur> s_factory("slur", SLUR);
 Slur::Slur()
     : ControlElement(SLUR, "slur-")
     , TimeSpanningInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
     , AttCurveRend()
     , AttLayerIdent()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -57,12 +59,14 @@ Slur::Slur()
 Slur::Slur(ClassId classId)
     : ControlElement(classId, "slur-")
     , TimeSpanningInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
     , AttCurveRend()
     , AttLayerIdent()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -74,12 +78,14 @@ Slur::Slur(ClassId classId)
 Slur::Slur(ClassId classId, const std::string &classIdStr)
     : ControlElement(classId, classIdStr)
     , TimeSpanningInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
     , AttCurveRend()
     , AttLayerIdent()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -94,6 +100,7 @@ void Slur::Reset()
 {
     ControlElement::Reset();
     TimeSpanningInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCurvature();
     this->ResetCurveRend();

@@ -1921,6 +1921,7 @@ void MEIOutput::WriteHairpin(pugi::xml_node currentNode, Hairpin *hairpin)
 
     this->WriteControlElement(currentNode, hairpin);
     this->WriteTimeSpanningInterface(currentNode, hairpin);
+    this->WriteVisualOffsetInterface(currentNode, hairpin);
     hairpin->WriteColor(currentNode);
     hairpin->WriteHairpinLog(currentNode);
     hairpin->WriteHairpinVis(currentNode);
@@ -1981,6 +1982,7 @@ void MEIOutput::WriteOctave(pugi::xml_node currentNode, Octave *octave)
 
     this->WriteControlElement(currentNode, octave);
     this->WriteTimeSpanningInterface(currentNode, octave);
+    this->WriteVisualOffsetInterface(currentNode, octave);
     octave->WriteColor(currentNode);
     octave->WriteExtender(currentNode);
     octave->WriteLineRend(currentNode);
@@ -2036,6 +2038,7 @@ void MEIOutput::WriteSlur(pugi::xml_node currentNode, Slur *slur)
 
     this->WriteControlElement(currentNode, slur);
     this->WriteTimeSpanningInterface(currentNode, slur);
+    this->WriteVisualOffsetInterface(currentNode, slur);
     slur->WriteColor(currentNode);
     slur->WriteCurvature(currentNode);
     slur->WriteCurveRend(currentNode);
@@ -2077,6 +2080,7 @@ void MEIOutput::WriteTie(pugi::xml_node currentNode, Tie *tie)
 
     this->WriteControlElement(currentNode, tie);
     this->WriteTimeSpanningInterface(currentNode, tie);
+    this->WriteVisualOffsetInterface(currentNode, tie);
     tie->WriteColor(currentNode);
     tie->WriteCurvature(currentNode);
     tie->WriteCurveRend(currentNode);
@@ -5273,6 +5277,7 @@ bool MEIInput::ReadHairpin(Object *parent, pugi::xml_node hairpin)
     this->ReadControlElement(hairpin, vrvHairpin);
 
     this->ReadTimeSpanningInterface(hairpin, vrvHairpin);
+    this->ReadVisualOffsetInterface(hairpin, vrvHairpin);
     vrvHairpin->ReadColor(hairpin);
     vrvHairpin->ReadHairpinLog(hairpin);
     vrvHairpin->ReadHairpinVis(hairpin);
@@ -5356,6 +5361,7 @@ bool MEIInput::ReadOctave(Object *parent, pugi::xml_node octave)
     this->ReadControlElement(octave, vrvOctave);
 
     this->ReadTimeSpanningInterface(octave, vrvOctave);
+    this->ReadVisualOffsetInterface(octave, vrvOctave);
     vrvOctave->ReadColor(octave);
     vrvOctave->ReadExtender(octave);
     vrvOctave->ReadLineRend(octave);
@@ -5436,6 +5442,7 @@ bool MEIInput::ReadSlur(Object *parent, pugi::xml_node slur)
     this->ReadControlElement(slur, vrvSlur);
 
     this->ReadTimeSpanningInterface(slur, vrvSlur);
+    this->ReadVisualOffsetInterface(slur, vrvSlur);
     vrvSlur->ReadColor(slur);
     vrvSlur->ReadCurvature(slur);
     vrvSlur->ReadCurveRend(slur);
@@ -5468,6 +5475,7 @@ bool MEIInput::ReadTie(Object *parent, pugi::xml_node tie)
     this->ReadControlElement(tie, vrvTie);
 
     this->ReadTimeSpanningInterface(tie, vrvTie);
+    this->ReadVisualOffsetInterface(tie, vrvTie);
     vrvTie->ReadColor(tie);
     vrvTie->ReadCurvature(tie);
     vrvTie->ReadCurveRend(tie);
