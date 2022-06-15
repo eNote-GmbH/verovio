@@ -477,8 +477,8 @@ void SvgDeviceContext::ApplyVisualOffset(int &x, int &y)
     if (m_offsetList.empty()) return;
 
     const auto [id, vo, unit] = m_offsetList.back();
-    const int xAdjust = vo->GetHo() > 0.0 ? vo->GetHo() * unit : 0;
-    const int yAdjust = vo->GetVo() > 0.0 ? vo->GetVo() * unit : 0;
+    const int xAdjust = vo->HasHo() ? vo->GetHo() * unit : 0;
+    const int yAdjust = vo->HasVo() ? vo->GetVo() * unit : 0;
 
     x += xAdjust;
     y += yAdjust;
