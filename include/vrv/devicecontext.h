@@ -10,6 +10,7 @@
 
 #include <stack>
 #include <string>
+#include <tuple>
 
 //----------------------------------------------------------------------------
 
@@ -27,6 +28,7 @@ class Glyph;
 class Object;
 class View;
 class Zone;
+class VisualOffsetInterface;
 
 extern "C" {
 static inline double DegToRad(double deg)
@@ -301,9 +303,9 @@ public:
      * @name Method for starting, ending and applying visual offsets
      */
     ///@{
-    virtual void StartVisualOffset(const Object *object, int drawingUnit) = 0;
-    virtual void EndVisualOffset(const Object *object) = 0;
-    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) = 0;
+    virtual void StartVisualOffset(const Object *object, int drawingUnit);
+    virtual void EndVisualOffset(const Object *object);
+    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) ;
     ///@}
 
     //----------------//
@@ -346,6 +348,8 @@ private:
     /** stores the scale as requested by the used */
     double m_userScaleX;
     double m_userScaleY;
+    
+    std::list<std::tuple<std::string, const VisualOffsetInterface *, ClassId, int>> m_offsetList;
 };
 
 } // namespace vrv

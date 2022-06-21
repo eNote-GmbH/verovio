@@ -456,30 +456,6 @@ void SvgDeviceContext::EndPage()
     m_currentNode = m_svgNodeStack.back();
 }
 
-void SvgDeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
-{
-    const VisualOffsetInterface *vo = object->GetVisualOffsetInterface();
-    // make sure that we have interface we correct values first
-    if (!vo || (!vo->HasOffsetValues() && !vo->HasOffset2Values())) return;
-
-    m_offsetList.push_back({ object->GetUuid(), vo, object->GetClassId(), drawingUnit });
-}
-
-void SvgDeviceContext::EndVisualOffset(const Object *object)
-{
-    if (!m_offsetList.empty() && std::get<0>(m_offsetList.back()) == object->GetUuid()) {
-        m_offsetList.pop_back();
-    }
-}
-
-void SvgDeviceContext::ApplyVisualOffset(std::vector<std::pair<int *, int *>> points)
-{
-    if (m_offsetList.empty()) return;
-
-    const auto [id, vo, classId, unit] = m_offsetList.back();
-    vo->AlterPosition(points, classId, unit);
-}
-
 void SvgDeviceContext::SetBackground(int colour, int style)
 {
     // nothing to do, we do not handle Background
