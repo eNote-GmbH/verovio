@@ -350,24 +350,22 @@ void View::DrawSmuflString(DeviceContext *dc, int x, int y, std::wstring s, data
 {
     assert(dc);
 
-    int xDC = ToDeviceContextX(x);
-
     dc->SetBrush(m_currentColour, AxSOLID);
     dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, dimin));
 
     if (alignment == HORIZONTALALIGNMENT_center) {
         TextExtend extend;
         dc->GetSmuflTextExtent(s, &extend);
-        xDC -= extend.m_width / 2;
+        x -= extend.m_width / 2;
     }
     else if (alignment == HORIZONTALALIGNMENT_right) {
         TextExtend extend;
         dc->GetSmuflTextExtent(s, &extend);
-        xDC -= extend.m_width;
+        x -= extend.m_width;
     }
 
-    dc->ApplyVisualOffset({ { &xDC, &y } });
-    dc->DrawMusicText(s, xDC, ToDeviceContextY(y), setBBGlyph);
+    dc->ApplyVisualOffset({ { &x, &y } });
+    dc->DrawMusicText(s, ToDeviceContextX(x), ToDeviceContextY(y), setBBGlyph);
 
     dc->ResetFont();
     dc->ResetBrush();

@@ -333,13 +333,13 @@ void DeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
     // make sure that we have interface we correct values first
     if (!vo || (!vo->HasOffsetValues() && !vo->HasOffset2Values())) return;
 
-    m_offsetList.push_back({ object->GetUuid(), vo, object->GetClassId(), drawingUnit });
+    m_offsetList.push({ object->GetUuid(), vo, object->GetClassId(), drawingUnit });
 }
 
 void DeviceContext::EndVisualOffset(const Object *object)
 {
-    if (!m_offsetList.empty() && std::get<0>(m_offsetList.back()) == object->GetUuid()) {
-        m_offsetList.pop_back();
+    if (!m_offsetList.empty() && (m_offsetList.top().id == object->GetUuid())) {
+        m_offsetList.pop();
     }
 }
 
@@ -347,8 +347,8 @@ void DeviceContext::ApplyVisualOffset(std::vector<std::pair<int *, int *>> point
 {
     if (m_offsetList.empty()) return;
 
-    const auto [id, vo, classId, unit] = m_offsetList.back();
-    vo->AlterPosition(points, classId, unit);
+    m_offsetList.top().offsetInterface->AlterPosition(
+        points, m_offsetList.top().classId, m_offsetList.top().drawingUnit);
 }
 
 } // namespace vrv

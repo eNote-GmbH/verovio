@@ -20,7 +20,6 @@
 #include "staff.h"
 #include "staffdef.h"
 #include "view.h"
-#include "visualoffsetinterface.h"
 #include "vrv.h"
 
 //----------------------------------------------------------------------------

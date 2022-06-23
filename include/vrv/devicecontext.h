@@ -10,7 +10,6 @@
 
 #include <stack>
 #include <string>
-#include <tuple>
 
 //----------------------------------------------------------------------------
 
@@ -40,6 +39,17 @@ static inline double RadToDeg(double deg)
     return (deg * 180.0) / M_PI;
 }
 }
+
+/**
+ * Helper struct to elements and thier offsets in the VisualOffsetInterface
+ */
+struct VisualOffsetData 
+{
+    std::string id;
+    const VisualOffsetInterface *offsetInterface;
+    ClassId classId;
+    int drawingUnit;
+};
 
 // ---------------------------------------------------------------------------
 // DeviceContext
@@ -349,7 +359,7 @@ private:
     double m_userScaleX;
     double m_userScaleY;
     
-    std::list<std::tuple<std::string, const VisualOffsetInterface *, ClassId, int>> m_offsetList;
+    std::stack<VisualOffsetData> m_offsetList;
 };
 
 } // namespace vrv
