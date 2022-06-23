@@ -59,6 +59,7 @@ public:
     {
         return vrv_cast<const TimeSpanningInterface *>(this);
     }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
     const VisualOffsetInterface *GetVisualOffsetInterface() const override
     {
         return vrv_cast<const VisualOffsetInterface *>(this);

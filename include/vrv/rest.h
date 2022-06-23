@@ -74,6 +74,7 @@ public:
     const PositionInterface *GetPositionInterface() const override { return vrv_cast<const PositionInterface *>(this); }
     DurationInterface *GetDurationInterface() override { return vrv_cast<DurationInterface *>(this); }
     const DurationInterface *GetDurationInterface() const override { return vrv_cast<const DurationInterface *>(this); }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
     const VisualOffsetInterface *GetVisualOffsetInterface() const override
     {
         return vrv_cast<const VisualOffsetInterface *>(this);

@@ -151,6 +151,7 @@ public:
     virtual const TimePointInterface *GetTimePointInterface() const { return NULL; }
     virtual TimeSpanningInterface *GetTimeSpanningInterface() { return NULL; }
     virtual const TimeSpanningInterface *GetTimeSpanningInterface() const { return NULL; }
+    virtual VisualOffsetInterface *GetVisualOffsetInterface() { return NULL; }
     virtual const VisualOffsetInterface *GetVisualOffsetInterface() const { return NULL; }
     ///@}
 
