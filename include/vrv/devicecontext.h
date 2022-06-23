@@ -41,7 +41,7 @@ static inline double RadToDeg(double deg)
 }
 
 /**
- * Helper struct to elements and thier offsets in the VisualOffsetInterface
+ * Helper struct to store elements and their offsets in the VisualOffsetInterface
  */
 struct VisualOffsetData 
 {
