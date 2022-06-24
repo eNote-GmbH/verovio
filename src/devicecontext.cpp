@@ -333,12 +333,12 @@ void DeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
     // make sure that we have interface we correct values first
     if (!vo || (!vo->HasOffsetValues() && !vo->HasOffset2Values())) return;
 
-    m_offsetList.push({ object->GetUuid(), vo, object->GetClassId(), drawingUnit });
+    m_offsetList.push({ object->GetID(), vo, object->GetClassId(), drawingUnit });
 }
 
 void DeviceContext::EndVisualOffset(const Object *object)
 {
-    if (!m_offsetList.empty() && (m_offsetList.top().id == object->GetUuid())) {
+    if (!m_offsetList.empty() && (m_offsetList.top().id == object->GetID())) {
         m_offsetList.pop();
     }
 }
