@@ -83,7 +83,12 @@ public:
      *
      * @return The ID as as string
      */
-    std::string GetUuid() { return m_doc.GetUuid(); }
+    std::string GetID() { return m_doc.GetID(); }
+
+    /**
+     * @name Deprecated version, same as GetID()
+     */
+    std::string GetUuid();
 
     /**
      * Get the resource path for the Toolkit instance.
@@ -657,6 +662,13 @@ public:
     void ContinueLayout();
 
     /**
+     * Skip the layout on load to speed up MIDI or timemap output
+     *
+     * @ingroup nodoc
+     */
+    void SkipLayoutOnLoad(bool value);
+
+    /**
      * Render the page to the deviceContext
      *
      * Page number is 1-based.
@@ -782,6 +794,8 @@ protected:
     Options *m_options;
 
 private:
+    bool m_skipLayoutOnLoad;
+
     /**
      * The C buffer string.
      */

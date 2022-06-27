@@ -24,6 +24,7 @@
 #include "layerelement.h"
 #include "pitchinterface.h"
 #include "transposition.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -49,6 +50,7 @@ class Note : public LayerElement,
              public DurationInterface,
              public PitchInterface,
              public PositionInterface,
+             public VisualOffsetInterface,
              public AttColor,
              public AttColoration,
              public AttCue,
@@ -89,6 +91,11 @@ public:
     const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
+    }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 
@@ -243,7 +250,7 @@ public:
 
     /**
      * Resovle @stem.sameas links by instanciating Note::m_stemSameas (*Note).
-     * Called twice from Object::PrepareLinks. Once to fill uuid / note pairs,
+     * Called twice from Object::PrepareLinks. Once to fill id / note pairs,
      * and once to resolve the link. The link is bi-directional, which means
      * that both notes have their m_stemSameas pointer instanciated.
      */

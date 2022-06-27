@@ -1242,6 +1242,12 @@
 		BD0562372518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
 		BD0562382518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
 		BD0562392518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
+		BD0CAE312859E3840049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE332859E3A10049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE342859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE352859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE362859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; };
+		BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; };
 		BD87768327CE8A11005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
 		BD87768427CE8A19005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
 		BD87768527CE8A1A005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
@@ -1749,6 +1755,8 @@
 		BBC19FC222B38C1400100F42 /* VerovioFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VerovioFramework.h; sourceTree = "<group>"; };
 		BD05622E2518CD12004057EB /* beamspan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = beamspan.h; path = include/vrv/beamspan.h; sourceTree = "<group>"; };
 		BD0562352518CD20004057EB /* beamspan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = beamspan.cpp; path = src/beamspan.cpp; sourceTree = "<group>"; };
+		BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = visualoffsetinterface.cpp; path = src/visualoffsetinterface.cpp; sourceTree = "<group>"; };
+		BD0CAE322859E3980049950E /* visualoffsetinterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = visualoffsetinterface.h; path = include/vrv/visualoffsetinterface.h; sourceTree = "<group>"; };
 		BD87768127CE89FA005B97EA /* layerdef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = layerdef.h; path = include/vrv/layerdef.h; sourceTree = "<group>"; };
 		BD87768227CE8A11005B97EA /* layerdef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = layerdef.cpp; path = src/layerdef.cpp; sourceTree = "<group>"; };
 		BDA81C20268B386C0065B802 /* metersiggrp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metersiggrp.h; path = include/vrv/metersiggrp.h; sourceTree = "<group>"; };
@@ -2046,6 +2054,8 @@
 				4DA60EDF1B6307A8006E2DFC /* textdirinterface.h */,
 				4DF289FE1A7545E500BA9F7D /* timeinterface.cpp */,
 				4DF289FC1A7545CC00BA9F7D /* timeinterface.h */,
+				BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */,
+				BD0CAE322859E3980049950E /* visualoffsetinterface.h */,
 			);
 			name = interfaces;
 			sourceTree = "<group>";
@@ -2506,6 +2516,7 @@
 				40C2E4212052A6EC0003625F /* pb.h in Headers */,
 				40BD9393206B95120037BF8E /* annot.h in Headers */,
 				4D81351B2322C2CC00F59C01 /* keyaccid.h in Headers */,
+				BD0CAE362859E3A50049950E /* visualoffsetinterface.h in Headers */,
 				4DEC4DD621C8295700D1D273 /* del.h in Headers */,
 				4DB726C81B8BB0F30040231B /* text.h in Headers */,
 				4D308101203DB69D00BC44F6 /* ref.h in Headers */,
@@ -2881,6 +2892,7 @@
 				35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */,
 				BB4C4A6722A9321F001F6AF0 /* atts_critapp.h in Headers */,
 				BB4C4B3E22A932D7001F6AF0 /* artic.h in Headers */,
+				BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */,
 				4DA0EABE22BB772C00A7EBEB /* atts_neumes.h in Headers */,
 				BB4C4B2222A932CF001F6AF0 /* dir.h in Headers */,
 				BB4C4B3C22A932D7001F6AF0 /* accid.h in Headers */,
@@ -3098,6 +3110,7 @@
 				4DB3D8D91F83D13C00B5FC2B /* turn.cpp in Sources */,
 				4DA0EAC422BB779400A7EBEB /* surface.cpp in Sources */,
 				4D1694051E3A44F300569BF4 /* iodarms.cpp in Sources */,
+				BD0CAE332859E3A10049950E /* visualoffsetinterface.cpp in Sources */,
 				4DEC4DAF21C81F0600D1D273 /* sic.cpp in Sources */,
 				4D81351F2322C41800F59C01 /* keyaccid.cpp in Sources */,
 				4D79642226C167100026288B /* pagemilestone.cpp in Sources */,
@@ -3301,6 +3314,7 @@
 				8F086EE8188539540037FD8E /* devicecontext.cpp in Sources */,
 				4D543E221B80AACF004B823C /* view_control.cpp in Sources */,
 				4DC12A781F7400B9000440E9 /* runningelement.cpp in Sources */,
+				BD0CAE312859E3840049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAEE22BB77C300A7EBEB /* editortoolkit_cmn.cpp in Sources */,
 				4DC12A631F73F898000440E9 /* pghead2.cpp in Sources */,
 				4DA0EAEA22BB77C300A7EBEB /* editortoolkit_neume.cpp in Sources */,
@@ -3537,6 +3551,7 @@
 				4D20741422A708C600E0765F /* view_tab.cpp in Sources */,
 				4D1BE7861C6A40A80086DC0E /* pugixml.cpp in Sources */,
 				400FEDD5206FA74D000D3233 /* gracegrp.cpp in Sources */,
+				BD0CAE342859E3A20049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAC522BB779400A7EBEB /* surface.cpp in Sources */,
 				4DB726C61B8BB0E80040231B /* text.cpp in Sources */,
 				4D79642326C167100026288B /* pagemilestone.cpp in Sources */,
@@ -3757,6 +3772,7 @@
 				BB4C4B0522A932C3001F6AF0 /* pgfoot.cpp in Sources */,
 				4DF092A82497711800239195 /* phrase.cpp in Sources */,
 				BB4C4ABF22A932B6001F6AF0 /* labelabbr.cpp in Sources */,
+				BD0CAE352859E3A20049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAC622BB779400A7EBEB /* surface.cpp in Sources */,
 				BB4C4ADB22A932BC001F6AF0 /* abbr.cpp in Sources */,
 				4D79642426C167100026288B /* pagemilestone.cpp in Sources */,

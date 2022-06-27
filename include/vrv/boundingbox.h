@@ -20,6 +20,7 @@ class BeamDrawingInterface;
 class Doc;
 class FloatingCurvePositioner;
 class Glyph;
+class Resources;
 
 //----------------------------------------------------------------------------
 // BoundingBox
@@ -152,6 +153,17 @@ public:
     ////}
 
     /**
+     * @name Return the left / right / top / bottom of the cut out rectangles (and use self bounding rect if there are
+     * none)
+     */
+    ///@{
+    int GetCutOutTop(const Resources &resources) const;
+    int GetCutOutBottom(const Resources &resources) const;
+    int GetCutOutLeft(const Resources &resources) const;
+    int GetCutOutRight(const Resources &resources) const;
+    ///@}
+
+    /**
      * Return true if the bounding box encloses the point.
      */
     bool Encloses(const Point point) const;
@@ -160,14 +172,14 @@ public:
      * Return intersection between the bounding box and the curve represented by the FloatingPositioner.
      * The Object pointed by the FloatingPositioner is expected to be a SLUR or a TIE
      */
-    int Intersects(FloatingCurvePositioner *curve, Accessor type, int margin = 0) const;
+    int Intersects(const FloatingCurvePositioner *curve, Accessor type, int margin = 0) const;
 
     /**
      * Return intersection between the bounding box and the beam represented by the BeamDrawingInterface.
      * A segment of the beam that matches horizontal position of the bounding box is taken to find whether there is
      * intersection.
      */
-    int Intersects(BeamDrawingInterface *beamInterface, Accessor type, int margin = 0) const;
+    int Intersects(const BeamDrawingInterface *beamInterface, Accessor type, int margin = 0) const;
 
     //----------------//
     // Static methods //
@@ -272,8 +284,8 @@ private:
      * bounding box.
      * Return 1 with no smufl glyph or no anchor, 2 with on anchor point, and 3 with 2 anchor points.
      */
-    int GetRectangles(
-        const SMuFLGlyphAnchor &anchor1, const SMuFLGlyphAnchor &anchor2, Point rect[3][2], const Doc *doc) const;
+    int GetRectangles(const SMuFLGlyphAnchor &anchor1, const SMuFLGlyphAnchor &anchor2, Point rect[3][2],
+        const Resources &resources) const;
 
     /**
      * Calculate the rectangles with 2 anchor points.

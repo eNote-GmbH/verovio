@@ -12,6 +12,7 @@
 #include "atts_gestural.h"
 #include "layerelement.h"
 #include "positioninterface.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -26,6 +27,7 @@ class AlignmentReference;
  */
 class Accid : public LayerElement,
               public PositionInterface,
+              public VisualOffsetInterface,
               public AttAccidental,
               public AttAccidentalGestural,
               public AttAccidLog,
@@ -56,6 +58,11 @@ public:
     ///@{
     PositionInterface *GetPositionInterface() override { return vrv_cast<PositionInterface *>(this); }
     const PositionInterface *GetPositionInterface() const override { return vrv_cast<const PositionInterface *>(this); }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
+    }
     ///@}
 
     /** Override the method since alignment is required */

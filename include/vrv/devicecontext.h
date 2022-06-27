@@ -27,6 +27,7 @@ class Glyph;
 class Object;
 class View;
 class Zone;
+class VisualOffsetInterface;
 
 extern "C" {
 static inline double DegToRad(double deg)
@@ -38,6 +39,17 @@ static inline double RadToDeg(double deg)
     return (deg * 180.0) / M_PI;
 }
 }
+
+/**
+ * Helper struct to store elements and their offsets in the VisualOffsetInterface
+ */
+struct VisualOffsetData 
+{
+    std::string id;
+    const VisualOffsetInterface *offsetInterface;
+    ClassId classId;
+    int drawingUnit;
+};
 
 // ---------------------------------------------------------------------------
 // DeviceContext
@@ -298,6 +310,15 @@ public:
      */
     virtual bool UseGlobalStyling() { return false; }
 
+    /**
+     * @name Method for starting, ending and applying visual offsets
+     */
+    ///@{
+    virtual void StartVisualOffset(const Object *object, int drawingUnit);
+    virtual void EndVisualOffset(const Object *object);
+    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) ;
+    ///@}
+
     //----------------//
     // Static methods //
     //----------------//
@@ -341,6 +362,8 @@ private:
     /** stores the scale as requested by the used */
     double m_userScaleX;
     double m_userScaleY;
+    
+    std::stack<VisualOffsetData> m_offsetList;
 };
 
 } // namespace vrv

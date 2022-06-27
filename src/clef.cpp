@@ -30,6 +30,7 @@ static const ClassRegistrar<Clef> s_factory("clef", CLEF);
 
 Clef::Clef()
     : LayerElement(CLEF, "clef-")
+    , VisualOffsetInterface()
     , AttClefShape()
     , AttColor()
     , AttLineLoc()
@@ -37,6 +38,7 @@ Clef::Clef()
     , AttStaffIdent()
     , AttVisibility()
 {
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_CLEFSHAPE);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
@@ -54,6 +56,7 @@ Clef::~Clef() {}
 void Clef::Reset()
 {
     LayerElement::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetClefShape();
     this->ResetColor();
     this->ResetEnclosingChars();

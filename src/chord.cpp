@@ -70,6 +70,7 @@ Chord::Chord()
     , DrawingListInterface()
     , StemmedDrawingInterface()
     , DurationInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttCue()
     , AttGraced()
@@ -79,6 +80,7 @@ Chord::Chord()
     , AttVisibility()
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
     this->RegisterAttClass(ATT_GRACED);
@@ -101,6 +103,7 @@ void Chord::Reset()
     DrawingListInterface::Reset();
     StemmedDrawingInterface::Reset();
     DurationInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCue();
     this->ResetGraced();
@@ -550,16 +553,16 @@ int Chord::AdjustOverlappingLayers(const Doc *doc, const std::vector<LayerElemen
     return 0;
 }
 
-std::list<Note *> Chord::GetAdjacentNotesList(const Staff *staff, int loc)
+std::list<const Note *> Chord::GetAdjacentNotesList(const Staff *staff, int loc) const
 {
-    const ListOfObjects &notes = this->GetList(this);
+    const ListOfConstObjects &notes = this->GetList(this);
 
-    std::list<Note *> adjacentNotes;
-    for (Object *obj : notes) {
-        Note *note = vrv_cast<Note *>(obj);
+    std::list<const Note *> adjacentNotes;
+    for (const Object *obj : notes) {
+        const Note *note = vrv_cast<const Note *>(obj);
         assert(note);
 
-        Staff *noteStaff = note->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+        const Staff *noteStaff = note->GetAncestorStaff(RESOLVE_CROSS_STAFF);
         if (noteStaff != staff) continue;
 
         const int locDiff = note->GetDrawingLoc() - loc;
@@ -605,7 +608,7 @@ int Chord::ConvertMarkupAnalytical(FunctorParams *functorParams)
 
     if (this->HasFermata()) {
         Fermata *fermata = new Fermata();
-        fermata->ConvertFromAnalyticalMarkup(this, this->GetUuid(), params);
+        fermata->ConvertFromAnalyticalMarkup(this, this->GetID(), params);
     }
 
     return FUNCTOR_CONTINUE;
@@ -751,6 +754,29 @@ int Chord::CalcStem(FunctorParams *functorParams)
     // And to the top note when down
     else
         stem->SetDrawingYRel(yMax - this->GetDrawingY());
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Chord::CalcChordNoteHeads(FunctorParams *functorParams)
+{
+    CalcChordNoteHeadsParams *params = vrv_params_cast<CalcChordNoteHeadsParams *>(functorParams);
+    assert(params);
+
+    Staff *staff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+
+    params->m_diameter = 0;
+    if (this->GetDrawingStemDir() == STEMDIRECTION_up) {
+        if (this->IsInBeam()) {
+            params->m_diameter = 2 * this->GetDrawingRadius(params->m_doc);
+        }
+        else {
+            const Note *bottomNote = this->GetBottomNote();
+            const wchar_t code = bottomNote->GetNoteheadGlyph(this->GetActualDur());
+            params->m_diameter = params->m_doc->GetGlyphWidth(
+                code, staff->m_drawingStaffSize, this->GetDrawingCueSize() ? bottomNote->GetDrawingCueSize() : false);
+        }
+    }
 
     return FUNCTOR_CONTINUE;
 }
@@ -932,7 +958,7 @@ int Chord::ResetData(FunctorParams *functorParams)
 int Chord::PrepareDataInitialization(FunctorParams *)
 {
     if (this->HasEmptyList(this)) {
-        LogWarning("Chord '%s' has no child note - a default note is added", this->GetUuid().c_str());
+        LogWarning("Chord '%s' has no child note - a default note is added", this->GetID().c_str());
         Note *rescueNote = new Note();
         this->AddChild(rescueNote);
     }

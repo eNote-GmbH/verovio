@@ -219,9 +219,9 @@ public:
     bool HasFilter() const;
     void SetFirstPage(int page);
     void SetLastPage(int page);
-    void SetFirstMeasure(const std::string &uuid);
-    void SetLastMeasure(const std::string &uuid);
-    void SetMdiv(const std::string &uuid);
+    void SetFirstMeasure(const std::string &id);
+    void SetLastMeasure(const std::string &id);
+    void SetMdiv(const std::string &id);
     void ResetFilter();
     ///@}
 
@@ -504,6 +504,7 @@ private:
     void WriteTextDirInterface(pugi::xml_node currentNode, TextDirInterface *interface);
     void WriteTimePointInterface(pugi::xml_node currentNode, TimePointInterface *interface);
     void WriteTimeSpanningInterface(pugi::xml_node currentNode, TimeSpanningInterface *interface);
+    void WriteVisualOffsetInterface(pugi::xml_node currentNode, VisualOffsetInterface *interface);
     ///@}
 
     /**
@@ -515,7 +516,7 @@ private:
 
     /** @name Methods for converting members into MEI attributes. */
     ///@{
-    std::string UuidToMeiStr(Object *element);
+    std::string IDToMeiStr(Object *element);
     std::string DocTypeToStr(DocType type);
     ///@}
 
@@ -544,10 +545,10 @@ private:
     int m_firstPage;
     int m_currentPage;
     int m_lastPage;
-    std::string m_firstMeasureUuid;
-    std::string m_lastMeasureUuid;
+    std::string m_firstMeasureID;
+    std::string m_lastMeasureID;
     RangeMatchLocation m_measureFilterMatchLocation;
-    std::string m_mdivUuid;
+    std::string m_mdivID;
     MatchLocation m_mdivFilterMatchLocation;
     ///@}
 
@@ -794,6 +795,7 @@ private:
     bool ReadTextDirInterface(pugi::xml_node element, TextDirInterface *interface);
     bool ReadTimePointInterface(pugi::xml_node element, TimePointInterface *interface);
     bool ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInterface *interface);
+    bool ReadVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface);
     ///@}
 
     /**
@@ -832,7 +834,7 @@ private:
      * @name Various methods for reading / converting values.
      */
     ///@{
-    void SetMeiUuid(pugi::xml_node element, Object *object);
+    void SetMeiID(pugi::xml_node element, Object *object);
     DocType StrToDocType(std::string type);
     std::wstring LeftTrim(std::wstring str);
     std::wstring RightTrim(std::wstring str);

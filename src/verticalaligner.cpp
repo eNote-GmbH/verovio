@@ -193,7 +193,7 @@ SystemAligner::SpacingType SystemAligner::GetAboveSpacingType(Staff *staff)
 
     auto iter = m_spacingTypes.find(staff->GetN());
     if (iter == m_spacingTypes.end()) {
-        LogWarning("No spacing type found matching @n=%d for '<%s>'", staff->GetN(), staff->GetUuid().c_str());
+        LogWarning("No spacing type found matching @n=%d for '<%s>'", staff->GetN(), staff->GetID().c_str());
         return SpacingType::None;
     }
 
@@ -436,20 +436,20 @@ double StaffAlignment::GetJustificationFactor(const Doc *doc) const
     return justificationFactor;
 }
 
-int StaffAlignment::CalcOverflowAbove(BoundingBox *box)
+int StaffAlignment::CalcOverflowAbove(const BoundingBox *box) const
 {
     if (box->Is(FLOATING_POSITIONER)) {
-        FloatingPositioner *positioner = vrv_cast<FloatingPositioner *>(box);
+        const FloatingPositioner *positioner = vrv_cast<const FloatingPositioner *>(box);
         assert(positioner);
         return positioner->GetContentTop() - this->GetYRel();
     }
     return box->GetSelfTop() - this->GetYRel();
 }
 
-int StaffAlignment::CalcOverflowBelow(BoundingBox *box)
+int StaffAlignment::CalcOverflowBelow(const BoundingBox *box) const
 {
     if (box->Is(FLOATING_POSITIONER)) {
-        FloatingPositioner *positioner = vrv_cast<FloatingPositioner *>(box);
+        const FloatingPositioner *positioner = vrv_cast<const FloatingPositioner *>(box);
         assert(positioner);
         return -(positioner->GetContentBottom() + m_staffHeight - this->GetYRel());
     }
@@ -640,7 +640,12 @@ ArrayOfFloatingPositioners StaffAlignment::FindAllFloatingPositioners(ClassId cl
     return positioners;
 }
 
-FloatingPositioner *StaffAlignment::GetCorrespFloatingPositioner(FloatingObject *object)
+FloatingPositioner *StaffAlignment::GetCorrespFloatingPositioner(const FloatingObject *object)
+{
+    return const_cast<FloatingPositioner *>(std::as_const(*this).GetCorrespFloatingPositioner(object));
+}
+
+const FloatingPositioner *StaffAlignment::GetCorrespFloatingPositioner(const FloatingObject *object) const
 {
     auto item = std::find_if(m_floatingPositioners.begin(), m_floatingPositioners.end(),
         [object](FloatingPositioner *positioner) { return positioner->GetObject() == object; });
@@ -782,7 +787,7 @@ int StaffAlignment::AdjustFloatingPositioners(FunctorParams *functorParams)
             int overflowAbove = 0;
             if (!skipAbove) overflowAbove = this->CalcOverflowAbove(*iter);
             if (overflowAbove > params->m_doc->GetDrawingStaffLineWidth(staffSize) / 2) {
-                // LogMessage("%sparams->m_doc top overflow: %d", this->GetUuid().c_str(), overflowAbove);
+                // LogMessage("%sparams->m_doc top overflow: %d", this->GetID().c_str(), overflowAbove);
                 this->SetOverflowAbove(overflowAbove);
                 m_overflowAboveBBoxes.push_back(*iter);
             }
@@ -790,7 +795,7 @@ int StaffAlignment::AdjustFloatingPositioners(FunctorParams *functorParams)
             int overflowBelow = 0;
             if (!skipBelow) overflowBelow = this->CalcOverflowBelow(*iter);
             if (overflowBelow > params->m_doc->GetDrawingStaffLineWidth(staffSize) / 2) {
-                // LogMessage("%s bottom overflow: %d", this->GetUuid().c_str(), overflowBelow);
+                // LogMessage("%s bottom overflow: %d", this->GetID().c_str(), overflowBelow);
                 this->SetOverflowBelow(overflowBelow);
                 m_overflowBelowBBoxes.push_back(*iter);
             }
@@ -813,6 +818,12 @@ int StaffAlignment::AdjustFloatingPositioners(FunctorParams *functorParams)
         if (place == STAFFREL_above) {
             overflowBoxes = &m_overflowAboveBBoxes;
         }
+        // Handle within placement (ignore collisions for certain classes)
+        if (place == STAFFREL_within) {
+            if (params->m_classId == DIR) continue;
+            if (params->m_classId == HAIRPIN) continue;
+        }
+
         auto i = overflowBoxes->begin();
         auto end = overflowBoxes->end();
         while (i != end) {

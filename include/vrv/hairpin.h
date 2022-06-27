@@ -12,6 +12,7 @@
 #include "atts_visual.h"
 #include "controlelement.h"
 #include "timeinterface.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -24,6 +25,7 @@ namespace vrv {
  */
 class Hairpin : public ControlElement,
                 public TimeSpanningInterface,
+                public VisualOffsetInterface,
                 public AttColor,
                 public AttHairpinLog,
                 public AttHairpinVis,
@@ -56,6 +58,11 @@ public:
     {
         return vrv_cast<const TimeSpanningInterface *>(this);
     }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
+    }
     ///@}
 
     /**
@@ -67,8 +74,8 @@ public:
     bool HasDrawingLength() const { return (m_drawingLength > 0); }
     ///@}
 
-    int CalcHeight(
-        Doc *doc, int staffSize, char spanningType, FloatingPositioner *leftHairpin, FloatingPositioner *rightHaipin);
+    int CalcHeight(const Doc *doc, int staffSize, char spanningType, const FloatingPositioner *leftHairpin,
+        const FloatingPositioner *rightHaipin) const;
 
     /**
      * @name Setter and getter for left and right links
@@ -76,15 +83,17 @@ public:
     ///@{
     void SetLeftLink(ControlElement *leftLink);
     ControlElement *GetLeftLink() { return m_leftLink; }
+    const ControlElement *GetLeftLink() const { return m_leftLink; }
     void SetRightLink(ControlElement *rightLink);
     ControlElement *GetRightLink() { return m_rightLink; }
+    const ControlElement *GetRightLink() const { return m_rightLink; }
     ///@}
 
     /**
      * Get left/right adjustments that needs to be done to the hairpin with set coordinates (leftX, rightX) for it not
      * to overlap with parent measure's barlines
      */
-    std::pair<int, int> GetBarlineOverlapAdjustment(int doubleUnit, int leftX, int rightX, int spanningType);
+    std::pair<int, int> GetBarlineOverlapAdjustment(int doubleUnit, int leftX, int rightX, int spanningType) const;
 
     //----------//
     // Functors //

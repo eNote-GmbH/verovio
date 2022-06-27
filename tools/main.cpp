@@ -382,7 +382,7 @@ int main(int argc, char **argv)
             case 'x':
                 seed = atoi(optarg);
                 options->m_xmlIdSeed.SetValue(seed);
-                vrv::Object::SeedUuid(seed);
+                vrv::Object::SeedID(seed);
                 break;
 
             case 'z':
@@ -463,6 +463,11 @@ int main(int argc, char **argv)
     }
     else {
         outfile = removeExtension(outfile);
+    }
+
+    // Skip the layout for MIDI and timemap output
+    if ((outformat == "midi") || (outformat == "timemap")) {
+        toolkit.SkipLayoutOnLoad(true);
     }
 
     // Load the std input or load the file
