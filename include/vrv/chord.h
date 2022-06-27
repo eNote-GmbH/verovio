@@ -12,6 +12,7 @@
 #include "drawinginterface.h"
 #include "durationinterface.h"
 #include "layerelement.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -34,6 +35,7 @@ class Chord : public LayerElement,
               public DrawingListInterface,
               public StemmedDrawingInterface,
               public DurationInterface,
+              public VisualOffsetInterface,
               public AttColor,
               public AttCue,
               public AttGraced,
@@ -64,6 +66,11 @@ public:
     const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
+    }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 
@@ -170,7 +177,7 @@ public:
      * Diatonic step difference is take up to 2 points, so HasAdjacentNotesInStaff() needs to be called first, to make
      * sure there actually are adjacent notes.
      */
-    std::list<Note *> GetAdjacentNotesList(const Staff *staff, int loc);
+    std::list<const Note *> GetAdjacentNotesList(const Staff *staff, int loc) const;
 
     //----------//
     // Functors //
@@ -203,6 +210,11 @@ public:
      * See Object::CalcStem
      */
     int CalcStem(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::CalcChordNoteHeads
+     */
+    int CalcChordNoteHeads(FunctorParams *functorParams) override;
 
     /**
      * See Object::CalcDots

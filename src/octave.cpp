@@ -26,6 +26,7 @@ static const ClassRegistrar<Octave> s_factory("octave", OCTAVE);
 Octave::Octave()
     : ControlElement(OCTAVE, "octave-")
     , TimeSpanningInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttExtender()
     , AttLineRend()
@@ -34,6 +35,7 @@ Octave::Octave()
     , AttOctaveDisplacement()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_EXTENDER);
     this->RegisterAttClass(ATT_LINEREND);
@@ -50,6 +52,7 @@ void Octave::Reset()
 {
     ControlElement::Reset();
     TimeSpanningInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetExtender();
     this->ResetLineRend();

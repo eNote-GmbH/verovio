@@ -50,7 +50,7 @@ void Page::Reset()
     m_score = NULL;
     m_scoreEnd = NULL;
     m_layoutDone = false;
-    this->ResetUuid();
+    this->ResetID();
 
     // by default we have no values and use the document ones
     m_pageHeight = -1;
@@ -231,7 +231,7 @@ void Page::LayOutTranscription(bool force)
     Functor calcStem(&Object::CalcStem);
     this->Process(&calcStem, &calcStemParams);
 
-    FunctorDocParams calcChordNoteHeadsParams(doc);
+    CalcChordNoteHeadsParams calcChordNoteHeadsParams(doc);
     Functor calcChordNoteHeads(&Object::CalcChordNoteHeads);
     this->Process(&calcChordNoteHeads, &calcChordNoteHeadsParams);
 
@@ -334,7 +334,7 @@ void Page::ResetAligners()
     Functor calcStem(&Object::CalcStem);
     this->Process(&calcStem, &calcStemParams);
 
-    FunctorDocParams calcChordNoteHeadsParams(doc);
+    CalcChordNoteHeadsParams calcChordNoteHeadsParams(doc);
     Functor calcChordNoteHeads(&Object::CalcChordNoteHeads);
     this->Process(&calcChordNoteHeads, &calcChordNoteHeadsParams);
 
