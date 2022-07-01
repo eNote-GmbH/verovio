@@ -2176,6 +2176,7 @@ void MEIOutput::WriteArtic(pugi::xml_node currentNode, Artic *artic)
     this->WriteLayerElement(currentNode, artic);
     this->WriteVisualOffsetInterface(currentNode, artic);
     artic->WriteArticulation(currentNode);
+    artic->WriteArticulationGestural(currentNode);
     artic->WriteColor(currentNode);
     artic->WriteEnclosingChars(currentNode);
     artic->WriteExtSym(currentNode);
@@ -2331,6 +2332,7 @@ void MEIOutput::WriteKeyAccid(pugi::xml_node currentNode, KeyAccid *keyAccid)
     keyAccid->WriteAccidental(currentNode);
     keyAccid->WriteColor(currentNode);
     keyAccid->WriteEnclosingChars(currentNode);
+    keyAccid->WriteExtSym(currentNode);
 }
 
 void MEIOutput::WriteKeySig(pugi::xml_node currentNode, KeySig *keySig)
@@ -5847,6 +5849,7 @@ bool MEIInput::ReadArtic(Object *parent, pugi::xml_node artic)
 
     this->ReadVisualOffsetInterface(artic, vrvArtic);
     vrvArtic->ReadArticulation(artic);
+    vrvArtic->ReadArticulationGestural(artic);
     vrvArtic->ReadColor(artic);
     vrvArtic->ReadEnclosingChars(artic);
     vrvArtic->ReadExtSym(artic);
@@ -6085,6 +6088,7 @@ bool MEIInput::ReadKeyAccid(Object *parent, pugi::xml_node keyAccid)
     vrvKeyAccid->ReadAccidental(keyAccid);
     vrvKeyAccid->ReadColor(keyAccid);
     vrvKeyAccid->ReadEnclosingChars(keyAccid);
+    vrvKeyAccid->ReadExtSym(keyAccid);
 
     parent->AddChild(vrvKeyAccid);
     this->ReadUnsupportedAttr(keyAccid, vrvKeyAccid);

@@ -9,6 +9,7 @@
 #define __VRV_ARTIC_H__
 
 #include "atts_externalsymbols.h"
+#include "atts_gestural.h"
 #include "atts_shared.h"
 #include "layerelement.h"
 #include "visualoffsetinterface.h"
@@ -22,6 +23,7 @@ namespace vrv {
 class Artic : public LayerElement,
               public VisualOffsetInterface,
               public AttArticulation,
+              public AttArticulationGestural,
               public AttColor,
               public AttEnclosingChars,
               public AttExtSym,

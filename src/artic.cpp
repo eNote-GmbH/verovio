@@ -43,6 +43,7 @@ Artic::Artic()
     : LayerElement(ARTIC, "artic-")
     , VisualOffsetInterface()
     , AttArticulation()
+    , AttArticulationGestural()
     , AttColor()
     , AttEnclosingChars()
     , AttExtSym()
@@ -50,6 +51,7 @@ Artic::Artic()
 {
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ARTICULATION);
+    this->RegisterAttClass(ATT_ARTICULATIONGESTURAL);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
     this->RegisterAttClass(ATT_EXTSYM);
@@ -65,6 +67,7 @@ void Artic::Reset()
     LayerElement::Reset();
     VisualOffsetInterface::Reset();
     this->ResetArticulation();
+    this->ResetArticulationGestural();
     this->ResetColor();
     this->ResetEnclosingChars();
     this->ResetExtSym();
