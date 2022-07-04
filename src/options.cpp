@@ -1196,11 +1196,6 @@ Options::Options()
     m_engravingDefaultsFile.Init(JsonSource::FilePath, "");
     this->Register(&m_engravingDefaultsFile, "engravingDefaultsFile", &m_generalLayout);
 
-    m_extendLastMeasure.SetInfo(
-        "Extend last measure", "Extend staff lines in the last measure till the end of the page");
-    m_extendLastMeasure.Init(false);
-    this->Register(&m_extendLastMeasure, "extendLastMeasure", &m_generalLayout);
-
     m_fingeringScale.SetInfo("Fingering scale", "The scale of fingering font compared to default font size");
     m_fingeringScale.Init(0.75, 0.25, 1);
     this->Register(&m_fingeringScale, "fingeringScale", &m_generalLayout);
@@ -1409,6 +1404,10 @@ Options::Options()
     m_systemDivider.SetInfo("System divider", "The display of system dividers");
     m_systemDivider.Init(SYSTEMDIVIDER_auto, &Option::s_systemDivider);
     this->Register(&m_systemDivider, "systemDivider", &m_generalLayout);
+
+    m_systemExtendLast.SetInfo("Extend last system", "Extend staff lines in the last measure till the end of the page");
+    m_systemExtendLast.Init(false);
+    this->Register(&m_systemExtendLast, "extendLastMeasure", &m_generalLayout);
 
     m_systemMaxPerPage.SetInfo("Max. System per Page", "Maximun number of systems per page");
     m_systemMaxPerPage.Init(0, 0, 24);

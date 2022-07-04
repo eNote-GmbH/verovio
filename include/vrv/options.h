@@ -655,7 +655,6 @@ public:
     OptionDbl m_dynamDist;
     OptionJson m_engravingDefaults;
     OptionJson m_engravingDefaultsFile;
-    OptionBool m_extendLastMeasure;
     OptionDbl m_fingeringScale;
     OptionString m_font;
     OptionDbl m_graceFactor;
@@ -706,6 +705,7 @@ public:
     OptionDbl m_stemWidth;
     OptionDbl m_subBracketThickness;
     OptionIntMap m_systemDivider;
+    OptionBool m_systemExtendLast;
     OptionInt m_systemMaxPerPage;
     OptionDbl m_textEnclosureThickness;
     OptionDbl m_thickBarlineThickness;

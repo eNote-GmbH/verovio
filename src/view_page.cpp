@@ -1271,7 +1271,7 @@ void View::DrawStaffLines(DeviceContext *dc, Staff *staff, Measure *measure, Sys
     }
     else {
         int extendedWidth = 0;
-        if (m_doc->GetOptions()->m_extendLastMeasure.GetValue() && system->IsLastOfMdiv()
+        if (m_doc->GetOptions()->m_systemExtendLast.GetValue() && system->IsLastOfMdiv()
             && system->m_drawingTotalWidth) {
             extendedWidth = m_doc->m_drawingPageContentWidth - system->m_drawingTotalWidth;
         }
