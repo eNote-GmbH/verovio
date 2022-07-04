@@ -1196,6 +1196,11 @@ Options::Options()
     m_engravingDefaultsFile.Init(JsonSource::FilePath, "");
     this->Register(&m_engravingDefaultsFile, "engravingDefaultsFile", &m_generalLayout);
 
+    m_extendLastMeasure.SetInfo(
+        "Extend last measure", "Extend staff lines in the last measure till the end of the page");
+    m_extendLastMeasure.Init(false);
+    this->Register(&m_extendLastMeasure, "extendLastMeasure", &m_generalLayout);
+
     m_fingeringScale.SetInfo("Fingering scale", "The scale of fingering font compared to default font size");
     m_fingeringScale.Init(0.75, 0.25, 1);
     this->Register(&m_fingeringScale, "fingeringScale", &m_generalLayout);
