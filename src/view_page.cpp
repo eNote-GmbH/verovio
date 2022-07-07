@@ -1335,8 +1335,8 @@ void View::DrawLedgerLines(DeviceContext *dc, Staff *staff, const ArrayOfLedgerL
 
     if (below) {
         gClass = "below";
-        y -= ySpace * (staff->m_drawingLines - 1);
-        ySpace = -ySpace;
+        ySpace *= -1;
+        y += ySpace * (staff->m_drawingLines - 1);
     }
     y += ySpace;
 
