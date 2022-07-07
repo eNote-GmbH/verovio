@@ -1270,8 +1270,13 @@ void View::DrawStaffLines(DeviceContext *dc, Staff *staff, Measure *measure, Sys
         y2 = y1 - staff->GetWidth() * tan(d * M_PI / 180.0);
     }
     else {
+        int extendedWidth = 0;
+        if (m_doc->GetOptions()->m_systemExtendLast.GetValue() && system->IsLastOfMdiv()
+            && system->m_drawingTotalWidth) {
+            extendedWidth = m_doc->m_drawingPageContentWidth - system->m_drawingTotalWidth;
+        }
         x1 = measure->GetDrawingX();
-        x2 = x1 + measure->GetWidth();
+        x2 = x1 + measure->GetWidth() + extendedWidth;
         y1 = staff->GetDrawingY();
         y2 = y1;
     }
@@ -1330,8 +1335,8 @@ void View::DrawLedgerLines(DeviceContext *dc, Staff *staff, const ArrayOfLedgerL
 
     if (below) {
         gClass = "below";
-        y -= ySpace * (staff->m_drawingLines - 1);
-        ySpace = -ySpace;
+        ySpace *= -1;
+        y += ySpace * (staff->m_drawingLines - 1);
     }
     y += ySpace;
 

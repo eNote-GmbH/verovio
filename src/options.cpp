@@ -962,6 +962,11 @@ Options::Options()
     m_condenseFirstPage.Init(false);
     this->Register(&m_condenseFirstPage, "condenseFirstPage", &m_general);
 
+    m_condenseNotLastSystem.SetInfo(
+        "Condense not last system", "When condensing a score never condense the last system");
+    m_condenseNotLastSystem.Init(false);
+    this->Register(&m_condenseNotLastSystem, "condenseNotLastSystem", &m_general);
+
     m_condenseTempoPages.SetInfo(
         "Condense tempo pages", "When condensing a score also condense pages with a tempo change");
     m_condenseTempoPages.Init(false);
@@ -1404,6 +1409,10 @@ Options::Options()
     m_systemDivider.SetInfo("System divider", "The display of system dividers");
     m_systemDivider.Init(SYSTEMDIVIDER_auto, &Option::s_systemDivider);
     this->Register(&m_systemDivider, "systemDivider", &m_generalLayout);
+
+    m_systemExtendLast.SetInfo("Extend last system", "Extend staff lines in the last measure till the end of the page");
+    m_systemExtendLast.Init(false);
+    this->Register(&m_systemExtendLast, "extendLastMeasure", &m_generalLayout);
 
     m_systemMaxPerPage.SetInfo("Max. System per Page", "Maximun number of systems per page");
     m_systemMaxPerPage.Init(0, 0, 24);

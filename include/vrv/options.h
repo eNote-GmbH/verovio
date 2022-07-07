@@ -596,6 +596,7 @@ public:
     OptionDbl m_breaksSmartSb;
     OptionIntMap m_condense;
     OptionBool m_condenseFirstPage;
+    OptionBool m_condenseNotLastSystem;
     OptionBool m_condenseTempoPages;
     OptionBool m_evenNoteSpacing;
     OptionString m_expand;
@@ -705,6 +706,7 @@ public:
     OptionDbl m_stemWidth;
     OptionDbl m_subBracketThickness;
     OptionIntMap m_systemDivider;
+    OptionBool m_systemExtendLast;
     OptionInt m_systemMaxPerPage;
     OptionDbl m_textEnclosureThickness;
     OptionString m_textFont;
