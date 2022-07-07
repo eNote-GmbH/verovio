@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "devicecontextbase.h"
+#include "resources.h"
 #include "vrvdef.h"
 
 //----------------------------------------------------------------------------
@@ -62,6 +63,7 @@ public:
     DeviceContext()
     {
         m_classId = DEVICE_CONTEXT;
+        m_resources = NULL;
         m_isDeactivatedX = false;
         m_isDeactivatedY = false;
         m_width = 0;
@@ -73,6 +75,7 @@ public:
     DeviceContext(ClassId classId)
     {
         m_classId = classId;
+        m_resources = NULL;
         m_isDeactivatedX = false;
         m_isDeactivatedY = false;
         m_width = 0;
@@ -84,6 +87,17 @@ public:
     virtual ~DeviceContext(){};
     ClassId GetClassId() const { return m_classId; }
     bool Is(ClassId classId) const { return (m_classId == classId); }
+    ///@}
+
+    /**
+     * @name Getter and setter for the resources
+     * Resources must be set before drawing
+     */
+    ///@{
+    const Resources *GetResources(bool showWarning = false) const;
+    bool HasResources() const { return (m_resources != NULL); }
+    void SetResources(const Resources *resources) { m_resources = resources; }
+    void ResetResources() { m_resources = NULL; }
     ///@}
 
     /**
@@ -112,7 +126,8 @@ public:
      */
     ///@{
     void SetBrush(int colour, int opacity);
-    void SetPen(int colour, int width, int opacity, int dashLength = 0, int lineCap = 0);
+    void SetPen(
+        int colour, int width, int style, int dashLength = 0, int gapLength = 0, int lineCap = 0, int lineJoin = 0);
     void SetFont(FontInfo *font);
     void ResetBrush();
     void ResetPen();
@@ -158,8 +173,8 @@ public:
     virtual void DrawEllipse(int x, int y, int width, int height) = 0;
     virtual void DrawEllipticArc(int x, int y, int width, int height, double start, double end) = 0;
     virtual void DrawLine(int x1, int y1, int x2, int y2) = 0;
-    virtual void DrawPolygon(int n, Point points[], int xoffset = 0, int yoffset = 0, int fill_style = AxODDEVEN_RULE)
-        = 0;
+    virtual void DrawPolyline(int n, Point points[], int xOffset = 0, int yOffset = 0) = 0;
+    virtual void DrawPolygon(int n, Point points[], int xOffset = 0, int yOffset = 0) = 0;
     virtual void DrawRectangle(int x, int y, int width, int height) = 0;
     virtual void DrawRotatedText(const std::string &text, int x, int y, double angle) = 0;
     virtual void DrawRoundedRectangle(int x, int y, int width, int height, int radius) = 0;
@@ -290,7 +305,7 @@ public:
     static int RGB2Int(char red, char green, char blue) { return (red << 16 | green << 8 | blue); }
 
 private:
-    void AddGlyphToTextExtend(Glyph *glyph, TextExtend *extend);
+    void AddGlyphToTextExtend(const Glyph *glyph, TextExtend *extend);
 
 public:
     //
@@ -308,6 +323,9 @@ protected:
 private:
     /** The class id representing the actual (derived) class */
     ClassId m_classId;
+
+    /** The resources (not owned by the device context) */
+    const Resources *m_resources;
 
     /** stores the width and height of the device context */
     int m_width;

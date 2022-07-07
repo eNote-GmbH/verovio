@@ -68,8 +68,13 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    FacsimileInterface *GetFacsimileInterface() override { return dynamic_cast<FacsimileInterface *>(this); }
-    LinkingInterface *GetLinkingInterface() override { return dynamic_cast<LinkingInterface *>(this); }
+    FacsimileInterface *GetFacsimileInterface() override { return vrv_cast<FacsimileInterface *>(this); }
+    const FacsimileInterface *GetFacsimileInterface() const override
+    {
+        return vrv_cast<const FacsimileInterface *>(this);
+    }
+    LinkingInterface *GetLinkingInterface() override { return vrv_cast<LinkingInterface *>(this); }
+    const LinkingInterface *GetLinkingInterface() const override { return vrv_cast<const LinkingInterface *>(this); }
     ///@}
 
     /**
@@ -92,7 +97,10 @@ public:
     /**
      * Return itself or the resolved @sameas (if any)
      */
-    LayerElement *ThisOrSameasAsLink();
+    ///@{
+    LayerElement *ThisOrSameasLink();
+    const LayerElement *ThisOrSameasLink() const;
+    ///@}
 
     /**
      * @name Set and get the flag for indication whether it is a ScoreDef or StaffDef attribute.
@@ -116,15 +124,25 @@ public:
     /** Return true if the element is a note within a ligature */
     bool IsInLigature() const;
     /** Return the FTrem parten if the element is a note or a chord within a fTrem */
-    FTrem *IsInFTrem();
+    FTrem *GetAncestorFTrem();
+    const FTrem *GetAncestorFTrem() const;
     /**
      * Return the beam parent if in beam
      * Look if the note or rest is in a beam.
      * Look for the first beam parent and check if the note is in its content list.
      * Looking in the content list is necessary for grace notes or imbricated beams.
      */
-    Beam *IsInBeam();
-    bool IsInBeamSpan() const;
+    Beam *GetAncestorBeam();
+    const Beam *GetAncestorBeam() const;
+    bool IsInBeam() const;
+    ///@}
+
+    /**
+     * @name Setter and getter for isInBeamspan flag
+     */
+    ///@{
+    void SetIsInBeamSpan(bool isInBeamSpan);
+    bool GetIsInBeamSpan() const { return m_isInBeamspan; }
     ///@}
 
     /**
@@ -138,7 +156,7 @@ public:
     /**
      * @return (cross) layer number, parent layer number for cross staff elements
      */
-    int GetOriginalLayerN();
+    int GetOriginalLayerN() const;
 
     /**
      * @name Get the X and Y drawing position
@@ -159,7 +177,7 @@ public:
     ///@}
 
     /**
-     * Ajust the m_drawingYRel for the element to be centered on the inner content of the measure
+     * Adjust the m_drawingYRel for the element to be centered on the inner content of the measure
      */
     void CenterDrawingX();
 
@@ -170,18 +188,22 @@ public:
      * articType indicates if the inside or outside artic part has to be taken into account (inside is taken
      * into account in any case)
      */
-    int GetDrawingTop(Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE);
-    int GetDrawingBottom(Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE);
+    int GetDrawingTop(const Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE) const;
+    int GetDrawingBottom(
+        const Doc *doc, int staffSize, bool withArtic = true, ArticType articType = ARTIC_INSIDE) const;
 
     /**
      * Return the drawing radius for notes and chords
      */
-    int GetDrawingRadius(Doc *doc, bool isInLigature = false);
+    int GetDrawingRadius(const Doc *doc, bool isInLigature = false) const;
 
     /**
      * Alignment getter
      */
-    Alignment *GetAlignment() const { return m_alignment; }
+    ///@{
+    Alignment *GetAlignment() { return m_alignment; }
+    const Alignment *GetAlignment() const { return m_alignment; }
+    ///@}
 
     /**
      * Get the ancestor or cross staff
@@ -198,13 +220,13 @@ public:
      */
     ///@{
     Staff *GetCrossStaff(Layer *&layer);
-    const Staff *GetCrossStaff(Layer *&layer) const;
+    const Staff *GetCrossStaff(const Layer *&layer) const;
     ///@}
 
     /**
      * Retrieve the direction of a cross-staff situation
      */
-    data_STAFFREL_basic GetCrossStaffRel();
+    data_STAFFREL_basic GetCrossStaffRel() const;
 
     /**
      * Get the StaffAlignment for which overflows need to be calculated against.
@@ -217,7 +239,8 @@ public:
      * @name Setter and getter for the Alignment the grace note is pointing to (NULL by default)
      */
     ///@{
-    Alignment *GetGraceAlignment() const;
+    Alignment *GetGraceAlignment();
+    const Alignment *GetGraceAlignment() const;
     void SetGraceAlignment(Alignment *graceAlignment);
     bool HasGraceAlignment() const { return (m_graceAlignment != NULL); }
     ///@}
@@ -225,37 +248,37 @@ public:
     /**
      * Returns the duration if the element has a DurationInterface
      */
-    double GetAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true,
-        data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn);
+    double GetAlignmentDuration(const Mensur *mensur = NULL, const MeterSig *meterSig = NULL, bool notGraceOnly = true,
+        data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn) const;
 
     /**
      * Returns the duration if the content of the layer element with a @sameas attribute.
      * Used only on beam, tuplet or ftrem have.
      */
-    double GetSameAsContentAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true,
-        data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn);
+    double GetSameAsContentAlignmentDuration(const Mensur *mensur = NULL, const MeterSig *meterSig = NULL,
+        bool notGraceOnly = true, data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn) const;
 
-    double GetContentAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true,
-        data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn);
+    double GetContentAlignmentDuration(const Mensur *mensur = NULL, const MeterSig *meterSig = NULL,
+        bool notGraceOnly = true, data_NOTATIONTYPE notationType = NOTATIONTYPE_cmn) const;
 
     /**
      * Get zone bounds using child elements with facsimile information.
      * Returns true if bounds can be constructed, false otherwise.
      */
-    bool GenerateZoneBounds(int *ulx, int *uly, int *lrx, int *lry);
+    bool GenerateZoneBounds(int *ulx, int *uly, int *lrx, int *lry) const;
 
     /**
      * Helper to adjust overlapping layers for notes, chords, stems, etc.
      * Returns the shift of the adjustment
      */
-    virtual int AdjustOverlappingLayers(Doc *doc, const std::vector<LayerElement *> &otherElements,
+    virtual int AdjustOverlappingLayers(const Doc *doc, const std::vector<LayerElement *> &otherElements,
         bool areDotsAdjusted, bool &isUnison, bool &stemSameAs);
 
     /**
      * Calculate note horizontal overlap with elemenents from another layers. Returns overlapMargin and index of other
      * element if it's in unison with it
      */
-    std::pair<int, bool> CalcElementHorizontalOverlap(Doc *doc, const std::vector<LayerElement *> &otherElements,
+    std::pair<int, bool> CalcElementHorizontalOverlap(const Doc *doc, const std::vector<LayerElement *> &otherElements,
         bool areDotsAdjusted, bool isChordElement, bool isLowerElement = false, bool unison = true);
 
     /**
@@ -267,6 +290,11 @@ public:
      * Get the stem mod for the element (if any)
      */
     virtual data_STEMMODIFIER GetDrawingStemMod() const;
+
+    /**
+     * Return true if cross-staff is set
+     */
+    virtual bool HasCrossStaff() const { return (m_crossStaff != NULL); }
 
     /**
      * Convert stem mode to corresponding glyph code
@@ -322,7 +350,7 @@ public:
     /**
      * See Object::AdjustTupletNumOverlap
      */
-    int AdjustTupletNumOverlap(FunctorParams *functorParams) override;
+    int AdjustTupletNumOverlap(FunctorParams *functorParams) const override;
 
     /**
      * See Object::AdjustXPos
@@ -335,9 +363,9 @@ public:
     int AdjustXRelForTranscription(FunctorParams *functorParams) override;
 
     /**
-     * See Object::PrepareDrawingCueSize
+     * See Object::PrepareCueSize
      */
-    int PrepareDrawingCueSize(FunctorParams *functorParams) override;
+    int PrepareCueSize(FunctorParams *functorParams) override;
 
     /**
      * See Object::PrepareCrossStaff
@@ -368,37 +396,37 @@ public:
     int PrepareTimeSpanning(FunctorParams *functorParams) override;
 
     /**
-     * See Object::SetAlignmentPitchPos
+     * See Object::CalcAlignmentPitchPos
      */
-    int SetAlignmentPitchPos(FunctorParams *functorParams) override;
+    int CalcAlignmentPitchPos(FunctorParams *functorParams) override;
 
     /**
      * See Object::FindSpannedLayerElements
      */
-    int FindSpannedLayerElements(FunctorParams *functorParams) override;
+    int FindSpannedLayerElements(FunctorParams *functorParams) const override;
 
     /**
      * See Object::LayerCountInTimeSpan
      */
-    int LayerCountInTimeSpan(FunctorParams *functorParams) override;
+    int LayerCountInTimeSpan(FunctorParams *functorParams) const override;
 
     /**
      * See Object::LayerElementsInTimeSpan
      */
-    int LayerElementsInTimeSpan(FunctorParams *functorParams) override;
+    int LayerElementsInTimeSpan(FunctorParams *functorParams) const override;
 
     /**
-     * See Object::CalcOnsetOffset
+     * See Object::InitOnsetOffset
      */
     ///@{
-    int CalcOnsetOffset(FunctorParams *functorParams) override;
+    int InitOnsetOffset(FunctorParams *functorParams) override;
     ///@}
 
     /**
-     * See Object::ResolveMIDITies
+     * See Object::InitTimemapTies
      */
     ///@{
-    int ResolveMIDITies(FunctorParams *functorParams) override;
+    int InitTimemapTies(FunctorParams *functorParams) override;
     ///@}
 
     /**
@@ -416,22 +444,22 @@ public:
     /**
      * See Object::CalcMaxMeasureDuration
      */
-    int CalcMaxMeasureDuration(FunctorParams *functorParams) override;
+    int InitMaxMeasureDuration(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
     /**
      * See Object::GetRelativeLayerElement
      */
-    int GetRelativeLayerElement(FunctorParams *functorParams) override;
+    int GetRelativeLayerElement(FunctorParams *functorParams) const override;
 
     /**
-     * See Object::PrepareSlurs
+     * See Object::CalcSlurDirection
      */
-    int PrepareSlurs(FunctorParams *functorParams) override;
+    int CalcSlurDirection(FunctorParams *functorParams) override;
 
     /**
      * See Object::PrepareDuration
@@ -439,37 +467,37 @@ public:
     int PrepareDuration(FunctorParams *functorParams) override;
 
     /**
-     * See Object::HorizontalLayoutCache
+     * See Object::CacheHorizontalLayout
      */
-    int HorizontalLayoutCache(FunctorParams *functorParams) override;
+    int CacheHorizontalLayout(FunctorParams *functorParams) override;
 
 protected:
     /**
      * Helper to figure whether two chords are in fully in unison based on the locations of the notes.
      * This function assumes that two chords are already in unison and checks whether chords can overlap with
      * their unison notes or if they should be placed separately.
-     * Returns true if all elements can safely overlap.
+     * Returns vector with all locations of elements in unison.
      */
-    virtual int CountElementsInUnison(
-        const std::set<int> &firstChord, const std::set<int> &secondChord, data_STEMDIRECTION stemDirection);
+    std::vector<int> GetElementsInUnison(
+        const std::set<int> &firstChord, const std::set<int> &secondChord, data_STEMDIRECTION stemDirection) const;
 
     /**
      * The note locations w.r.t. each staff, implemented for note and chord
      */
-    virtual MapOfNoteLocs CalcNoteLocations(NotePredicate predicate = NULL) { return {}; }
+    virtual MapOfNoteLocs CalcNoteLocations(NotePredicate predicate = NULL) const { return {}; }
 
     /**
      * The dot locations w.r.t. each staff, implemented for note and chord
      * Since dots for notes on staff lines can be shifted upwards or downwards, there are two choices: primary and
      * secondary
      */
-    virtual MapOfDotLocs CalcDotLocations(int layerCount, bool primary) { return {}; }
+    virtual MapOfDotLocs CalcDotLocations(int layerCount, bool primary) const { return {}; }
 
     /**
      * Helper function to calculate overlap with layer elements that
      * are placed within the duration of element
      */
-    int CalcLayerOverlap(Doc *doc, int direction, int y1, int y2);
+    int CalcLayerOverlap(const Doc *doc, int direction, int y1, int y2);
 
     /**
      * Calculate the optimal dot location for a note or chord
@@ -493,12 +521,17 @@ protected:
     static int GetCollisionCount(const MapOfDotLocs &dotLocs1, const MapOfDotLocs &dotLocs2);
 
 private:
-    int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticType type);
+    int GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticType type) const;
 
     /**
      * Get above/below overflow for the chord elements
      */
     void GetChordOverflow(StaffAlignment *&above, StaffAlignment *&below, int staffN);
+
+    /**
+     * Calculate offset and left overlap of the element
+     */
+    std::pair<int, int> CalculateXPosOffset(FunctorParams *functorParams);
 
 public:
     /** Absolute position X. This is used for facsimile (transcription) encoding */
@@ -509,9 +542,6 @@ public:
      */
     Staff *m_crossStaff;
     Layer *m_crossLayer;
-
-    // flag to indicate that layerElement belongs to the beamSpan
-    bool m_isInBeamspan;
 
 protected:
     Alignment *m_alignment;
@@ -544,7 +574,7 @@ protected:
     int m_cachedXRel;
 
     /**
-     * The cached drawing cue size set by PrepareDrawingCueSize
+     * The cached drawing cue size set by PrepareCueSize
      */
     bool m_drawingCueSize;
 
@@ -559,6 +589,9 @@ private:
      * This also stores the negative values for identifying cross-staff
      */
     int m_alignmentLayerN;
+
+    // flag to indicate that layerElement belongs to the beamSpan
+    bool m_isInBeamspan;
 };
 
 } // namespace vrv

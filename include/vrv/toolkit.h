@@ -13,6 +13,7 @@
 //----------------------------------------------------------------------------
 
 #include "doc.h"
+#include "docselection.h"
 #include "view.h"
 
 //----------------------------------------------------------------------------
@@ -82,7 +83,17 @@ public:
      *
      * @return The ID as as string
      */
-    std::string GetUuid() { return m_doc.GetUuid(); }
+    std::string GetID() { return m_doc.GetID(); }
+
+    /**
+     * @name Deprecated version, same as GetID()
+     */
+    std::string GetUuid();
+
+    /**
+     * Get the resource path for the Toolkit instance.
+     */
+    std::string GetResourcePath() const;
 
     /**
      * Set the resource path for the Toolkit instance.
@@ -94,6 +105,11 @@ public:
      * @return True if the resources was successfully loaded
      */
     bool SetResourcePath(const std::string &path);
+
+    /**
+     * Set the font in the resources
+     */
+    bool SetFont(const std::string &fontName);
 
     /**
      * Get the log content for the latest operation
@@ -287,6 +303,17 @@ public:
      * @return True if the option was successfully set
      */
     bool SetOutputTo(std::string const &outputTo);
+
+    /**
+     * Set the value for a selection.
+     * The selection will be applied only when some data is loaded or the layout is redone.
+     * The selection can be reset (cancelled) by passing an empty string or an empty JSON object.
+     * A selection across multiple mdivs is not possible.
+     *
+     * @param selection The selection as a stringified JSON object
+     * @return True if the selection was successfully parsed or reset
+     */
+    bool Select(const std::string &selection);
 
     ///@}
 
@@ -612,6 +639,13 @@ public:
     ///@{
 
     /**
+     * Skip the layout on load to speed up MIDI or timemap output
+     *
+     * @ingroup nodoc
+     */
+    void SkipLayoutOnLoad(bool value);
+
+    /**
      * Render the page to the deviceContext
      *
      * Page number is 1-based.
@@ -729,11 +763,14 @@ public:
     //
 private:
     Doc m_doc;
+    DocSelection m_docSelection;
     View m_view;
     FileFormat m_inputFrom;
     FileFormat m_outputTo;
 
     Options *m_options;
+
+    bool m_skipLayoutOnLoad;
 
     /**
      * The C buffer string.

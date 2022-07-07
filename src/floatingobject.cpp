@@ -131,7 +131,12 @@ void FloatingObject::SetCurrentFloatingPositioner(FloatingPositioner *boundingBo
     m_currentPositioner = boundingBox;
 }
 
-FloatingPositioner *FloatingObject::GetCorrespFloatingPositioner(FloatingObject *object)
+FloatingPositioner *FloatingObject::GetCorrespFloatingPositioner(const FloatingObject *object)
+{
+    return const_cast<FloatingPositioner *>(std::as_const(*this).GetCorrespFloatingPositioner(object));
+}
+
+const FloatingPositioner *FloatingObject::GetCorrespFloatingPositioner(const FloatingObject *object) const
 {
     if (!object || !m_currentPositioner) return NULL;
 
@@ -348,10 +353,12 @@ void FloatingPositioner::SetDrawingYRel(int drawingYRel, bool force)
     }
 }
 
-bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignment, BoundingBox *horizOverlapingBBox)
+bool FloatingPositioner::CalcDrawingYRel(
+    Doc *doc, const StaffAlignment *staffAlignment, const BoundingBox *horizOverlapingBBox)
 {
     assert(doc);
     assert(staffAlignment);
+    assert(m_object);
 
     int staffSize = staffAlignment->GetStaffSize();
     int yRel;
@@ -363,13 +370,25 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
         int minStaffDistance
             = doc->GetStaffDistance(m_object->GetClassId(), staffIndex, m_place) * doc->GetDrawingUnit(staffSize);
         if (this->GetObject()->Is(FERMATA) && (staffAlignment->GetStaff()->m_drawingLines == 1)) {
-            minStaffDistance = 2.5 * doc->GetDrawingUnit(staffAlignment->GetStaff()->m_drawingStaffSize);
+            minStaffDistance = 2.5 * doc->GetDrawingUnit(staffSize);
         }
         if (m_place == STAFFREL_above) {
             yRel = this->GetContentY1();
             yRel -= doc->GetBottomMargin(m_object->GetClassId()) * unit;
             this->SetDrawingYRel(yRel);
             this->SetDrawingYRel(-minStaffDistance);
+        }
+        else if (m_place == STAFFREL_within) {
+            yRel = staffAlignment->GetStaffHeight() / 2;
+            if (m_object->Is(TURN)) {
+                Turn *turn = vrv_cast<Turn *>(m_object);
+                assert(turn);
+                yRel += turn->GetTurnHeight(doc, staffSize) / 2;
+            }
+            else if (!m_object->Is({ DIR, HAIRPIN })) {
+                yRel += (this->GetContentY2() - this->GetContentY1()) / 2;
+            }
+            this->SetDrawingYRel(yRel);
         }
         else {
             yRel = staffAlignment->GetStaffHeight() + this->GetContentY2();
@@ -379,7 +398,7 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
         }
     }
     else {
-        FloatingCurvePositioner *curve = dynamic_cast<FloatingCurvePositioner *>(horizOverlapingBBox);
+        const FloatingCurvePositioner *curve = dynamic_cast<const FloatingCurvePositioner *>(horizOverlapingBBox);
         if (curve) {
             assert(curve->m_object);
         }
@@ -395,7 +414,7 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
                 return true;
             }
             else if (horizOverlapingBBox->Is(BEAM) && !isExtender) {
-                const int shift = this->Intersects(vrv_cast<Beam *>(horizOverlapingBBox), CONTENT, unit / 2);
+                const int shift = this->Intersects(vrv_cast<const Beam *>(horizOverlapingBBox), CONTENT, unit / 2);
                 if (shift != 0) {
                     this->SetDrawingYRel(this->GetDrawingYRel() - shift);
                 }
@@ -403,7 +422,7 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
             }
             yRel = -staffAlignment->CalcOverflowAbove(horizOverlapingBBox) + this->GetContentY1() - margin;
 
-            Object *object = dynamic_cast<Object *>(horizOverlapingBBox);
+            const Object *object = dynamic_cast<const Object *>(horizOverlapingBBox);
             // For elements, that can have extender lines, we need to make sure that they continue in next system on the
             // same height, as they were before (even if there are no overlapping elements in subsequent measures)
             if (isExtender) {
@@ -428,7 +447,7 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
                 return true;
             }
             else if (horizOverlapingBBox->Is(BEAM) && !isExtender) {
-                const int shift = this->Intersects(vrv_cast<Beam *>(horizOverlapingBBox), CONTENT, unit / 2);
+                const int shift = this->Intersects(vrv_cast<const Beam *>(horizOverlapingBBox), CONTENT, unit / 2);
                 if (shift != 0) {
                     this->SetDrawingYRel(this->GetDrawingYRel() - shift);
                 }
@@ -437,7 +456,7 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
             yRel = staffAlignment->CalcOverflowBelow(horizOverlapingBBox) + staffAlignment->GetStaffHeight()
                 + this->GetContentY2() + margin;
 
-            Object *object = dynamic_cast<Object *>(horizOverlapingBBox);
+            const Object *object = dynamic_cast<const Object *>(horizOverlapingBBox);
             // For elements, that can have extender lines, we need to make sure that they continue in next system on the
             // same height, as they were before (even if there are no overlapping elements in subsequent measures)
             if (isExtender) {
@@ -457,13 +476,14 @@ bool FloatingPositioner::CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignmen
     return true;
 }
 
-int FloatingPositioner::GetSpaceBelow(Doc *doc, StaffAlignment *staffAlignment, BoundingBox *horizOverlapingBBox)
+int FloatingPositioner::GetSpaceBelow(
+    const Doc *doc, const StaffAlignment *staffAlignment, const BoundingBox *horizOverlapingBBox) const
 {
     if (m_place != STAFFREL_between) return VRV_UNSET;
 
     int staffSize = staffAlignment->GetStaffSize();
 
-    FloatingCurvePositioner *curve = dynamic_cast<FloatingCurvePositioner *>(horizOverlapingBBox);
+    const FloatingCurvePositioner *curve = dynamic_cast<const FloatingCurvePositioner *>(horizOverlapingBBox);
     if (curve) {
         assert(curve->m_object);
     }
@@ -499,6 +519,11 @@ void FloatingCurvePositioner::ResetPositioner()
     this->ResetCurveParams();
 }
 
+bool FloatingCurvePositioner::HasCachedX12() const
+{
+    return ((m_cachedX12.first != VRV_UNSET) && (m_cachedX12.second != VRV_UNSET));
+}
+
 void FloatingCurvePositioner::ClearSpannedElements()
 {
     for (auto &spannedElement : m_spannedElements) {
@@ -513,16 +538,16 @@ void FloatingCurvePositioner::ResetCurveParams()
     m_points[1] = Point(0, 0);
     m_points[2] = Point(0, 0);
     m_points[3] = Point(0, 0);
-    m_angle = 0.0;
     m_thickness = 0;
     m_dir = curvature_CURVEDIR_NONE;
     m_crossStaff = NULL;
     m_cachedMinMaxY = VRV_UNSET;
-    ClearSpannedElements();
+    m_cachedX12 = { VRV_UNSET, VRV_UNSET };
+    m_requestedStaffSpace = 0;
+    this->ClearSpannedElements();
 }
 
-void FloatingCurvePositioner::UpdateCurveParams(
-    const Point points[4], float angle, int thickness, curvature_CURVEDIR curveDir)
+void FloatingCurvePositioner::UpdateCurveParams(const Point points[4], int thickness, curvature_CURVEDIR curveDir)
 {
     m_points[0] = points[0];
     m_points[1] = points[1];
@@ -533,7 +558,6 @@ void FloatingCurvePositioner::UpdateCurveParams(
     m_points[1].y -= currentY;
     m_points[2].y -= currentY;
     m_points[3].y -= currentY;
-    m_angle = angle;
     m_thickness = thickness;
     m_dir = curveDir;
     m_cachedMinMaxY = VRV_UNSET;
@@ -546,7 +570,7 @@ void FloatingCurvePositioner::UpdatePoints(const BezierCurve &bezier)
     points[1] = bezier.c1;
     points[2] = bezier.c2;
     points[3] = bezier.p2;
-    this->UpdateCurveParams(points, m_angle, m_thickness, m_dir);
+    this->UpdateCurveParams(points, m_thickness, m_dir);
 }
 
 void FloatingCurvePositioner::MoveFrontHorizontal(int distance)
@@ -573,7 +597,7 @@ void FloatingCurvePositioner::MoveBackVertical(int distance)
     m_points[3].y += distance;
 }
 
-int FloatingCurvePositioner::CalcMinMaxY(const Point points[4])
+int FloatingCurvePositioner::CalcMinMaxY(const Point points[4]) const
 {
     assert(this->GetObject());
     assert(this->GetObject()->Is({ LV, PHRASE, SLUR, TIE }));
@@ -590,16 +614,33 @@ int FloatingCurvePositioner::CalcMinMaxY(const Point points[4])
     return m_cachedMinMaxY;
 }
 
-int FloatingCurvePositioner::CalcAdjustment(BoundingBox *boundingBox, bool &discard, int margin, bool horizontalOverlap)
+int FloatingCurvePositioner::CalcAdjustment(
+    const BoundingBox *boundingBox, bool &discard, int margin, bool horizontalOverlap) const
 {
     int leftAdjustment, rightAdjustment;
     std::tie(leftAdjustment, rightAdjustment)
-        = CalcLeftRightAdjustment(boundingBox, discard, margin, horizontalOverlap);
+        = this->CalcLeftRightAdjustment(boundingBox, discard, margin, horizontalOverlap);
+    return std::max(leftAdjustment, rightAdjustment);
+}
+
+int FloatingCurvePositioner::CalcDirectionalAdjustment(
+    const BoundingBox *boundingBox, bool isCurveAbove, bool &discard, int margin, bool horizontalOverlap) const
+{
+    int leftAdjustment, rightAdjustment;
+    std::tie(leftAdjustment, rightAdjustment)
+        = this->CalcDirectionalLeftRightAdjustment(boundingBox, isCurveAbove, discard, margin, horizontalOverlap);
     return std::max(leftAdjustment, rightAdjustment);
 }
 
 std::pair<int, int> FloatingCurvePositioner::CalcLeftRightAdjustment(
-    BoundingBox *boundingBox, bool &discard, int margin, bool horizontalOverlap)
+    const BoundingBox *boundingBox, bool &discard, int margin, bool horizontalOverlap) const
+{
+    return this->CalcDirectionalLeftRightAdjustment(
+        boundingBox, (this->GetDir() == curvature_CURVEDIR_above), discard, margin, horizontalOverlap);
+}
+
+std::pair<int, int> FloatingCurvePositioner::CalcDirectionalLeftRightAdjustment(
+    const BoundingBox *boundingBox, bool isCurveAbove, bool &discard, int margin, bool horizontalOverlap) const
 {
     assert(boundingBox);
     assert(boundingBox->HasSelfBB());
@@ -613,11 +654,6 @@ std::pair<int, int> FloatingCurvePositioner::CalcLeftRightAdjustment(
     Point p2 = points[3];
 
     Accessor type = SELF;
-    // bool keepInside = element->Is({ARTIC, ARTIC_PART, NOTE, STEM}));
-    // The idea is to force only some of the elements to be inside a slur.
-    // However, this currently does work because skipping an adjustment can cause collision later depending on how
-    // the slur is eventually adjusted. Keeping everything inside now.
-    bool keepInside = true;
     discard = false;
 
     // first check if they overlap at all
@@ -627,17 +663,13 @@ std::pair<int, int> FloatingCurvePositioner::CalcLeftRightAdjustment(
     }
 
     Point topBezier[4], bottomBezier[4];
-    BoundingBox::CalcThickBezier(points, this->GetThickness(), this->GetAngle(), topBezier, bottomBezier);
+    BoundingBox::CalcThickBezier(points, this->GetThickness(), topBezier, bottomBezier);
 
     // Now calculate the left and right adjustments
     int leftAdjustment = 0;
     int rightAdjustment = 0;
 
-    if (this->GetDir() == curvature_CURVEDIR_above) {
-        // The curve is below the content - if the element needs to be kept inside (e.g. a note), then do not return.
-        if (((this->GetTopBy(type) + margin) < boundingBox->GetBottomBy(type)) && !keepInside) {
-            return { 0, 0 };
-        }
+    if (isCurveAbove) {
         int leftY = 0;
         int rightY = 0;
         // The curve overflows on both sides
@@ -662,14 +694,19 @@ std::pair<int, int> FloatingCurvePositioner::CalcLeftRightAdjustment(
             rightY = p2.y - margin;
         }
 
-        leftAdjustment = std::max(boundingBox->GetTopBy(type) - leftY, 0);
-        rightAdjustment = std::max(boundingBox->GetTopBy(type) - rightY, 0);
+        // For selected types use the cut out boundary
+        int boxTopY = boundingBox->GetTopBy(type);
+        if (boundingBox->Is(ACCID)) {
+            const Resources *resources = vrv_cast<const Object *>(boundingBox)->GetDocResources();
+            if (resources) {
+                boxTopY = boundingBox->GetCutOutTop(*resources);
+            }
+        }
+
+        leftAdjustment = std::max(boxTopY - leftY, 0);
+        rightAdjustment = std::max(boxTopY - rightY, 0);
     }
     else {
-        // The curve is below the content - if the element needs to be kept inside (e.g. a note), then do not return.
-        if (((this->GetTopBy(type) + margin) < boundingBox->GetBottomBy(type)) && !keepInside) {
-            return { 0, 0 };
-        }
         int leftY = 0;
         int rightY = 0;
         // The curve overflows on both sides
@@ -694,8 +731,17 @@ std::pair<int, int> FloatingCurvePositioner::CalcLeftRightAdjustment(
             rightY = p2.y + margin;
         }
 
-        leftAdjustment = std::max(leftY - boundingBox->GetBottomBy(type), 0);
-        rightAdjustment = std::max(rightY - boundingBox->GetBottomBy(type), 0);
+        // For selected types use the cut out boundary
+        int boxBottomY = boundingBox->GetBottomBy(type);
+        if (boundingBox->Is(ACCID)) {
+            const Resources *resources = vrv_cast<const Object *>(boundingBox)->GetDocResources();
+            if (resources) {
+                boxBottomY = boundingBox->GetCutOutBottom(*resources);
+            }
+        }
+
+        leftAdjustment = std::max(leftY - boxBottomY, 0);
+        rightAdjustment = std::max(rightY - boxBottomY, 0);
     }
 
     if ((leftAdjustment == 0) && (rightAdjustment == 0)) {
@@ -717,6 +763,32 @@ void FloatingCurvePositioner::GetPoints(Point points[4]) const
     points[1].y += currentY;
     points[2].y += currentY;
     points[3].y += currentY;
+}
+
+std::pair<int, int> FloatingCurvePositioner::CalcRequestedStaffSpace(const StaffAlignment *alignment) const
+{
+    assert(alignment);
+
+    const TimeSpanningInterface *interface = this->GetObject()->GetTimeSpanningInterface();
+    if (interface) {
+        const Staff *startStaff = interface->GetStart()->GetAncestorStaff(RESOLVE_CROSS_STAFF, false);
+        const Staff *endStaff = interface->GetEnd()->GetAncestorStaff(RESOLVE_CROSS_STAFF, false);
+
+        if (startStaff && endStaff) {
+            const int startStaffN = startStaff->GetN();
+            const int endStaffN = endStaff->GetN();
+            if (startStaffN != endStaffN) {
+                if (alignment->GetStaff()->GetN() == std::min(startStaffN, endStaffN)) {
+                    return { 0, m_requestedStaffSpace };
+                }
+                if (alignment->GetStaff()->GetN() == std::max(startStaffN, endStaffN)) {
+                    return { m_requestedStaffSpace, 0 };
+                }
+            }
+        }
+    }
+
+    return { 0, 0 };
 }
 
 //----------------------------------------------------------------------------
@@ -775,23 +847,23 @@ int FloatingObject::PrepareTimestamps(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int FloatingObject::FillStaffCurrentTimeSpanning(FunctorParams *functorParams)
+int FloatingObject::PrepareStaffCurrentTimeSpanning(FunctorParams *functorParams)
 {
     // Pass it to the pseudo functor of the interface
     if (this->HasInterface(INTERFACE_TIME_SPANNING)) {
         TimeSpanningInterface *interface = this->GetTimeSpanningInterface();
         assert(interface);
-        interface->InterfaceFillStaffCurrentTimeSpanning(functorParams, this);
+        interface->InterfacePrepareStaffCurrentTimeSpanning(functorParams, this);
     }
     if (this->HasInterface(INTERFACE_LINKING)) {
         LinkingInterface *interface = this->GetLinkingInterface();
         assert(interface);
-        interface->InterfaceFillStaffCurrentTimeSpanning(functorParams, this);
+        interface->InterfacePrepareStaffCurrentTimeSpanning(functorParams, this);
     }
     return FUNCTOR_CONTINUE;
 }
 
-int FloatingObject::ResetDrawing(FunctorParams *functorParams)
+int FloatingObject::ResetData(FunctorParams *functorParams)
 {
     // Clear all
     FloatingObject::s_drawingObjectIds.clear();
@@ -801,12 +873,12 @@ int FloatingObject::ResetDrawing(FunctorParams *functorParams)
     if (this->HasInterface(INTERFACE_TIME_SPANNING)) {
         TimeSpanningInterface *interface = this->GetTimeSpanningInterface();
         assert(interface);
-        return interface->InterfaceResetDrawing(functorParams, this);
+        return interface->InterfaceResetData(functorParams, this);
     }
     else if (this->HasInterface(INTERFACE_TIME_POINT)) {
         TimePointInterface *interface = this->GetTimePointInterface();
         assert(interface);
-        return interface->InterfaceResetDrawing(functorParams, this);
+        return interface->InterfaceResetData(functorParams, this);
     }
     m_drawingGrpId = 0;
     return FUNCTOR_CONTINUE;

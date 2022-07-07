@@ -44,8 +44,15 @@ namespace vrv {
 static const ClassRegistrar<Layer> s_factory("layer", LAYER);
 
 Layer::Layer()
-    : Object(LAYER, "layer-"), DrawingListInterface(), ObjectListInterface(), AttNInteger(), AttTyped(), AttVisibility()
+    : Object(LAYER, "layer-")
+    , DrawingListInterface()
+    , ObjectListInterface()
+    , AttCue()
+    , AttNInteger()
+    , AttTyped()
+    , AttVisibility()
 {
+    this->RegisterAttClass(ATT_CUE);
     this->RegisterAttClass(ATT_NINTEGER);
     this->RegisterAttClass(ATT_TYPED);
     this->RegisterAttClass(ATT_VISIBILITY);
@@ -74,6 +81,7 @@ void Layer::Reset()
 {
     Object::Reset();
     DrawingListInterface::Reset();
+    this->ResetCue();
     this->ResetNInteger();
     this->ResetTyped();
     this->ResetVisibility();
@@ -169,7 +177,7 @@ bool Layer::IsSupportedChild(Object *child)
 LayerElement *Layer::GetPrevious(LayerElement *element)
 {
     this->ResetList(this);
-    if (!element || this->GetList(this)->empty()) return NULL;
+    if (!element || this->HasEmptyList(this)) return NULL;
 
     return dynamic_cast<LayerElement *>(this->GetListPrevious(element));
 }
@@ -197,7 +205,12 @@ LayerElement *Layer::GetAtPos(int x)
 
 Clef *Layer::GetClef(LayerElement *test)
 {
-    Object *testObject = test;
+    return const_cast<Clef *>(std::as_const(*this).GetClef(test));
+}
+
+const Clef *Layer::GetClef(const LayerElement *test) const
+{
+    const Object *testObject = test;
 
     if (!test) {
         return this->GetCurrentClef();
@@ -210,11 +223,11 @@ Clef *Layer::GetClef(LayerElement *test)
     }
 
     if (testObject && testObject->Is(CLEF)) {
-        Clef *clef = vrv_cast<Clef *>(testObject);
+        const Clef *clef = vrv_cast<const Clef *>(testObject);
         assert(clef);
         return clef;
     }
-    Clef *facsClef = this->GetClefFacs(test);
+    const Clef *facsClef = this->GetClefFacs(test);
     if (facsClef != NULL) {
         return facsClef;
     }
@@ -223,27 +236,47 @@ Clef *Layer::GetClef(LayerElement *test)
 
 Clef *Layer::GetClefFacs(LayerElement *test)
 {
-    Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
+    return const_cast<Clef *>(std::as_const(*this).GetClefFacs(test));
+}
+
+const Clef *Layer::GetClefFacs(const LayerElement *test) const
+{
+    const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
     if (doc->GetType() == Facs) {
-        ListOfObjects clefs;
+        ListOfConstObjects clefs;
         ClassIdComparison ac(CLEF);
         doc->FindAllDescendantsBetween(&clefs, &ac, doc->GetFirst(CLEF), test);
         if (clefs.size() > 0) {
-            return dynamic_cast<Clef *>(*clefs.rbegin());
+            return dynamic_cast<const Clef *>(*clefs.rbegin());
         }
     }
     return NULL;
 }
 
-int Layer::GetClefLocOffset(LayerElement *test)
+int Layer::GetClefLocOffset(const LayerElement *test) const
 {
-    Clef *clef = this->GetClef(test);
+    const Clef *clef = this->GetClef(test);
     if (!clef) return 0;
     return clef->GetClefLocOffset();
 }
 
-data_STEMDIRECTION Layer::GetDrawingStemDir(LayerElement *element)
+int Layer::GetCrossStaffClefLocOffset(const LayerElement *element, int currentOffset) const
+{
+    if (element->m_crossStaff) {
+        ResetList(this);
+        if (!element->Is(CLEF)) {
+            const Clef *clef = vrv_cast<const Clef *>(GetListFirstBackward(element, CLEF));
+            if (clef && clef->m_crossStaff) {
+                return clef->GetClefLocOffset();
+            }
+        }
+    }
+
+    return currentOffset;
+}
+
+data_STEMDIRECTION Layer::GetDrawingStemDir(const LayerElement *element) const
 {
     assert(element);
 
@@ -263,28 +296,28 @@ data_STEMDIRECTION Layer::GetDrawingStemDir(LayerElement *element)
     }
 }
 
-data_STEMDIRECTION Layer::GetDrawingStemDir(const ArrayOfBeamElementCoords *coords)
+data_STEMDIRECTION Layer::GetDrawingStemDir(const ArrayOfBeamElementCoords *coords) const
 {
     assert(!coords->empty());
 
     // Adjust the x position of the first and last element for taking into account the stem width
-    LayerElement *first = dynamic_cast<LayerElement *>(coords->front()->m_element);
-    LayerElement *last = dynamic_cast<LayerElement *>(coords->back()->m_element);
+    const LayerElement *first = dynamic_cast<const LayerElement *>(coords->front()->m_element);
+    const LayerElement *last = dynamic_cast<const LayerElement *>(coords->back()->m_element);
 
     if (!first || !last) {
         return m_drawingStemDir;
     }
 
-    Measure *measure = vrv_cast<Measure *>(this->GetFirstAncestor(MEASURE));
+    const Measure *measure = vrv_cast<const Measure *>(this->GetFirstAncestor(MEASURE));
     assert(measure);
 
-    Alignment *alignmentFirst = first->GetAlignment();
+    const Alignment *alignmentFirst = first->GetAlignment();
     assert(alignmentFirst);
-    Alignment *alignmentLast = last->GetAlignment();
+    const Alignment *alignmentLast = last->GetAlignment();
     assert(alignmentLast);
 
     // We are ignoring cross-staff situation here because this should not be called if we have one
-    Staff *staff = first->GetAncestorStaff();
+    const Staff *staff = first->GetAncestorStaff();
 
     double time = alignmentFirst->GetTime();
     double duration = alignmentLast->GetTime() - time + last->GetAlignmentDuration();
@@ -298,27 +331,27 @@ data_STEMDIRECTION Layer::GetDrawingStemDir(const ArrayOfBeamElementCoords *coor
     }
 }
 
-std::set<int> Layer::GetLayersNForTimeSpanOf(LayerElement *element)
+std::set<int> Layer::GetLayersNForTimeSpanOf(const LayerElement *element) const
 {
     assert(element);
 
-    Measure *measure = vrv_cast<Measure *>(this->GetFirstAncestor(MEASURE));
+    const Measure *measure = vrv_cast<const Measure *>(this->GetFirstAncestor(MEASURE));
     assert(measure);
 
-    Alignment *alignment = element->GetAlignment();
+    const Alignment *alignment = element->GetAlignment();
     assert(alignment);
 
-    Staff *staff = element->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+    const Staff *staff = element->GetAncestorStaff(RESOLVE_CROSS_STAFF);
 
     return this->GetLayersNInTimeSpan(alignment->GetTime(), element->GetAlignmentDuration(), measure, staff->GetN());
 }
 
-int Layer::GetLayerCountForTimeSpanOf(LayerElement *element)
+int Layer::GetLayerCountForTimeSpanOf(const LayerElement *element) const
 {
     return static_cast<int>(this->GetLayersNForTimeSpanOf(element).size());
 }
 
-std::set<int> Layer::GetLayersNInTimeSpan(double time, double duration, Measure *measure, int staff)
+std::set<int> Layer::GetLayersNInTimeSpan(double time, double duration, const Measure *measure, int staff) const
 {
     assert(measure);
 
@@ -328,30 +361,39 @@ std::set<int> Layer::GetLayersNInTimeSpan(double time, double duration, Measure 
     layerCountInTimeSpanParams.m_time = time;
     layerCountInTimeSpanParams.m_duration = duration;
 
-    ArrayOfComparisons filters;
+    Filters filters;
     AttNIntegerComparison matchStaff(ALIGNMENT_REFERENCE, staff);
-    filters.push_back(&matchStaff);
+    filters.Add(&matchStaff);
 
     measure->m_measureAligner.Process(&layerCountInTimeSpan, &layerCountInTimeSpanParams, NULL, &filters);
 
     return layerCountInTimeSpanParams.m_layers;
 }
 
-int Layer::GetLayerCountInTimeSpan(double time, double duration, Measure *measure, int staff)
+int Layer::GetLayerCountInTimeSpan(double time, double duration, const Measure *measure, int staff) const
 {
     return static_cast<int>(this->GetLayersNInTimeSpan(time, duration, measure, staff).size());
 }
 
-ListOfObjects Layer::GetLayerElementsForTimeSpanOf(LayerElement *element, bool excludeCurrent)
+ListOfObjects Layer::GetLayerElementsForTimeSpanOf(const LayerElement *element, bool excludeCurrent)
+{
+    ListOfConstObjects elements = std::as_const(*this).GetLayerElementsForTimeSpanOf(element, excludeCurrent);
+    ListOfObjects objects;
+    std::for_each(elements.begin(), elements.end(),
+        [&objects](const Object *element) { objects.push_back(const_cast<Object *>(element)); });
+    return objects;
+}
+
+ListOfConstObjects Layer::GetLayerElementsForTimeSpanOf(const LayerElement *element, bool excludeCurrent) const
 {
     assert(element);
 
-    Measure *measure = static_cast<Measure *>(this->GetFirstAncestor(MEASURE));
+    const Measure *measure = vrv_cast<const Measure *>(this->GetFirstAncestor(MEASURE));
     assert(measure);
 
     double time = 0.0;
     double duration = 0.0;
-    Alignment *alignment = element->GetAlignment();
+    const Alignment *alignment = element->GetAlignment();
     // Get duration and time if element has alignment
     if (alignment) {
         time = alignment->GetTime();
@@ -360,11 +402,10 @@ ListOfObjects Layer::GetLayerElementsForTimeSpanOf(LayerElement *element, bool e
     // If it is Beam, try to get alignments for first and last elements and calculate
     // the duration of the beam based on those
     else if (element->Is(BEAM)) {
-        Beam *beam = vrv_cast<Beam *>(element);
-        const ArrayOfObjects *beamChildren = beam->GetList(beam);
+        const Beam *beam = vrv_cast<const Beam *>(element);
 
-        LayerElement *first = vrv_cast<LayerElement *>(beamChildren->front());
-        LayerElement *last = vrv_cast<LayerElement *>(beamChildren->back());
+        const LayerElement *first = vrv_cast<const LayerElement *>(beam->GetListFront(beam));
+        const LayerElement *last = vrv_cast<const LayerElement *>(beam->GetListBack(beam));
 
         if (!first || !last) return {};
 
@@ -376,13 +417,24 @@ ListOfObjects Layer::GetLayerElementsForTimeSpanOf(LayerElement *element, bool e
         return {};
     }
 
-    Staff *staff = element->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+    const Staff *staff = element->GetAncestorStaff(RESOLVE_CROSS_STAFF);
 
     return this->GetLayerElementsInTimeSpan(time, duration, measure, staff->GetN(), excludeCurrent);
 }
 
 ListOfObjects Layer::GetLayerElementsInTimeSpan(
-    double time, double duration, Measure *measure, int staff, bool excludeCurrent)
+    double time, double duration, const Measure *measure, int staff, bool excludeCurrent)
+{
+    ListOfConstObjects elements
+        = std::as_const(*this).GetLayerElementsInTimeSpan(time, duration, measure, staff, excludeCurrent);
+    ListOfObjects objects;
+    std::for_each(elements.begin(), elements.end(),
+        [&objects](const Object *element) { objects.push_back(const_cast<Object *>(element)); });
+    return objects;
+}
+
+ListOfConstObjects Layer::GetLayerElementsInTimeSpan(
+    double time, double duration, const Measure *measure, int staff, bool excludeCurrent) const
 {
     assert(measure);
 
@@ -393,9 +445,9 @@ ListOfObjects Layer::GetLayerElementsInTimeSpan(
     layerElementsInTimeSpanParams.m_duration = duration;
     layerElementsInTimeSpanParams.m_allLayersButCurrent = excludeCurrent;
 
-    ArrayOfComparisons filters;
+    Filters filters;
     AttNIntegerComparison matchStaff(ALIGNMENT_REFERENCE, staff);
-    filters.push_back(&matchStaff);
+    filters.Add(&matchStaff);
 
     measure->m_measureAligner.Process(&layerElementsInTimeSpan, &layerElementsInTimeSpanParams, NULL, &filters);
 
@@ -404,28 +456,48 @@ ListOfObjects Layer::GetLayerElementsInTimeSpan(
 
 Clef *Layer::GetCurrentClef()
 {
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+    return const_cast<Clef *>(std::as_const(*this).GetCurrentClef());
+}
+
+const Clef *Layer::GetCurrentClef() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff && staff->m_drawingStaffDef && staff->m_drawingStaffDef->GetCurrentClef());
     return staff->m_drawingStaffDef->GetCurrentClef();
 }
 
 KeySig *Layer::GetCurrentKeySig()
 {
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+    return const_cast<KeySig *>(std::as_const(*this).GetCurrentKeySig());
+}
+
+const KeySig *Layer::GetCurrentKeySig() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff && staff->m_drawingStaffDef);
     return staff->m_drawingStaffDef->GetCurrentKeySig();
 }
 
 Mensur *Layer::GetCurrentMensur()
 {
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+    return const_cast<Mensur *>(std::as_const(*this).GetCurrentMensur());
+}
+
+const Mensur *Layer::GetCurrentMensur() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff && staff->m_drawingStaffDef);
     return staff->m_drawingStaffDef->GetCurrentMensur();
 }
 
 MeterSig *Layer::GetCurrentMeterSig()
 {
-    Staff *staff = vrv_cast<Staff *>(this->GetFirstAncestor(STAFF));
+    return const_cast<MeterSig *>(std::as_const(*this).GetCurrentMeterSig());
+}
+
+const MeterSig *Layer::GetCurrentMeterSig() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
     assert(staff && staff->m_drawingStaffDef);
     return staff->m_drawingStaffDef->GetCurrentMeterSig();
 }
@@ -529,7 +601,7 @@ int Layer::ConvertToCastOffMensural(FunctorParams *functorParams)
     params->m_targetLayer->ClearChildren();
     params->m_targetLayer->CloneReset();
     // Keep the xml:id of the layer in the first segment
-    params->m_targetLayer->SwapUuid(this);
+    params->m_targetLayer->SwapID(this);
     assert(params->m_targetStaff);
     params->m_targetStaff->AddChild(params->m_targetLayer);
 
@@ -676,9 +748,9 @@ int Layer::AlignHorizontallyEnd(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Layer::PrepareProcessingLists(FunctorParams *functorParams)
+int Layer::InitProcessingLists(FunctorParams *functorParams)
 {
-    PrepareProcessingListsParams *params = vrv_params_cast<PrepareProcessingListsParams *>(functorParams);
+    InitProcessingListsParams *params = vrv_params_cast<InitProcessingListsParams *>(functorParams);
     assert(params);
 
     // Alternate solution with StaffN_LayerN_VerseN_t
@@ -703,9 +775,9 @@ int Layer::PrepareRpt(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Layer::CalcOnsetOffset(FunctorParams *functorParams)
+int Layer::InitOnsetOffset(FunctorParams *functorParams)
 {
-    CalcOnsetOffsetParams *params = vrv_params_cast<CalcOnsetOffsetParams *>(functorParams);
+    InitOnsetOffsetParams *params = vrv_params_cast<InitOnsetOffsetParams *>(functorParams);
     assert(params);
 
     params->m_currentScoreTime = 0.0;
@@ -717,10 +789,46 @@ int Layer::CalcOnsetOffset(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Layer::ResetDrawing(FunctorParams *functorParams)
+int Layer::FindElementInLayerStaffDefsByID(FunctorParams *functorParams) const
+{
+    FindLayerIDWithinStaffDefParams *params = vrv_params_cast<FindLayerIDWithinStaffDefParams *>(functorParams);
+    assert(params);
+
+    if (!this->HasStaffDef()) return FUNCTOR_SIBLINGS;
+    // Get corresponding elements from the layer
+    if (this->GetStaffDefClef() && (this->GetStaffDefClef()->GetID() == params->m_id)) {
+        params->m_object = this->GetStaffDefClef();
+    }
+    else if (this->GetStaffDefKeySig() && (this->GetStaffDefKeySig()->GetID() == params->m_id)) {
+        params->m_object = this->GetStaffDefKeySig();
+    }
+    else if (this->GetStaffDefMensur() && (this->GetStaffDefMensur()->GetID() == params->m_id)) {
+        params->m_object = this->GetStaffDefMensur();
+    }
+    else if (this->GetStaffDefMeterSig() && (this->GetStaffDefMeterSig()->GetID() == params->m_id)) {
+        params->m_object = this->GetStaffDefMeterSig();
+    }
+    else if (this->GetStaffDefMeterSigGrp() && (this->GetStaffDefMeterSigGrp()->GetID() == params->m_id)) {
+        params->m_object = this->GetStaffDefMeterSigGrp();
+    }
+
+    return params->m_object ? FUNCTOR_STOP : FUNCTOR_SIBLINGS;
+}
+
+int Layer::ResetData(FunctorParams *functorParams)
 {
     m_crossStaffFromBelow = false;
     m_crossStaffFromAbove = false;
+    return FUNCTOR_CONTINUE;
+}
+
+int Layer::GenerateMIDI(FunctorParams *functorParams)
+{
+    GenerateMIDIParams *params = vrv_params_cast<GenerateMIDIParams *>(functorParams);
+    assert(params);
+
+    if (this->GetCue() == BOOLEAN_true && params->m_cueExclusion) return FUNCTOR_SIBLINGS;
+
     return FUNCTOR_CONTINUE;
 }
 

@@ -44,9 +44,11 @@ public:
      */
     ///@{
     void SetNextLink(Object *next);
-    Object *GetNextLink() const { return m_next; }
+    Object *GetNextLink() { return m_next; }
+    const Object *GetNextLink() const { return m_next; }
     void SetSameasLink(Object *sameas);
-    Object *GetSameasLink() const { return m_sameas; }
+    Object *GetSameasLink() { return m_sameas; }
+    const Object *GetSameasLink() const { return m_sameas; }
     ///@}
 
     /**
@@ -60,7 +62,15 @@ public:
     /**
      * Return the start measure of the next object (if any, NULL otherwise)
      */
+    ///@{
     Measure *GetNextMeasure();
+    const Measure *GetNextMeasure() const;
+    ///@}
+
+    /**
+     * Set @corresp attribute to the ID (or @corresp) of the object
+     */
+    void AddBackLink(const Object *object);
 
     //-----------------//
     // Pseudo functors //
@@ -70,13 +80,13 @@ public:
      * We have functor in the interface for avoiding code duplication in each implementation class.
      * Since we are in an interface, we need to pass the  Object (implementation) to
      * the functor method. These not called by the Process/Call loop but by the implementaion
-     * classes explicitely. See FloatingObject::FillStaffCurrentTimeSpanning for an example.
+     * classes explicitely. See FloatingObject::PrepareStaffCurrentTimeSpanning for an example.
      */
 
     /**
-     * See Object::FillStaffCurrentTimeSpanning
+     * See Object::PrepareStaffCurrentTimeSpanning
      */
-    virtual int InterfaceFillStaffCurrentTimeSpanning(FunctorParams *functorParams, Object *object);
+    virtual int InterfacePrepareStaffCurrentTimeSpanning(FunctorParams *functorParams, Object *object);
 
     /**
      * See Object::PrepareLinking
@@ -84,15 +94,15 @@ public:
     virtual int InterfacePrepareLinking(FunctorParams *functorParams, Object *object);
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    virtual int InterfaceResetDrawing(FunctorParams *functorParams, Object *object);
+    virtual int InterfaceResetData(FunctorParams *functorParams, Object *object);
 
 protected:
     /**
      * Extract the fragment of the start or end @xml:id if given
      */
-    void SetUuidStr();
+    void SetIDStr();
 
 private:
     //
@@ -100,9 +110,9 @@ public:
     //
 private:
     Object *m_next;
-    std::string m_nextUuid;
+    std::string m_nextID;
     Object *m_sameas;
-    std::string m_sameasUuid;
+    std::string m_sameasID;
 };
 
 } // namespace vrv

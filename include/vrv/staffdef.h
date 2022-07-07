@@ -60,6 +60,11 @@ public:
     void SetDrawingVisibility(VisibilityOptimization drawingIsVisible) { m_drawingVisibility = drawingIsVisible; }
     ///@}
 
+    /**
+     * Return true if the label has layerDef with a label
+     */
+    bool HasLayerDefWithLabel() const;
+
     //----------//
     // Functors //
     //----------//
@@ -78,6 +83,16 @@ public:
      * See Object::PrepareDuration
      */
     int PrepareDuration(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::GenerateMIDI
+     */
+    int GenerateMIDI(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::Transpose
+     */
+    int Transpose(FunctorParams *functorParams) override;
 
 private:
     //

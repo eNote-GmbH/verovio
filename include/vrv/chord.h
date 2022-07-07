@@ -58,10 +58,12 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    DurationInterface *GetDurationInterface() override { return dynamic_cast<DurationInterface *>(this); }
-    StemmedDrawingInterface *GetStemmedDrawingInterface() override
+    DurationInterface *GetDurationInterface() override { return vrv_cast<DurationInterface *>(this); }
+    const DurationInterface *GetDurationInterface() const override { return vrv_cast<const DurationInterface *>(this); }
+    StemmedDrawingInterface *GetStemmedDrawingInterface() override { return vrv_cast<StemmedDrawingInterface *>(this); }
+    const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
-        return dynamic_cast<StemmedDrawingInterface *>(this);
+        return vrv_cast<const StemmedDrawingInterface *>(this);
     }
     ///@}
 
@@ -81,36 +83,42 @@ public:
     /**
      * Return the maximum and minimum Y positions of the notes in the chord
      */
-    void GetYExtremes(int &yMax, int &yMin);
+    void GetYExtremes(int &yMax, int &yMin) const;
 
     /**
      * Return the top or bottom note or their Y position
      */
     ///@{
     Note *GetTopNote();
+    const Note *GetTopNote() const;
     Note *GetBottomNote();
-    int GetYTop();
-    int GetYBottom();
+    const Note *GetBottomNote() const;
+    int GetYTop() const;
+    int GetYBottom() const;
     ///@}
 
     /**
      * Return min or max note X position
      */
     ///@{
-    int GetXMin();
-    int GetXMax();
+    int GetXMin() const;
+    int GetXMax() const;
     ///@}
 
     /**
-     * Return the cross staff above or below (if  any).
+     * Return the cross staff above or below (if any).
      */
+    ///@{
     void GetCrossStaffExtremes(
         Staff *&staffAbove, Staff *&staffBelow, Layer **layerAbove = NULL, Layer **layerBelow = NULL);
+    void GetCrossStaffExtremes(const Staff *&staffAbove, const Staff *&staffBelow, const Layer **layerAbove = NULL,
+        const Layer **layerBelow = NULL) const;
+    ///@}
 
     /**
      * Return true if the chord has some cross staff notes.
      */
-    bool HasCrossStaff();
+    bool HasCrossStaff() const override;
 
     /**
      * Returns list of notes that have accidentals
@@ -122,7 +130,7 @@ public:
      */
     ///@{
     /** Return 0 if the note is the middle note, -1 if below it and 1 if above */
-    int PositionInChord(Note *note);
+    int PositionInChord(const Note *note) const;
     ///@}
 
     /**
@@ -130,31 +138,31 @@ public:
      * If necessary look at the glyph anchor (if any).
      */
     ///@{
-    Point GetStemUpSE(Doc *doc, int staffSize, bool isCueSize) override;
-    Point GetStemDownNW(Doc *doc, int staffSize, bool isCueSize) override;
-    int CalcStemLenInThirdUnits(Staff *staff, data_STEMDIRECTION stemDir) override;
+    Point GetStemUpSE(const Doc *doc, int staffSize, bool isCueSize) const override;
+    Point GetStemDownNW(const Doc *doc, int staffSize, bool isCueSize) const override;
+    int CalcStemLenInThirdUnits(const Staff *staff, data_STEMDIRECTION stemDir) const override;
     ///@}
 
     /**
      * Check if the chord or one of its children is visible
      */
-    bool IsVisible();
+    bool IsVisible() const;
 
     /**
      * Return true if the chord has two notes with 1 diatonic step difference in the specific staff
      */
-    bool HasAdjacentNotesInStaff(Staff *staff);
+    bool HasAdjacentNotesInStaff(const Staff *staff) const;
 
     /**
      * Return true if the chord has at least one note with a @dots > 0
      */
-    bool HasNoteWithDots();
+    bool HasNoteWithDots() const;
 
     /**
      * Helper to adjust overlapping layers for chords
      * Returns the shift of the adjustment
      */
-    int AdjustOverlappingLayers(Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted,
+    int AdjustOverlappingLayers(const Doc *doc, const std::vector<LayerElement *> &otherElements, bool areDotsAdjusted,
         bool &isUnison, bool &stemSameas) override;
 
     /**
@@ -162,7 +170,7 @@ public:
      * Diatonic step difference is take up to 2 points, so HasAdjacentNotesInStaff() needs to be called first, to make
      * sure there actually are adjacent notes.
      */
-    std::list<Note *> GetAdjacentNotesList(Staff *staff, int loc);
+    std::list<const Note *> GetAdjacentNotesList(const Staff *staff, int loc) const;
 
     //----------//
     // Functors //
@@ -197,6 +205,11 @@ public:
     int CalcStem(FunctorParams *functorParams) override;
 
     /**
+     * See Object::CalcChordNoteHeads
+     */
+    int CalcChordNoteHeads(FunctorParams *functorParams) override;
+
+    /**
      * See Object::CalcDots
      */
     int CalcDots(FunctorParams *functorParams) override;
@@ -212,19 +225,24 @@ public:
     int PrepareLyrics(FunctorParams *functorParams) override;
 
     /**
-     * See Object::CalcOnsetOffsetEnd
+     * See Object::InitOnsetOffsetEnd
      */
-    int CalcOnsetOffsetEnd(FunctorParams *functorParams) override;
+    int InitOnsetOffsetEnd(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
     /**
-     * See Object::AdjustCrossStaffContent
+     * See Object::PrepareDataInitialization
      */
-    int AdjustCrossStaffContent(FunctorParams *functorParams) override;
+    int PrepareDataInitialization(FunctorParams *) override;
+
+    /**
+     * See Object::JustifyYAdjustCrossStaff
+     */
+    int JustifyYAdjustCrossStaff(FunctorParams *functorParams) override;
 
     /**
      * See Object::GenerateMIDI
@@ -235,20 +253,20 @@ protected:
     /**
      * The note locations w.r.t. each staff
      */
-    MapOfNoteLocs CalcNoteLocations(NotePredicate predicate = NULL) override;
+    MapOfNoteLocs CalcNoteLocations(NotePredicate predicate = NULL) const override;
 
     /**
      * The dot locations w.r.t. each staff
      * Since dots for notes on staff lines can be shifted upwards or downwards, there are two choices: primary and
      * secondary
      */
-    MapOfDotLocs CalcDotLocations(int layerCount, bool primary) override;
+    MapOfDotLocs CalcDotLocations(int layerCount, bool primary) const override;
 
     /**
      * Calculate stem direction based on the position of the notes in chord. Notes are compared in pairs starting from
      * the top-/bottommost and moving inward towards the center of the chord
      */
-    data_STEMDIRECTION CalcStemDirection(int verticalCenter);
+    data_STEMDIRECTION CalcStemDirection(int verticalCenter) const;
 
     /**
      * Clear the m_clusters vector and delete all the objects.
@@ -256,17 +274,22 @@ protected:
     void ClearClusters() const;
 
     /**
-     * Filter the flat list and keep only Note elements.
+     * Recalculate the m_clusters vector
      */
-    void FilterList(ArrayOfObjects *childList) override;
-
-public:
-    mutable std::list<ChordCluster *> m_clusters;
+    void CalculateClusters();
 
     /**
-     * Positions of dots in the chord to avoid overlapping
+     * Filter the flat list and keep only Note elements.
      */
-    std::list<int> m_dots;
+    void FilterList(ListOfConstObjects &childList) const override;
+
+public:
+    //
+private:
+    /**
+     * The list of chord clusters
+     */
+    mutable std::list<ChordCluster *> m_clusters;
 };
 
 } // namespace vrv

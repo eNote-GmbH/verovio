@@ -18,6 +18,7 @@
 #include "layer.h"
 #include "note.h"
 #include "staff.h"
+#include "stem.h"
 #include "tabgrp.h"
 
 namespace vrv {
@@ -77,7 +78,7 @@ void TabDurSym::AddChild(Object *child)
     Modify();
 }
 
-void TabDurSym::AdjustDrawingYRel(Staff *staff, Doc *doc)
+void TabDurSym::AdjustDrawingYRel(const Staff *staff, const Doc *doc)
 {
     assert(staff);
     assert(doc);
@@ -93,19 +94,17 @@ void TabDurSym::AdjustDrawingYRel(Staff *staff, Doc *doc)
     this->SetDrawingYRel(-yRel);
 }
 
-Point TabDurSym::GetStemUpSE(Doc *doc, int staffSize, bool isCueSize)
+Point TabDurSym::GetStemUpSE(const Doc *doc, int staffSize, bool isCueSize) const
 {
-    Point p(0, 0);
-    return p;
+    return Point();
 }
 
-Point TabDurSym::GetStemDownNW(Doc *doc, int staffSize, bool isCueSize)
+Point TabDurSym::GetStemDownNW(const Doc *doc, int staffSize, bool isCueSize) const
 {
-    Point p(0, 0);
-    return p;
+    return Point();
 }
 
-int TabDurSym::CalcStemLenInThirdUnits(Staff *staff, data_STEMDIRECTION stemDir)
+int TabDurSym::CalcStemLenInThirdUnits(const Staff *staff, data_STEMDIRECTION stemDir) const
 {
     assert(staff);
 

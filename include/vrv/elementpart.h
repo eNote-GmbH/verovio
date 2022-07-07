@@ -35,13 +35,14 @@ public:
     virtual ~Dots();
     void Reset() override;
     std::string GetClassName() const override { return "Dots"; }
+    Object *Clone() const override { return new Dots(*this); }
     ///@}
 
     /** Override the method since alignment is required */
     bool HasToBeAligned() const override { return true; }
 
-    std::set<int> GetDotLocsForStaff(Staff *staff) const;
-    std::set<int> &ModifyDotLocsForStaff(Staff *staff);
+    std::set<int> GetDotLocsForStaff(const Staff *staff) const;
+    std::set<int> &ModifyDotLocsForStaff(const Staff *staff);
 
     const MapOfDotLocs &GetMapOfDotLocs() const { return m_dotLocsByStaff; }
     void SetMapOfDotLocs(const MapOfDotLocs &dotLocs) { m_dotLocsByStaff = dotLocs; };
@@ -70,9 +71,9 @@ public:
     ///@}
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
     /**
      * See Object::ResetHorizontalAlignment
@@ -111,6 +112,7 @@ public:
     virtual ~Flag();
     void Reset() override;
     std::string GetClassName() const override { return "Flag"; }
+    Object *Clone() const override { return new Flag(*this); }
     ///@}
 
     /** Override the method since alignment is required */
@@ -118,8 +120,8 @@ public:
 
     wchar_t GetFlagGlyph(data_STEMDIRECTION stemDir) const;
 
-    Point GetStemUpSE(Doc *doc, int staffSize, bool graceSize, wchar_t &code) const;
-    Point GetStemDownNW(Doc *doc, int staffSize, bool graceSize, wchar_t &code) const;
+    Point GetStemUpSE(const Doc *doc, int staffSize, bool graceSize) const;
+    Point GetStemDownNW(const Doc *doc, int staffSize, bool graceSize) const;
 
     //----------//
     // Functors //
@@ -134,9 +136,9 @@ public:
     ///@}
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
 private:
     //
@@ -169,26 +171,31 @@ public:
     ///@}
 
     /**
-     * @name Setter and getter for darwing rel positions
+     * @name Setter and getter for drawing rel positions
      */
     ///@{
-    int GetDrawingXRelLeft() { return m_drawingXRelLeft; }
+    int GetDrawingXRelLeft() const { return m_drawingXRelLeft; }
     void SetDrawingXRelLeft(int drawingXRelLeft) { m_drawingXRelLeft = drawingXRelLeft; }
-    int GetDrawingXRelRight() { return m_drawingXRelRight; }
+    int GetDrawingXRelRight() const { return m_drawingXRelRight; }
     void SetDrawingXRelRight(int drawingXRelRight) { m_drawingXRelRight = drawingXRelRight; }
+    // Vertical positions
+    int GetDrawingYRelLeft() const { return m_drawingYRelLeft; }
+    void SetDrawingYRelLeft(int drawingYRelLeft) { m_drawingYRelLeft = drawingYRelLeft; }
+    int GetDrawingYRelRight() const { return m_drawingYRelRight; }
+    void SetDrawingYRelRight(int drawingYRelRight) { m_drawingYRelRight = drawingYRelRight; }
     ///@}
 
     /**
-     * @name Setter and getter for darwing positions.
+     * @name Setter and getter for drawing positions.
      * Takes into account:
      * - the position of the first and last element.
      * - the position of the beam if aligned with a beam.
      */
     ///@{
-    int GetDrawingXLeft();
-    int GetDrawingXRight();
-    int GetDrawingYLeft();
-    int GetDrawingYRight();
+    int GetDrawingXLeft() const;
+    int GetDrawingXRight() const;
+    int GetDrawingYLeft() const;
+    int GetDrawingYRight() const;
     ///@}
 
     /**
@@ -196,6 +203,7 @@ public:
      */
     ///@{
     TupletNum *GetAlignedNum() { return m_alignedNum; }
+    const TupletNum *GetAlignedNum() const { return m_alignedNum; }
     void SetAlignedNum(TupletNum *alignedNum) { m_alignedNum = alignedNum; }
     ///@}
 
@@ -236,6 +244,14 @@ private:
      * The right X position is the one of the last Chord / Note / Rest in the tuplet
      */
     int m_drawingXRelRight;
+    /**
+     * The YRel shift for the left X position.
+     */
+    int m_drawingYRelLeft = 0;
+    /**
+     * The YRel shift for the right X position.
+     */
+    int m_drawingYRelRight = 0;
     /** A pointer to the num with which the TupletBracket is aligned (if any) */
     TupletNum *m_alignedNum;
 };
@@ -269,8 +285,8 @@ public:
      * - the position of the beam if aligned with a beam.
      */
     ///@{
-    int GetDrawingYMid();
-    int GetDrawingXMid(Doc *doc = NULL);
+    int GetDrawingYMid() const;
+    int GetDrawingXMid(const Doc *doc = NULL) const;
     ///@}
 
     /**
@@ -278,6 +294,7 @@ public:
      */
     ///@{
     TupletBracket *GetAlignedBracket() { return m_alignedBracket; }
+    const TupletBracket *GetAlignedBracket() const { return m_alignedBracket; }
     void SetAlignedBracket(TupletBracket *alignedBracket);
     ///@}
 
@@ -310,109 +327,6 @@ public:
 private:
     /** A pointer to the bracket with which the TupletNum is aligned (if any) */
     TupletBracket *m_alignedBracket;
-};
-
-//----------------------------------------------------------------------------
-// Stem
-//----------------------------------------------------------------------------
-
-/**
- * This class models a stem as a layer element part and has not direct MEI equivlatent.
- */
-class Stem : public LayerElement, public AttGraced, public AttStems, public AttStemsCmn {
-public:
-    /**
-     * @name Constructors, destructors, reset and class name methods
-     * Reset method resets all attribute classes
-     */
-    ///@{
-    Stem();
-    virtual ~Stem();
-    void Reset() override;
-    std::string GetClassName() const override { return "Stem"; }
-    ///@}
-
-    /** Override the method since alignment is required */
-    bool HasToBeAligned() const override { return true; }
-
-    /**
-     * Add an element (only flag supported) to a stem.
-     */
-    bool IsSupportedChild(Object *object) override;
-
-    /**
-     * @name Setter and getter for darwing stem direction and length
-     */
-    ///@{
-    data_STEMDIRECTION GetDrawingStemDir() { return m_drawingStemDir; }
-    void SetDrawingStemDir(data_STEMDIRECTION drawingStemDir) { m_drawingStemDir = drawingStemDir; }
-    int GetDrawingStemLen() { return m_drawingStemLen; }
-    void SetDrawingStemLen(int drawingStemLen) { m_drawingStemLen = drawingStemLen; }
-    ///@}
-
-    /**
-     * @name Setter and getter of the virtual flag
-     */
-    ///@{
-    bool IsVirtual() const { return m_isVirtual; }
-    void IsVirtual(bool isVirtual) { m_isVirtual = isVirtual; }
-    ///@}
-
-    /**
-     * Helper to adjust overlaping layers for stems
-     */
-    int CompareToElementPosition(Doc *doc, LayerElement *otherElement, int margin);
-
-    //----------//
-    // Functors //
-    //----------//
-
-    /**
-     * See Object::CalcStem
-     */
-    int CalcStem(FunctorParams *functorParams) override;
-
-    /**
-     * Overwritten version of Save that avoids anything to be written
-     */
-    ///@{
-    int Save(FunctorParams *functorParams) override { return FUNCTOR_CONTINUE; }
-    int SaveEnd(FunctorParams *functorParams) override { return FUNCTOR_CONTINUE; }
-    ///@}
-
-    /**
-     * See Object::ResetDrawing
-     */
-    int ResetDrawing(FunctorParams *functorParams) override;
-
-private:
-    /**
-     * Addjusts flag placement and stem length if they are crossing notehead or ledger lines
-     */
-    void AdjustFlagPlacement(Doc *doc, Flag *flag, int staffSize, int verticalCenter, int duration);
-
-    /**
-     * Helper to adjust length of stem based on presence of slashes
-     */
-    void AdjustSlashes(Doc *doc, int staffSize, int flagOffset, bool isSameAs);
-
-public:
-    //
-private:
-    /**
-     * The drawing direction of the stem
-     */
-    data_STEMDIRECTION m_drawingStemDir;
-    /**
-     * The drawing length of stem
-     */
-    int m_drawingStemLen;
-    /**
-     * A flag indicating if a stem if virtual and should never be rendered.
-     * Virtual stems are added to whole notes (and longer) for position calculation and
-     * for supporting MEI @stem.mod
-     */
-    bool m_isVirtual;
 };
 
 } // namespace vrv

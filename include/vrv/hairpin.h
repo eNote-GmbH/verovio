@@ -46,8 +46,16 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    TimePointInterface *GetTimePointInterface() override { return dynamic_cast<TimePointInterface *>(this); }
-    TimeSpanningInterface *GetTimeSpanningInterface() override { return dynamic_cast<TimeSpanningInterface *>(this); }
+    TimePointInterface *GetTimePointInterface() override { return vrv_cast<TimePointInterface *>(this); }
+    const TimePointInterface *GetTimePointInterface() const override
+    {
+        return vrv_cast<const TimePointInterface *>(this);
+    }
+    TimeSpanningInterface *GetTimeSpanningInterface() override { return vrv_cast<TimeSpanningInterface *>(this); }
+    const TimeSpanningInterface *GetTimeSpanningInterface() const override
+    {
+        return vrv_cast<const TimeSpanningInterface *>(this);
+    }
     ///@}
 
     /**
@@ -59,8 +67,8 @@ public:
     bool HasDrawingLength() const { return (m_drawingLength > 0); }
     ///@}
 
-    int CalcHeight(
-        Doc *doc, int staffSize, char spanningType, FloatingPositioner *leftHairpin, FloatingPositioner *rightHaipin);
+    int CalcHeight(const Doc *doc, int staffSize, char spanningType, const FloatingPositioner *leftHairpin,
+        const FloatingPositioner *rightHaipin) const;
 
     /**
      * @name Setter and getter for left and right links
@@ -68,15 +76,17 @@ public:
     ///@{
     void SetLeftLink(ControlElement *leftLink);
     ControlElement *GetLeftLink() { return m_leftLink; }
+    const ControlElement *GetLeftLink() const { return m_leftLink; }
     void SetRightLink(ControlElement *rightLink);
     ControlElement *GetRightLink() { return m_rightLink; }
+    const ControlElement *GetRightLink() const { return m_rightLink; }
     ///@}
 
     /**
      * Get left/right adjustments that needs to be done to the hairpin with set coordinates (leftX, rightX) for it not
      * to overlap with parent measure's barlines
      */
-    std::pair<int, int> GetBarlineOverlapAdjustment(int doubleUnit, int leftX, int rightX, int spanningType);
+    std::pair<int, int> GetBarlineOverlapAdjustment(int doubleUnit, int leftX, int rightX, int spanningType) const;
 
     //----------//
     // Functors //
@@ -88,9 +98,9 @@ public:
     int PrepareFloatingGrps(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
 protected:
     //

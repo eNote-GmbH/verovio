@@ -65,7 +65,7 @@ void View::DrawTuplet(DeviceContext *dc, LayerElement *element, Layer *layer, St
         tuplet->CalcDrawingBracketAndNumPos(m_doc->GetOptions()->m_tupletNumHead.GetValue());
     }
 
-    dc->StartGraphic(element, "", element->GetUuid());
+    dc->StartGraphic(element, "", element->GetID());
 
     // Draw the inner elements
     this->DrawLayerChildren(dc, tuplet, layer, staff, measure);
@@ -101,7 +101,7 @@ void View::DrawTupletBracket(DeviceContext *dc, LayerElement *element, Layer *la
     const int lineWidth
         = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_options->m_tupletBracketThickness.GetValue();
 
-    dc->ResumeGraphic(tupletBracket, tupletBracket->GetUuid());
+    dc->ResumeGraphic(tupletBracket, tupletBracket->GetID());
 
     const int xLeft = tuplet->GetDrawingLeft()->GetDrawingX() + tupletBracket->GetDrawingXRelLeft();
     const int xRight = tuplet->GetDrawingRight()->GetDrawingX() + tupletBracket->GetDrawingXRelRight();
@@ -133,8 +133,10 @@ void View::DrawTupletBracket(DeviceContext *dc, LayerElement *element, Layer *la
         bracketHeight *= -1;
     }
 
-    this->DrawFilledRectangle(dc, xLeft, yLeft, xLeft + lineWidth, yLeft + bracketHeight);
-    this->DrawFilledRectangle(dc, xRight, yRight, xRight - lineWidth, yRight + bracketHeight);
+    this->DrawFilledRectangle(
+        dc, xLeft, yLeft + lineWidth / 2, xLeft + lineWidth, yLeft + bracketHeight + lineWidth / 2);
+    this->DrawFilledRectangle(
+        dc, xRight, yRight + lineWidth / 2, xRight - lineWidth, yRight + bracketHeight + lineWidth / 2);
 
     dc->EndResumedGraphic(tupletBracket, this);
 
@@ -186,7 +188,7 @@ void View::DrawTupletNum(DeviceContext *dc, LayerElement *element, Layer *layer,
     // adjust the baseline (to be improved with slanted brackets
     y -= m_doc->GetGlyphHeight(notes.back(), glyphSize, drawingCueSize) / 2;
 
-    dc->ResumeGraphic(tupletNum, tupletNum->GetUuid());
+    dc->ResumeGraphic(tupletNum, tupletNum->GetID());
 
     this->DrawSmuflString(dc, x, y, notes, HORIZONTALALIGNMENT_left, glyphSize, drawingCueSize);
 

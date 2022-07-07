@@ -41,11 +41,19 @@ public:
     bool IsSupportedChild(Object *object) override;
 
     /**
+     * @name Getter for the labelAbbr
+     */
+    ///@{
+    LabelAbbr *GetDrawingLabelAbbr() { return m_drawingLabelAbbr; }
+    const LabelAbbr *GetDrawingLabelAbbr() const { return m_drawingLabelAbbr; }
+    ///@}
+
+    /**
      * Calculate the adjustment according to the overlap and the free space available before.
      * Will move the verse accordingly.
      * Called from Verse::AdjustSylSpacing and System::AdjustSylSpacingEnd
      */
-    int AdjustPosition(int &overlap, int freeSpace, Doc *doc);
+    int AdjustPosition(int &overlap, int freeSpace, const Doc *doc);
 
     //----------//
     // Functors //
@@ -62,24 +70,24 @@ public:
     int AdjustSylSpacing(FunctorParams *functorParams) override;
 
     /**
-     * See Object::PrepareProcessingLists
+     * See Object::InitProcessingLists
      */
-    int PrepareProcessingLists(FunctorParams *functorParams) override;
+    int InitProcessingLists(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
 private:
     //
 public:
+    //
+private:
     /**
      *  A pointer to the labelAbbr
      */
     LabelAbbr *m_drawingLabelAbbr;
-
-private:
 };
 
 } // namespace vrv

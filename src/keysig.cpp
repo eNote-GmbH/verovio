@@ -15,10 +15,14 @@
 //----------------------------------------------------------------------------
 
 #include "clef.h"
+#include "comparison.h"
+#include "editorial.h"
 #include "functorparams.h"
 #include "keyaccid.h"
 #include "scoredefinterface.h"
 #include "smufl.h"
+#include "staff.h"
+#include "staffdef.h"
 #include "transposition.h"
 #include "vrv.h"
 
@@ -100,121 +104,127 @@ void KeySig::Reset()
     this->ResetKeySigVis();
     this->ResetVisibility();
 
-    m_mixedChildrenAccidType = false;
-
     // key change drawing values
+    m_skipCancellation = false;
     m_drawingCancelAccidType = ACCIDENTAL_WRITTEN_n;
     m_drawingCancelAccidCount = 0;
 }
 
-void KeySig::FilterList(ArrayOfObjects *childList)
+void KeySig::FilterList(ListOfConstObjects &childList) const
 {
-    // nothing  to filter since we allow only KeyAccid for now.
-    ArrayOfObjects::iterator iter = childList->begin();
-
-    while (iter != childList->end()) {
+    ListOfConstObjects::iterator iter = childList.begin();
+    while (iter != childList.end()) {
         if ((*iter)->Is(KEYACCID))
             ++iter;
         else
-            iter = childList->erase(iter);
-    }
-
-    data_ACCIDENTAL_WRITTEN type = ACCIDENTAL_WRITTEN_NONE;
-    m_mixedChildrenAccidType = false;
-
-    for (auto &child : *childList) {
-        KeyAccid *keyAccid = vrv_cast<KeyAccid *>(child);
-        assert(keyAccid);
-        if (type == ACCIDENTAL_WRITTEN_NONE) {
-            type = keyAccid->GetAccid();
-            continue;
-        }
-        if (type != keyAccid->GetAccid()) {
-            m_mixedChildrenAccidType = true;
-            break;
-        }
+            iter = childList.erase(iter);
     }
 }
 
-int KeySig::GetAccidCount()
+bool KeySig::IsSupportedChild(Object *child)
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        return (int)childList->size();
+    if (this->IsAttribute() && !child->IsAttribute()) {
+        LogError("Adding a non-attribute child to an attribute is not allowed");
+        assert(false);
     }
-
-    if (!this->HasSig()) return 0;
-
-    return (this->GetSig().first);
+    else if (child->Is(KEYACCID)) {
+        assert(dynamic_cast<KeyAccid *>(child));
+    }
+    else if (child->IsEditorialElement()) {
+        assert(dynamic_cast<EditorialElement *>(child));
+    }
+    else {
+        return false;
+    }
+    return true;
 }
 
-data_ACCIDENTAL_WRITTEN KeySig::GetAccidType()
+int KeySig::GetAccidCount(bool fromAttribute) const
 {
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        if (m_mixedChildrenAccidType) return ACCIDENTAL_WRITTEN_NONE;
-        KeyAccid *keyAccid = vrv_cast<KeyAccid *>(childList->at(0));
-        assert(keyAccid);
-        return keyAccid->GetAccid();
+    if (fromAttribute) {
+        return this->HasSig() ? (this->GetSig().first) : 0;
     }
-
-    if (!this->HasSig()) return ACCIDENTAL_WRITTEN_NONE;
-
-    return (this->GetSig().second);
+    else {
+        return this->GetListSize(this);
+    }
 }
 
-void KeySig::FillMap(MapOfPitchAccid &mapOfPitchAccid)
+data_ACCIDENTAL_WRITTEN KeySig::GetAccidType() const
+{
+    if (this->HasNonAttribKeyAccidChildren() || !this->HasSig()) {
+        return ACCIDENTAL_WRITTEN_NONE;
+    }
+    else {
+        return (this->GetSig().second);
+    }
+}
+
+bool KeySig::HasNonAttribKeyAccidChildren() const
+{
+    const ListOfConstObjects &childList = this->GetList(this);
+    return std::any_of(childList.begin(), childList.end(), [](const Object *child) { return !child->IsAttribute(); });
+}
+
+void KeySig::GenerateKeyAccidAttribChildren()
+{
+    IsAttributeComparison isAttribute(KEYACCID);
+    this->DeleteChildrenByComparison(&isAttribute);
+
+    if (this->HasEmptyList(this)) {
+        for (int i = 0; i < this->GetAccidCount(true); ++i) {
+            std::optional<KeyAccidInfo> info = this->GetKeyAccidInfoAt(i);
+            if (info) {
+                KeyAccid *keyAccid = new KeyAccid();
+                keyAccid->SetAccid(info->accid);
+                keyAccid->SetPname(info->pname);
+                keyAccid->IsAttribute(true);
+                this->AddChild(keyAccid);
+            }
+        }
+    }
+    else if (this->HasSig()) {
+        LogWarning(
+            "Attribute key signature is ignored, since KeySig '%s' contains KeyAccid children.", this->GetID().c_str());
+    }
+}
+
+void KeySig::FillMap(MapOfPitchAccid &mapOfPitchAccid) const
 {
     mapOfPitchAccid.clear();
 
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        for (auto &child : *childList) {
-            KeyAccid *keyAccid = vrv_cast<KeyAccid *>(child);
+    const ListOfConstObjects &childList = this->GetList(this); // make sure it's initialized
+    if (!childList.empty()) {
+        for (auto &child : childList) {
+            const KeyAccid *keyAccid = vrv_cast<const KeyAccid *>(child);
             assert(keyAccid);
             mapOfPitchAccid[keyAccid->GetPname()] = keyAccid->GetAccid();
         }
         return;
     }
 
-    int i;
     data_ACCIDENTAL_WRITTEN accidType = this->GetAccidType();
-    for (i = 0; i < this->GetAccidCount(); ++i) {
+    for (int i = 0; i < this->GetAccidCount(true); ++i) {
         mapOfPitchAccid[KeySig::GetAccidPnameAt(accidType, i)] = accidType;
     }
 }
 
-std::wstring KeySig::GetKeyAccidStrAt(int pos, data_ACCIDENTAL_WRITTEN &accid, data_PITCHNAME &pname)
+std::optional<KeyAccidInfo> KeySig::GetKeyAccidInfoAt(int pos) const
 {
-    pname = PITCHNAME_c;
-    accid = ACCIDENTAL_WRITTEN_s;
-    std::wstring symbolStr = L"";
+    if ((pos < 0) || (pos > 12)) return std::nullopt;
 
-    const ArrayOfObjects *childList = this->GetList(this); // make sure it's initialized
-    if (childList->size() > 0) {
-        if ((int)childList->size() <= pos) return symbolStr;
-        KeyAccid *keyAccid = vrv_cast<KeyAccid *>(childList->at(pos));
-        assert(keyAccid);
-        accid = keyAccid->GetAccid();
-        pname = keyAccid->GetPname();
-        return keyAccid->GetSymbolStr();
+    KeyAccidInfo info;
+    if (this->GetAccidType() == ACCIDENTAL_WRITTEN_f) {
+        info.accid = (pos < 7) ? ACCIDENTAL_WRITTEN_f : ACCIDENTAL_WRITTEN_ff;
+        info.pname = s_pnameForFlats[pos % 7];
     }
-
-    if (pos > 12) return symbolStr;
-
-    int symb;
-    accid = this->GetAccidType();
-    if (accid == ACCIDENTAL_WRITTEN_f) {
-        symb = (pos < 7) ? SMUFL_E260_accidentalFlat : SMUFL_E264_accidentalDoubleFlat;
-        pname = s_pnameForFlats[pos % 7];
+    else if (this->GetAccidType() == ACCIDENTAL_WRITTEN_s) {
+        info.accid = (pos < 7) ? ACCIDENTAL_WRITTEN_s : ACCIDENTAL_WRITTEN_ss;
+        info.pname = s_pnameForSharps[pos % 7];
     }
     else {
-        symb = (pos < 7) ? SMUFL_E262_accidentalSharp : SMUFL_E263_accidentalDoubleSharp;
-        pname = s_pnameForSharps[pos % 7];
+        return std::nullopt;
     }
-
-    symbolStr.push_back(symb);
-    return symbolStr;
+    return info;
 }
 
 int KeySig::GetFifthsInt() const
@@ -234,17 +244,15 @@ int KeySig::GetFifthsInt() const
 
 data_PITCHNAME KeySig::GetAccidPnameAt(data_ACCIDENTAL_WRITTEN accidType, int pos)
 {
-    if (pos > 6) return PITCHNAME_c;
-
     if (accidType == ACCIDENTAL_WRITTEN_f) {
-        return s_pnameForFlats[pos];
+        return s_pnameForFlats[pos % 7];
     }
     else {
-        return s_pnameForSharps[pos];
+        return s_pnameForSharps[pos % 7];
     }
 }
 
-int KeySig::GetOctave(data_ACCIDENTAL_WRITTEN accidType, data_PITCHNAME pitch, Clef *clef)
+int KeySig::GetOctave(data_ACCIDENTAL_WRITTEN accidType, data_PITCHNAME pitch, const Clef *clef)
 {
     int accidSet = 0; // flats
     int keySet = 0;
@@ -305,13 +313,33 @@ int KeySig::GetOctave(data_ACCIDENTAL_WRITTEN accidType, data_PITCHNAME pitch, C
 // Functors methods
 //----------------------------------------------------------------------------
 
+int KeySig::PrepareDataInitialization(FunctorParams *)
+{
+    // Clear and regenerate attribute children
+    this->GenerateKeyAccidAttribChildren();
+
+    return FUNCTOR_CONTINUE;
+}
+
 int KeySig::Transpose(FunctorParams *functorParams)
 {
     TransposeParams *params = vrv_params_cast<TransposeParams *>(functorParams);
     assert(params);
 
-    LogDebug("Transposing keySig");
-    int sig = this->GetFifthsInt();
+    // Store current KeySig
+    int staffN = -1;
+    const StaffDef *staffDef = vrv_cast<StaffDef *>(this->GetFirstAncestor(STAFFDEF));
+    if (staffDef) {
+        staffN = staffDef->GetN();
+    }
+    else {
+        const Staff *staff = this->GetAncestorStaff(ANCESTOR_ONLY, false);
+        if (staff) staffN = staff->GetN();
+    }
+    params->m_keySigForStaffN[staffN] = this;
+
+    // Transpose
+    const int sig = this->GetFifthsInt();
 
     int intervalClass = params->m_transposer->CircleOfFifthsToIntervalClass(sig);
     intervalClass = params->m_transposer->Transpose(intervalClass);

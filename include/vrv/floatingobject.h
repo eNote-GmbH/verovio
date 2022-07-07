@@ -52,14 +52,23 @@ public:
     int GetDrawingY() const override;
     ///@}
 
+    /**
+     * @name Get and set the current positioner
+     */
+    ///@{
     void SetCurrentFloatingPositioner(FloatingPositioner *boundingBox);
-    FloatingPositioner *GetCurrentFloatingPositioner() const { return m_currentPositioner; }
+    FloatingPositioner *GetCurrentFloatingPositioner() { return m_currentPositioner; }
+    const FloatingPositioner *GetCurrentFloatingPositioner() const { return m_currentPositioner; }
+    ///@}
 
     /**
      * Look for the FloatingPositioner corresponding to the current one but for another object.
      * Return NULL if no current positioner or nothing found.
      */
-    FloatingPositioner *GetCorrespFloatingPositioner(FloatingObject *object);
+    ///@{
+    FloatingPositioner *GetCorrespFloatingPositioner(const FloatingObject *object);
+    const FloatingPositioner *GetCorrespFloatingPositioner(const FloatingObject *object) const;
+    ///@}
 
     /**
      * @name Get and set the drawing group for linking floating element horizontally.
@@ -85,6 +94,11 @@ public:
      */
     virtual bool IsExtenderElement() const { return false; }
 
+    /**
+     * Check whether the current object must be positioned closer to the staff than the other
+     */
+    virtual bool IsCloserToStaffThan(const FloatingObject *other, data_STAFFREL drawingPlace) const { return false; }
+
     //----------//
     // Functors //
     //----------//
@@ -100,9 +114,9 @@ public:
     int ResetVerticalAlignment(FunctorParams *functorParams) override;
 
     /**
-     * See Object::FillStaffCurrentTimeSpanning
+     * See Object::PrepareStaffCurrentTimeSpanning
      */
-    int FillStaffCurrentTimeSpanning(FunctorParams *functorParams) override;
+    int PrepareStaffCurrentTimeSpanning(FunctorParams *functorParams) override;
 
     /**
      * See Object::PrepareTimePointing
@@ -120,9 +134,9 @@ public:
     int PrepareTimestamps(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
     /**
      * See Object::UnCastOff
@@ -186,28 +200,37 @@ public:
      */
     ///@{
     void SetObjectXY(Object *objectX, Object *objectY);
-    Object *GetObjectX() const { return m_objectX; }
-    Object *GetObjectY() const { return m_objectY; }
+    Object *GetObjectX() { return m_objectX; }
+    const Object *GetObjectX() const { return m_objectX; }
+    Object *GetObjectY() { return m_objectY; }
+    const Object *GetObjectY() const { return m_objectY; }
     ///@}
 
     /**
      * Getter for the FloatingObject (asserted, cannot be NULL)
      */
-    FloatingObject *GetObject() const { return m_object; }
+    ///@{
+    FloatingObject *GetObject() { return m_object; }
+    const FloatingObject *GetObject() const { return m_object; }
+    ///@}
 
     /**
      * Getter for the StaffAlignment (asserted, cannot be NULL)
      */
-    StaffAlignment *GetAlignment() const { return m_alignment; }
+    ///@{
+    StaffAlignment *GetAlignment() { return m_alignment; }
+    const StaffAlignment *GetAlignment() const { return m_alignment; }
+    ///@}
 
     /**
      * Getter for the spanning type
      */
-    char GetSpanningType() { return m_spanningType; }
+    char GetSpanningType() const { return m_spanningType; }
 
-    bool CalcDrawingYRel(Doc *doc, StaffAlignment *staffAlignment, BoundingBox *horizOverlapingBBox);
+    bool CalcDrawingYRel(Doc *doc, const StaffAlignment *staffAlignment, const BoundingBox *horizOverlapingBBox);
 
-    int GetSpaceBelow(Doc *doc, StaffAlignment *staffAlignment, BoundingBox *horizOverlapingBBox);
+    int GetSpaceBelow(
+        const Doc *doc, const StaffAlignment *staffAlignment, const BoundingBox *horizOverlapingBBox) const;
 
     data_STAFFREL GetDrawingPlace() const { return m_place; }
 
@@ -285,7 +308,7 @@ public:
      * Stored points are made relative to the curve drawingY.
      */
     ///@{
-    void UpdateCurveParams(const Point points[4], float angle, int thickness, curvature_CURVEDIR curveDir);
+    void UpdateCurveParams(const Point points[4], int thickness, curvature_CURVEDIR curveDir);
     void UpdatePoints(const BezierCurve &bezier);
     ///@}
 
@@ -302,17 +325,22 @@ public:
     /**
      * Calculate the min or max Y for a set of points
      */
-    int CalcMinMaxY(const Point points[4]);
+    int CalcMinMaxY(const Point points[4]) const;
 
     /**
      * Calculate the adjustment needed for an element for the curve not to overlap with it.
      * Discard will be true if the element already fits.
      */
     ///@{
-    int CalcAdjustment(BoundingBox *boundingBox, bool &discard, int margin = 0, bool horizontalOverlap = true);
+    int CalcAdjustment(
+        const BoundingBox *boundingBox, bool &discard, int margin = 0, bool horizontalOverlap = true) const;
+    int CalcDirectionalAdjustment(const BoundingBox *boundingBox, bool isCurveAbove, bool &discard, int margin = 0,
+        bool horizontalOverlap = true) const;
     // Refined version that returns the adjustments on the left and right hand side of the bounding box
     std::pair<int, int> CalcLeftRightAdjustment(
-        BoundingBox *boundingBox, bool &discard, int margin = 0, bool horizontalOverlap = true);
+        const BoundingBox *boundingBox, bool &discard, int margin = 0, bool horizontalOverlap = true) const;
+    std::pair<int, int> CalcDirectionalLeftRightAdjustment(const BoundingBox *boundingBox, bool isCurveAbove,
+        bool &discard, int margin = 0, bool horizontalOverlap = true) const;
     ///@}
 
     /**
@@ -320,9 +348,17 @@ public:
      */
     ///@{
     void GetPoints(Point points[4]) const;
-    float GetAngle() { return m_angle; }
-    int GetThickness() { return m_thickness; }
-    curvature_CURVEDIR GetDir() { return m_dir; }
+    int GetThickness() const { return m_thickness; }
+    curvature_CURVEDIR GetDir() const { return m_dir; }
+    ///@}
+
+    /**
+     * @name Getter and setter for cached x1 and x2
+     */
+    ///@{
+    bool HasCachedX12() const;
+    std::pair<int, int> GetCachedX12() const { return m_cachedX12; }
+    void SetCachedX12(const std::pair<int, int> &cachedX12) { m_cachedX12 = cachedX12; }
     ///@}
 
     /**
@@ -337,7 +373,7 @@ public:
     void AddSpannedElement(CurveSpannedElement *spannedElement) { m_spannedElements.push_back(spannedElement); }
 
     /**
-     * Return a cont pointer to the spanned elements
+     * Return a const pointer to the spanned elements
      */
     const ArrayOfCurveSpannedElements *GetSpannedElements() { return &m_spannedElements; }
 
@@ -346,9 +382,23 @@ public:
      */
     ///@{
     void SetCrossStaff(Staff *crossStaff) { m_crossStaff = crossStaff; }
-    Staff *GetCrossStaff() const { return m_crossStaff; }
+    Staff *GetCrossStaff() { return m_crossStaff; }
+    const Staff *GetCrossStaff() const { return m_crossStaff; }
     bool IsCrossStaff() const { return m_crossStaff != NULL; }
     ///@}
+
+    /**
+     * @name Getter, setter for the requested staff space
+     */
+    ///@{
+    void SetRequestedStaffSpace(int space) { m_requestedStaffSpace = space; }
+    int GetRequestedStaffSpace() const { return m_requestedStaffSpace; }
+    ///@}
+
+    /**
+     * Calculate the requested staff space above and below
+     */
+    std::pair<int, int> CalcRequestedStaffSpace(const StaffAlignment *alignment) const;
 
 private:
     //
@@ -361,7 +411,6 @@ private:
      */
     ///@{
     Point m_points[4];
-    float m_angle;
     int m_thickness;
     curvature_CURVEDIR m_dir;
     Staff *m_crossStaff;
@@ -370,7 +419,15 @@ private:
     ArrayOfCurveSpannedElements m_spannedElements;
 
     /** The cached min or max value (depending on the curvature) */
-    int m_cachedMinMaxY;
+    mutable int m_cachedMinMaxY;
+
+    /** The cached values for x1 and x2 */
+    std::pair<int, int> m_cachedX12;
+
+    /**
+     * Some curves (S-shaped slurs) can request staff space to prevent collisions from two sides
+     */
+    int m_requestedStaffSpace;
 };
 
 //----------------------------------------------------------------------------
@@ -387,12 +444,14 @@ public:
     {
         m_boundingBox = NULL;
         m_discarded = false;
+        m_isBelow = true;
     }
     virtual ~CurveSpannedElement(){};
 
     Point m_rotatedPoints[4];
-    BoundingBox *m_boundingBox;
+    const BoundingBox *m_boundingBox;
     bool m_discarded;
+    bool m_isBelow;
 };
 
 } // namespace vrv

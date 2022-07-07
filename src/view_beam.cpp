@@ -47,10 +47,8 @@ void View::DrawBeam(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     /******************************************************************/
     // initialization
 
-    const ArrayOfObjects *beamChildren = beam->GetList(beam);
-
     // Should we assert this at the beginning?
-    if (beamChildren->empty()) {
+    if (beam->HasEmptyList(beam)) {
         return;
     }
 
@@ -69,7 +67,7 @@ void View::DrawBeam(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     /******************************************************************/
     // Start the Beam graphic and draw the children
 
-    dc->StartGraphic(element, "", element->GetUuid());
+    dc->StartGraphic(element, "", element->GetID());
 
     /******************************************************************/
     // Draw the children
@@ -99,10 +97,8 @@ void View::DrawFTrem(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
     /******************************************************************/
     // initialization
 
-    const ArrayOfObjects *fTremChildren = fTrem->GetList(fTrem);
-
     // Should we assert this at the beginning?
-    if (fTremChildren->empty()) {
+    if (fTrem->HasEmptyList(fTrem)) {
         return;
     }
     const ArrayOfBeamElementCoords *beamElementCoords = fTrem->GetElementCoords();
@@ -120,7 +116,7 @@ void View::DrawFTrem(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
     /******************************************************************/
     // Start the grahic
 
-    dc->StartGraphic(element, "", element->GetUuid());
+    dc->StartGraphic(element, "", element->GetID());
 
     /******************************************************************/
     // Draw the children
@@ -433,16 +429,14 @@ void View::DrawBeamSpan(DeviceContext *dc, BeamSpan *beamSpan, System *system, O
 
     // Draw segments for the beamSpan
     if (graphic) {
-        dc->ResumeGraphic(graphic, graphic->GetUuid());
+        dc->ResumeGraphic(graphic, graphic->GetID());
     }
     else {
-        dc->StartGraphic(beamSpan, "", beamSpan->GetUuid(), false);
+        dc->StartGraphic(beamSpan, "", beamSpan->GetID(), false);
     }
 
-    for (auto segment : beamSpan->m_beamSegments) {
-        // make sure to process only segments for current system
-        Measure *segmentSystem = segment->GetMeasure();
-        if (vrv_cast<System *>(segmentSystem->GetFirstAncestor(SYSTEM)) != system) continue;
+    BeamSpanSegment *segment = beamSpan->GetSegmentForSystem(system);
+    if (segment) {
         // Reset current segment and set coordinates based on stored begin/end iterators for the ElementCoords
         segment->Reset();
 
@@ -450,16 +444,17 @@ void View::DrawBeamSpan(DeviceContext *dc, BeamSpan *beamSpan, System *system, O
             beamSpan->m_beamElementCoords.begin(), beamSpan->m_beamElementCoords.end(), segment->GetBeginCoord());
         const auto coordsLast = std::find(
             beamSpan->m_beamElementCoords.begin(), beamSpan->m_beamElementCoords.end(), segment->GetEndCoord());
-        if ((coordsFirst == beamSpan->m_beamElementCoords.end()) || (coordsLast == beamSpan->m_beamElementCoords.end()))
-            continue;
 
-        ArrayOfBeamElementCoords coord(coordsFirst, coordsLast + 1);
-        segment->InitCoordRefs(&coord);
-        segment->CalcBeam(segment->GetLayer(), segment->GetStaff(), m_doc, beamSpan, beamSpan->m_drawingPlace);
-        segment->AppendSpanningCoordinates(segment->GetMeasure());
+        if ((coordsFirst != beamSpan->m_beamElementCoords.end())
+            && (coordsLast != beamSpan->m_beamElementCoords.end())) {
+            ArrayOfBeamElementCoords coord(coordsFirst, coordsLast + 1);
+            segment->InitCoordRefs(&coord);
+            segment->CalcBeam(segment->GetLayer(), segment->GetStaff(), m_doc, beamSpan, beamSpan->m_drawingPlace);
+            segment->AppendSpanningCoordinates(segment->GetMeasure());
 
-        // Draw corresponding beam segment
-        this->DrawBeamSegment(dc, segment, beamSpan, segment->GetLayer(), segment->GetStaff());
+            // Draw corresponding beam segment
+            this->DrawBeamSegment(dc, segment, beamSpan, segment->GetLayer(), segment->GetStaff());
+        }
     }
 
     if (graphic) {

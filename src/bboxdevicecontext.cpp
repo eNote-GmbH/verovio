@@ -217,7 +217,13 @@ void BBoxDeviceContext::DrawLine(int x1, int y1, int x2, int y2)
     this->UpdateBB(x1 - p1, y1 - p1, x2 + p2, y2 + p2);
 }
 
-void BBoxDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffset, int fillStyle)
+void BBoxDeviceContext::DrawPolyline(int n, Point points[], int xOffset, int yOffset)
+{
+    // Same bounding box as corresponding polygon
+    this->DrawPolygon(n, points, xOffset, yOffset);
+}
+
+void BBoxDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffset)
 {
     if (n == 0) {
         return;
@@ -359,6 +365,9 @@ void BBoxDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, bo
 {
     assert(m_fontStack.top());
 
+    const Resources *resources = this->GetResources();
+    assert(resources);
+
     int g_x, g_y, g_w, g_h;
     int lastCharWidth = 0;
 
@@ -367,7 +376,7 @@ void BBoxDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, bo
 
     for (unsigned int i = 0; i < text.length(); i++) {
         wchar_t c = text.at(i);
-        Glyph *glyph = Resources::GetGlyph(c);
+        const Glyph *glyph = resources->GetGlyph(c);
         if (!glyph) {
             continue;
         }

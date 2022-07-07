@@ -43,7 +43,7 @@ void View::DrawF(DeviceContext *dc, F *f, TextDrawingParams &params)
     assert(dc);
     assert(f);
 
-    dc->StartTextGraphic(f, "", f->GetUuid());
+    dc->StartTextGraphic(f, "", f->GetID());
 
     this->DrawTextChildren(dc, f, params);
 
@@ -74,6 +74,16 @@ void View::DrawDynamString(DeviceContext *dc, std::wstring str, TextDrawingParam
         return;
     }
 
+    if (params.m_textEnclose != ENCLOSURE_NONE) {
+        std::wstring open;
+        switch (params.m_textEnclose) {
+            case ENCLOSURE_paren: open.push_back(L'('); break;
+            case ENCLOSURE_brack: open.push_back(L'['); break;
+            default: break;
+        }
+        this->DrawTextString(dc, open, params);
+    }
+
     ArrayOfStringDynamTypePairs tokens;
     if (Dynam::GetSymbolsInStr(str, tokens)) {
         int first = true;
@@ -99,6 +109,16 @@ void View::DrawDynamString(DeviceContext *dc, std::wstring str, TextDrawingParam
     }
     else {
         this->DrawTextString(dc, str, params);
+    }
+
+    if (params.m_textEnclose != ENCLOSURE_NONE) {
+        std::wstring close;
+        switch (params.m_textEnclose) {
+            case ENCLOSURE_paren: close.push_back(L')'); break;
+            case ENCLOSURE_brack: close.push_back(L']'); break;
+            default: break;
+        }
+        this->DrawTextString(dc, close, params);
     }
 }
 
@@ -241,7 +261,7 @@ void View::DrawLb(DeviceContext *dc, Lb *lb, TextDrawingParams &params)
     assert(dc);
     assert(lb);
 
-    dc->StartTextGraphic(lb, "", lb->GetUuid());
+    dc->StartTextGraphic(lb, "", lb->GetID());
 
     FontInfo *currentFont = dc->GetFont();
 
@@ -256,7 +276,7 @@ void View::DrawNum(DeviceContext *dc, Num *num, TextDrawingParams &params)
     assert(dc);
     assert(num);
 
-    dc->StartTextGraphic(num, "", num->GetUuid());
+    dc->StartTextGraphic(num, "", num->GetID());
 
     Text *currentText = num->GetCurrentText();
     if (currentText && (currentText->GetText().length() > 0)) {
@@ -274,7 +294,7 @@ void View::DrawFig(DeviceContext *dc, Fig *fig, TextDrawingParams &params)
     assert(dc);
     assert(fig);
 
-    dc->StartGraphic(fig, "", fig->GetUuid());
+    dc->StartGraphic(fig, "", fig->GetID());
 
     Svg *svg = dynamic_cast<Svg *>(fig->FindDescendantByType(SVG));
     if (svg) {
@@ -291,7 +311,7 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
     assert(dc);
     assert(rend);
 
-    dc->StartTextGraphic(rend, "", rend->GetUuid());
+    dc->StartTextGraphic(rend, "", rend->GetID());
 
     if (params.m_laidOut) {
         if (params.m_alignment == HORIZONTALALIGNMENT_NONE) {
@@ -374,9 +394,12 @@ void View::DrawText(DeviceContext *dc, Text *text, TextDrawingParams &params)
     assert(dc);
     assert(text);
 
-    dc->StartTextGraphic(text, "", text->GetUuid());
+    const Resources *resources = dc->GetResources();
+    assert(resources);
 
-    Resources::SelectTextFont(dc->GetFont()->GetWeight(), dc->GetFont()->GetStyle());
+    dc->StartTextGraphic(text, "", text->GetID());
+
+    resources->SelectTextFont(dc->GetFont()->GetWeight(), dc->GetFont()->GetStyle());
 
     if (params.m_explicitPosition) {
         dc->MoveTextTo(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_NONE);
@@ -418,7 +441,7 @@ void View::DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params)
     assert(dc);
     assert(svg);
 
-    dc->StartGraphic(svg, "", svg->GetUuid());
+    dc->StartGraphic(svg, "", svg->GetID());
 
     dc->DrawSvgShape(
         ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), svg->GetWidth(), svg->GetHeight(), svg->Get());

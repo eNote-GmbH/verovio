@@ -59,13 +59,14 @@ public:
     /**
      * See Object::LayerCountInTimeSpan
      */
-    int LayerCountInTimeSpan(FunctorParams *functorParams) override;
+    int LayerCountInTimeSpan(FunctorParams *functorParams) const override;
 
 private:
     //
 public:
     //
 private:
+    //
 };
 
 } // namespace vrv

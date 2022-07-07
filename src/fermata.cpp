@@ -57,7 +57,7 @@ void Fermata::Reset()
 }
 
 void Fermata::ConvertFromAnalyticalMarkup(
-    AttFermataPresent *fermataPresent, const std::string &uuid, ConvertMarkupAnalyticalParams *params)
+    AttFermataPresent *fermataPresent, const std::string &id, ConvertMarkupAnalyticalParams *params)
 {
     this->SetPlace(Att::StaffrelBasicToStaffrel(fermataPresent->GetFermata()));
     if (params->m_permanent) {
@@ -66,21 +66,24 @@ void Fermata::ConvertFromAnalyticalMarkup(
     else {
         this->IsAttribute(true);
     }
-    this->SetStartid("#" + uuid);
+    this->SetStartid("#" + id);
     params->m_controlEvents.push_back(this);
 }
 
 wchar_t Fermata::GetFermataGlyph() const
 {
+    const Resources *resources = this->GetDocResources();
+    if (!resources) return 0;
+
     // If there is glyph.num, prioritize it
     if (this->HasGlyphNum()) {
         wchar_t code = this->GetGlyphNum();
-        if (NULL != Resources::GetGlyph(code)) return code;
+        if (NULL != resources->GetGlyph(code)) return code;
     }
     // If there is glyph.name (second priority)
     else if (this->HasGlyphName()) {
-        wchar_t code = Resources::GetGlyphCode(this->GetGlyphName());
-        if (NULL != Resources::GetGlyph(code)) return code;
+        wchar_t code = resources->GetGlyphCode(this->GetGlyphName());
+        if (NULL != resources->GetGlyph(code)) return code;
     }
 
     // check for shape

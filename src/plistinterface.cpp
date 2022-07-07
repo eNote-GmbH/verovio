@@ -40,7 +40,7 @@ void PlistInterface::Reset()
     this->ResetPlist();
 }
 
-void PlistInterface::AddRef(std::string ref)
+void PlistInterface::AddRef(const std::string &ref)
 {
     xsdAnyURI_List references = this->GetPlist();
     if (std::find(references.begin(), references.end(), ref) == references.end()) {
@@ -56,7 +56,7 @@ void PlistInterface::AddRefAllowDuplicate(const std::string &ref)
     this->SetPlist(references);
 }
 
-void PlistInterface::SetRef(Object *ref)
+void PlistInterface::SetRef(const Object *ref)
 {
     if (!IsValidRef(ref)) {
         return;
@@ -67,16 +67,24 @@ void PlistInterface::SetRef(Object *ref)
     }
 }
 
-void PlistInterface::SetUuidStrs()
+ArrayOfObjects PlistInterface::GetRefs()
 {
-    assert(m_uuids.empty() && m_references.empty());
+    ArrayOfObjects result;
+    std::transform(m_references.begin(), m_references.end(), std::back_inserter(result),
+        [](const Object *obj) { return const_cast<Object *>(obj); });
+    return result;
+}
+
+void PlistInterface::SetIDStrs()
+{
+    assert(m_ids.empty() && m_references.empty());
 
     xsdAnyURI_List list = this->GetPlist();
     xsdAnyURI_List::iterator iter;
     for (iter = list.begin(); iter != list.end(); ++iter) {
-        std::string uuid = ExtractUuidFragment(*iter);
-        if (!uuid.empty()) {
-            m_uuids.push_back(uuid);
+        std::string id = ExtractIDFragment(*iter);
+        if (!id.empty()) {
+            m_ids.push_back(id);
         }
         else {
             LogError("Cannot parse the anyURI '%s'", (*iter).c_str());
@@ -98,19 +106,19 @@ int PlistInterface::InterfacePreparePlist(FunctorParams *functorParams, Object *
         return FUNCTOR_CONTINUE;
     }
 
-    this->SetUuidStrs();
+    this->SetIDStrs();
 
     std::vector<std::string>::iterator iter;
-    for (iter = m_uuids.begin(); iter != m_uuids.end(); ++iter) {
-        params->m_interfaceUuidTuples.push_back(std::make_tuple(this, *iter, (Object *)NULL));
+    for (iter = m_ids.begin(); iter != m_ids.end(); ++iter) {
+        params->m_interfaceIDTuples.push_back(std::make_tuple(this, *iter, (Object *)NULL));
     }
 
     return FUNCTOR_CONTINUE;
 }
 
-int PlistInterface::InterfaceResetDrawing(FunctorParams *functorParams, Object *object)
+int PlistInterface::InterfaceResetData(FunctorParams *functorParams, Object *object)
 {
-    m_uuids.clear();
+    m_ids.clear();
     m_references.clear();
 
     return FUNCTOR_CONTINUE;

@@ -36,6 +36,7 @@
 #include "options.h"
 #include "page.h"
 #include "runtimeclock.h"
+#include "score.h"
 #include "slur.h"
 #include "staff.h"
 #include "svgdevicecontext.h"
@@ -59,7 +60,7 @@ const char *ZIP_SIGNATURE = "\x50\x4B\x03\x04";
 
 void SetDefaultResourcePath(const std::string &path)
 {
-    Resources::SetPath(path);
+    Resources::SetDefaultPath(path);
 }
 
 //----------------------------------------------------------------------------
@@ -77,10 +78,13 @@ Toolkit::Toolkit(bool initFont)
     m_cString = NULL;
 
     if (initFont) {
-        Resources::InitFonts();
+        Resources &resources = m_doc.GetResourcesForModification();
+        resources.InitFonts();
     }
 
     m_options = m_doc.GetOptions();
+
+    m_skipLayoutOnLoad = false;
 
     m_editorToolkit = NULL;
 
@@ -111,15 +115,41 @@ Toolkit::~Toolkit()
 #endif
 }
 
+std::string Toolkit::GetUuid()
+{
+    LogWarning("Toolkit function GetUuid() is deprecated; use GetID() instead.");
+
+    return this->GetID();
+}
+
+std::string Toolkit::GetResourcePath() const
+{
+    return m_doc.GetResources().GetPath();
+}
+
 bool Toolkit::SetResourcePath(const std::string &path)
 {
-    Resources::SetPath(path);
-    return Resources::InitFonts();
+    Resources &resources = m_doc.GetResourcesForModification();
+    resources.SetPath(path);
+    return resources.InitFonts();
+}
+
+bool Toolkit::SetFont(const std::string &fontName)
+{
+    Resources &resources = m_doc.GetResourcesForModification();
+    const bool ok = resources.SetFont(fontName);
+    if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
+    return ok;
 }
 
 bool Toolkit::SetScale(int scale)
 {
     return m_options->m_scale.SetValue(scale);
+}
+
+bool Toolkit::Select(const std::string &selection)
+{
+    return m_docSelection.Parse(selection);
 }
 
 bool Toolkit::SetOutputTo(std::string const &outputTo)
@@ -267,11 +297,11 @@ FileFormat Toolkit::IdentifyInputFrom(const std::string &data)
 
 bool Toolkit::LoadFile(const std::string &filename)
 {
-    if (IsUTF16(filename)) {
-        return LoadUTF16File(filename);
+    if (this->IsUTF16(filename)) {
+        return this->LoadUTF16File(filename);
     }
-    if (IsZip(filename)) {
-        return LoadZipFile(filename);
+    if (this->IsZip(filename)) {
+        return this->LoadZipFile(filename);
     }
 
     std::ifstream in(filename.c_str());
@@ -290,7 +320,7 @@ bool Toolkit::LoadFile(const std::string &filename)
 
     m_doc.m_expansionMap.Reset();
 
-    return LoadData(content);
+    return this->LoadData(content);
 }
 
 bool Toolkit::IsUTF16(const std::string &filename)
@@ -345,7 +375,7 @@ bool Toolkit::LoadUTF16File(const std::string &filename)
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
     std::string utf8line = convert.to_bytes(u16data);
 
-    return LoadData(utf8line);
+    return this->LoadData(utf8line);
 }
 
 bool Toolkit::IsZip(const std::string &filename)
@@ -385,7 +415,7 @@ bool Toolkit::LoadZipFile(const std::string &filename)
         bytes.push_back(buffer);
     }
 
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
@@ -410,7 +440,7 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
 
     if (!filename.empty()) {
         LogMessage("Loading file '%s' in the archive", filename.c_str());
-        return LoadData(file.read(filename));
+        return this->LoadData(file.read(filename));
     }
     else {
         LogError("No file to load found in the archive");
@@ -425,13 +455,13 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
 bool Toolkit::LoadZipDataBase64(const std::string &data)
 {
     std::vector<unsigned char> bytes = Base64Decode(data);
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadZipDataBuffer(const unsigned char *data, int length)
 {
     std::vector<unsigned char> bytes(data, data + length);
-    return LoadZipData(bytes);
+    return this->LoadZipData(bytes);
 }
 
 bool Toolkit::LoadData(const std::string &data)
@@ -442,11 +472,11 @@ bool Toolkit::LoadData(const std::string &data)
     if (m_options->m_xmlIdChecksum.GetValue()) {
         crcInit();
         unsigned int cr = crcFast((unsigned char *)data.c_str(), (int)data.size());
-        Object::SeedUuid(cr);
+        Object::SeedID(cr);
     }
 
 #ifndef NO_HUMDRUM_SUPPORT
-    ClearHumdrumBuffer();
+    this->ClearHumdrumBuffer();
 #endif
 
     auto inputFormat = m_inputFrom;
@@ -685,12 +715,14 @@ bool Toolkit::LoadData(const std::string &data)
     m_doc.GenerateMeasureNumbers();
 
     // transpose the content if necessary
-    if (m_options->m_transpose.GetValue() != "") {
-        m_doc.PrepareDrawing();
+    if (m_options->m_transpose.IsSet() || m_options->m_transposeMdiv.IsSet()
+        || m_options->m_transposeToSoundingPitch.IsSet()) {
+        m_doc.PrepareData();
         m_doc.TransposeDoc();
     }
 
-    m_doc.PrepareDrawing();
+    m_doc.PrepareData();
+    m_doc.InitSelectionDoc(m_docSelection, true);
 
     // Convert pseudo-measures into distinct segments based on barLine elements
     if (m_doc.IsMensuralMusicOnly()) {
@@ -717,7 +749,7 @@ bool Toolkit::LoadData(const std::string &data)
     // to be converted
     if (m_doc.GetType() == Transcription || m_doc.GetType() == Facs) breaks = BREAKS_none;
 
-    if (breaks != BREAKS_none) {
+    if (!m_skipLayoutOnLoad && (breaks != BREAKS_none)) {
         if (input->GetLayoutInformation() == LAYOUT_ENCODED
             && (breaks == BREAKS_encoded || breaks == BREAKS_line || breaks == BREAKS_smart)) {
             if (breaks == BREAKS_encoded) {
@@ -769,6 +801,11 @@ bool Toolkit::LoadData(const std::string &data)
     return true;
 }
 
+void Toolkit::SkipLayoutOnLoad(bool value)
+{
+    m_skipLayoutOnLoad = value;
+}
+
 std::string Toolkit::GetMEI(const std::string &jsonOptions)
 {
     bool scoreBased = true;
@@ -810,6 +847,16 @@ std::string Toolkit::GetMEI(const std::string &jsonOptions)
 
     int initialPageNo = (m_doc.GetDrawingPage() == NULL) ? -1 : m_doc.GetDrawingPage()->GetIdx();
 
+    bool hadSelection = false;
+    if (m_doc.HasSelection()) {
+        if (!scoreBased) {
+            LogError("Page-based MEI output is not possible when a selection is set.");
+            return "";
+        }
+        hadSelection = true;
+        m_doc.DeactiveateSelection();
+    }
+
     MEIOutput meioutput(&m_doc);
     meioutput.SetScoreBasedMEI(scoreBased);
 
@@ -825,6 +872,9 @@ std::string Toolkit::GetMEI(const std::string &jsonOptions)
     if (!mdiv.empty()) meioutput.SetMdiv(mdiv);
 
     std::string output = meioutput.GetOutput();
+
+    if (hadSelection) m_doc.ReactivateSelection(false);
+
     if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);
     return output;
 }
@@ -926,7 +976,7 @@ std::string Toolkit::GetAvailableOptions() const
 
     grps << "0-base" << m_options->GetBaseOptGrp();
 
-    std::vector<OptionGrp *> *optionGrps = m_options->GetGrps();
+    const std::vector<OptionGrp *> *optionGrps = m_options->GetGrps();
     for (auto const &optionGrp : *optionGrps) {
 
         jsonxx::Object grp;
@@ -986,7 +1036,7 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
             else if (iter->first == "xmlIdSeed") {
                 if (json.has<jsonxx::Number>("xmlIdSeed")) {
                     m_options->m_xmlIdSeed.SetValue(json.get<jsonxx::Number>("xmlIdSeed"));
-                    Object::SeedUuid(m_options->m_xmlIdSeed.GetValue());
+                    Object::SeedID(m_options->m_xmlIdSeed.GetValue());
                 }
             }
             // Deprecated option
@@ -1051,9 +1101,7 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
 
     // Forcing font to be reset. Warning: SetOption("font") as a single option will not work.
     // This needs to be fixed
-    if (!Resources::SetFont(m_options->m_font.GetValue())) {
-        LogWarning("Font '%s' could not be loaded", m_options->m_font.GetValue().c_str());
-    }
+    this->SetFont(m_options->m_font.GetValue());
 
     return true;
 }
@@ -1086,7 +1134,7 @@ void Toolkit::ResetOptions()
         [](const MapOfStrOptions::value_type &opt) { opt.second->Reset(); });
 
     // Set the (default) font
-    Resources::SetFont(m_options->m_font.GetValue());
+    this->SetFont(m_options->m_font.GetValue());
 }
 
 std::string Toolkit::GetElementAttr(const std::string &xmlId)
@@ -1097,11 +1145,43 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
 
     // Try to get the element on the current drawing page - it is usually the case and fast
     if (m_doc.GetDrawingPage()) {
-        element = m_doc.GetDrawingPage()->FindDescendantByUuid(xmlId);
+        element = m_doc.GetDrawingPage()->FindDescendantByID(xmlId);
     }
     // If it wasn't there, try on the whole doc
     if (!element) {
-        element = m_doc.FindDescendantByUuid(xmlId);
+        element = m_doc.FindDescendantByID(xmlId);
+    }
+    // If not found again, try looking in the layer staffdefs
+    if (!element) {
+        Functor findByID(&Object::FindElementInLayerStaffDefsByID);
+        FindLayerIDWithinStaffDefParams params(xmlId);
+        // Check drawing page elements first
+        if (m_doc.GetDrawingPage()) {
+            m_doc.GetDrawingPage()->Process(&findByID, &params);
+            element = params.m_object;
+        }
+        if (!element) {
+            m_doc.Process(&findByID, &params);
+            element = params.m_object;
+        }
+        // If element is found within layer staffdef - check for the linking interface @corresp attribute to find
+        // original ID of the element
+        if (element) {
+            // If element has @corresp set, try finding its origin
+            const LinkingInterface *link = element->GetLinkingInterface();
+            if (link && link->HasCorresp()) {
+                const std::string correspId = ExtractIDFragment(link->GetCorresp());
+                Object *origin = m_doc.FindDescendantByID(correspId);
+                // if no original element was found, try searching through scoredef in score (only for certain elements)
+                if (!origin && element->Is({ CLEF, GRPSYM, KEYSIG, MENSUR, METERSIG, METERSIGGRP })) {
+                    Page *page = vrv_cast<Page *>(m_doc.FindDescendantByType(PAGE));
+                    if (page && page->m_score) {
+                        origin = page->m_score->GetScoreDef()->FindDescendantByID(correspId);
+                    }
+                }
+                if (origin) element = origin;
+            }
+        }
     }
     // If not found at all
     if (!element) {
@@ -1125,7 +1205,7 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
 std::string Toolkit::GetNotatedIdForElement(const std::string &xmlId)
 {
     if (m_doc.m_expansionMap.HasExpansionMap())
-        return m_doc.m_expansionMap.GetExpansionIdsForElement(xmlId).front();
+        return m_doc.m_expansionMap.GetExpansionIDsForElement(xmlId).front();
     else
         return xmlId;
 }
@@ -1134,7 +1214,7 @@ std::string Toolkit::GetExpansionIdsForElement(const std::string &xmlId)
 {
     jsonxx::Array a;
     if (m_doc.m_expansionMap.HasExpansionMap()) {
-        for (std::string id : m_doc.m_expansionMap.GetExpansionIdsForElement(xmlId)) {
+        for (std::string id : m_doc.m_expansionMap.GetExpansionIDsForElement(xmlId)) {
             a << id;
         }
     }
@@ -1174,7 +1254,7 @@ std::string Toolkit::GetVersion()
 void Toolkit::ResetXmlIdSeed(int seed)
 {
     m_options->m_xmlIdSeed.SetValue(seed);
-    Object::SeedUuid(m_options->m_xmlIdSeed.GetValue());
+    Object::SeedID(m_options->m_xmlIdSeed.GetValue());
 }
 
 void Toolkit::ResetLogBuffer()
@@ -1205,7 +1285,13 @@ void Toolkit::RedoLayout(const std::string &jsonOptions)
         return;
     }
 
-    m_doc.UnCastOffDoc(resetCache);
+    if (m_docSelection.m_isPending) {
+        m_doc.InitSelectionDoc(m_docSelection, resetCache);
+    }
+    else {
+        m_doc.UnCastOffDoc(resetCache);
+    }
+
     if (m_options->m_breaks.GetValue() == BREAKS_line) {
         m_doc.CastOffLineDoc();
     }
@@ -1294,6 +1380,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     // Create the SVG object, h & w come from the system
     // We will need to set the size of the page after having drawn it depending on the options
     SvgDeviceContext svg;
+    svg.SetResources(&m_doc.GetResources());
 
     int indent = (m_options->m_outputIndentTab.GetValue()) ? -1 : m_options->m_outputIndent.GetValue();
     svg.SetIndent(indent);
@@ -1326,7 +1413,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     svg.SetAdditionalAttributes(m_options->m_svgAdditionalAttribute.GetValue());
 
     // render the page
-    RenderToDeviceContext(pageNo, &svg);
+    this->RenderToDeviceContext(pageNo, &svg);
 
     std::string out_str = svg.GetStringSVG(xmlDeclaration);
     if (initialPageNo >= 0) m_doc.SetDrawingPage(initialPageNo);
@@ -1337,7 +1424,7 @@ bool Toolkit::RenderToSVGFile(const std::string &filename, int pageNo)
 {
     this->ResetLogBuffer();
 
-    std::string output = RenderToSVG(pageNo, true);
+    std::string output = this->RenderToSVG(pageNo, true);
 
     std::ofstream outfile;
     outfile.open(filename.c_str());
@@ -1462,9 +1549,9 @@ std::string Toolkit::GetElementsAtTime(int millisec)
     jsonxx::Array restArray;
 
     // Here we need to check that the midi timemap is done
-    if (!m_doc.HasMidiTimemap()) {
+    if (!m_doc.HasTimemap()) {
         // generate MIDI timemap before progressing
-        m_doc.CalculateMidiTimemap();
+        m_doc.CalculateTimemap();
     }
 
     MeasureOnsetOffsetComparison matchMeasureTime(millisec);
@@ -1491,26 +1578,26 @@ std::string Toolkit::GetElementsAtTime(int millisec)
     // Fill the JSON object
     for (auto const item : notesOrRests) {
         if (item->Is(NOTE)) {
-            noteArray << item->GetUuid();
+            noteArray << item->GetID();
             Note *note = vrv_cast<Note *>(item);
             assert(note);
             Chord *chord = note->IsChordTone();
             if (chord) chords.push_back(chord);
         }
         else if (item->Is(REST)) {
-            restArray << item->GetUuid();
+            restArray << item->GetID();
         }
     }
     chords.unique();
     for (auto const item : chords) {
-        chordArray << item->GetUuid();
+        chordArray << item->GetID();
     }
 
     o << "notes" << noteArray;
     o << "chords" << chordArray;
     o << "rests" << restArray;
     o << "page" << pageNo;
-    o << "measure" << measure->GetUuid();
+    o << "measure" << measure->GetID();
 
     return o.json();
 }
@@ -1556,7 +1643,7 @@ std::string Toolkit::GetDescriptiveFeatures(const std::string &options)
 
 int Toolkit::GetPageWithElement(const std::string &xmlId)
 {
-    Object *element = m_doc.FindDescendantByUuid(xmlId);
+    Object *element = m_doc.FindDescendantByID(xmlId);
     if (!element) {
         return 0;
     }
@@ -1571,7 +1658,7 @@ int Toolkit::GetTimeForElement(const std::string &xmlId)
 {
     this->ResetLogBuffer();
 
-    Object *element = m_doc.FindDescendantByUuid(xmlId);
+    Object *element = m_doc.FindDescendantByID(xmlId);
 
     if (!element) {
         LogWarning("Element '%s' not found", xmlId.c_str());
@@ -1579,11 +1666,11 @@ int Toolkit::GetTimeForElement(const std::string &xmlId)
     }
 
     int timeofElement = 0;
-    if (!m_doc.HasMidiTimemap()) {
+    if (!m_doc.HasTimemap()) {
         // generate MIDI timemap before progressing
-        m_doc.CalculateMidiTimemap();
+        m_doc.CalculateTimemap();
     }
-    if (!m_doc.HasMidiTimemap()) {
+    if (!m_doc.HasTimemap()) {
         LogWarning("Calculation of MIDI timemap failed, time value is invalid.");
     }
     if (element->Is(NOTE)) {
@@ -1619,7 +1706,7 @@ std::string Toolkit::GetTimesForElement(const std::string &xmlId)
 {
     this->ResetLogBuffer();
 
-    Object *element = m_doc.FindDescendantByUuid(xmlId);
+    Object *element = m_doc.FindDescendantByID(xmlId);
     jsonxx::Object o;
 
     if (!element) {
@@ -1634,11 +1721,11 @@ std::string Toolkit::GetTimesForElement(const std::string &xmlId)
     jsonxx::Array realTimeOnsetMilliseconds;
     jsonxx::Array realTimeOffsetMilliseconds;
 
-    if (!m_doc.HasMidiTimemap()) {
+    if (!m_doc.HasTimemap()) {
         // generate MIDI timemap before progressing
-        m_doc.CalculateMidiTimemap();
+        m_doc.CalculateTimemap();
     }
-    if (!m_doc.HasMidiTimemap()) {
+    if (!m_doc.HasTimemap()) {
         LogWarning("Calculation of MIDI timemap failed, time value is invalid.");
         return o.json();
     }
@@ -1673,7 +1760,7 @@ std::string Toolkit::GetMIDIValuesForElement(const std::string &xmlId)
 {
     this->ResetLogBuffer();
 
-    Object *element = m_doc.FindDescendantByUuid(xmlId);
+    Object *element = m_doc.FindDescendantByID(xmlId);
 
     if (!element) {
         LogWarning("Element '%s' not found", xmlId.c_str());
@@ -1682,11 +1769,11 @@ std::string Toolkit::GetMIDIValuesForElement(const std::string &xmlId)
 
     jsonxx::Object o;
     if (element->Is(NOTE)) {
-        if (!m_doc.HasMidiTimemap()) {
+        if (!m_doc.HasTimemap()) {
             // generate MIDI timemap before progressing
-            m_doc.CalculateMidiTimemap();
+            m_doc.CalculateTimemap();
         }
-        if (!m_doc.HasMidiTimemap()) {
+        if (!m_doc.HasTimemap()) {
             LogWarning("Calculation of MIDI timemap failed, time value is invalid.");
             return o.json();
         }
@@ -1704,7 +1791,7 @@ std::string Toolkit::GetMIDIValuesForElement(const std::string &xmlId)
 
 void Toolkit::SetHumdrumBuffer(const char *data)
 {
-    ClearHumdrumBuffer();
+    this->ClearHumdrumBuffer();
     size_t size = strlen(data) + 1;
     m_humdrumBuffer = (char *)malloc(size);
     if (!m_humdrumBuffer) {
@@ -1767,7 +1854,7 @@ const char *Toolkit::GetCString()
     }
 }
 
-void Toolkit::ClearHumdrumBuffer(void)
+void Toolkit::ClearHumdrumBuffer()
 {
 #ifndef NO_HUMDRUM_SUPPORT
     if (m_humdrumBuffer) {

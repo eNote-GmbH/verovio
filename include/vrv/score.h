@@ -74,6 +74,11 @@ public:
     //----------//
 
     /**
+     * See Object::PrepareDataInitialization
+     */
+    int PrepareDataInitialization(FunctorParams *functorParams) override;
+
+    /**
      * See Object::AdjustDots
      */
     int AdjustDots(FunctorParams *functorParams) override;
@@ -120,6 +125,11 @@ public:
      * See Object::PrepareDuration
      */
     int PrepareDuration(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::Transpose
+     */
+    int Transpose(FunctorParams *functorParams) override;
 
 private:
     /**

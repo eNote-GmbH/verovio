@@ -30,9 +30,6 @@ class Doc;
 #undef max
 #undef min
 
-/*  Polygon filling mode */
-enum { AxODDEVEN_RULE = 1, AxWINDING_RULE };
-
 enum {
     /*  Pen styles */
     AxSOLID = 100,
@@ -42,6 +39,24 @@ enum {
     AxDOT_DASH,
     AxUSER_DASH,
     AxTRANSPARENT
+};
+
+enum {
+    /* Line cap styles */
+    AxCAP_UNKNOWN = 0,
+    AxCAP_BUTT,
+    AxCAP_ROUND,
+    AxCAP_SQUARE
+};
+
+enum {
+    /* Line join styles */
+    AxJOIN_UNKNOWN = 0,
+    AxJOIN_ARCS,
+    AxJOIN_BEVEL,
+    AxJOIN_MITER,
+    AxJOIN_MITER_CLIP,
+    AxJOIN_ROUND
 };
 
 // ---------------------------------------------------------------------------
@@ -55,9 +70,18 @@ enum {
 
 class Pen {
 public:
-    Pen() : m_penColour(0), m_penWidth(0), m_dashLength(0), m_lineCap(0), m_penOpacity(0.0) {}
-    Pen(int colour, int width, float opacity, int dashLength, int lineCap)
-        : m_penColour(colour), m_penWidth(width), m_dashLength(dashLength), m_lineCap(lineCap), m_penOpacity(opacity)
+    Pen()
+        : m_penColour(0), m_penWidth(0), m_dashLength(0), m_gapLength(0), m_lineCap(0), m_lineJoin(0), m_penOpacity(0.0)
+    {
+    }
+    Pen(int colour, int width, float opacity, int dashLength, int gapLength, int lineCap, int lineJoin)
+        : m_penColour(colour)
+        , m_penWidth(width)
+        , m_dashLength(dashLength)
+        , m_gapLength(gapLength)
+        , m_lineCap(lineCap)
+        , m_lineJoin(lineJoin)
+        , m_penOpacity(opacity)
     {
     }
 
@@ -67,13 +91,17 @@ public:
     void SetWidth(int width) { m_penWidth = width; }
     int GetDashLength() const { return m_dashLength; }
     void SetDashLength(int dashLength) { m_dashLength = dashLength; }
+    int GetGapLength() const { return m_gapLength; }
+    void SetGapLength(int gapLength) { m_gapLength = gapLength; }
     int GetLineCap() const { return m_lineCap; }
     void SetLineCap(int lineCap) { m_lineCap = lineCap; }
+    int GetLineJoin() const { return m_lineJoin; }
+    void SetLineJoin(int lineJoin) { m_lineJoin = lineJoin; }
     float GetOpacity() const { return m_penOpacity; }
     void SetOpacity(float opacity) { m_penOpacity = opacity; }
 
 private:
-    int m_penColour, m_penWidth, m_dashLength, m_lineCap;
+    int m_penColour, m_penWidth, m_dashLength, m_gapLength, m_lineCap, m_lineJoin;
     float m_penOpacity;
 };
 
@@ -238,14 +266,11 @@ public:
      * @name Getter/setter for control point offset (as well as method to calculate it from options)
      */
     ///@{
-    void SetControlPointOffset(int controlPointOffset)
-    {
-        m_leftControlPointOffset = m_rightControlPointOffset = controlPointOffset;
-    };
-    void SetLeftControlPointOffset(int height) { m_leftControlPointOffset = height; }
-    void SetRightControlPointOffset(int height) { m_rightControlPointOffset = height; }
-    int GetLeftControlPointOffset() const { return m_leftControlPointOffset; }
-    int GetRightControlPointOffset() const { return m_rightControlPointOffset; }
+    void SetControlOffset(int offset) { m_leftControlOffset = m_rightControlOffset = offset; }
+    void SetLeftControlOffset(int offset) { m_leftControlOffset = offset; }
+    void SetRightControlOffset(int offset) { m_rightControlOffset = offset; }
+    int GetLeftControlOffset() const { return m_leftControlOffset; }
+    int GetRightControlOffset() const { return m_rightControlOffset; }
     ///@}
 
     /**
@@ -260,24 +285,44 @@ public:
     ///@}
 
     /**
+     * @name Getter/setter for the side of the control points (left and right)
+     */
+    ///@{
+    void SetControlSides(bool leftAbove, bool rightAbove);
+    bool IsLeftControlAbove() const { return m_leftControlAbove; }
+    bool IsRightControlAbove() const { return m_rightControlAbove; }
+    ///@}
+
+    /**
      * @name Initialize control point height and offset from end point positions
      */
-    void CalcInitialControlPointParams(Doc *doc, float angle, int staffSize);
+    ///@{
+    void CalcInitialControlPointParams();
+    void CalcInitialControlPointParams(const Doc *doc, float angle, int staffSize);
+    ///@}
 
     /**
      * Calculate control point offset and height from points or vice versa
      */
     ///@{
-    void UpdateControlPointParams(curvature_CURVEDIR dir);
-    void UpdateControlPoints(curvature_CURVEDIR dir);
+    void UpdateControlPointParams();
+    void UpdateControlPoints();
     ///@}
+
+    /**
+     * Estimate the curve parameter corresponding to the control points
+     * Based on the polyline P1-C1-C2-P2
+     */
+    std::pair<double, double> EstimateCurveParamForControlPoints() const;
 
 private:
     // Control point X-axis offset for both start/end points
-    int m_leftControlPointOffset = 0;
-    int m_rightControlPointOffset = 0;
+    int m_leftControlOffset = 0;
+    int m_rightControlOffset = 0;
     int m_leftControlHeight = 0;
     int m_rightControlHeight = 0;
+    bool m_leftControlAbove = true;
+    bool m_rightControlAbove = true;
 
     // no copy ctor or assignment operator - the defaults are ok
 };

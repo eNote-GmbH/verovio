@@ -70,7 +70,7 @@ SvgDeviceContext::SvgDeviceContext() : DeviceContext(SVG_DEVICE_CONTEXT)
 
     m_outdata.clear();
 
-    m_glyphPostfixId = Object::GenerateRandUuid();
+    m_glyphPostfixId = Object::GenerateRandID();
 }
 
 SvgDeviceContext::~SvgDeviceContext() {}
@@ -85,7 +85,6 @@ bool SvgDeviceContext::CopyFileToStream(const std::string &filename, std::ostrea
 
 void SvgDeviceContext::Commit(bool xml_declaration)
 {
-
     if (m_committed) {
         return;
     }
@@ -110,10 +109,11 @@ void SvgDeviceContext::Commit(bool xml_declaration)
     }
 
     // add the woff VerovioText font if needed
-    if (m_vrvTextFont) {
-        std::string woff = Resources::GetPath() + "/woff.xml";
+    const Resources *resources = this->GetResources(true);
+    if (m_vrvTextFont && resources) {
+        const std::string woffPath = resources->GetPath() + "/woff.xml";
         pugi::xml_document woffDoc;
-        woffDoc.load_file(woff.c_str());
+        woffDoc.load_file(woffPath.c_str());
         m_svgNode.prepend_copy(woffDoc.first_child());
     }
 
@@ -497,6 +497,37 @@ pugi::xml_node SvgDeviceContext::AppendChild(std::string name)
         return m_currentNode.append_child(name.c_str());
 }
 
+void SvgDeviceContext::AppendStrokeLineCap(pugi::xml_node node, const Pen &pen)
+{
+    switch (pen.GetLineCap()) {
+        case AxCAP_BUTT: node.append_attribute("stroke-linecap") = "butt"; break;
+        case AxCAP_ROUND: node.append_attribute("stroke-linecap") = "round"; break;
+        case AxCAP_SQUARE: node.append_attribute("stroke-linecap") = "square"; break;
+        default: break;
+    }
+}
+
+void SvgDeviceContext::AppendStrokeLineJoin(pugi::xml_node node, const Pen &pen)
+{
+    switch (pen.GetLineJoin()) {
+        case AxJOIN_ARCS: node.append_attribute("stroke-linejoin") = "arcs"; break;
+        case AxJOIN_BEVEL: node.append_attribute("stroke-linejoin") = "bevel"; break;
+        case AxJOIN_MITER: node.append_attribute("stroke-linejoin") = "miter"; break;
+        case AxJOIN_MITER_CLIP: node.append_attribute("stroke-linejoin") = "miter-clip"; break;
+        case AxJOIN_ROUND: node.append_attribute("stroke-linejoin") = "round"; break;
+        default: break;
+    }
+}
+
+void SvgDeviceContext::AppendStrokeDashArray(pugi::xml_node node, const Pen &pen)
+{
+    if (pen.GetDashLength() > 0) {
+        const int dashLength = pen.GetDashLength();
+        const int gapLength = (pen.GetGapLength() > 0) ? pen.GetGapLength() : dashLength;
+        node.append_attribute("stroke-dasharray") = StringFormat("%d %d", dashLength, gapLength).c_str();
+    }
+}
+
 // Drawing methods
 void SvgDeviceContext::DrawQuadBezierPath(Point bezier[3])
 {
@@ -510,12 +541,7 @@ void SvgDeviceContext::DrawQuadBezierPath(Point bezier[3])
     pathChild.append_attribute("stroke-linecap") = "round";
     pathChild.append_attribute("stroke-linejoin") = "round";
     pathChild.append_attribute("stroke-width") = m_penStack.top().GetWidth();
-    if (m_penStack.top().GetDashLength() > 0) {
-        // Since we have stroke-linecap=round, change the dash length to be the percieved length.
-        int dashOn = std::max(m_penStack.top().GetDashLength() - m_penStack.top().GetWidth(), 0);
-        int dashOff = m_penStack.top().GetDashLength() + m_penStack.top().GetWidth();
-        pathChild.append_attribute("stroke-dasharray") = StringFormat("%d, %d", dashOn, dashOff).c_str();
-    }
+    this->AppendStrokeDashArray(pathChild, m_penStack.top());
 }
 
 void SvgDeviceContext::DrawCubicBezierPath(Point bezier[4])
@@ -531,12 +557,7 @@ void SvgDeviceContext::DrawCubicBezierPath(Point bezier[4])
     pathChild.append_attribute("stroke-linecap") = "round";
     pathChild.append_attribute("stroke-linejoin") = "round";
     pathChild.append_attribute("stroke-width") = m_penStack.top().GetWidth();
-    if (m_penStack.top().GetDashLength() > 0) {
-        // Since we have stroke-linecap=round, change the dash length to be the percieved length.
-        int dashOn = std::max(m_penStack.top().GetDashLength() - m_penStack.top().GetWidth(), 0);
-        int dashOff = m_penStack.top().GetDashLength() + m_penStack.top().GetWidth();
-        pathChild.append_attribute("stroke-dasharray") = StringFormat("%d, %d", dashOn, dashOff).c_str();
-    }
+    this->AppendStrokeDashArray(pathChild, m_penStack.top());
 }
 
 void SvgDeviceContext::DrawCubicBezierPathFilled(Point bezier1[4], Point bezier2[4])
@@ -662,35 +683,64 @@ void SvgDeviceContext::DrawLine(int x1, int y1, int x2, int y2)
     pugi::xml_node pathChild = AppendChild("path");
     pathChild.append_attribute("d") = StringFormat("M%d %d L%d %d", x1, y1, x2, y2).c_str();
     pathChild.append_attribute("stroke") = this->GetColour(m_penStack.top().GetColour()).c_str();
-    if (m_penStack.top().GetLineCap() > 0) {
-        pathChild.append_attribute("stroke-linecap") = "round";
-        pathChild.append_attribute("stroke-dasharray")
-            = StringFormat("1, %d", int(2.5 * m_penStack.top().GetDashLength())).c_str();
-    }
-    else if (m_penStack.top().GetDashLength() > 0)
-        pathChild.append_attribute("stroke-dasharray")
-            = StringFormat("%d, %d", m_penStack.top().GetDashLength(), m_penStack.top().GetDashLength()).c_str();
     if (m_penStack.top().GetWidth() > 1) pathChild.append_attribute("stroke-width") = m_penStack.top().GetWidth();
+    this->AppendStrokeLineCap(pathChild, m_penStack.top());
+    this->AppendStrokeDashArray(pathChild, m_penStack.top());
 }
 
-void SvgDeviceContext::DrawPolygon(int n, Point points[], int xoffset, int yoffset, int fill_style)
+void SvgDeviceContext::DrawPolyline(int n, Point points[], int xOffset, int yOffset)
+{
+    assert(m_penStack.size());
+    const Pen &currentPen = m_penStack.top();
+
+    pugi::xml_node polylineChild = AppendChild("polyline");
+
+    if (currentPen.GetWidth() > 0) {
+        polylineChild.append_attribute("stroke") = this->GetColour(currentPen.GetColour()).c_str();
+    }
+    if (currentPen.GetWidth() > 1) {
+        polylineChild.append_attribute("stroke-width") = StringFormat("%d", currentPen.GetWidth()).c_str();
+    }
+    if (currentPen.GetOpacity() != 1.0) {
+        polylineChild.append_attribute("stroke-opacity") = StringFormat("%f", currentPen.GetOpacity()).c_str();
+    }
+
+    this->AppendStrokeLineCap(polylineChild, currentPen);
+    this->AppendStrokeLineJoin(polylineChild, currentPen);
+    this->AppendStrokeDashArray(polylineChild, currentPen);
+
+    polylineChild.append_attribute("fill") = "none";
+
+    std::string pointsString;
+    for (int i = 0; i < n; ++i) {
+        pointsString += StringFormat("%d,%d ", points[i].x + xOffset, points[i].y + yOffset);
+    }
+    polylineChild.append_attribute("points") = pointsString.c_str();
+}
+
+void SvgDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffset)
 {
     assert(m_penStack.size());
     assert(m_brushStack.size());
 
-    Pen currentPen = m_penStack.top();
-    Brush currentBrush = m_brushStack.top();
+    const Pen &currentPen = m_penStack.top();
+    const Brush &currentBrush = m_brushStack.top();
 
     pugi::xml_node polygonChild = AppendChild("polygon");
-    // if (fillStyle == wxODDEVEN_RULE)
-    //    polygonChild.append_attribute("fill-rule") = "evenodd;";
-    // else
-    if (currentPen.GetWidth() > 0)
+
+    if (currentPen.GetWidth() > 0) {
         polygonChild.append_attribute("stroke") = this->GetColour(currentPen.GetColour()).c_str();
-    if (currentPen.GetWidth() > 1)
+    }
+    if (currentPen.GetWidth() > 1) {
         polygonChild.append_attribute("stroke-width") = StringFormat("%d", currentPen.GetWidth()).c_str();
-    if (currentPen.GetOpacity() != 1.0)
+    }
+    if (currentPen.GetOpacity() != 1.0) {
         polygonChild.append_attribute("stroke-opacity") = StringFormat("%f", currentPen.GetOpacity()).c_str();
+    }
+
+    this->AppendStrokeLineJoin(polygonChild, currentPen);
+    this->AppendStrokeDashArray(polygonChild, currentPen);
+
     if (currentBrush.GetColour() != AxNONE)
         polygonChild.append_attribute("fill") = this->GetColour(currentBrush.GetColour()).c_str();
     if (currentBrush.GetOpacity() != 1.0)
@@ -698,7 +748,7 @@ void SvgDeviceContext::DrawPolygon(int n, Point points[], int xoffset, int yoffs
 
     std::string pointsString;
     for (int i = 0; i < n; ++i) {
-        pointsString += StringFormat("%d,%d ", points[i].x + xoffset, points[i].y + yoffset);
+        pointsString += StringFormat("%d,%d ", points[i].x + xOffset, points[i].y + yOffset);
     }
     polygonChild.append_attribute("points") = pointsString.c_str();
 }
@@ -897,6 +947,9 @@ void SvgDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, boo
 {
     assert(m_fontStack.top());
 
+    const Resources *resources = this->GetResources();
+    assert(resources);
+
     int w, h, gx, gy;
 
     // remove the `xlink:` prefix for backwards compatibility with older SVG viewers.
@@ -908,7 +961,7 @@ void SvgDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, boo
     // print chars one by one
     for (unsigned int i = 0; i < text.length(); ++i) {
         wchar_t c = text.at(i);
-        Glyph *glyph = Resources::GetGlyph(c);
+        const Glyph *glyph = resources->GetGlyph(c);
         if (!glyph) {
             continue;
         }
@@ -1062,6 +1115,9 @@ void SvgDeviceContext::DrawSvgBoundingBoxRectangle(int x, int y, int width, int 
 
 void SvgDeviceContext::DrawSvgBoundingBox(Object *object, View *view)
 {
+    const Resources *resources = this->GetResources();
+    assert(resources);
+
     bool groupInPage = false;
     bool drawAnchors = false;
     bool drawContentBB = false;
@@ -1083,7 +1139,7 @@ void SvgDeviceContext::DrawSvgBoundingBox(Object *object, View *view)
             m_currentNode = m_pageNode;
         }
 
-        StartGraphic(object, "bounding-box", "bbox-" + object->GetUuid(), true, true);
+        StartGraphic(object, "bounding-box", "bbox-" + object->GetID(), true, true);
 
         if (box->HasSelfBB()) {
             this->DrawSvgBoundingBoxRectangle(view->ToDeviceContextX(object->GetDrawingX() + box->GetSelfX1()),
@@ -1100,7 +1156,7 @@ void SvgDeviceContext::DrawSvgBoundingBox(Object *object, View *view)
 
             for (iter = anchors.begin(); iter != anchors.end(); ++iter) {
                 if (object->GetBoundingBoxGlyph() != 0) {
-                    Glyph *glyph = Resources::GetGlyph(object->GetBoundingBoxGlyph());
+                    const Glyph *glyph = resources->GetGlyph(object->GetBoundingBoxGlyph());
                     assert(glyph);
 
                     if (glyph->HasAnchor(*iter)) {
@@ -1134,7 +1190,7 @@ void SvgDeviceContext::DrawSvgBoundingBox(Object *object, View *view)
 
         if (drawContentBB) {
             if (object->HasContentBB()) {
-                StartGraphic(object, "content-bounding-box", "cbbox-" + object->GetUuid(), true, true);
+                StartGraphic(object, "content-bounding-box", "cbbox-" + object->GetID(), true, true);
                 if (object->HasContentBB()) {
                     this->DrawSvgBoundingBoxRectangle(
                         view->ToDeviceContextX(object->GetDrawingX() + box->GetContentX1()),

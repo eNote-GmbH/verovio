@@ -26,7 +26,6 @@
 
 namespace vrv {
 
-class Glyph;
 class Object;
 
 /**
@@ -53,9 +52,9 @@ void LogString(std::string message, consoleLogLevel level);
 bool AreEqual(double dFirstVal, double dSecondVal);
 
 /**
- * Extract the uuid from a any uri string
+ * Extract the ID from any URI
  */
-std::string ExtractUuidFragment(std::string refUuid);
+std::string ExtractIDFragment(std::string refID);
 
 /**
  * Utility for converting UTF16 (std::wstring) to UTF-8
@@ -95,7 +94,7 @@ std::string GetVersion();
  * Encode the integer value using the specified base (max is 62)
  * Base 36 uses 0-9 and a-z, base 62 also A-Z.
  */
-std::string BaseEncodeInt(int value, int base);
+std::string BaseEncodeInt(unsigned int value, unsigned int base);
 
 /**
  *
@@ -123,73 +122,6 @@ void LogElapsedTimeEnd(const char *msg = "unspecified operation");
  * Also asserts it for stopping in debug mode
  */
 bool Check(Object *object);
-
-//----------------------------------------------------------------------------
-// Resources
-//----------------------------------------------------------------------------
-
-/**
- * This class provides static resource values.
- * The default values can be changed by setters.
- */
-
-class Resources {
-public:
-    using StyleAttributes = std::pair<data_FONTWEIGHT, data_FONTSTYLE>;
-    using GlyphTable = std::unordered_map<wchar_t, Glyph>;
-    using GlyphNameTable = std::unordered_map<std::string, wchar_t>;
-    using GlyphTextMap = std::map<StyleAttributes, GlyphTable>;
-
-    //----------------//
-    // Static methods //
-    //----------------//
-
-    /**
-     * @name Setters and getters for static environment variables
-     */
-    ///@{
-    /** Resource path */
-    static std::string GetPath() { return s_path; }
-    static void SetPath(const std::string &path) { s_path = path; }
-    /** Init the SMufL music and text fonts */
-    static bool InitFonts();
-    /** Init the text font (bounding boxes and ASCII only) */
-    static bool InitTextFont(const std::string &fontName, const StyleAttributes &style);
-    /** Select a particular font */
-    static bool SetFont(const std::string &fontName);
-    /** Returns the glyph (if exists) for a glyph code in the current SMuFL font */
-    static Glyph *GetGlyph(wchar_t smuflCode);
-    /** Returns the glyph (if exists) for a glyph name in the current SMuFL font */
-    static Glyph *GetGlyph(const std::string &smuflName);
-    /** Returns the glyph (if exists) for a glyph name in the current SMuFL font */
-    static wchar_t GetGlyphCode(const std::string &smuflName);
-    /** Set current text style*/
-    static void SelectTextFont(data_FONTWEIGHT fontWeight, data_FONTSTYLE fontStyle);
-    /** Returns the glyph (if exists) for the text font (bounding box and ASCII only) */
-    static Glyph *GetTextGlyph(wchar_t code);
-    ///@}
-
-private:
-    static bool LoadFont(const std::string &fontName);
-
-private:
-    //----------------//
-    // Static members //
-    //----------------//
-
-    /** The path to the resources directory (e.g., for the svg/ subdirectory with fonts as XML */
-    static thread_local std::string s_path;
-    /** The loaded SMuFL font */
-    static thread_local GlyphTable s_fontGlyphTable;
-    /** A text font used for bounding box calculations */
-    static thread_local GlyphTextMap s_textFont;
-    static thread_local StyleAttributes s_currentStyle;
-    static const StyleAttributes k_defaultStyle;
-    /**
-     * A map of glyph name / code
-     */
-    static thread_local GlyphNameTable s_glyphNameTable;
-};
 
 //----------------------------------------------------------------------------
 // Base64 code borrowed

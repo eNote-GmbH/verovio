@@ -37,6 +37,8 @@ Accid::Accid()
     , AttColor()
     , AttEnclosingChars()
     , AttExtSym()
+    , AttPlacementOnStaff()
+    , AttPlacementRelEvent()
 {
 
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
@@ -46,6 +48,8 @@ Accid::Accid()
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
     this->RegisterAttClass(ATT_EXTSYM);
+    this->RegisterAttClass(ATT_PLACEMENTONSTAFF);
+    this->RegisterAttClass(ATT_PLACEMENTRELEVENT);
 
     this->Reset();
 }
@@ -62,70 +66,28 @@ void Accid::Reset()
     this->ResetColor();
     this->ResetEnclosingChars();
     this->ResetExtSym();
+    this->ResetPlacementOnStaff();
+    this->ResetPlacementRelEvent();
 
     m_drawingUnison = NULL;
+    m_alignedWithSameLayer = false;
 }
 
-std::wstring Accid::GetSymbolStr(const data_NOTATIONTYPE notationType) const
+std::wstring Accid::GetSymbolStr(data_NOTATIONTYPE notationType) const
 {
-    if (!this->HasAccid()) return L"";
-
-    wchar_t code = 0;
-
-    // If there is glyph.num, prioritize it
-    if (this->HasGlyphNum()) {
-        code = this->GetGlyphNum();
-        if (NULL == Resources::GetGlyph(code)) code = 0;
-    }
-    // If there is glyph.name (second priority)
-    else if (this->HasGlyphName()) {
-        wchar_t code = Resources::GetGlyphCode(this->GetGlyphName());
-        if (NULL == Resources::GetGlyph(code)) code = 0;
-    }
-
-    if (!code) {
-        switch (notationType) {
-            case NOTATIONTYPE_mensural:
-            case NOTATIONTYPE_mensural_black:
-            case NOTATIONTYPE_mensural_white:
-                switch (this->GetAccid()) {
-                    case ACCIDENTAL_WRITTEN_s: code = SMUFL_E9E3_medRenSharpCroix; break;
-                    case ACCIDENTAL_WRITTEN_f: code = SMUFL_E9E0_medRenFlatSoftB; break;
-                    case ACCIDENTAL_WRITTEN_n: code = SMUFL_E9E2_medRenNatural; break;
-                    // we do not want to ignore non-mensural accidentals
-                    default: code = this->GetAccidGlyph(this->GetAccid()); break;
-                }
-                break;
-            default: code = this->GetAccidGlyph(this->GetAccid()); break;
-        }
-    }
-
-    std::wstring symbolStr;
-    if (this->HasEnclose()) {
-        if (this->GetEnclose() == ENCLOSURE_brack) {
-            symbolStr.push_back(SMUFL_E26C_accidentalBracketLeft);
-            symbolStr.push_back(code);
-            symbolStr.push_back(SMUFL_E26D_accidentalBracketRight);
-        }
-        else {
-            symbolStr.push_back(SMUFL_E26A_accidentalParensLeft);
-            symbolStr.push_back(code);
-            symbolStr.push_back(SMUFL_E26B_accidentalParensRight);
-        }
-    }
-    else {
-        symbolStr.push_back(code);
-    }
-    return symbolStr;
+    return Accid::CreateSymbolStr(this->GetAccid(), this->GetEnclose(), notationType, this->GetDocResources(),
+        this->GetGlyphNum(), this->GetGlyphName());
 }
 
-void Accid::AdjustToLedgerLines(Doc *doc, LayerElement *element, int staffSize)
+void Accid::AdjustToLedgerLines(const Doc *doc, LayerElement *element, int staffSize)
 {
     Staff *staff = element->GetAncestorStaff(RESOLVE_CROSS_STAFF);
     Chord *chord = vrv_cast<Chord *>(this->GetFirstAncestor(CHORD));
 
+    const int unit = doc->GetDrawingUnit(staffSize);
+    const int rightMargin = doc->GetRightMargin(ACCID) * unit;
     if (element->Is(NOTE) && chord && chord->HasAdjacentNotesInStaff(staff)) {
-        const int horizontalMargin = 4 * doc->GetDrawingStemWidth(staffSize);
+        const int horizontalMargin = doc->GetOptions()->m_ledgerLineExtension.GetValue() * unit + 0.5 * rightMargin;
         const int drawingUnit = doc->GetDrawingUnit(staffSize);
         const int staffTop = staff->GetDrawingY();
         const int staffBottom = staffTop - doc->GetDrawingStaffSize(staffSize);
@@ -140,7 +102,7 @@ void Accid::AdjustToLedgerLines(Doc *doc, LayerElement *element, int staffSize)
     }
 }
 
-void Accid::AdjustX(LayerElement *element, Doc *doc, int staffSize, std::vector<Accid *> &leftAccids,
+void Accid::AdjustX(LayerElement *element, const Doc *doc, int staffSize, std::vector<Accid *> &leftAccids,
     std::vector<Accid *> &adjustedAccids)
 {
     assert(element);
@@ -151,7 +113,18 @@ void Accid::AdjustX(LayerElement *element, Doc *doc, int staffSize, std::vector<
     const int unit = doc->GetDrawingUnit(staffSize);
     int horizontalMargin = doc->GetRightMargin(ACCID) * unit;
     // Reduce spacing for successive accidentals
-    if (element->Is(ACCID)) horizontalMargin *= 0.66;
+    if (element->Is(ACCID)) {
+        horizontalMargin *= 0.66;
+    }
+    else if (element->Is(NOTE)) {
+        Note *note = vrv_cast<Note *>(element);
+        int ledgerAbove = 0;
+        int ledgerBelow = 0;
+        if (note->HasLedgerLines(ledgerAbove, ledgerBelow)) {
+            const int value = doc->GetOptions()->m_ledgerLineExtension.GetValue() * unit + 0.5 * horizontalMargin;
+            horizontalMargin = std::max(horizontalMargin, value);
+        }
+    }
     const int verticalMargin = unit / 4;
 
     if (!this->VerticalSelfOverlap(element, verticalMargin)) {
@@ -249,15 +222,69 @@ wchar_t Accid::GetAccidGlyph(data_ACCIDENTAL_WRITTEN accid)
     return 0;
 }
 
+std::wstring Accid::CreateSymbolStr(data_ACCIDENTAL_WRITTEN accid, data_ENCLOSURE enclosure,
+    data_NOTATIONTYPE notationType, const Resources *resources, data_HEXNUM glyphNum, std::string glyphName)
+{
+    wchar_t code = 0;
+
+    if (resources) {
+        // If there is glyph.num, prioritize it
+        if (glyphNum != 0) {
+            code = glyphNum;
+            if (NULL == resources->GetGlyph(code)) code = 0;
+        }
+        // If there is glyph.name (second priority)
+        else if (!glyphName.empty()) {
+            code = resources->GetGlyphCode(glyphName);
+            if (NULL == resources->GetGlyph(code)) code = 0;
+        }
+    }
+
+    if (!code) {
+        if (accid == ACCIDENTAL_WRITTEN_NONE) return L"";
+
+        switch (notationType) {
+            case NOTATIONTYPE_mensural:
+            case NOTATIONTYPE_mensural_black:
+            case NOTATIONTYPE_mensural_white:
+                switch (accid) {
+                    case ACCIDENTAL_WRITTEN_s: code = SMUFL_E9E3_medRenSharpCroix; break;
+                    case ACCIDENTAL_WRITTEN_f: code = SMUFL_E9E0_medRenFlatSoftB; break;
+                    case ACCIDENTAL_WRITTEN_n: code = SMUFL_E9E2_medRenNatural; break;
+                    // we do not want to ignore non-mensural accidentals
+                    default: code = Accid::GetAccidGlyph(accid); break;
+                }
+                break;
+            default: code = Accid::GetAccidGlyph(accid); break;
+        }
+    }
+
+    std::wstring symbolStr;
+    switch (enclosure) {
+        case ENCLOSURE_brack:
+            symbolStr.push_back(SMUFL_E26C_accidentalBracketLeft);
+            symbolStr.push_back(code);
+            symbolStr.push_back(SMUFL_E26D_accidentalBracketRight);
+            break;
+        case ENCLOSURE_paren:
+            symbolStr.push_back(SMUFL_E26A_accidentalParensLeft);
+            symbolStr.push_back(code);
+            symbolStr.push_back(SMUFL_E26B_accidentalParensRight);
+            break;
+        default: symbolStr.push_back(code); break;
+    }
+    return symbolStr;
+}
+
 //----------------------------------------------------------------------------
 // Functor methods
 //----------------------------------------------------------------------------
 
-int Accid::ResetDrawing(FunctorParams *functorParams)
+int Accid::ResetData(FunctorParams *functorParams)
 {
     // Call parent one too
-    LayerElement::ResetDrawing(functorParams);
-    PositionInterface::InterfaceResetDrawing(functorParams, this);
+    LayerElement::ResetData(functorParams);
+    PositionInterface::InterfaceResetData(functorParams, this);
 
     return FUNCTOR_CONTINUE;
 }

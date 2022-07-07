@@ -33,6 +33,7 @@ class StaffDef;
 class Layer : public Object,
               public DrawingListInterface,
               public ObjectListInterface,
+              public AttCue,
               public AttNInteger,
               public AttTyped,
               public AttVisibility {
@@ -77,20 +78,31 @@ public:
      * This is used when inserting a note by passing a y position because we need
      * to know the clef in order to get the pitch.
      */
+    ///@{
     Clef *GetClef(LayerElement *test);
+    const Clef *GetClef(const LayerElement *test) const;
+    ///@}
 
     /**
      * Get the current clef based on facsimile for the test element.
      * This goes back by facsimile position until a clef is found.
      * Returns NULL if a clef cannot be found via this method.
      */
+    ///@{
     Clef *GetClefFacs(LayerElement *test);
+    const Clef *GetClefFacs(const LayerElement *test) const;
+    ///@}
 
     /**
      * Return the clef offset for the position x.
      * The method uses Layer::GetClef first to find the clef before test.
      */
-    int GetClefLocOffset(LayerElement *test);
+    int GetClefLocOffset(const LayerElement *test) const;
+
+    /**
+     * Return the clef offset for the position if there are cross-staff clefs on the same layer
+     */
+    int GetCrossStaffClefLocOffset(const LayerElement *element, int locOffset) const;
 
     /**
      * @name Set and get the stem direction of the layer.
@@ -98,8 +110,8 @@ public:
      */
     ///@{
     void SetDrawingStemDir(data_STEMDIRECTION stemDirection) { m_drawingStemDir = stemDirection; }
-    data_STEMDIRECTION GetDrawingStemDir(LayerElement *element);
-    data_STEMDIRECTION GetDrawingStemDir(const ArrayOfBeamElementCoords *coords);
+    data_STEMDIRECTION GetDrawingStemDir(const LayerElement *element) const;
+    data_STEMDIRECTION GetDrawingStemDir(const ArrayOfBeamElementCoords *coords) const;
     data_STEMDIRECTION GetDrawingStemDir() const { return m_drawingStemDir; }
     ///@}
 
@@ -108,8 +120,8 @@ public:
      * Takes into account cross-staff situations: cross staff layers have negative N.
      */
     ///@{
-    std::set<int> GetLayersNForTimeSpanOf(LayerElement *element);
-    int GetLayerCountForTimeSpanOf(LayerElement *element);
+    std::set<int> GetLayersNForTimeSpanOf(const LayerElement *element) const;
+    int GetLayerCountForTimeSpanOf(const LayerElement *element) const;
     ///@}
 
     /**
@@ -117,8 +129,8 @@ public:
      * Takes into account cross-staff situations: cross staff layers have negative N.
      */
     ///@{
-    std::set<int> GetLayersNInTimeSpan(double time, double duration, Measure *measure, int staff);
-    int GetLayerCountInTimeSpan(double time, double duration, Measure *measure, int staff);
+    std::set<int> GetLayersNInTimeSpan(double time, double duration, const Measure *measure, int staff) const;
+    int GetLayerCountInTimeSpan(double time, double duration, const Measure *measure, int staff) const;
     ///@}
 
     /**
@@ -126,19 +138,35 @@ public:
      * Takes into account cross-staff situations.
      * If excludeCurrent is specified, gets the list of layer elements for all layers except current
      */
-    ListOfObjects GetLayerElementsForTimeSpanOf(LayerElement *element, bool excludeCurrent = false);
+    ///@{
+    ListOfObjects GetLayerElementsForTimeSpanOf(const LayerElement *element, bool excludeCurrent = false);
+    ListOfConstObjects GetLayerElementsForTimeSpanOf(const LayerElement *element, bool excludeCurrent = false) const;
+    ///@}
 
     /**
      * Get the list of the layer elements used within a time span.
      * Takes into account cross-staff situations.
      */
+    ///@{
     ListOfObjects GetLayerElementsInTimeSpan(
-        double time, double duration, Measure *measure, int staff, bool excludeCurrent);
+        double time, double duration, const Measure *measure, int staff, bool excludeCurrent);
+    ListOfConstObjects GetLayerElementsInTimeSpan(
+        double time, double duration, const Measure *measure, int staff, bool excludeCurrent) const;
+    ///@}
 
+    /**
+     * Get the current clef, keysig, mensur and meterSig
+     */
+    ///@{
     Clef *GetCurrentClef();
+    const Clef *GetCurrentClef() const;
     KeySig *GetCurrentKeySig();
+    const KeySig *GetCurrentKeySig() const;
     Mensur *GetCurrentMensur();
+    const Mensur *GetCurrentMensur() const;
     MeterSig *GetCurrentMeterSig();
+    const MeterSig *GetCurrentMeterSig() const;
+    ///@}
 
     void ResetStaffDefObjects();
 
@@ -149,12 +177,12 @@ public:
 
     bool DrawKeySigCancellation() const { return m_drawKeySigCancellation; }
     void SetDrawKeySigCancellation(bool drawKeySigCancellation) { m_drawKeySigCancellation = drawKeySigCancellation; }
-    Clef *GetStaffDefClef() { return m_staffDefClef; }
-    KeySig *GetStaffDefKeySig() { return m_staffDefKeySig; }
-    Mensur *GetStaffDefMensur() { return m_staffDefMensur; }
-    MeterSig *GetStaffDefMeterSig() { return m_staffDefMeterSig; }
-    MeterSigGrp *GetStaffDefMeterSigGrp() { return m_staffDefMeterSigGrp; }
-    bool HasStaffDef()
+    Clef *GetStaffDefClef() const { return m_staffDefClef; }
+    KeySig *GetStaffDefKeySig() const { return m_staffDefKeySig; }
+    Mensur *GetStaffDefMensur() const { return m_staffDefMensur; }
+    MeterSig *GetStaffDefMeterSig() const { return m_staffDefMeterSig; }
+    MeterSigGrp *GetStaffDefMeterSigGrp() const { return m_staffDefMeterSigGrp; }
+    bool HasStaffDef() const
     {
         return (m_staffDefClef || m_staffDefKeySig || m_staffDefMensur || m_staffDefMeterSig || m_staffDefMeterSigGrp);
     }
@@ -226,9 +254,9 @@ public:
     int AlignHorizontallyEnd(FunctorParams *functorParams) override;
 
     /**
-     * See Object::PrepareProcessingLists
+     * See Object::InitProcessingLists
      */
-    int PrepareProcessingLists(FunctorParams *functorParams) override;
+    int InitProcessingLists(FunctorParams *functorParams) override;
 
     /**
      * See Object::PrepareRpt
@@ -236,16 +264,28 @@ public:
     int PrepareRpt(FunctorParams *functorParams) override;
 
     /**
-     * See Object::CalcOnsetOffset
+     * See Object::InitOnsetOffset
      */
     ///@{
-    int CalcOnsetOffset(FunctorParams *functorParams) override;
+    int InitOnsetOffset(FunctorParams *functorParams) override;
     ///@}
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
+
+    /**
+     * See Object::FindElementInLayerStaffDefsByID
+     */
+    int FindElementInLayerStaffDefsByID(FunctorParams *) const override;
+
+    /**
+     * @name See Object::GenerateMIDI
+     */
+    ///@{
+    int GenerateMIDI(FunctorParams *functorParams) override;
+    ///@}
 
     /**
      * See Object::GenerateMIDIEnd

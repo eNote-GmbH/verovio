@@ -52,16 +52,15 @@ public:
      */
     ///@{
     Note *GetFirstNote();
+    const Note *GetFirstNote() const;
     Note *GetLastNote();
+    const Note *GetLastNote() const;
     ///@}
 
     /**
      * @name Return shape information about the note ligature
      */
-    ///@{
-    int GetDrawingNoteShape(Note *note);
-    int GetDrawingPreviousNoteShape(Note *note);
-    ///@}
+    int GetDrawingNoteShape(const Note *note) const;
 
     //----------//
     // Functors //
@@ -73,20 +72,15 @@ public:
     int CalcLigatureNotePos(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
 protected:
     /**
-     * Clear the m_clusters vector and delete all the objects.
-     */
-    void ClearClusters();
-
-    /**
      * Filter the flat list and keep only Note elements.
      */
-    void FilterList(ArrayOfObjects *childList) override;
+    void FilterList(ListOfConstObjects &childList) const override;
 
 public:
     /**

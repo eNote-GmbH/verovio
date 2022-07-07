@@ -19,6 +19,7 @@ namespace vrv {
 
 class Layer;
 class Staff;
+class System;
 
 //----------------------------------------------------------------------------
 // BeamSpan
@@ -54,9 +55,18 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    PlistInterface *GetPlistInterface() override { return dynamic_cast<PlistInterface *>(this); }
-    TimePointInterface *GetTimePointInterface() override { return dynamic_cast<TimePointInterface *>(this); }
-    TimeSpanningInterface *GetTimeSpanningInterface() override { return dynamic_cast<TimeSpanningInterface *>(this); }
+    PlistInterface *GetPlistInterface() override { return vrv_cast<PlistInterface *>(this); }
+    const PlistInterface *GetPlistInterface() const override { return vrv_cast<const PlistInterface *>(this); }
+    TimePointInterface *GetTimePointInterface() override { return vrv_cast<TimePointInterface *>(this); }
+    const TimePointInterface *GetTimePointInterface() const override
+    {
+        return vrv_cast<const TimePointInterface *>(this);
+    }
+    TimeSpanningInterface *GetTimeSpanningInterface() override { return vrv_cast<TimeSpanningInterface *>(this); }
+    const TimeSpanningInterface *GetTimeSpanningInterface() const override
+    {
+        return vrv_cast<const TimeSpanningInterface *>(this);
+    }
     ////@}
 
     /**
@@ -67,9 +77,22 @@ public:
     void ClearBeamSegments();
     ////@}
 
+    /**
+     * Access the beam segments
+     */
+    ///@{
+    BeamSpanSegment *GetSegmentForSystem(const System *system);
+    const BeamSpanSegment *GetSegmentForSystem(const System *system) const;
+    ///@}
+
     //----------//
     // Functors //
     //----------//
+
+    /**
+     * See Object::ResetHorizontalAlignment
+     */
+    int ResetHorizontalAlignment(FunctorParams *functorParams) override;
 
     /**
      * See Object::CalcStem
@@ -77,29 +100,33 @@ public:
     int CalcStem(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResolveBeamSpanElements
+     * See Object::PrepareBeamSpanElements
      */
-    int ResolveBeamSpanElements(FunctorParams *) override;
+    int PrepareBeamSpanElements(FunctorParams *) override;
 
     /**
-     * See Object::ResolveSpanningBeamSpans
+     * See Object::CalcSpanningBeamSpans
      */
-    int ResolveSpanningBeamSpans(FunctorParams *) override;
+    int CalcSpanningBeamSpans(FunctorParams *) override;
 
 private:
     // Helper for breaking one big spanning beamSpan into smaller beamSpans
-    bool AddSpanningSegment(Doc *doc, const SpanIndexVector &elements, int index, bool newSegment = true);
+    bool AddSpanningSegment(const Doc *doc, const SpanIndexVector &elements, int index, bool newSegment = true);
 
     // Helper to get element list for the beamSpan - elements are acquired from all layerElements that are located
     // in between start and end of the beamSpan
-    ArrayOfObjects GetBeamSpanElementList(Layer *layer, Staff *staff);
+    ArrayOfObjects GetBeamSpanElementList(Layer *layer, const Staff *staff);
 
 public:
     //
-    std::vector<BeamSpanSegment *> m_beamSegments;
-
 private:
-    //
+    /**
+     * Array of beam segments
+     */
+    std::vector<BeamSpanSegment *> m_beamSegments;
+    /**
+     * Array of beamed elements
+     */
     ArrayOfObjects m_beamedElements;
 };
 

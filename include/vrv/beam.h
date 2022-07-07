@@ -44,13 +44,13 @@ public:
 
     void Reset();
 
-    void CalcBeam(Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface,
+    void CalcBeam(const Layer *layer, Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface,
         data_BEAMPLACE place = BEAMPLACE_NONE, bool init = true);
 
     /**
      *
      */
-    const ArrayOfBeamElementCoords *GetElementCoordRefs() const;
+    const ArrayOfBeamElementCoords *GetElementCoordRefs();
 
     /**
      * Initializes the m_beamElementCoords vector objects.
@@ -94,54 +94,70 @@ public:
     ///@{
     void InitSameasRoles(Beam *sameasBeam, data_BEAMPLACE &drawingPlace);
     void UpdateSameasRoles(data_BEAMPLACE place);
+    void CalcNoteHeadShiftForStemSameas(Beam *sameasBeam, data_BEAMPLACE place);
     ///@}
 
 private:
+    // Helper to adjust stem length to extend only towards outmost subbeam (if option "--beam-french-style" is set)
+    void AdjustBeamToFrenchStyle(const BeamDrawingInterface *beamInterface);
+
     // Helper to adjust beam positioning with regards to ledger lines (top and bottom of the staff)
-    void AdjustBeamToLedgerLines(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface);
+    void AdjustBeamToLedgerLines(
+        const Doc *doc, const Staff *staff, const BeamDrawingInterface *beamInterface, bool isHorizontal);
 
-    void CalcBeamInit(Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
+    /**
+     * Helper to calculate required adjustment to beam position and stem length for beams that have tremolos or notes
+     * with stem modifiers
+     */
+    void AdjustBeamToTremolos(const Doc *doc, const Staff *staff, const BeamDrawingInterface *beamInterface);
 
-    void CalcBeamInitForNotePair(Note *note1, Note *note2, Staff *staff, int &yMax, int &yMin);
+    void CalcBeamInit(const Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
 
-    bool CalcBeamSlope(
-        Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, bool &shorten, int &step);
+    void CalcBeamInitForNotePair(const Note *note1, const Note *note2, const Staff *staff, int &yMax, int &yMin);
 
-    void CalcMixedBeamStem(BeamDrawingInterface *beamInterface, int step);
+    bool CalcBeamSlope(const Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface, int &step);
 
-    void CalcBeamPosition(Doc *doc, Staff *staff, Layer *layer, BeamDrawingInterface *beamInterface, bool isHorizontal);
+    int CalcBeamSlopeStep(
+        const Doc *doc, const Staff *staff, BeamDrawingInterface *beamInterface, int noteStep, bool &shortStep);
 
-    void CalcAdjustSlope(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, bool shorten, int &step);
+    void CalcMixedBeamStem(const BeamDrawingInterface *beamInterface, int step);
+
+    void CalcBeamPosition(const Doc *doc, const Staff *staff, BeamDrawingInterface *beamInterface, bool isHorizontal);
+
+    void CalcAdjustSlope(const Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface, int &step);
 
     // Helper to adjust position of starting point to make sure that beam start-/endpoints touch the staff lines
-    void CalcAdjustPosition(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface);
+    void CalcAdjustPosition(const Staff *staff, const Doc *doc, const BeamDrawingInterface *beamInterface);
 
-    void CalcBeamPlace(Layer *layer, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
+    void CalcBeamPlace(const Layer *layer, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
 
     /**
      * Helper to calculate the beam position for a beam in tablature.
      * Also adjust the drawingYRel of the TabDurSym if necessary.
      */
-    void CalcBeamPlaceTab(
-        Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface, data_BEAMPLACE place);
+    void CalcBeamPlaceTab(const Layer *layer, const Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface,
+        data_BEAMPLACE place);
 
     // Helper to calculate the longest stem length of the beam (which will be used uniformely)
-    void CalcBeamStemLength(Staff *staff, data_BEAMPLACE place, bool isHorizontal);
+    void CalcBeamStemLength(const Staff *staff, data_BEAMPLACE place, bool isHorizontal);
 
     // Helper to set the stem values
-    void CalcSetStemValues(Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface);
+    void CalcSetStemValues(const Staff *staff, const Doc *doc, const BeamDrawingInterface *beamInterface);
 
     // Helper to set the stem values for tablature
-    void CalcSetStemValuesTab(Layer *layer, Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface);
+    void CalcSetStemValuesTab(const Staff *staff, const Doc *doc, const BeamDrawingInterface *beamInterface);
 
     // Helper to calculate max/min beam points for the relative beam place
     std::pair<int, int> CalcBeamRelativeMinMax(data_BEAMPLACE place) const;
 
+    // Helper to calculate location and duration of the note that would be setting highest/lowest point for the beam
+    std::pair<int, int> CalcStemDefiningNote(const Staff *staff, data_BEAMPLACE place) const;
+
     // Calculate positioning for the horizontal beams
-    void CalcHorizontalBeam(Doc *doc, Staff *staff, BeamDrawingInterface *beamInterface);
+    void CalcHorizontalBeam(const Doc *doc, const Staff *staff, const BeamDrawingInterface *beamInterface);
 
     // Helper to calculate relative position of the beam to for each of the coordinates
-    void CalcMixedBeamPlace(Staff *staff);
+    void CalcMixedBeamPlace(const Staff *staff);
 
     // Helper to calculate proper positioning of the additional beamlines for notes
     void CalcPartialFlagPlace();
@@ -150,10 +166,11 @@ private:
     void CalcSetValues();
 
     // Helper to check wheter beam fits within certain bounds
-    bool DoesBeamOverlap(int staffTop, int topOffset, int staffBottom, int bottomOffset, bool isCrossStaff = false);
+    bool DoesBeamOverlap(
+        int staffTop, int topOffset, int staffBottom, int bottomOffset, bool isCrossStaff = false) const;
 
     // Helper to check mixed beam positioning compared to other elements (ledger lines, staff) and adjust it accordingly
-    bool NeedToResetPosition(Staff *staff, Doc *doc, BeamDrawingInterface *beamInterface);
+    bool NeedToResetPosition(Staff *staff, const Doc *doc, BeamDrawingInterface *beamInterface);
 
 public:
     // values set by CalcBeam
@@ -203,15 +220,20 @@ public:
      * Set/get methods for member variables
      */
     ///@{
-    Measure *GetMeasure() const { return m_measure; }
+    Measure *GetMeasure() { return m_measure; }
+    const Measure *GetMeasure() const { return m_measure; }
     void SetMeasure(Measure *measure) { m_measure = measure; }
-    Staff *GetStaff() const { return m_staff; }
+    Staff *GetStaff() { return m_staff; }
+    const Staff *GetStaff() const { return m_staff; }
     void SetStaff(Staff *staff) { m_staff = staff; }
-    Layer *GetLayer() const { return m_layer; }
+    Layer *GetLayer() { return m_layer; }
+    const Layer *GetLayer() const { return m_layer; }
     void SetLayer(Layer *layer) { m_layer = layer; }
-    BeamElementCoord *GetBeginCoord() const { return m_begin; }
+    BeamElementCoord *GetBeginCoord() { return m_begin; }
+    const BeamElementCoord *GetBeginCoord() const { return m_begin; }
     void SetBeginCoord(BeamElementCoord *begin) { m_begin = begin; }
-    BeamElementCoord *GetEndCoord() const { return m_end; }
+    BeamElementCoord *GetEndCoord() { return m_end; }
+    const BeamElementCoord *GetEndCoord() const { return m_end; }
     void SetEndCoord(BeamElementCoord *end) { m_end = end; }
     ///@}
 
@@ -225,7 +247,7 @@ public:
     ///@}
 
     // Helper to append coordinates for the beamSpans that are drawn over systems
-    void AppendSpanningCoordinates(Measure *measure);
+    void AppendSpanningCoordinates(const Measure *measure);
 
 private:
     // main values to track positioning of the segment
@@ -266,7 +288,11 @@ public:
      * @name Getter to interfaces
      */
     ///@{
-    BeamDrawingInterface *GetBeamDrawingInterface() override { return dynamic_cast<BeamDrawingInterface *>(this); }
+    BeamDrawingInterface *GetBeamDrawingInterface() override { return vrv_cast<BeamDrawingInterface *>(this); }
+    const BeamDrawingInterface *GetBeamDrawingInterface() const override
+    {
+        return vrv_cast<const BeamDrawingInterface *>(this);
+    }
     ///@}
 
     int GetNoteCount() const { return this->GetChildCount(NOTE); }
@@ -294,7 +320,8 @@ public:
      */
     ///@{
     bool HasStemSameasBeam() const { return (m_stemSameas); }
-    Beam *GetStemSameasBeam() const { return m_stemSameas; }
+    Beam *GetStemSameasBeam() { return m_stemSameas; }
+    const Beam *GetStemSameasBeam() const { return m_stemSameas; }
     void SetStemSameasBeam(Beam *stemSameas) { m_stemSameas = stemSameas; }
     ///@}
 
@@ -302,6 +329,11 @@ public:
      * See DrawingInterface::GetAdditionalBeamCount
      */
     std::pair<int, int> GetAdditionalBeamCount() const override;
+
+    /**
+     * Return duration of beam part that are closest to the specified object X position
+     */
+    int GetBeamPartDuration(const Object *object) const;
 
     //----------//
     // Functors //
@@ -328,21 +360,27 @@ public:
     int ResetHorizontalAlignment(FunctorParams *functorParams) override;
 
     /**
-     * See Object::ResetDrawing
+     * See Object::ResetData
      */
-    int ResetDrawing(FunctorParams *functorParams) override;
+    int ResetData(FunctorParams *functorParams) override;
 
 protected:
     /**
      * Filter the flat list and keep only Note and Chords elements.
      * This also initializes the m_beamElementCoords vector
      */
-    void FilterList(ArrayOfObjects *childList) override;
+    void FilterList(ListOfConstObjects &childList) const override;
 
     /**
      * See LayerElement::SetElementShortening
      */
     void SetElementShortening(int shortening) override;
+
+    /**
+     * Return duration of beam part for specified X coordinate. Duration of two closest elements is taken for this
+     * purpose.
+     */
+    int GetBeamPartDuration(int x) const;
 
 private:
     /**
@@ -386,22 +424,22 @@ public:
      */
     data_STEMDIRECTION GetStemDir() const;
 
-    void SetDrawingStemDir(
-        data_STEMDIRECTION stemDir, Staff *staff, Doc *doc, BeamSegment *segment, BeamDrawingInterface *interface);
+    void SetDrawingStemDir(data_STEMDIRECTION stemDir, const Staff *staff, const Doc *doc, const BeamSegment *segment,
+        const BeamDrawingInterface *interface);
 
     /** Set the note or closest note for chord or tabdursym for tablature beams placed outside the staff */
     void SetClosestNoteOrTabDurSym(data_STEMDIRECTION stemDir, bool outsideStaff);
 
     /** Heleper for calculating the stem length for staff notation and tablature beams within the staff */
-    int CalculateStemLength(Staff *staff, data_STEMDIRECTION stemDir, bool isHorizontal);
+    int CalculateStemLength(const Staff *staff, data_STEMDIRECTION stemDir, bool isHorizontal) const;
 
     /** Helper for calculating the stem length for tablature beam placed outside the staff */
-    int CalculateStemLengthTab(Staff *staff, data_STEMDIRECTION stemDir);
+    int CalculateStemLengthTab(const Staff *staff, data_STEMDIRECTION stemDir) const;
 
     /**
      * Return stem length adjustment in half units, depending on the @stem.mode attribute
      */
-    int CalculateStemModAdjustment(int stemLength, int directionBias);
+    int CalculateStemModAdjustment(int stemLength, int directionBias) const;
 
     /**
      * Helper to get the StemmedDrawingInterface associated with the m_element (if any)
@@ -410,6 +448,11 @@ public:
      * Return NULL otherwise.
      */
     StemmedDrawingInterface *GetStemHolderInterface();
+
+    /**
+     * Update stem length based on the calculated coordinates and stemAdjust value
+     */
+    void UpdateStemLength(StemmedDrawingInterface *stemmedInterface, int y1, int y2, int stemAdjust);
 
     int m_x;
     int m_yBeam; // y value of stem top position
