@@ -1659,6 +1659,7 @@ void MEIOutput::WriteStaffGrp(pugi::xml_node currentNode, StaffGrp *staffGrp)
     assert(staffGrp);
 
     this->WriteXmlId(currentNode, staffGrp);
+    staffGrp->WriteBarring(currentNode);
     staffGrp->WriteBasic(currentNode);
     staffGrp->WriteLabelled(currentNode);
     staffGrp->WriteNNumberLike(currentNode);
@@ -2821,6 +2822,7 @@ void MEIOutput::WriteScoreDefInterface(pugi::xml_node element, ScoreDefInterface
 {
     assert(interface);
 
+    interface->WriteBarring(element);
     interface->WriteDurationDefault(element);
     interface->WriteLyricStyle(element);
     interface->WriteMidiTempo(element);
@@ -4502,6 +4504,7 @@ bool MEIInput::ReadStaffGrp(Object *parent, pugi::xml_node staffGrp)
         UpgradeStaffGrpTo_4_0_0(staffGrp, vrvStaffGrp);
     }
 
+    vrvStaffGrp->ReadBarring(staffGrp);
     vrvStaffGrp->ReadBasic(staffGrp);
     vrvStaffGrp->ReadLabelled(staffGrp);
     vrvStaffGrp->ReadNNumberLike(staffGrp);
@@ -6727,6 +6730,7 @@ bool MEIInput::ReadPositionInterface(pugi::xml_node element, PositionInterface *
 
 bool MEIInput::ReadScoreDefInterface(pugi::xml_node element, ScoreDefInterface *interface)
 {
+    interface->ReadBarring(element);
     interface->ReadDurationDefault(element);
     interface->ReadLyricStyle(element);
     interface->ReadMidiTempo(element);
