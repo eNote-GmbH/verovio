@@ -168,7 +168,14 @@ bool Toolkit::SetOutputTo(std::string const &outputTo)
     else if (outputTo == "mei") {
         m_outputTo = MEI;
     }
+    else if (outputTo == "mei-basic") {
+        m_outputTo = MEI;
+    }
+    else if (outputTo == "mei-pb") {
+        m_outputTo = MEI;
+    }
     else if (outputTo == "pb-mei") {
+        LogWarning("Output to 'pb-mei' is deprecated, use 'mei-pb' instead.");
         m_outputTo = MEI;
     }
     else if (outputTo == "midi") {
@@ -817,6 +824,7 @@ void Toolkit::SkipLayoutOnLoad(bool value)
 std::string Toolkit::GetMEI(const std::string &jsonOptions)
 {
     bool scoreBased = true;
+    bool basic = false;
     bool ignoreHeader = false;
     bool removeIds = m_options->m_removeIds.GetValue();
     int firstPage = 0;
@@ -834,6 +842,7 @@ std::string Toolkit::GetMEI(const std::string &jsonOptions)
         }
         else {
             if (json.has<jsonxx::Boolean>("scoreBased")) scoreBased = json.get<jsonxx::Boolean>("scoreBased");
+            if (json.has<jsonxx::Boolean>("basic")) basic = json.get<jsonxx::Boolean>("basic");
             if (json.has<jsonxx::Boolean>("ignoreHeader")) ignoreHeader = json.get<jsonxx::Boolean>("ignoreHeader");
             if (json.has<jsonxx::Boolean>("removeIds")) removeIds = json.get<jsonxx::Boolean>("removeIds");
             if (json.has<jsonxx::Number>("firstPage")) firstPage = json.get<jsonxx::Number>("firstPage");
@@ -867,6 +876,7 @@ std::string Toolkit::GetMEI(const std::string &jsonOptions)
 
     MEIOutput meioutput(&m_doc);
     meioutput.SetScoreBasedMEI(scoreBased);
+    meioutput.SetBasic(basic);
 
     int indent = (m_options->m_outputIndentTab.GetValue()) ? -1 : m_options->m_outputIndent.GetValue();
     meioutput.SetIndent(indent);
@@ -1163,7 +1173,7 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
 {
     jsonxx::Object o;
 
-    Object *element = NULL;
+    const Object *element = NULL;
 
     // Try to get the element on the current drawing page - it is usually the case and fast
     if (m_doc.GetDrawingPage()) {

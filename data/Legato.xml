@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bounding-boxes font-family="Legato" units-per-em="1000">
-  <g c="E527" x="-102.0" y="-142.0" w="2230.0" h="416.0" h-a-x="2124" n="dynamicPPPPPP"/>
-  <g c="E528" x="-102.0" y="-142.0" w="1875.0" h="416.0" h-a-x="1776" n="dynamicPPPPP"/>
-  <g c="E529" x="-102.0" y="-142.0" w="1520.0" h="416.0" h-a-x="1417" n="dynamicPPPP"/>
-  <g c="E52A" x="-92.0" y="-142.0" w="1165.0" h="416.0" h-a-x="1072" n="dynamicPPP"/>
-  <g c="E52B" x="-82.0" y="-142.0" w="810.0" h="416.0" h-a-x="727" n="dynamicPP"/>
-  <g c="E52C" x="-20.0" y="-142.0" w="845.0" h="416.0" h-a-x="826" n="dynamicMP"/>
-  <g c="E52D" x="-20.0" y="-165.0" w="838.0" h="596.0" h-a-x="797" n="dynamicMF"/>
+  <g c="E527" x="-95.0" y="-142.0" w="2255.0" h="416.0" h-a-x="2160" n="dynamicPPPPPP"/>
+  <g c="E528" x="-95.0" y="-142.0" w="1895.0" h="416.0" h-a-x="1800" n="dynamicPPPPP"/>
+  <g c="E529" x="-95.0" y="-142.0" w="1535.0" h="416.0" h-a-x="1440" n="dynamicPPPP"/>
+  <g c="E52A" x="-95.0" y="-142.0" w="1175.0" h="416.0" h-a-x="1080" n="dynamicPPP"/>
+  <g c="E52B" x="-95.0" y="-142.0" w="815.0" h="416.0" h-a-x="720" n="dynamicPP"/>
+  <g c="E52C" x="-20.0" y="-142.0" w="850.0" h="416.0" h-a-x="830" n="dynamicMP"/>
+  <g c="E52D" x="-20.0" y="-152.0" w="854.0" h="596.0" h-a-x="730" n="dynamicMF"/>
   <g c="E52E" x="-72.0" y="-152.0" w="842.0" h="596.0" h-a-x="770" n="dynamicPF"/>
   <g c="E52F" x="-135.0" y="-152.0" w="745.0" h="596.0" h-a-x="609" n="dynamicFF"/>
   <g c="E530" x="-155.0" y="-152.0" w="985.0" h="596.0" h-a-x="831" n="dynamicFFF"/>
@@ -317,9 +317,9 @@
   <g c="E51C" x="0.0" y="-10.0" w="796.0" h="473.0" h-a-x="796" n="ottavaBassaVb"/>
   <g c="E51D" x="0.0" y="-10.0" w="1232.0" h="471.0" h-a-x="1231" n="quindicesimaBassaMb"/>
   <g c="E51E" x="4.0" y="-7.0" w="1331.0" h="470.0" h-a-x="1335" n="ventiduesimaBassaMb"/>
-  <g c="E520" x="-89.0" y="-142.0" w="455.0" h="416.0" h-a-x="365" n="dynamicPiano"/>
-  <g c="E521" x="-20.0" y="-10.0" w="466.0" h="284.0" h-a-x="437" n="dynamicMezzo"/>
-  <g c="E522" x="-141.0" y="-152.0" w="505.0" h="596.0" h-a-x="364" n="dynamicForte"/>
+  <g c="E520" x="-95.0" y="-142.0" w="455.0" h="416.0" h-a-x="360" n="dynamicPiano"/>
+  <g c="E521" x="-20.0" y="-10.0" w="494.0" h="284.0" h-a-x="470" n="dynamicMezzo"/>
+  <g c="E522" x="-141.0" y="-152.0" w="505.0" h="596.0" h-a-x="260" n="dynamicForte"/>
   <g c="E523" x="-20.0" y="0.0" w="297.0" h="274.0" h-a-x="277" n="dynamicRinforzando"/>
   <g c="E524" x="0.0" y="-10.0" w="229.0" h="283.0" h-a-x="229" n="dynamicSforzando"/>
   <g c="E525" x="-30.0" y="-10.0" w="274.0" h="278.0" h-a-x="244" n="dynamicZ"/>

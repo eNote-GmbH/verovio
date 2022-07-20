@@ -249,6 +249,17 @@ int Verse::InitProcessingLists(FunctorParams *functorParams)
     return FUNCTOR_SIBLINGS;
 }
 
+int Verse::GenerateMIDI(FunctorParams *)
+{
+    Note *note = vrv_cast<Note *>(this->GetFirstAncestor(NOTE));
+    assert(note);
+    Verse *previousVerse = vrv_cast<Verse *>(note->GetPrevious(this, VERSE));
+
+    if (previousVerse) return FUNCTOR_SIBLINGS;
+
+    return FUNCTOR_CONTINUE;
+}
+
 int Verse::ResetData(FunctorParams *functorParams)
 {
     // Call parent one too

@@ -913,7 +913,8 @@ Options::Options()
     m_scale.SetShortOption('s', false);
     m_baseOptions.AddOption(&m_scale);
 
-    m_outputTo.SetInfo("Output to", "Select output format to: \"mei\", \"pb-mei\", \"svg\", or \"midi\"");
+    m_outputTo.SetInfo(
+        "Output to", "Select output format to: \"mei\", \"mei-pb\", \"mei-basic\", \"svg\", or \"midi\"");
     m_outputTo.Init("svg");
     m_outputTo.SetKey("outputTo");
     m_outputTo.SetShortOption('t', true);
@@ -1016,6 +1017,11 @@ Options::Options()
     m_mmOutput.SetInfo("MM output", "Specify that the output in the SVG is given in mm (default is px)");
     m_mmOutput.Init(false);
     this->Register(&m_mmOutput, "mmOutput", &m_general);
+
+    m_moveScoreDefinitionToStaff.SetInfo("Move score definition to staff",
+        "Move score definition (clef, keySig, meterSig, etc.) from scoreDef to staffDef");
+    m_moveScoreDefinitionToStaff.Init(false);
+    this->Register(&m_moveScoreDefinitionToStaff, "moveScoreDefinitionToStaff", &m_general);
 
     m_noJustification.SetInfo("No justification", "Do not justify the system");
     m_noJustification.Init(false);
@@ -1162,9 +1168,14 @@ Options::Options()
     m_barLineSeparation.Init(0.8, 0.5, 2.0);
     this->Register(&m_barLineSeparation, "barLineSeparation", &m_generalLayout);
 
-    m_barLineWidth.SetInfo("Barline width", "The barLine width");
+    m_barLineWidth.SetInfo("Barline width", "The barline width");
     m_barLineWidth.Init(0.30, 0.10, 0.80);
     this->Register(&m_barLineWidth, "barLineWidth", &m_generalLayout);
+
+    m_beamFrenchStyle.SetInfo(
+        "French style of beams", "For notes in beams, stems will stop at first outermost sub-beam without crossing it");
+    m_beamFrenchStyle.Init(false);
+    this->Register(&m_beamFrenchStyle, "beamFrenchStyle", &m_generalLayout);
 
     m_beamMaxSlope.SetInfo("Beam max slope", "The maximum beam slope");
     m_beamMaxSlope.Init(10, 0, 20);
@@ -1174,10 +1185,14 @@ Options::Options()
     m_beamMinSlope.Init(0, 0, 0);
     this->Register(&m_beamMinSlope, "beamMinSlope", &m_generalLayout);
 
-    m_beamFrenchStyle.SetInfo(
-        "French style of beams", "For notes in beams, stems will stop at first outermost sub-beam without crossing it");
-    m_beamFrenchStyle.Init(false);
-    this->Register(&m_beamFrenchStyle, "beamFrenchStyle", &m_generalLayout);
+    m_beamMixedPreserve.SetInfo("Preserve mixed beams", "Mixed beams will be drawn even if there is not enough space");
+    m_beamMixedPreserve.Init(false);
+    this->Register(&m_beamMixedPreserve, "beamMixedPreserve", &m_generalLayout);
+
+    m_beamMixedStemMin.SetInfo(
+        "Minimal stem length of mixed beams", "The minimal stem length in MEI units used to draw mixed beams");
+    m_beamMixedStemMin.Init(3.5, 1.0, 8.0);
+    this->Register(&m_beamMixedStemMin, "beamMixedStemMin", &m_generalLayout);
 
     m_bracketThickness.SetInfo("Bracket thickness", "The thickness of the system bracket");
     m_bracketThickness.Init(1.0, 0.5, 2.0);
@@ -1187,6 +1202,16 @@ Options::Options()
         "Breaks no widow", "Prevent single measures on the last page by fitting it into previous system");
     m_breaksNoWidow.Init(false);
     this->Register(&m_breaksNoWidow, "breaksNoWidow", &m_generalLayout);
+
+    // Optimized for five line staves
+    constexpr double dashedBarLineLengthDefault = 8.0 / 7.0;
+    m_dashedBarLineDashLength.SetInfo("Dashed barline dash length", "The dash length of dashed barlines");
+    m_dashedBarLineDashLength.Init(dashedBarLineLengthDefault, 0.1, 5.0);
+    this->Register(&m_dashedBarLineDashLength, "dashedBarLineDashLength", &m_generalLayout);
+
+    m_dashedBarLineGapLength.SetInfo("Dashed barline gap length", "The gap length of dashed barlines");
+    m_dashedBarLineGapLength.Init(dashedBarLineLengthDefault, 0.1, 5.0);
+    this->Register(&m_dashedBarLineGapLength, "dashedBarLineGapLength", &m_generalLayout);
 
     m_dynamDist.SetInfo("Dynam dist", "The default distance from the staff for dynamic marks");
     m_dynamDist.Init(1.0, 0.5, 16.0);
@@ -1782,6 +1807,8 @@ void Options::Sync()
         { "thickBarlineThickness", &m_thickBarlineThickness }, //
         { "barlineSeparation", &m_barLineSeparation }, //
         { "repeatBarlineDotSeparation", &m_repeatBarLineDotSeparation }, //
+        { "dashedBarlineDashLength", &m_dashedBarLineDashLength }, //
+        { "dashedBarlineGapLength", &m_dashedBarLineGapLength }, //
         { "bracketThickness", &m_bracketThickness }, //
         { "subBracketThickness", &m_subBracketThickness }, //
         { "hairpinThickness", &m_hairpinThickness }, //
