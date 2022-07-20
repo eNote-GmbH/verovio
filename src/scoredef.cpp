@@ -289,7 +289,7 @@ bool ScoreDef::IsSupportedChild(Object *child)
     return true;
 }
 
-void ScoreDef::ReplaceDrawingValues(ScoreDef *newScoreDef)
+void ScoreDef::ReplaceDrawingValues(const ScoreDef *newScoreDef)
 {
     assert(newScoreDef);
 
@@ -297,11 +297,11 @@ void ScoreDef::ReplaceDrawingValues(ScoreDef *newScoreDef)
     m_setAsDrawing = true;
 
     int redrawFlags = 0;
-    Clef const *clef = NULL;
-    KeySig const *keySig = NULL;
+    const Clef *clef = NULL;
+    const KeySig *keySig = NULL;
     Mensur *mensur = NULL;
     MeterSig *meterSig = NULL;
-    MeterSigGrp *meterSigGrp = NULL;
+    const MeterSigGrp *meterSigGrp = NULL;
 
     if (newScoreDef->HasClefInfo()) {
         redrawFlags |= StaffDefRedrawFlags::REDRAW_CLEF;
@@ -337,7 +337,7 @@ void ScoreDef::ReplaceDrawingValues(ScoreDef *newScoreDef)
     this->SetRedrawFlags(redrawFlags);
 }
 
-void ScoreDef::ReplaceDrawingValues(StaffDef *newStaffDef)
+void ScoreDef::ReplaceDrawingValues(const StaffDef *newStaffDef)
 {
     assert(newStaffDef);
 
@@ -348,12 +348,12 @@ void ScoreDef::ReplaceDrawingValues(StaffDef *newStaffDef)
     if (staffDef) {
         if (newStaffDef->HasClefInfo()) {
             staffDef->SetDrawClef(true);
-            Clef const *clef = newStaffDef->GetClef();
+            const Clef *clef = newStaffDef->GetClef();
             staffDef->SetCurrentClef(clef);
         }
         if (newStaffDef->HasKeySigInfo()) {
             staffDef->SetDrawKeySig(true);
-            KeySig const *keySig = newStaffDef->GetKeySig();
+            const KeySig *keySig = newStaffDef->GetKeySig();
             staffDef->SetCurrentKeySig(keySig);
         }
         if (newStaffDef->HasMensurInfo()) {
@@ -412,7 +412,7 @@ void ScoreDef::ReplaceDrawingValues(StaffDef *newStaffDef)
     }
 }
 
-void ScoreDef::ReplaceDrawingLabels(StaffGrp *newStaffGrp)
+void ScoreDef::ReplaceDrawingLabels(const StaffGrp *newStaffGrp)
 {
     assert(newStaffGrp);
 
@@ -614,9 +614,9 @@ const PgHead2 *ScoreDef::GetPgHead2() const
     return dynamic_cast<const PgHead2 *>(this->FindDescendantByType(PGHEAD2));
 }
 
-int ScoreDef::GetMaxStaffSize()
+int ScoreDef::GetMaxStaffSize() const
 {
-    StaffGrp *staffGrp = dynamic_cast<StaffGrp *>(this->FindDescendantByType(STAFFGRP));
+    const StaffGrp *staffGrp = vrv_cast<const StaffGrp *>(this->FindDescendantByType(STAFFGRP));
     return (staffGrp) ? staffGrp->GetMaxStaffSize() : 100;
 }
 
@@ -630,9 +630,9 @@ bool ScoreDef::IsSectionRestart() const
     return (section && (section->GetRestart() == BOOLEAN_true));
 }
 
-bool ScoreDef::HasSystemStartLine()
+bool ScoreDef::HasSystemStartLine() const
 {
-    StaffGrp *staffGrp = vrv_cast<StaffGrp *>(this->FindDescendantByType(STAFFGRP));
+    const StaffGrp *staffGrp = vrv_cast<const StaffGrp *>(this->FindDescendantByType(STAFFGRP));
     if (staffGrp) {
         auto [firstDef, lastDef] = staffGrp->GetFirstLastStaffDef();
         if ((firstDef && lastDef && (firstDef != lastDef)) || staffGrp->GetFirst(GRPSYM)) {
@@ -646,6 +646,78 @@ bool ScoreDef::HasSystemStartLine()
 //----------------------------------------------------------------------------
 // Functors methods
 //----------------------------------------------------------------------------
+
+int ScoreDefElement::ConvertMarkupScoreDef(FunctorParams *functorParams)
+{
+    ConvertMarkupScoreDefParams *params = vrv_params_cast<ConvertMarkupScoreDefParams *>(functorParams);
+    assert(params);
+
+    if (this->Is(SCOREDEF)) {
+        params->m_currentScoreDef = this;
+        return FUNCTOR_CONTINUE;
+    }
+
+    // This should never be the case
+    if (!this->Is(STAFFDEF) || !params->m_currentScoreDef) return FUNCTOR_CONTINUE;
+
+    ScoreDefElement *scoreDef = params->m_currentScoreDef;
+
+    // Copy score definition elements to the staffDef but only if they are not given at the staffDef
+    // This might require more refined merging because we can lose data if some staffDef values are defined
+    // but do not contain all the ones given in the scoreDef (e.g. @key.mode in scoreDef but not in a staffDef with
+    // @key.sig)
+    if (scoreDef->HasClefInfo() && !this->HasClefInfo()) {
+        this->AddChild(scoreDef->GetClefCopy());
+    }
+    if (scoreDef->HasKeySigInfo() && !this->HasKeySigInfo()) {
+        this->AddChild(scoreDef->GetKeySigCopy());
+    }
+    if (scoreDef->HasMeterSigGrpInfo() && !this->HasMeterSigGrpInfo()) {
+        this->AddChild(scoreDef->GetMeterSigGrpCopy());
+    }
+    if (scoreDef->HasMeterSigInfo() && !this->HasMeterSigInfo()) {
+        this->AddChild(scoreDef->GetMeterSigCopy());
+    }
+    if (scoreDef->HasMensurInfo() && !this->HasMensurInfo()) {
+        this->AddChild(scoreDef->GetMensurCopy());
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+int ScoreDefElement::ConvertMarkupScoreDefEnd(FunctorParams *functorParams)
+{
+    ConvertMarkupScoreDefParams *params = vrv_params_cast<ConvertMarkupScoreDefParams *>(functorParams);
+    assert(params);
+
+    if (!this->Is(SCOREDEF)) return FUNCTOR_CONTINUE;
+
+    // At the end of the scoreDef, remove all score definition elements
+    if (this->HasClefInfo()) {
+        Object *clef = this->FindDescendantByType(CLEF, 1);
+        if (clef) this->DeleteChild(clef);
+    }
+    if (this->HasKeySigInfo()) {
+        Object *keySig = this->FindDescendantByType(KEYSIG, 1);
+        if (keySig) this->DeleteChild(keySig);
+    }
+    if (this->HasMeterSigGrpInfo()) {
+        Object *meterSigGrp = this->FindDescendantByType(METERSIGGRP, 1);
+        if (meterSigGrp) this->DeleteChild(meterSigGrp);
+    }
+    if (this->HasMeterSigInfo()) {
+        Object *meterSig = this->FindDescendantByType(METERSIG, 1);
+        if (meterSig) this->DeleteChild(meterSig);
+    }
+    if (this->HasMensurInfo()) {
+        Object *mensur = this->FindDescendantByType(MENSUR, 1);
+        if (mensur) this->DeleteChild(mensur);
+    }
+
+    params->m_currentScoreDef = NULL;
+
+    return FUNCTOR_CONTINUE;
+}
 
 int ScoreDef::ResetHorizontalAlignment(FunctorParams *functorParams)
 {
