@@ -43,8 +43,7 @@ static inline double RadToDeg(double deg)
 /**
  * Helper struct to store elements and their offsets in the VisualOffsetInterface
  */
-struct VisualOffsetData 
-{
+struct VisualOffsetData {
     std::string id;
     const VisualOffsetInterface *offsetInterface;
     ClassId classId;
@@ -316,7 +315,7 @@ public:
     ///@{
     virtual void StartVisualOffset(const Object *object, int drawingUnit);
     virtual void EndVisualOffset(const Object *object);
-    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) ;
+    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points);
     ///@}
 
     //----------------//
@@ -362,7 +361,7 @@ private:
     /** stores the scale as requested by the used */
     double m_userScaleX;
     double m_userScaleY;
-    
+
     std::stack<VisualOffsetData> m_offsetList;
 };
 
