@@ -40,7 +40,7 @@ public:
     void Reset() override;
     std::string GetClassName() const override { return "Artic"; }
     ///@}
-    
+
     /**
      * @name Getter to interfaces
      */
