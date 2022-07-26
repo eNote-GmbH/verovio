@@ -10,7 +10,7 @@
 #include <iostream>
 //----------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 
 //----------------------------------------------------------------------------
 
@@ -1079,8 +1079,8 @@ int Note::CalcStem(FunctorParams *functorParams)
     if (this->HasStemSameasNote()) {
         stemDir = this->CalcStemDirForSameasNote(params->m_verticalCenter);
     }
-    else if (stem->HasStemDir()) {
-        stemDir = stem->GetStemDir();
+    else if (stem->HasDir()) {
+        stemDir = stem->GetDir();
     }
     else if (this->IsGraceNote()) {
         stemDir = STEMDIRECTION_up;
@@ -1120,6 +1120,9 @@ int Note::CalcChordNoteHeads(FunctorParams *functorParams)
     if ((this->GetDrawingStemDir() == STEMDIRECTION_up) && (params->m_diameter)) {
         noteheadShift = params->m_diameter - diameter;
     }
+
+    // Nothing to do for notes that are not in a cluster and without base diameter for the chord
+    if (!params->m_diameter && !m_cluster) return FUNCTOR_SIBLINGS;
 
     /************** notehead direction **************/
 
@@ -1214,7 +1217,7 @@ int Note::CalcDots(FunctorParams *functorParams)
         assert(dots);
 
         // Stem up, shorter than 4th and not in beam
-        if ((this->GetDots() != 0) && (params->m_chordStemDir == STEMDIRECTION_up) && (this->GetDrawingDur() > DUR_4)
+        if ((this->GetDots() > 0) && (params->m_chordStemDir == STEMDIRECTION_up) && (this->GetDrawingDur() > DUR_4)
             && !this->IsInBeam()) {
             // Shift according to the flag width if the top note is not flipped
             if ((this == chord->GetTopNote()) && !this->GetFlippedNotehead()) {
@@ -1307,11 +1310,12 @@ int Note::PrepareLayerElementParts(FunctorParams *functorParams)
     if (!this->IsChordTone() && !this->IsMensuralDur() && !this->IsTabGrpNote()) {
         if (!currentStem) {
             currentStem = new Stem();
+            currentStem->IsAttribute(true);
             this->AddChild(currentStem);
         }
         currentStem->AttGraced::operator=(*this);
-        currentStem->AttStems::operator=(*this);
-        currentStem->AttStemsCmn::operator=(*this);
+        currentStem->FillAttributes(*this);
+
         if (this->GetActualDur() < DUR_2 || (this->GetStemVisible() == BOOLEAN_false)) {
             currentStem->IsVirtual(true);
         }
