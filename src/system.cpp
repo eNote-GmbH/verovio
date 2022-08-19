@@ -9,7 +9,7 @@
 
 //----------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 
 //----------------------------------------------------------------------------
 
@@ -1056,6 +1056,11 @@ int System::AdjustFloatingPositioners(FunctorParams *functorParams)
     // The resulting layout order will correspond to the order in the encoding.
     params->m_classId = OBJECT;
     m_systemAligner.Process(params->m_functor, params);
+
+    adjustFloatingPositionerGrpsParams.m_classIds.clear();
+    adjustFloatingPositionerGrpsParams.m_classIds.push_back(DYNAM);
+    adjustFloatingPositionerGrpsParams.m_place = STAFFREL_between;
+    m_systemAligner.Process(&adjustFloatingPositionerGrps, &adjustFloatingPositionerGrpsParams);
 
     return FUNCTOR_SIBLINGS;
 }

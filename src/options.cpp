@@ -9,7 +9,7 @@
 
 //----------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 #include <fstream>
 #include <functional>
 #include <sstream>
@@ -1225,6 +1225,11 @@ Options::Options()
         "Engraving defaults file", "Path to json file describing defaults for engraving SMuFL elements");
     m_engravingDefaultsFile.Init(JsonSource::FilePath, "");
     this->Register(&m_engravingDefaultsFile, "engravingDefaultsFile", &m_generalLayout);
+
+    m_extenderLineMinSpace.SetInfo(
+        "Extender line minimum space", "Minimum space required for extender line to be drawn");
+    m_extenderLineMinSpace.Init(1.5, 1.5, 10.0);
+    this->Register(&m_extenderLineMinSpace, "extenderLineMinSpace", &m_generalLayout);
 
     m_fingeringScale.SetInfo("Fingering scale", "The scale of fingering font compared to default font size");
     m_fingeringScale.Init(0.75, 0.25, 1);

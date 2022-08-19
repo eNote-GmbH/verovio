@@ -9,7 +9,7 @@
 
 //----------------------------------------------------------------------------
 
-#include <assert.h>
+#include <cassert>
 
 //----------------------------------------------------------------------------
 
@@ -324,10 +324,6 @@ void Page::ResetAligners()
         FunctorDocParams calcLigatureNotePosParams(doc);
         Functor calcLigatureNotePos(&Object::CalcLigatureNotePos);
         this->Process(&calcLigatureNotePos, &calcLigatureNotePosParams);
-    }
-
-    if (doc->AbortRequested()) {
-        return;
     }
 
     CalcStemParams calcStemParams(doc);
