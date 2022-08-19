@@ -125,6 +125,7 @@
 #include "svg.h"
 #include "syl.h"
 #include "syllable.h"
+#include "symbol.h"
 #include "system.h"
 #include "systemmilestone.h"
 #include "tabdursym.h"
@@ -208,6 +209,15 @@ bool MEIOutput::Export()
 
         // schema processing instruction
         std::string schema;
+        if (this->IsPageBasedMEI()) {
+            schema = "https://www.verovio.org/schema/dev/mei-verovio.rng";
+        }
+        else if (this->GetBasic()) {
+            schema = "https://music-encoding.org/schema/dev/mei-basic.rng";
+        }
+        else {
+            schema = "https://music-encoding.org/schema/dev/mei-all.rng";
+        }
 
         decl = meiDoc.append_child(pugi::node_declaration);
         decl.set_name("xml-model");
@@ -547,169 +557,171 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
     }
 
     // Layer elements
-    else if (object->Is(ACCID)) {
-        // Do not add a node for object representing an attribute
-        // Exception: always write them as element in MEI basic
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("accid");
-        this->WriteAccid(m_currentNode, vrv_cast<Accid *>(object));
-    }
-    else if (object->Is(ARTIC)) {
-        // Do not add a node for object representing an attribute
-        // Exception: always write them as element in MEI basic
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("artic");
-        this->WriteArtic(m_currentNode, vrv_cast<Artic *>(object));
-    }
-    else if (object->Is(BARLINE)) {
-        m_currentNode = m_currentNode.append_child("barLine");
-        this->WriteBarLine(m_currentNode, vrv_cast<BarLine *>(object));
-    }
-    else if (object->Is(BEAM)) {
-        m_currentNode = m_currentNode.append_child("beam");
-        this->WriteBeam(m_currentNode, vrv_cast<Beam *>(object));
-    }
-    else if (object->Is(BEATRPT)) {
-        m_currentNode = m_currentNode.append_child("beatRpt");
-        this->WriteBeatRpt(m_currentNode, vrv_cast<BeatRpt *>(object));
-    }
-    else if (object->Is(BTREM)) {
-        m_currentNode = m_currentNode.append_child("bTrem");
-        this->WriteBTrem(m_currentNode, vrv_cast<BTrem *>(object));
-    }
-    else if (object->Is(CHORD)) {
-        m_currentNode = m_currentNode.append_child("chord");
-        this->WriteChord(m_currentNode, vrv_cast<Chord *>(object));
-    }
-    else if (object->Is(CLEF)) {
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("clef");
-        this->WriteClef(m_currentNode, vrv_cast<Clef *>(object));
-    }
-    else if (object->Is(CUSTOS)) {
-        m_currentNode = m_currentNode.append_child("custos");
-        this->WriteCustos(m_currentNode, vrv_cast<Custos *>(object));
-    }
-    else if (object->Is(DOT)) {
-        m_currentNode = m_currentNode.append_child("dot");
-        this->WriteDot(m_currentNode, vrv_cast<Dot *>(object));
-    }
-    else if (object->Is(FTREM)) {
-        m_currentNode = m_currentNode.append_child("fTrem");
-        this->WriteFTrem(m_currentNode, vrv_cast<FTrem *>(object));
-    }
-    else if (object->Is(GLISS)) {
-        m_currentNode = m_currentNode.append_child("gliss");
-        this->WriteGliss(m_currentNode, vrv_cast<Gliss *>(object));
-    }
-    else if (object->Is(GRACEGRP)) {
-        m_currentNode = m_currentNode.append_child("graceGrp");
-        this->WriteGraceGrp(m_currentNode, vrv_cast<GraceGrp *>(object));
-    }
-    else if (object->Is(HALFMRPT)) {
-        m_currentNode = m_currentNode.append_child("halfmRpt");
-        this->WriteHalfmRpt(m_currentNode, vrv_cast<HalfmRpt *>(object));
-    }
-    else if (object->Is(KEYACCID)) {
-        if (this->IsTreeObject(object)) {
-            m_currentNode = m_currentNode.append_child("keyAccid");
-            this->WriteKeyAccid(m_currentNode, vrv_cast<KeyAccid *>(object));
+    else if (object->IsLayerElement()) {
+        if (object->Is(ACCID)) {
+            // Do not add a node for object representing an attribute
+            // Exception: always write them as element in MEI basic
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("accid");
+            this->WriteAccid(m_currentNode, vrv_cast<Accid *>(object));
         }
-    }
-    else if (object->Is(KEYSIG)) {
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("keySig");
-        this->WriteKeySig(m_currentNode, vrv_cast<KeySig *>(object));
-    }
-    else if (object->Is(LIGATURE)) {
-        m_currentNode = m_currentNode.append_child("ligature");
-        this->WriteLigature(m_currentNode, vrv_cast<Ligature *>(object));
-    }
-    else if (object->Is(MENSUR)) {
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("mensur");
-        this->WriteMensur(m_currentNode, vrv_cast<Mensur *>(object));
-    }
-    else if (object->Is(METERSIG)) {
-        if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("meterSig");
-        this->WriteMeterSig(m_currentNode, vrv_cast<MeterSig *>(object));
-    }
-    else if (object->Is(MREST)) {
-        m_currentNode = m_currentNode.append_child("mRest");
-        this->WriteMRest(m_currentNode, vrv_cast<MRest *>(object));
-    }
-    else if (object->Is(MRPT)) {
-        m_currentNode = m_currentNode.append_child("mRpt");
-        this->WriteMRpt(m_currentNode, vrv_cast<MRpt *>(object));
-    }
-    else if (object->Is(MRPT2)) {
-        m_currentNode = m_currentNode.append_child("mRpt2");
-        this->WriteMRpt2(m_currentNode, vrv_cast<MRpt2 *>(object));
-    }
-    else if (object->Is(MSPACE)) {
-        m_currentNode = m_currentNode.append_child("mSpace");
-        this->WriteMSpace(m_currentNode, vrv_cast<MSpace *>(object));
-    }
-    else if (object->Is(MULTIREST)) {
-        m_currentNode = m_currentNode.append_child("multiRest");
-        this->WriteMultiRest(m_currentNode, vrv_cast<MultiRest *>(object));
-    }
-    else if (object->Is(MULTIRPT)) {
-        m_currentNode = m_currentNode.append_child("multiRpt");
-        this->WriteMultiRpt(m_currentNode, vrv_cast<MultiRpt *>(object));
-    }
-    else if (object->Is(NC)) {
-        m_currentNode = m_currentNode.append_child("nc");
-        this->WriteNc(m_currentNode, vrv_cast<Nc *>(object));
-    }
-    else if (object->Is(NEUME)) {
-        m_currentNode = m_currentNode.append_child("neume");
-        this->WriteNeume(m_currentNode, vrv_cast<Neume *>(object));
-    }
-    else if (object->Is(NOTE)) {
-        m_currentNode = m_currentNode.append_child("note");
-        this->WriteNote(m_currentNode, vrv_cast<Note *>(object));
-    }
-    else if (object->Is(PLICA)) {
-        m_currentNode = m_currentNode.append_child("plica");
-        this->WritePlica(m_currentNode, vrv_cast<Plica *>(object));
-    }
-    else if (object->Is(PROPORT)) {
-        m_currentNode = m_currentNode.append_child("proport");
-        this->WriteProport(m_currentNode, vrv_cast<Proport *>(object));
-    }
-    else if (object->Is(REST)) {
-        m_currentNode = m_currentNode.append_child("rest");
-        this->WriteRest(m_currentNode, vrv_cast<Rest *>(object));
-    }
-    else if (object->Is(SPACE)) {
-        m_currentNode = m_currentNode.append_child("space");
-        this->WriteSpace(m_currentNode, vrv_cast<Space *>(object));
-    }
-    else if (object->Is(STEM)) {
-        if (!object->IsAttribute()) {
-            m_currentNode = m_currentNode.append_child("stem");
-            this->WriteStem(m_currentNode, vrv_cast<Stem *>(object));
+        else if (object->Is(ARTIC)) {
+            // Do not add a node for object representing an attribute
+            // Exception: always write them as element in MEI basic
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("artic");
+            this->WriteArtic(m_currentNode, vrv_cast<Artic *>(object));
         }
-    }
-    else if (object->Is(SYL)) {
-        m_currentNode = m_currentNode.append_child("syl");
-        this->WriteSyl(m_currentNode, vrv_cast<Syl *>(object));
-    }
-    else if (object->Is(SYLLABLE)) {
-        m_currentNode = m_currentNode.append_child("syllable");
-        this->WriteSyllable(m_currentNode, vrv_cast<Syllable *>(object));
-    }
-    else if (object->Is(TABDURSYM)) {
-        m_currentNode = m_currentNode.append_child("tabDurSym");
-        this->WriteTabDurSym(m_currentNode, vrv_cast<TabDurSym *>(object));
-    }
-    else if (object->Is(TABGRP)) {
-        m_currentNode = m_currentNode.append_child("tabGrp");
-        this->WriteTabGrp(m_currentNode, vrv_cast<TabGrp *>(object));
-    }
-    else if (object->Is(TUPLET)) {
-        m_currentNode = m_currentNode.append_child("tuplet");
-        this->WriteTuplet(m_currentNode, vrv_cast<Tuplet *>(object));
-    }
-    else if (object->Is(VERSE)) {
-        m_currentNode = m_currentNode.append_child("verse");
-        this->WriteVerse(m_currentNode, vrv_cast<Verse *>(object));
+        else if (object->Is(BARLINE)) {
+            m_currentNode = m_currentNode.append_child("barLine");
+            this->WriteBarLine(m_currentNode, vrv_cast<BarLine *>(object));
+        }
+        else if (object->Is(BEAM)) {
+            m_currentNode = m_currentNode.append_child("beam");
+            this->WriteBeam(m_currentNode, vrv_cast<Beam *>(object));
+        }
+        else if (object->Is(BEATRPT)) {
+            m_currentNode = m_currentNode.append_child("beatRpt");
+            this->WriteBeatRpt(m_currentNode, vrv_cast<BeatRpt *>(object));
+        }
+        else if (object->Is(BTREM)) {
+            m_currentNode = m_currentNode.append_child("bTrem");
+            this->WriteBTrem(m_currentNode, vrv_cast<BTrem *>(object));
+        }
+        else if (object->Is(CHORD)) {
+            m_currentNode = m_currentNode.append_child("chord");
+            this->WriteChord(m_currentNode, vrv_cast<Chord *>(object));
+        }
+        else if (object->Is(CLEF)) {
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("clef");
+            this->WriteClef(m_currentNode, vrv_cast<Clef *>(object));
+        }
+        else if (object->Is(CUSTOS)) {
+            m_currentNode = m_currentNode.append_child("custos");
+            this->WriteCustos(m_currentNode, vrv_cast<Custos *>(object));
+        }
+        else if (object->Is(DOT)) {
+            m_currentNode = m_currentNode.append_child("dot");
+            this->WriteDot(m_currentNode, vrv_cast<Dot *>(object));
+        }
+        else if (object->Is(FTREM)) {
+            m_currentNode = m_currentNode.append_child("fTrem");
+            this->WriteFTrem(m_currentNode, vrv_cast<FTrem *>(object));
+        }
+        else if (object->Is(GLISS)) {
+            m_currentNode = m_currentNode.append_child("gliss");
+            this->WriteGliss(m_currentNode, vrv_cast<Gliss *>(object));
+        }
+        else if (object->Is(GRACEGRP)) {
+            m_currentNode = m_currentNode.append_child("graceGrp");
+            this->WriteGraceGrp(m_currentNode, vrv_cast<GraceGrp *>(object));
+        }
+        else if (object->Is(HALFMRPT)) {
+            m_currentNode = m_currentNode.append_child("halfmRpt");
+            this->WriteHalfmRpt(m_currentNode, vrv_cast<HalfmRpt *>(object));
+        }
+        else if (object->Is(KEYACCID)) {
+            if (this->IsTreeObject(object)) {
+                m_currentNode = m_currentNode.append_child("keyAccid");
+                this->WriteKeyAccid(m_currentNode, vrv_cast<KeyAccid *>(object));
+            }
+        }
+        else if (object->Is(KEYSIG)) {
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("keySig");
+            this->WriteKeySig(m_currentNode, vrv_cast<KeySig *>(object));
+        }
+        else if (object->Is(LIGATURE)) {
+            m_currentNode = m_currentNode.append_child("ligature");
+            this->WriteLigature(m_currentNode, vrv_cast<Ligature *>(object));
+        }
+        else if (object->Is(MENSUR)) {
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("mensur");
+            this->WriteMensur(m_currentNode, vrv_cast<Mensur *>(object));
+        }
+        else if (object->Is(METERSIG)) {
+            if (this->IsTreeObject(object)) m_currentNode = m_currentNode.append_child("meterSig");
+            this->WriteMeterSig(m_currentNode, vrv_cast<MeterSig *>(object));
+        }
+        else if (object->Is(MREST)) {
+            m_currentNode = m_currentNode.append_child("mRest");
+            this->WriteMRest(m_currentNode, vrv_cast<MRest *>(object));
+        }
+        else if (object->Is(MRPT)) {
+            m_currentNode = m_currentNode.append_child("mRpt");
+            this->WriteMRpt(m_currentNode, vrv_cast<MRpt *>(object));
+        }
+        else if (object->Is(MRPT2)) {
+            m_currentNode = m_currentNode.append_child("mRpt2");
+            this->WriteMRpt2(m_currentNode, vrv_cast<MRpt2 *>(object));
+        }
+        else if (object->Is(MSPACE)) {
+            m_currentNode = m_currentNode.append_child("mSpace");
+            this->WriteMSpace(m_currentNode, vrv_cast<MSpace *>(object));
+        }
+        else if (object->Is(MULTIREST)) {
+            m_currentNode = m_currentNode.append_child("multiRest");
+            this->WriteMultiRest(m_currentNode, vrv_cast<MultiRest *>(object));
+        }
+        else if (object->Is(MULTIRPT)) {
+            m_currentNode = m_currentNode.append_child("multiRpt");
+            this->WriteMultiRpt(m_currentNode, vrv_cast<MultiRpt *>(object));
+        }
+        else if (object->Is(NC)) {
+            m_currentNode = m_currentNode.append_child("nc");
+            this->WriteNc(m_currentNode, vrv_cast<Nc *>(object));
+        }
+        else if (object->Is(NEUME)) {
+            m_currentNode = m_currentNode.append_child("neume");
+            this->WriteNeume(m_currentNode, vrv_cast<Neume *>(object));
+        }
+        else if (object->Is(NOTE)) {
+            m_currentNode = m_currentNode.append_child("note");
+            this->WriteNote(m_currentNode, vrv_cast<Note *>(object));
+        }
+        else if (object->Is(PLICA)) {
+            m_currentNode = m_currentNode.append_child("plica");
+            this->WritePlica(m_currentNode, vrv_cast<Plica *>(object));
+        }
+        else if (object->Is(PROPORT)) {
+            m_currentNode = m_currentNode.append_child("proport");
+            this->WriteProport(m_currentNode, vrv_cast<Proport *>(object));
+        }
+        else if (object->Is(REST)) {
+            m_currentNode = m_currentNode.append_child("rest");
+            this->WriteRest(m_currentNode, vrv_cast<Rest *>(object));
+        }
+        else if (object->Is(SPACE)) {
+            m_currentNode = m_currentNode.append_child("space");
+            this->WriteSpace(m_currentNode, vrv_cast<Space *>(object));
+        }
+        else if (object->Is(STEM)) {
+            if (!object->IsAttribute()) {
+                m_currentNode = m_currentNode.append_child("stem");
+                this->WriteStem(m_currentNode, vrv_cast<Stem *>(object));
+            }
+        }
+        else if (object->Is(SYL)) {
+            m_currentNode = m_currentNode.append_child("syl");
+            this->WriteSyl(m_currentNode, vrv_cast<Syl *>(object));
+        }
+        else if (object->Is(SYLLABLE)) {
+            m_currentNode = m_currentNode.append_child("syllable");
+            this->WriteSyllable(m_currentNode, vrv_cast<Syllable *>(object));
+        }
+        else if (object->Is(TABDURSYM)) {
+            m_currentNode = m_currentNode.append_child("tabDurSym");
+            this->WriteTabDurSym(m_currentNode, vrv_cast<TabDurSym *>(object));
+        }
+        else if (object->Is(TABGRP)) {
+            m_currentNode = m_currentNode.append_child("tabGrp");
+            this->WriteTabGrp(m_currentNode, vrv_cast<TabGrp *>(object));
+        }
+        else if (object->Is(TUPLET)) {
+            m_currentNode = m_currentNode.append_child("tuplet");
+            this->WriteTuplet(m_currentNode, vrv_cast<Tuplet *>(object));
+        }
+        else if (object->Is(VERSE)) {
+            m_currentNode = m_currentNode.append_child("verse");
+            this->WriteVerse(m_currentNode, vrv_cast<Verse *>(object));
+        }
     }
 
     // Text elements
@@ -741,90 +753,96 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
         m_currentNode = m_currentNode.append_child("svg");
         this->WriteSvg(m_currentNode, vrv_cast<Svg *>(object));
     }
+    else if (object->Is(SYMBOL)) {
+        m_currentNode = m_currentNode.append_child("symbol");
+        this->WriteSymbol(m_currentNode, vrv_cast<Symbol *>(object));
+    }
     else if (object->Is(TEXT)) {
         this->WriteText(m_currentNode, vrv_cast<Text *>(object));
     }
 
     // Editorial markup
-    else if (object->IsEditorialElement() && this->GetBasic()) {
+    else if (object->IsEditorialElement()) {
         // Editorial markup in MEI basic output is skipped and no node should be created.
-        return true;
-    }
-    else if (object->Is(ABBR)) {
-        m_currentNode = m_currentNode.append_child("abbr");
-        this->WriteAbbr(m_currentNode, vrv_cast<Abbr *>(object));
-    }
-    else if (object->Is(ADD)) {
-        m_currentNode = m_currentNode.append_child("add");
-        this->WriteAdd(m_currentNode, vrv_cast<Add *>(object));
-    }
-    else if (object->Is(ANNOT)) {
-        m_currentNode = m_currentNode.append_child("annot");
-        this->WriteAnnot(m_currentNode, vrv_cast<Annot *>(object));
-    }
-    else if (object->Is(APP)) {
-        m_currentNode = m_currentNode.append_child("app");
-        this->WriteApp(m_currentNode, vrv_cast<App *>(object));
-    }
-    else if (object->Is(CHOICE)) {
-        m_currentNode = m_currentNode.append_child("choice");
-        this->WriteChoice(m_currentNode, vrv_cast<Choice *>(object));
-    }
-    else if (object->Is(CORR)) {
-        m_currentNode = m_currentNode.append_child("corr");
-        this->WriteCorr(m_currentNode, vrv_cast<Corr *>(object));
-    }
-    else if (object->Is(DAMAGE)) {
-        m_currentNode = m_currentNode.append_child("damage");
-        this->WriteDamage(m_currentNode, vrv_cast<Damage *>(object));
-    }
-    else if (object->Is(DEL)) {
-        m_currentNode = m_currentNode.append_child("del");
-        this->WriteDel(m_currentNode, vrv_cast<Del *>(object));
-    }
-    else if (object->Is(EXPAN)) {
-        m_currentNode = m_currentNode.append_child("epxan");
-        this->WriteExpan(m_currentNode, vrv_cast<Expan *>(object));
-    }
-    else if (object->Is(LEM)) {
-        m_currentNode = m_currentNode.append_child("lem");
-        this->WriteLem(m_currentNode, vrv_cast<Lem *>(object));
-    }
-    else if (object->Is(ORIG)) {
-        m_currentNode = m_currentNode.append_child("orig");
-        this->WriteOrig(m_currentNode, vrv_cast<Orig *>(object));
-    }
-    else if (object->Is(RDG)) {
-        m_currentNode = m_currentNode.append_child("rdg");
-        this->WriteRdg(m_currentNode, vrv_cast<Rdg *>(object));
-    }
-    else if (object->Is(REF)) {
-        m_currentNode = m_currentNode.append_child("ref");
-        this->WriteRef(m_currentNode, vrv_cast<Ref *>(object));
-    }
-    else if (object->Is(REG)) {
-        m_currentNode = m_currentNode.append_child("reg");
-        this->WriteReg(m_currentNode, vrv_cast<Reg *>(object));
-    }
-    else if (object->Is(RESTORE)) {
-        m_currentNode = m_currentNode.append_child("restore");
-        this->WriteRestore(m_currentNode, vrv_cast<Restore *>(object));
-    }
-    else if (object->Is(SIC)) {
-        m_currentNode = m_currentNode.append_child("sic");
-        this->WriteSic(m_currentNode, vrv_cast<Sic *>(object));
-    }
-    else if (object->Is(SUBST)) {
-        m_currentNode = m_currentNode.append_child("subst");
-        this->WriteSubst(m_currentNode, vrv_cast<Subst *>(object));
-    }
-    else if (object->Is(SUPPLIED)) {
-        m_currentNode = m_currentNode.append_child("supplied");
-        this->WriteSupplied(m_currentNode, vrv_cast<Supplied *>(object));
-    }
-    else if (object->Is(UNCLEAR)) {
-        m_currentNode = m_currentNode.append_child("unclear");
-        this->WriteUnclear(m_currentNode, vrv_cast<Unclear *>(object));
+        if (this->GetBasic()) {
+            return true;
+        }
+        else if (object->Is(ABBR)) {
+            m_currentNode = m_currentNode.append_child("abbr");
+            this->WriteAbbr(m_currentNode, vrv_cast<Abbr *>(object));
+        }
+        else if (object->Is(ADD)) {
+            m_currentNode = m_currentNode.append_child("add");
+            this->WriteAdd(m_currentNode, vrv_cast<Add *>(object));
+        }
+        else if (object->Is(ANNOT)) {
+            m_currentNode = m_currentNode.append_child("annot");
+            this->WriteAnnot(m_currentNode, vrv_cast<Annot *>(object));
+        }
+        else if (object->Is(APP)) {
+            m_currentNode = m_currentNode.append_child("app");
+            this->WriteApp(m_currentNode, vrv_cast<App *>(object));
+        }
+        else if (object->Is(CHOICE)) {
+            m_currentNode = m_currentNode.append_child("choice");
+            this->WriteChoice(m_currentNode, vrv_cast<Choice *>(object));
+        }
+        else if (object->Is(CORR)) {
+            m_currentNode = m_currentNode.append_child("corr");
+            this->WriteCorr(m_currentNode, vrv_cast<Corr *>(object));
+        }
+        else if (object->Is(DAMAGE)) {
+            m_currentNode = m_currentNode.append_child("damage");
+            this->WriteDamage(m_currentNode, vrv_cast<Damage *>(object));
+        }
+        else if (object->Is(DEL)) {
+            m_currentNode = m_currentNode.append_child("del");
+            this->WriteDel(m_currentNode, vrv_cast<Del *>(object));
+        }
+        else if (object->Is(EXPAN)) {
+            m_currentNode = m_currentNode.append_child("epxan");
+            this->WriteExpan(m_currentNode, vrv_cast<Expan *>(object));
+        }
+        else if (object->Is(LEM)) {
+            m_currentNode = m_currentNode.append_child("lem");
+            this->WriteLem(m_currentNode, vrv_cast<Lem *>(object));
+        }
+        else if (object->Is(ORIG)) {
+            m_currentNode = m_currentNode.append_child("orig");
+            this->WriteOrig(m_currentNode, vrv_cast<Orig *>(object));
+        }
+        else if (object->Is(RDG)) {
+            m_currentNode = m_currentNode.append_child("rdg");
+            this->WriteRdg(m_currentNode, vrv_cast<Rdg *>(object));
+        }
+        else if (object->Is(REF)) {
+            m_currentNode = m_currentNode.append_child("ref");
+            this->WriteRef(m_currentNode, vrv_cast<Ref *>(object));
+        }
+        else if (object->Is(REG)) {
+            m_currentNode = m_currentNode.append_child("reg");
+            this->WriteReg(m_currentNode, vrv_cast<Reg *>(object));
+        }
+        else if (object->Is(RESTORE)) {
+            m_currentNode = m_currentNode.append_child("restore");
+            this->WriteRestore(m_currentNode, vrv_cast<Restore *>(object));
+        }
+        else if (object->Is(SIC)) {
+            m_currentNode = m_currentNode.append_child("sic");
+            this->WriteSic(m_currentNode, vrv_cast<Sic *>(object));
+        }
+        else if (object->Is(SUBST)) {
+            m_currentNode = m_currentNode.append_child("subst");
+            this->WriteSubst(m_currentNode, vrv_cast<Subst *>(object));
+        }
+        else if (object->Is(SUPPLIED)) {
+            m_currentNode = m_currentNode.append_child("supplied");
+            this->WriteSupplied(m_currentNode, vrv_cast<Supplied *>(object));
+        }
+        else if (object->Is(UNCLEAR)) {
+            m_currentNode = m_currentNode.append_child("unclear");
+            this->WriteUnclear(m_currentNode, vrv_cast<Unclear *>(object));
+        }
     }
 
     // SystemMilestoneEnd - nothing to add - only
@@ -1370,12 +1388,6 @@ bool MEIOutput::WriteDoc(Doc *doc)
         pugi::xml_node pubStmt = fileDesc.append_child("pubStmt");
         pugi::xml_node date = pubStmt.append_child("date");
 
-        pugi::xml_node encodingDesc = meiHead.append_child("encodingDesc");
-        pugi::xml_node projectDesc = encodingDesc.append_child("projectDesc");
-        pugi::xml_node p1 = projectDesc.append_child("p");
-        p1.append_child(pugi::node_pcdata)
-            .set_value(StringFormat("Encoded with Verovio version %s", GetVersion().c_str()).c_str());
-
         // date
         time_t t = time(0); // get time now
         struct tm *now = localtime(&t);
@@ -1383,8 +1395,17 @@ bool MEIOutput::WriteDoc(Doc *doc)
             now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
         date.append_child(pugi::node_pcdata).set_value(dateStr.c_str());
 
-        // revisionDesc
-        if (!m_doc->GetOptions()->m_transpose.GetValue().empty()) this->WriteRevisionDesc(meiHead);
+        if (!this->GetBasic()) {
+            // encodingDesc
+            pugi::xml_node encodingDesc = meiHead.append_child("encodingDesc");
+            pugi::xml_node projectDesc = encodingDesc.append_child("projectDesc");
+            pugi::xml_node p1 = projectDesc.append_child("p");
+            p1.append_child(pugi::node_pcdata)
+                .set_value(StringFormat("Encoded with Verovio version %s", GetVersion().c_str()).c_str());
+
+            // revisionDesc
+            if (!m_doc->GetOptions()->m_transpose.GetValue().empty()) this->WriteRevisionDesc(meiHead);
+        }
     }
 
     // ---- music ----
@@ -2822,6 +2843,16 @@ void MEIOutput::WriteSvg(pugi::xml_node currentNode, Svg *svg)
     }
 }
 
+void MEIOutput::WriteSymbol(pugi::xml_node currentNode, Symbol *symbol)
+{
+    assert(symbol);
+
+    symbol->WriteColor(currentNode);
+    symbol->WriteExtSym(currentNode);
+
+    this->WriteXmlId(currentNode, symbol);
+}
+
 void MEIOutput::WriteText(pugi::xml_node element, Text *text)
 {
     if (!text->GetText().empty()) {
@@ -3249,6 +3280,9 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
             return true;
         }
         else if (element == "rend") {
+            return true;
+        }
+        else if (element == "symbol") {
             return true;
         }
         else {
@@ -6623,6 +6657,12 @@ bool MEIInput::ReadTextChildren(Object *parent, pugi::xml_node parentNode, Objec
         else if (elementName == "svg") {
             success = this->ReadSvg(parent, xmlElement);
         }
+        else if (elementName == "symbol") {
+            // There will be some additional checks when reading Symbol because of some additional limitations:
+            // * <symbol> is not supported with mixed text content or together with other text elements (e.g. <rend>)
+            // * <symbol> is not supported within editorial markup
+            success = this->ReadSymbol(parent, xmlElement);
+        }
         else if (xmlElement.text()) {
             bool trimLeft = (i == 0);
             bool trimRight = (!xmlElement.next_sibling());
@@ -6738,6 +6778,27 @@ bool MEIInput::ReadSvg(Object *parent, pugi::xml_node svg)
 
     parent->AddChild(vrvSvg);
     this->ReadUnsupportedAttr(svg, vrvSvg);
+    return true;
+}
+
+bool MEIInput::ReadSymbol(Object *parent, pugi::xml_node symbol)
+{
+    Symbol *vrvSymbol = new Symbol();
+    this->SetMeiID(symbol, vrvSymbol);
+
+    if (parent->IsEditorialElement()) {
+        std::string meiElementName = parent->GetClassName();
+        std::transform(meiElementName.begin(), meiElementName.begin() + 1, meiElementName.begin(), ::tolower);
+        LogWarning("Element <%s> within <%s> is not supported and will not be rendered", symbol.name(),
+            meiElementName.c_str());
+        vrvSymbol->m_visibility = Hidden;
+    }
+
+    vrvSymbol->ReadColor(symbol);
+    vrvSymbol->ReadExtSym(symbol);
+
+    parent->AddChild(vrvSymbol);
+    this->ReadUnsupportedAttr(symbol, vrvSymbol);
     return true;
 }
 
