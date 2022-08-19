@@ -326,10 +326,6 @@ void Page::ResetAligners()
         this->Process(&calcLigatureNotePos, &calcLigatureNotePosParams);
     }
 
-    if (doc->AbortRequested()) {
-        return;
-    }
-
     CalcStemParams calcStemParams(doc);
     Functor calcStem(&Object::CalcStem);
     this->Process(&calcStem, &calcStemParams);
