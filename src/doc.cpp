@@ -170,11 +170,6 @@ bool Doc::IsSupportedChild(Object *child)
     return true;
 }
 
-void Doc::Refresh()
-{
-    RefreshViews();
-}
-
 bool Doc::GenerateDocumentScoreDef()
 {
     Measure *measure = dynamic_cast<Measure *>(this->FindDescendantByType(MEASURE));
@@ -1492,9 +1487,9 @@ void Doc::ExpandExpansions()
     // }
 }
 
-bool Doc::HasPage(int pageIdx)
+bool Doc::HasPage(int pageIdx) const
 {
-    Pages *pages = this->GetPages();
+    const Pages *pages = this->GetPages();
     assert(pages);
     return ((pageIdx >= 0) && (pageIdx < pages->GetChildCount()));
 }
@@ -1619,7 +1614,7 @@ int Doc::GetGlyphTop(wchar_t code, int staffSize, bool graceSize) const
     return this->GetGlyphBottom(code, staffSize, graceSize) + this->GetGlyphHeight(code, staffSize, graceSize);
 }
 
-int Doc::GetTextGlyphHeight(wchar_t code, FontInfo *font, bool graceSize) const
+int Doc::GetTextGlyphHeight(wchar_t code, const FontInfo *font, bool graceSize) const
 {
     assert(font);
 
@@ -1633,7 +1628,7 @@ int Doc::GetTextGlyphHeight(wchar_t code, FontInfo *font, bool graceSize) const
     return h;
 }
 
-int Doc::GetTextGlyphWidth(wchar_t code, FontInfo *font, bool graceSize) const
+int Doc::GetTextGlyphWidth(wchar_t code, const FontInfo *font, bool graceSize) const
 {
     assert(font);
 
@@ -1647,7 +1642,7 @@ int Doc::GetTextGlyphWidth(wchar_t code, FontInfo *font, bool graceSize) const
     return w;
 }
 
-int Doc::GetTextGlyphAdvX(wchar_t code, FontInfo *font, bool graceSize) const
+int Doc::GetTextGlyphAdvX(wchar_t code, const FontInfo *font, bool graceSize) const
 {
     assert(font);
 
@@ -1660,7 +1655,7 @@ int Doc::GetTextGlyphAdvX(wchar_t code, FontInfo *font, bool graceSize) const
     return advX;
 }
 
-int Doc::GetTextGlyphDescender(wchar_t code, FontInfo *font, bool graceSize) const
+int Doc::GetTextGlyphDescender(wchar_t code, const FontInfo *font, bool graceSize) const
 {
     assert(font);
 
@@ -1674,7 +1669,7 @@ int Doc::GetTextGlyphDescender(wchar_t code, FontInfo *font, bool graceSize) con
     return y;
 }
 
-int Doc::GetTextLineHeight(FontInfo *font, bool graceSize) const
+int Doc::GetTextLineHeight(const FontInfo *font, bool graceSize) const
 {
     int descender = -this->GetTextGlyphDescender(L'q', font, graceSize);
     int height = this->GetTextGlyphHeight(L'I', font, graceSize);
@@ -1685,7 +1680,7 @@ int Doc::GetTextLineHeight(FontInfo *font, bool graceSize) const
     return lineHeight;
 }
 
-int Doc::GetTextXHeight(FontInfo *font, bool graceSize) const
+int Doc::GetTextXHeight(const FontInfo *font, bool graceSize) const
 {
     return this->GetTextGlyphHeight('x', font, graceSize);
 }
@@ -1826,12 +1821,12 @@ double Doc::GetLeftMargin(const ClassId classId) const
     return m_options->m_defaultLeftMargin.GetValue();
 }
 
-double Doc::GetLeftMargin(Object *object) const
+double Doc::GetLeftMargin(const Object *object) const
 {
     assert(object);
     const ClassId id = object->GetClassId();
     if (id == BARLINE) {
-        BarLine *barLine = vrv_cast<BarLine *>(object);
+        const BarLine *barLine = vrv_cast<const BarLine *>(object);
         switch (barLine->GetPosition()) {
             case BarLinePosition::None: return m_options->m_leftMarginBarLine.GetValue();
             case BarLinePosition::Left: return m_options->m_leftMarginLeftBarLine.GetValue();
@@ -1863,12 +1858,12 @@ double Doc::GetRightMargin(const ClassId classId) const
     return m_options->m_defaultRightMargin.GetValue();
 }
 
-double Doc::GetRightMargin(Object *object) const
+double Doc::GetRightMargin(const Object *object) const
 {
     assert(object);
     const ClassId id = object->GetClassId();
     if (id == BARLINE) {
-        BarLine *barLine = vrv_cast<BarLine *>(object);
+        const BarLine *barLine = vrv_cast<const BarLine *>(object);
         switch (barLine->GetPosition()) {
             case BarLinePosition::None: return m_options->m_rightMarginBarLine.GetValue();
             case BarLinePosition::Left: return m_options->m_rightMarginLeftBarLine.GetValue();
@@ -2008,7 +2003,7 @@ Page *Doc::SetDrawingPage(int pageIdx)
     m_drawingBeamWhiteWidth = m_options->m_unit.GetValue() / 2;
 
     // values for fonts
-    m_drawingSmuflFontSize = CalcMusicFontSize();
+    m_drawingSmuflFontSize = this->CalcMusicFontSize();
     m_drawingLyricFontSize = m_options->m_unit.GetValue() * m_options->m_lyricSize.GetValue();
     m_fingeringFontSize = m_drawingLyricFontSize * m_options->m_fingeringScale.GetValue();
 

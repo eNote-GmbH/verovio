@@ -86,11 +86,11 @@ public:
 
     /**
      * Get the SMuFL glyph or a rest considering its actual duration.
-     * This is valid only for CMN and for duration shorter than half notes.
+     * This is valid only for CMN.
      */
     ///@{
     wchar_t GetRestGlyph() const;
-    wchar_t GetRestGlyph(int duration) const;
+    wchar_t GetRestGlyph(const int duration) const;
     ///@}
 
     /**
