@@ -2803,7 +2803,7 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
             ? x2 + endingMeasure->CalculateRightBarLineWidth(m_doc, (*staffIter)->m_drawingStaffSize) - lineWidth / 2
                 - staffLineWidth
             : x2;
-        dc->SetPen(m_currentColour, lineWidth, AxSOLID, 0, 0, AxCAP_SQUARE, AxJOIN_ARCS);
+        dc->SetPen(m_currentColour, lineWidth, AxSOLID, 0, 0, AxCAP_SQUARE, AxJOIN_MITER);
         Point p[4];
         p[0] = { ToDeviceContextX(startX), ToDeviceContextY(y1) };
         p[1] = { ToDeviceContextX(startX), ToDeviceContextY(y2) };
