@@ -1085,6 +1085,11 @@ Options::Options()
     m_removeIds.Init(false);
     this->Register(&m_removeIds, "removeIds", &m_general);
 
+    m_scaleToPageSize.SetInfo(
+        "Scale to fit the page size", "Scale the content within the page instead of scaling the page itself");
+    m_scaleToPageSize.Init(false);
+    this->Register(&m_scaleToPageSize, "scaleToPageSize", &m_general);
+
     m_showRuntime.SetInfo("Show runtime on CLI", "Display the total runtime on command-line");
     m_showRuntime.Init(false);
     this->Register(&m_showRuntime, "showRuntime", &m_general);
@@ -1216,6 +1221,10 @@ Options::Options()
     m_dynamDist.SetInfo("Dynam dist", "The default distance from the staff for dynamic marks");
     m_dynamDist.Init(1.0, 0.5, 16.0);
     this->Register(&m_dynamDist, "dynamDist", &m_generalLayout);
+
+    m_dynamSingleGlyphs.SetInfo("Dynam single glyphs", "Don't use SMuFL's predefined dynamics glyph combinations");
+    m_dynamSingleGlyphs.Init(false);
+    this->Register(&m_dynamSingleGlyphs, "dynamSingleGlyphs", &m_generalLayout);
 
     m_engravingDefaults.SetInfo("Engraving defaults", "Json describing defaults for engraving SMuFL elements");
     m_engravingDefaults.Init(JsonSource::String, "{}");
