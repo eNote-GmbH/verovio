@@ -984,6 +984,14 @@ std::string Toolkit::GetOptions(bool defaultValues) const
         }
     }
 
+    // Other base options
+    int scaleValue = (defaultValues) ? m_options->m_scale.GetDefault() : m_options->m_scale.GetUnfactoredValue();
+    o << "scale" << scaleValue;
+
+    int xmlIdSeedValue
+        = (defaultValues) ? m_options->m_xmlIdSeed.GetDefault() : m_options->m_xmlIdSeed.GetUnfactoredValue();
+    o << "xmlIdSeed" << xmlIdSeedValue;
+
     return o.json();
 }
 
@@ -1057,19 +1065,6 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
                     Object::SeedID(m_options->m_xmlIdSeed.GetValue());
                 }
             }
-            // Deprecated option
-            /*
-            else if (iter->first == "tieThickness") {
-                vrv::LogWarning("Option tieThickness is deprecated; use tieMidpointThickness instead");
-                Option *opt = NULL;
-                if (json.has<jsonxx::Number>("tieThickness")) {
-                    double thickness = json.get<jsonxx::Number>("tieThickness");
-                    opt = m_options->GetItems()->at("tieMidpointThickness");
-                    assert(opt);
-                    opt->SetValueDbl(thickness);
-                }
-            }
-            */
             else {
                 LogError("Unsupported option '%s'", iter->first.c_str());
             }
@@ -1397,16 +1392,20 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
 
     // set dimensions
     if (m_options->m_landscape.GetValue()) {
-        deviceContext->SetWidth(height);
-        deviceContext->SetHeight(width);
-    }
-    else {
-        deviceContext->SetWidth(width);
-        deviceContext->SetHeight(height);
+        std::swap(height, width);
     }
 
     double userScale = m_view.GetPPUFactor() * m_options->m_scale.GetValue() / 100;
+    assert(userScale != 0.0);
+
+    if (m_options->m_scaleToPageSize.GetValue()) {
+        height *= (1.0 / userScale);
+        width *= (1.0 / userScale);
+    }
+
     deviceContext->SetUserScale(userScale, userScale);
+    deviceContext->SetWidth(width);
+    deviceContext->SetHeight(height);
 
     if (m_doc.GetType() == Facs) {
         deviceContext->SetWidth(m_doc.GetFacsimile()->GetMaxX());

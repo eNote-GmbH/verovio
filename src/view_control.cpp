@@ -1663,10 +1663,6 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
     dc->StartGraphic(dynam, "", dynam->GetID());
 
     bool isSymbolOnly = dynam->IsSymbolOnly();
-    std::wstring dynamSymbol;
-    if (isSymbolOnly) {
-        dynamSymbol = dynam->GetSymbolStr();
-    }
 
     FontInfo dynamTxt;
     if (!dc->UseGlobalStyling()) {
@@ -1714,6 +1710,8 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         // If the dynamic is a symbol (pp, mf, etc.) draw it as one SMuFL string. This will not take into account
         // editorial element within the dynam as it would with text. Also, it is center only if it is a symbol.
         if (isSymbolOnly) {
+            const bool singleGlyphs = m_doc->GetOptions()->m_dynamSingleGlyphs.GetValue();
+            std::wstring dynamSymbol = dynam->GetSymbolStr(singleGlyphs);
             this->DrawDynamSymbolOnly(dc, *staffIter, dynam, dynamSymbol, alignment, params);
         }
         else {
