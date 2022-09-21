@@ -50,11 +50,6 @@ bool Resources::InitFonts(const std::string &musicFont, const std::string &textF
     // The Leipzig as the default font
     if (!LoadFont("Leipzig")) LogError("Leipzig font could not be loaded.");
 
-    if (!SetTextFont("VerovioText-1.0", false)) {
-        LogError("Text font could not be initialized.");
-        return false;
-    }
-
     if (!SetMusicFont(musicFont)) {
         LogError("Font '%s' could not be loaded.", musicFont.c_str());
         return false;
