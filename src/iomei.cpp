@@ -2863,10 +2863,10 @@ void MEIOutput::WriteSymbol(pugi::xml_node currentNode, Symbol *symbol)
 {
     assert(symbol);
 
+    this->WriteTextElement(currentNode, symbol);
     symbol->WriteColor(currentNode);
     symbol->WriteExtSym(currentNode);
-
-    this->WriteXmlId(currentNode, symbol);
+    symbol->WriteTypography(currentNode);
 }
 
 void MEIOutput::WriteText(pugi::xml_node element, Text *text)
@@ -6775,6 +6775,13 @@ bool MEIInput::ReadRend(Object *parent, pugi::xml_node rend)
         vrvRend->SetHalign(HORIZONTALALIGNMENT_NONE);
         vrvRend->SetValign(VERTICALALIGNMENT_NONE);
     }
+    // Previously we would use @fontame="VerovioText"
+    // Now changeto @fontfam="smufl"
+    if (vrvRend->HasFontname() && vrvRend->GetFontname() == "VerovioText") {
+        LogWarning("Using rend@fontname with 'VerovioText' is deprecated. Use 'rend@fontfam=\"smufl\"' instead");
+        vrvRend->SetFontfam("smufl");
+        vrvRend->SetFontname("");
+    }
 
     parent->AddChild(vrvRend);
     this->ReadUnsupportedAttr(rend, vrvRend);
@@ -6801,18 +6808,11 @@ bool MEIInput::ReadSvg(Object *parent, pugi::xml_node svg)
 bool MEIInput::ReadSymbol(Object *parent, pugi::xml_node symbol)
 {
     Symbol *vrvSymbol = new Symbol();
-    this->SetMeiID(symbol, vrvSymbol);
-
-    if (parent->IsEditorialElement()) {
-        std::string meiElementName = parent->GetClassName();
-        std::transform(meiElementName.begin(), meiElementName.begin() + 1, meiElementName.begin(), ::tolower);
-        LogWarning("Element <%s> within <%s> is not supported and will not be rendered", symbol.name(),
-            meiElementName.c_str());
-        vrvSymbol->m_visibility = Hidden;
-    }
+    this->ReadTextElement(symbol, vrvSymbol);
 
     vrvSymbol->ReadColor(symbol);
     vrvSymbol->ReadExtSym(symbol);
+    vrvSymbol->ReadTypography(symbol);
 
     parent->AddChild(vrvSymbol);
     this->ReadUnsupportedAttr(symbol, vrvSymbol);

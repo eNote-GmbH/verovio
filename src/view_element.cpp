@@ -1667,7 +1667,9 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
         dc->ReactivateGraphic();
         dc->DeactivateGraphic();
         FontInfo vrvTxt;
-        vrvTxt.SetFaceName("VerovioText");
+        vrvTxt.SetPointSize(dc->GetFont()->GetPointSize() * m_doc->GetMusicToLyricFontSizeRatio());
+        vrvTxt.SetFaceName("Leipzig");
+        vrvTxt.SetSmuflFont(true);
         dc->SetFont(&vrvTxt);
         std::wstring str;
         str.push_back(VRV_TEXT_E551);
@@ -1812,14 +1814,18 @@ void View::DrawAcciaccaturaSlash(DeviceContext *dc, Stem *stem, Staff *staff)
 
 void View::DrawDotsPart(DeviceContext *dc, int x, int y, unsigned char dots, const Staff *staff, bool dimin)
 {
-    int i;
-
+    const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
     if (staff->IsOnStaffLine(y, m_doc)) {
-        y += m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        y += unit;
     }
     const double distance = dimin ? m_doc->GetOptions()->m_graceFactor.GetValue() : 1.0;
-    for (i = 0; i < dots; ++i) {
-        this->DrawDot(dc, x, y, staff->m_drawingStaffSize, dimin);
+    for (int i = 0; i < dots; ++i) {
+        if (staff->IsMensural()) {
+            this->DrawDiamond(dc, x - unit / 2, y, unit, unit, true, 0);
+        }
+        else {
+            this->DrawDot(dc, x, y, staff->m_drawingStaffSize, dimin);
+        }
         // HARDCODED
         x += m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * 1.5 * distance;
     }
