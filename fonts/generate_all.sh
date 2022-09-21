@@ -3,7 +3,7 @@
 # Requires python
 # Requires svgpathtools and lxml python libraries (install with 'pip3 install %name%')
 
-PYTHON="python3"
+PYTHON="python3.9"
 
 echo "Generating C++ header file ..."
 $PYTHON generate-smufl-code.py
@@ -24,6 +24,9 @@ echo "Generating Leland files ..."
 $PYTHON extract-bounding-boxes.py Leland.svg json/leland_metadata.json ../data/Leland.xml
 
 echo "Generating Legato files ..."
-python3 extract-bounding-boxes.py Legato.svg json/legato_metadata.json ../data/Legato.xml
+$PYTHON extract-bounding-boxes.py Legato.svg json/legato_metadata.json ../data/Legato.xml
+
+echo "Generating Maestro files ..."
+$PYTHON extract-bounding-boxes.py Maestro.svg json/maestro_metadata.json ../data/Maestro.xml
 
 echo "Done!"
