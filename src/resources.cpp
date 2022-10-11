@@ -83,7 +83,7 @@ bool Resources::SetTextFont(const std::string &fontName, const bool usePostfixes
 
     for (const auto &textFontInfo : textFontInfos) {
         const bool success
-            = InitTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
+            = LoadTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
         if (!success && textFontInfo.m_isMandatory) {
             return false;
         }
@@ -205,7 +205,7 @@ bool Resources::LoadFont(const std::string &fontName)
     return true;
 }
 
-bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes &style)
+bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes &style)
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;

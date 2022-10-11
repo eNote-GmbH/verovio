@@ -897,7 +897,7 @@ void EnoteToolkit::SetTextChildren(ControlElement *element, const std::list<std:
     // Add new text children
     std::for_each(textEntries.cbegin(), textEntries.cend(), [element](const std::string &entry) {
         Text *text = new Text();
-        text->SetText(UTF8to16(entry));
+        text->SetText(UTF8to32(entry));
         element->AddChild(text);
     });
 }

@@ -53,8 +53,8 @@ public:
     ///@{
     /** Init the SMufL music and text fonts */
     bool InitFonts(const std::string &musicFont, const std::string &textFont);
-    /** Init the text font (bounding boxes and ASCII only) */
-    bool InitTextFont(const std::string &fontName, const StyleAttributes &style);
+    /** Load the text font (bounding boxes and ASCII only) */
+    bool LoadTextFont(const std::string &fontName, const StyleAttributes &style);
     /** Select a particular music font */
     bool SetMusicFont(const std::string &fontName);
     /** Select a particular text font */
