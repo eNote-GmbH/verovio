@@ -36,7 +36,7 @@ const std::map<int, std::string> Option::s_header
 const std::map<int, std::string> Option::s_multiRestStyle = { { MULTIRESTSTYLE_auto, "auto" },
     { MULTIRESTSTYLE_default, "default" }, { MULTIRESTSTYLE_block, "block" }, { MULTIRESTSTYLE_symbols, "symbols" } };
 
-const std::map<int, std::string> Option::s_pedalStyle = { { PEDALSTYLE_auto, "auto" }, { PEDALSTYLE_line, "line" },
+const std::map<int, std::string> Option::s_pedalStyle = { { PEDALSTYLE_NONE, "auto" }, { PEDALSTYLE_line, "line" },
     { PEDALSTYLE_pedstar, "pedstar" }, { PEDALSTYLE_altpedstar, "altpedstar" } };
 
 const std::map<int, std::string> Option::s_systemDivider = { { SYSTEMDIVIDER_none, "none" },
@@ -902,12 +902,12 @@ Options::Options()
     m_baseOptions.AddOption(&m_page);
 
     m_resourcePath.SetInfo("Resource path", "Path to the directory with Verovio resources");
-    m_resourcePath.Init("/usr/local/share/verovio");
+    m_resourcePath.Init(VRV_RESOURCE_DIR);
     m_resourcePath.SetKey("resourcePath");
     m_resourcePath.SetShortOption('r', true);
     m_baseOptions.AddOption(&m_resourcePath);
 
-    m_scale.SetInfo("Scale percent", "Scale of the output in percent");
+    m_scale.SetInfo("Scale percent", "Scale of the output in percent (100 is normal size)");
     m_scale.Init(DEFAULT_SCALE, MIN_SCALE, MAX_SCALE);
     m_scale.SetKey("scale");
     m_scale.SetShortOption('s', false);
@@ -1074,7 +1074,7 @@ Options::Options()
     this->Register(&m_pageWidth, "pageWidth", &m_general);
 
     m_pedalStyle.SetInfo("Pedal style", "The global pedal style");
-    m_pedalStyle.Init(PEDALSTYLE_auto, &Option::s_pedalStyle);
+    m_pedalStyle.Init(PEDALSTYLE_NONE, &Option::s_pedalStyle);
     this->Register(&m_pedalStyle, "pedalStyle", &m_general);
 
     m_preserveAnalyticalMarkup.SetInfo("Preserve analytical markup", "Preserves the analytical markup in MEI");

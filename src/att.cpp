@@ -231,7 +231,7 @@ std::string Att::HexnumToStr(data_HEXNUM data) const
 {
     char buf[5];
     memset(buf, 0, 5);
-    sprintf(buf, "%.4X", data);
+    sprintf(buf, "%.4X", (int)data);
     return StringFormat("U+%s", buf);
 }
 
@@ -249,7 +249,7 @@ data_HEXNUM Att::StrToHexnum(std::string value, bool logWarning) const
         LogWarning("Unable to parse glyph code '%s'", value.c_str());
         return 0;
     }
-    wchar_t wc = (wchar_t)strtol(value.c_str(), NULL, 16);
+    char32_t wc = (char32_t)strtol(value.c_str(), NULL, 16);
     // Check that the value is in a SMuFL private area range - this does not check that it is an
     // existing SMuFL glyph num or that it is supported by Verovio
     if ((wc >= 0xE000) && (wc <= 0xF8FF))
@@ -292,8 +292,8 @@ std::string Att::LinewidthToStr(data_LINEWIDTH data) const
     std::string value;
     if (data.GetType() == LINEWIDTHTYPE_lineWidthTerm)
         value = data.GetLineWithTerm();
-    else if (data.GetType() == LINEWIDTHTYPE_measurementAbs)
-        value = VUToStr(data.GetMeasurementAbs());
+    else if (data.GetType() == LINEWIDTHTYPE_measurementUnsigned)
+        value = VUToStr(data.GetMeasurementUnsigned());
 
     return value;
 }
@@ -303,7 +303,7 @@ data_LINEWIDTH Att::StrToLinewidth(const std::string &value, bool logWarning) co
     data_LINEWIDTH data;
     data.SetLineWidthTerm(StrToLinewidthterm(value, false));
     if (data.HasValue()) return data;
-    data.SetMeasurementAbs(StrToVU(value));
+    data.SetMeasurementUnsigned(StrToVU(value));
     if (data.HasValue()) return data;
 
     if (logWarning && !value.empty()) LogWarning("Unsupported data.LINEWIDTH '%s'", value.c_str());

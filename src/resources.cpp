@@ -9,8 +9,6 @@
 
 //----------------------------------------------------------------------------
 
-#include <codecvt>
-#include <locale>
 #include <string>
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ namespace vrv {
 // Static members with some default values
 //----------------------------------------------------------------------------
 
-thread_local std::string Resources::s_defaultPath = "/usr/local/share/verovio";
+thread_local std::string Resources::s_defaultPath = VRV_RESOURCE_DIR;
 const Resources::StyleAttributes Resources::k_defaultStyle{ data_FONTWEIGHT::FONTWEIGHT_normal,
     data_FONTSTYLE::FONTSTYLE_normal };
 
@@ -85,7 +83,7 @@ bool Resources::SetTextFont(const std::string &fontName, const bool usePostfixes
 
     for (const auto &textFontInfo : textFontInfos) {
         const bool success
-            = LoadTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
+            = InitTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
         if (!success && textFontInfo.m_isMandatory) {
             return false;
         }
@@ -94,7 +92,7 @@ bool Resources::SetTextFont(const std::string &fontName, const bool usePostfixes
     return true;
 }
 
-const Glyph *Resources::GetGlyph(wchar_t smuflCode) const
+const Glyph *Resources::GetGlyph(char32_t smuflCode) const
 {
     return m_fontGlyphTable.count(smuflCode) ? &m_fontGlyphTable.at(smuflCode) : NULL;
 }
@@ -104,7 +102,7 @@ const Glyph *Resources::GetGlyph(const std::string &smuflName) const
     return m_glyphNameTable.count(smuflName) ? &m_fontGlyphTable.at(m_glyphNameTable.at(smuflName)) : NULL;
 }
 
-wchar_t Resources::GetGlyphCode(const std::string &smuflName) const
+char32_t Resources::GetGlyphCode(const std::string &smuflName) const
 {
     return m_glyphNameTable.count(smuflName) ? m_glyphNameTable.at(smuflName) : 0;
 }
@@ -126,7 +124,7 @@ void Resources::SelectTextFont(data_FONTWEIGHT fontWeight, data_FONTSTYLE fontSt
     }
 }
 
-const Glyph *Resources::GetTextGlyph(wchar_t code) const
+const Glyph *Resources::GetTextGlyph(char32_t code) const
 {
     const StyleAttributes style = (m_textFont.count(m_currentStyle) != 0) ? m_currentStyle : k_defaultStyle;
     if (m_textFont.count(style) == 0) return NULL;
@@ -139,30 +137,15 @@ const Glyph *Resources::GetTextGlyph(wchar_t code) const
     return &currentTable.at(code);
 }
 
-wchar_t Resources::GetSmuflGlyphForUnicodeChar(const wchar_t unicodeChar)
+char32_t Resources::GetSmuflGlyphForUnicodeChar(const char32_t unicodeChar)
 {
-    // unicode glyph above 0xFFFF cannot be represented as char constants
-    const std::string ds = u8"\U0001d109";
-    const std::string dc = u8"\U0001d10a";
-    const std::string segno = u8"\U0001d10b";
-    const std::string coda = u8"\U0001d10c";
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> strCnv;
-
-    wchar_t smuflChar = unicodeChar;
-    if (unicodeChar > 0xFFFF) {
-        std::string unicodeStr = strCnv.to_bytes(unicodeChar);
-        if (unicodeStr == ds) {
-            smuflChar = SMUFL_E045_dalSegno;
-        }
-        else if (unicodeStr == dc) {
-            smuflChar = SMUFL_E046_daCapo;
-        }
-        else if (unicodeStr == segno) {
-            smuflChar = SMUFL_E047_segno;
-        }
-        else if (unicodeStr == coda) {
-            smuflChar = SMUFL_E048_coda;
-        }
+    char32_t smuflChar = unicodeChar;
+    switch (unicodeChar) {
+        case UNICODE_DAL_SEGNO: smuflChar = SMUFL_E045_dalSegno; break;
+        case UNICODE_DA_CAPO: smuflChar = SMUFL_E046_daCapo; break;
+        case UNICODE_SEGNO: smuflChar = SMUFL_E047_segno; break;
+        case UNICODE_CODA: smuflChar = SMUFL_E048_coda; break;
+        default: break;
     }
     return smuflChar;
 }
@@ -213,15 +196,16 @@ bool Resources::LoadFont(const std::string &fontName)
             }
         }
 
-        const wchar_t smuflCode = (wchar_t)strtol(c_attribute.value(), NULL, 16);
+        const char32_t smuflCode = (char32_t)strtol(c_attribute.value(), NULL, 16);
         m_fontGlyphTable[smuflCode] = glyph;
         m_glyphNameTable[n_attribute.value()] = smuflCode;
     }
 
+    m_fontName = fontName;
     return true;
 }
 
-bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes &style)
+bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes &style)
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;
@@ -247,7 +231,7 @@ bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes 
     GlyphTable &currentTable = m_textFont.at(style);
     for (current = root.child("g"); current; current = current.next_sibling("g")) {
         if (current.attribute("c")) {
-            wchar_t code = (wchar_t)strtol(current.attribute("c").value(), NULL, 16);
+            char32_t code = (char32_t)strtol(current.attribute("c").value(), NULL, 16);
             // We create a glyph with only the units per em which is the only info we need for
             // the bounding boxes; path and codeStr will remain [unset]
             Glyph glyph(unitsPerEm);

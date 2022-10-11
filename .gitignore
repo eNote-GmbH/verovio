@@ -91,3 +91,8 @@ Release/
 *.vcxproj*
 *.sln
 
+# IntelliJ files
+.idea
+
+# Intermediate font files
+fonts/**/tmp

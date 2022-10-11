@@ -115,13 +115,6 @@ Toolkit::~Toolkit()
 #endif
 }
 
-std::string Toolkit::GetUuid()
-{
-    LogWarning("Toolkit function GetUuid() is deprecated; use GetID() instead.");
-
-    return this->GetID();
-}
-
 std::string Toolkit::GetResourcePath() const
 {
     return m_doc.GetResources().GetPath();
@@ -371,23 +364,24 @@ bool Toolkit::LoadUTF16File(const std::string &filename)
     fin.seekg(0, std::ios::end);
     std::streamsize wfileSize = (std::streamsize)fin.tellg();
     fin.clear();
+    // Skip the BOM
     fin.seekg(0, std::wios::beg);
 
     std::u16string u16data((wfileSize / 2) + 1, '\0');
     fin.read((char *)&u16data[0], wfileSize);
 
-    // std::vector<char16_t> ;
-    // utf16line.reserve(wfileSize / 2 + 1);
+    // order of the bytes has to be flipped
+    if (u16data.at(0) == u'\uFFFE') {
+        LogWarning("The file seems to have been loaded as little endian - trying to convert to big endian");
+        // convert to big endian (swap bytes)
+        std::transform(std::begin(u16data), std::end(u16data), std::begin(u16data), [](char16_t c) {
+            auto p = reinterpret_cast<char *>(&c);
+            std::swap(p[0], p[1]);
+            return c;
+        });
+    }
 
-    // unsigned short buffer;
-    // while (fin.read((char *)&buffer, sizeof(char16_t))) {
-    //     utf16line.push_back(buffer);
-    // }
-
-    // std::u16string u16_str; //( reinterpret_cast<const char16_t*>(data2) );
-    //  LogDebug("%d %d", wfileSize, utf8line.size());
-
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> convert;
     std::string utf8line = convert.to_bytes(u16data);
 
     return this->LoadData(utf8line);
@@ -1416,6 +1410,14 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
     m_view.DrawCurrentPage(deviceContext, false);
 
     return true;
+}
+
+std::string Toolkit::RenderData(const std::string &data, const std::string &jsonOptions)
+{
+    if (this->SetOptions(jsonOptions) && this->LoadData(data)) return this->RenderToSVG(1);
+
+    // Otherwise just return an empty string.
+    return "";
 }
 
 std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)

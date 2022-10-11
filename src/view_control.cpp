@@ -491,10 +491,10 @@ void View::DrawBracketSpan(
                 lineWidth *= LINEWIDTHTERM_factor_wide;
             }
         }
-        else if (bracketSpan->GetLwidth().GetType() == LINEWIDTHTYPE_measurementAbs) {
-            if (bracketSpan->GetLwidth().GetMeasurementAbs() != VRV_UNSET) {
-                lineWidth
-                    = bracketSpan->GetLwidth().GetMeasurementAbs() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        else if (bracketSpan->GetLwidth().GetType() == LINEWIDTHTYPE_measurementUnsigned) {
+            if (bracketSpan->GetLwidth().GetMeasurementUnsigned() != VRV_UNSET) {
+                lineWidth = bracketSpan->GetLwidth().GetMeasurementUnsigned()
+                    * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
             }
         }
     }
@@ -778,7 +778,7 @@ void View::DrawOctave(
             default: break;
         }
     }
-    std::wstring str;
+    std::u32string str;
     str.push_back(code);
 
     dc->SetFont(m_doc->GetDrawingSmuflFont(staff->m_drawingStaffSize, false));
@@ -804,10 +804,10 @@ void View::DrawOctave(
                     lineWidth *= LINEWIDTHTERM_factor_wide;
                 }
             }
-            else if (octave->GetLwidth().GetType() == LINEWIDTHTYPE_measurementAbs) {
-                if (octave->GetLwidth().GetMeasurementAbs() != VRV_UNSET) {
-                    lineWidth
-                        = octave->GetLwidth().GetMeasurementAbs() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+            else if (octave->GetLwidth().GetType() == LINEWIDTHTYPE_measurementUnsigned) {
+                if (octave->GetLwidth().GetMeasurementUnsigned() != VRV_UNSET) {
+                    lineWidth = octave->GetLwidth().GetMeasurementUnsigned()
+                        * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
                 }
             }
         }
@@ -1016,21 +1016,17 @@ void View::DrawPedalLine(
         endRadius = pedal->GetEnd()->GetDrawingRadius(m_doc);
     }
 
-    // The both correspond to the current system, which means no system break in-between (simple case)
-    if (spanningType == SPANNING_START_END) {
+    // Adjust the start if necessary
+    if (spanningType == SPANNING_START_END || spanningType == SPANNING_START) {
         x1 -= startRadius;
+        // With pedline we need to take into account the initial symbol
+        if (pedal->GetForm() == PEDALSTYLE_pedline) {
+            x1 += m_doc->GetGlyphWidth(SMUFL_E650_keyboardPedalPed, staff->m_drawingStaffSize, false);
+        }
+    }
+    // Adjust the end if necessary
+    if (spanningType == SPANNING_START_END || spanningType == SPANNING_END) {
         x2 -= endRadius - m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
-    }
-    // Only the first parent is the same, this means that the syl is "open" at the end of the system
-    else if (spanningType == SPANNING_START) {
-        x1 -= startRadius;
-    }
-    // We are in the system of the last note - draw the connector from the beginning of the system
-    else if (spanningType == SPANNING_END) {
-        x2 -= endRadius - m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize);
-    }
-    else {
-        // nothing to adjust
     }
 
     if (graphic) {
@@ -1043,10 +1039,12 @@ void View::DrawPedalLine(
     const int bracketSize = m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize);
     const int lineWidth = m_options->m_pedalLineThickness.GetValue() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
 
-    // Opening bracket
+    // Opening bracket - but only if not a pedline value
     if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_START)) {
-        this->DrawFilledRectangle(dc, x1, y, x1 + bracketSize / 2, y + lineWidth);
-        this->DrawFilledRectangle(dc, x1, y, x1 + lineWidth, y + bracketSize);
+        if (pedal->GetForm() != PEDALSTYLE_pedline) {
+            this->DrawFilledRectangle(dc, x1, y, x1 + bracketSize / 2, y + lineWidth);
+            this->DrawFilledRectangle(dc, x1, y, x1 + lineWidth, y + bracketSize);
+        }
     }
     // Closing bracket
     if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_END)) {
@@ -1422,9 +1420,9 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     }
     else {
         length += 2 * unit;
-        wchar_t startGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
-        wchar_t fillGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
-        wchar_t endGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAD_wiggleArpeggiatoUpArrow : 0;
+        char32_t startGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
+        char32_t fillGlyph = SMUFL_EAA9_wiggleArpeggiatoUp;
+        char32_t endGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAD_wiggleArpeggiatoUpArrow : 0;
 
         if (order == arpegLog_ORDER_down) {
             startGlyph = (arpeg->GetArrow() == BOOLEAN_true) ? SMUFL_EAAE_wiggleArpeggiatoDownArrow : 0;
@@ -1452,8 +1450,8 @@ void View::DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *
     }
 }
 
-void View::DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, wchar_t startGlyph, wchar_t fillGlyph,
-    wchar_t endGlyph, int x, int y, int height, bool cueSize)
+void View::DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, char32_t startGlyph, char32_t fillGlyph,
+    char32_t endGlyph, int x, int y, int height, bool cueSize)
 {
     assert(dc);
     assert(arpeg);
@@ -1512,7 +1510,7 @@ void View::DrawBreath(DeviceContext *dc, Breath *breath, Measure *measure, Syste
     // use breath mark comma glyph
     int code = SMUFL_E4CE_breathMarkComma;
 
-    std::wstring str;
+    std::u32string str;
     str.push_back(code);
 
     data_HORIZONTALALIGNMENT alignment = HORIZONTALALIGNMENT_center;
@@ -1549,7 +1547,7 @@ void View::DrawCaesura(DeviceContext *dc, Caesura *caesura, Measure *measure, Sy
 
     dc->StartGraphic(caesura, "", caesura->GetID());
 
-    const wchar_t code = caesura->GetCaesuraGlyph();
+    const char32_t code = caesura->GetCaesuraGlyph();
     const int x = caesura->GetStart()->GetDrawingX() + caesura->GetStart()->GetDrawingRadius(m_doc) * 3;
 
     std::vector<Staff *> staffList = caesura->GetTstampStaves(measure, caesura);
@@ -1706,7 +1704,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         // editorial element within the dynam as it would with text. Also, it is center only if it is a symbol.
         if (isSymbolOnly) {
             const bool singleGlyphs = m_doc->GetOptions()->m_dynamSingleGlyphs.GetValue();
-            std::wstring dynamSymbol = dynam->GetSymbolStr(singleGlyphs);
+            std::u32string dynamSymbol = dynam->GetSymbolStr(singleGlyphs);
             this->DrawDynamSymbolOnly(dc, *staffIter, dynam, dynamSymbol, alignment, params);
         }
         else {
@@ -1726,7 +1724,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
     dc->EndGraphic(dynam, this);
 }
 
-void View::DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, const std::wstring &dynamSymbol,
+void View::DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, const std::u32string &dynamSymbol,
     data_HORIZONTALALIGNMENT alignment, TextDrawingParams &params)
 {
     assert(dc);
@@ -1735,7 +1733,7 @@ void View::DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, co
 
     dc->SetFont(m_doc->GetDrawingSmuflFont(staff->m_drawingStaffSize, false));
 
-    wchar_t enclosingFront, enclosingBack;
+    char32_t enclosingFront, enclosingBack;
     std::tie(enclosingFront, enclosingBack) = dynam->GetEnclosingGlyphs();
 
     // calculate width of the symbol-only dynamic; generally it consists of only one symbol, but in case when it's
@@ -1754,7 +1752,7 @@ void View::DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, co
     // draw opening symbol
     const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
     if (enclosingFront) {
-        std::wstring open;
+        std::u32string open;
         open.push_back(enclosingFront);
 
         this->DrawSmuflString(dc, params.m_x, params.m_y + unit, open, alignment, staff->m_drawingStaffSize);
@@ -1766,7 +1764,7 @@ void View::DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, co
 
     // draw closing symbol
     if (enclosingBack) {
-        std::wstring close;
+        std::u32string close;
         close.push_back(enclosingBack);
 
         params.m_x += width + unit / 6;
@@ -1831,8 +1829,8 @@ void View::DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, Sy
 
     dc->StartGraphic(fermata, "", fermata->GetID());
 
-    const wchar_t code = fermata->GetFermataGlyph();
-    wchar_t enclosingFront, enclosingBack;
+    const char32_t code = fermata->GetFermataGlyph();
+    char32_t enclosingFront, enclosingBack;
     std::tie(enclosingFront, enclosingBack) = fermata->GetEnclosingGlyphs();
 
     const int x = fermata->GetStart()->GetDrawingX() + fermata->GetStart()->GetDrawingRadius(m_doc);
@@ -2022,10 +2020,10 @@ void View::DrawGliss(DeviceContext *dc, Gliss *gliss, int x1, int x2, Staff *sta
                 lineWidth *= LINEWIDTHTERM_factor_wide;
             }
         }
-        else if (gliss->GetLwidth().GetType() == LINEWIDTHTYPE_measurementAbs) {
-            if (gliss->GetLwidth().GetMeasurementAbs() != VRV_UNSET) {
-                lineWidth
-                    = gliss->GetLwidth().GetMeasurementAbs() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize * 2);
+        else if (gliss->GetLwidth().GetType() == LINEWIDTHTYPE_measurementUnsigned) {
+            if (gliss->GetLwidth().GetMeasurementUnsigned() != VRV_UNSET) {
+                lineWidth = gliss->GetLwidth().GetMeasurementUnsigned()
+                    * m_doc->GetDrawingUnit(staff->m_drawingStaffSize * 2);
             }
         }
     }
@@ -2044,7 +2042,7 @@ void View::DrawGliss(DeviceContext *dc, Gliss *gliss, int x1, int x2, Staff *sta
             // Smufl glyphs are horizontal - Rotate them counter clockwise
             dc->RotateGraphic(Point(ToDeviceContextX(x1), ToDeviceContextY(y1)), angle);
 
-            const wchar_t glissGlyph = SMUFL_EAAF_wiggleGlissando;
+            const char32_t glissGlyph = SMUFL_EAAF_wiggleGlissando;
             const int height = m_doc->GetGlyphHeight(glissGlyph, staff->m_drawingStaffSize, false);
             const Point orig(x1, y1 - height / 2);
             this->DrawSmuflLine(dc, orig, length, staff->m_drawingStaffSize, false, glissGlyph);
@@ -2148,7 +2146,7 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
     // set mordent glyph
     const int code = mordent->GetMordentGlyph();
 
-    std::wstring str;
+    std::u32string str;
     str.push_back(code);
 
     std::vector<Staff *>::iterator staffIter;
@@ -2161,8 +2159,8 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
         int y = mordent->GetDrawingY();
 
         if (mordent->HasAccidlower()) {
-            wchar_t accid = Accid::GetAccidGlyph(mordent->GetAccidlower());
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(mordent->GetAccidlower());
+            std::u32string accidStr;
             accidStr.push_back(accid);
             dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
             this->DrawSmuflString(
@@ -2193,8 +2191,8 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
         }
         else if (mordent->HasAccidupper()) {
             double mordentHeight = m_doc->GetGlyphHeight(code, (*staffIter)->m_drawingStaffSize, false);
-            wchar_t accid = Accid::GetAccidGlyph(mordent->GetAccidupper());
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(mordent->GetAccidupper());
+            std::u32string accidStr;
             accidStr.push_back(accid);
             dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
             this->DrawSmuflString(
@@ -2250,13 +2248,16 @@ void View::DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *
 
     dc->StartGraphic(pedal, "", pedal->GetID());
 
-    pedalVis_FORM form = pedal->GetPedalForm(m_doc, system);
+    data_PEDALSTYLE form = pedal->GetPedalForm(m_doc, system);
+
+    bool drawSymbol = (form != PEDALSTYLE_line);
+    if (pedal->GetDir() == pedalLog_DIR_up && form == PEDALSTYLE_pedline) drawSymbol = false;
 
     // Draw a symbol, if it's not a line
-    if (form != pedalVis_FORM_line) {
+    if (drawSymbol) {
 
         bool bounceStar = true;
-        if (form == pedalVis_FORM_altpedstar) bounceStar = false;
+        if (form == PEDALSTYLE_altpedstar) bounceStar = false;
 
         int x = pedal->GetStart()->GetDrawingX() + pedal->GetStart()->GetDrawingRadius(m_doc);
 
@@ -2276,7 +2277,7 @@ void View::DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *
         std::vector<Staff *> staffList = pedal->GetTstampStaves(measure, pedal);
 
         int code = SMUFL_E655_keyboardPedalUp;
-        std::wstring str;
+        std::u32string str;
         if (bounceStar && (pedal->GetDir() == pedalLog_DIR_bounce)) {
             str.push_back(code);
             // Get the staff size of the first staff
@@ -2465,7 +2466,7 @@ void View::DrawTrill(DeviceContext *dc, Trill *trill, Measure *measure, System *
 
     // for a start always put trill up
     int code = trill->GetTrillGlyph();
-    std::wstring str;
+    std::u32string str;
 
     if (trill->GetLstartsym() != LINESTARTENDSYMBOL_none) {
         str.push_back(code);
@@ -2484,8 +2485,8 @@ void View::DrawTrill(DeviceContext *dc, Trill *trill, Measure *measure, System *
             int accidXShift = (alignment == HORIZONTALALIGNMENT_center)
                 ? 0
                 : m_doc->GetGlyphWidth(code, (*staffIter)->m_drawingStaffSize, false) / 2;
-            wchar_t accid = Accid::GetAccidGlyph(trill->GetAccidlower());
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(trill->GetAccidlower());
+            std::u32string accidStr;
             accidStr.push_back(accid);
             dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
             int accidY = y - m_doc->GetGlyphHeight(accid, (*staffIter)->m_drawingStaffSize, true) / 2;
@@ -2497,8 +2498,8 @@ void View::DrawTrill(DeviceContext *dc, Trill *trill, Measure *measure, System *
                 ? 0
                 : m_doc->GetGlyphWidth(code, (*staffIter)->m_drawingStaffSize, false) / 2;
             double trillHeight = m_doc->GetGlyphHeight(code, (*staffIter)->m_drawingStaffSize, false);
-            wchar_t accid = Accid::GetAccidGlyph(trill->GetAccidupper());
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(trill->GetAccidupper());
+            std::u32string accidStr;
             accidStr.push_back(accid);
             dc->SetFont(m_doc->GetDrawingSmuflFont((*staffIter)->m_drawingStaffSize, false));
             int accidY = y + trillHeight * 1.5;
@@ -2547,7 +2548,7 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
         alignment = HORIZONTALALIGNMENT_left;
     }
 
-    std::wstring str;
+    std::u32string str;
     str.push_back(code);
 
     std::vector<Staff *>::iterator staffIter;
@@ -2565,8 +2566,8 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
                 ? 0
                 : m_doc->GetGlyphWidth(code, (*staffIter)->m_drawingStaffSize, false) / 2;
             data_ACCIDENTAL_WRITTEN glyph = turn->GetAccidupper();
-            wchar_t accid = Accid::GetAccidGlyph(glyph);
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(glyph);
+            std::u32string accidStr;
             accidStr.push_back(accid);
             int accidYShift = shift - m_doc->GetGlyphBottom(accid, (*staffIter)->m_drawingStaffSize, true);
             this->DrawSmuflString(dc, x + accidXShift, y + accidYShift, accidStr, HORIZONTALALIGNMENT_center,
@@ -2576,8 +2577,8 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
             int accidXShift = (alignment == HORIZONTALALIGNMENT_center)
                 ? 0
                 : m_doc->GetGlyphWidth(code, (*staffIter)->m_drawingStaffSize, false) / 2;
-            wchar_t accid = Accid::GetAccidGlyph(turn->GetAccidlower());
-            std::wstring accidStr;
+            char32_t accid = Accid::GetAccidGlyph(turn->GetAccidlower());
+            std::u32string accidStr;
             accidStr.push_back(accid);
             int accidYShift = -m_doc->GetGlyphHeight(accid, (*staffIter)->m_drawingStaffSize, true) / 2;
             this->DrawSmuflString(dc, x + accidXShift, y + accidYShift, accidStr, HORIZONTALALIGNMENT_center,
@@ -2768,7 +2769,7 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
 
             Text text;
             text.SetParent(ending);
-            text.SetText(UTF8to16(strStream.str()));
+            text.SetText(UTF8to32(strStream.str()));
 
             int textX = x1;
             if ((spanningType == SPANNING_START_END) || (spanningType == SPANNING_START)) {
