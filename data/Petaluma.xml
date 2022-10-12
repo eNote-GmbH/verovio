@@ -236,6 +236,51 @@
   <g c="EA66" x="20.0" y="-100.0" w="226.0" h="420.0" h-a-x="266" n="figbassSharp" />
   <g c="EA67" x="20.0" y="0.0" w="181.0" h="200.0" h-a-x="221" n="figbassDoubleSharp" />
   <g c="ECC0" x="15.11" y="1.87" w="245.33" h="264.59" h-a-x="275" n="figbass7Diminished" />
+  <g c="ED10" x="20.0" y="-1.0" w="180.23" h="252.0" h-a-x="220" n="fingering0" />
+  <g c="ED11" x="19.8" y="0.0" w="147.2" h="247.0" h-a-x="187" n="fingering1" />
+  <g c="ED12" x="20.0" y="0.94" w="188.19" h="237.06" h-a-x="228" n="fingering2" />
+  <g c="ED13" x="20.0" y="0.0" w="182.0" h="251.52" h-a-x="222" n="fingering3" />
+  <g c="ED14" x="19.61" y="-13.0" w="162.39" h="288.0" h-a-x="202" n="fingering4" />
+  <g c="ED15" x="20.0" y="0.0" w="187.0" h="260.0" h-a-x="227" n="fingering5" />
+  <g c="ED16" x="20.0" y="0.0" w="253.0" h="249.0" h-a-x="293" n="fingeringTUpper" />
+  <g c="ED17" x="-15.0" y="-159.11" w="272.0" h="392.11" h-a-x="257" n="fingeringPLower" />
+  <g c="ED18" x="0.14" y="0.0" w="209.94" h="421.11" h-a-x="210" n="fingeringTLower" />
+  <g c="ED19" x="-20.0" y="0.0" w="159.26" h="366.0" h-a-x="139" n="fingeringILower" />
+  <g c="ED1A" x="-50.0" y="-18.0" w="428.62" h="296.0" h-a-x="379" n="fingeringMLower" />
+  <g c="ED1B" x="-0.04" y="0.12" w="263.04" h="230.88" h-a-x="263" n="fingeringALower" />
+  <g c="ED1C" x="0.0" y="0.0" w="178.0" h="271.0" h-a-x="178" n="fingeringCLower" />
+  <g c="ED1D" x="-16.0" y="0.0" w="233.0" h="252.0" h-a-x="233" n="fingeringXLower" />
+  <g c="ED1E" x="0.0" y="0.0" w="185.0" h="273.0" h-a-x="185" n="fingeringELower" />
+  <g c="ED1F" x="0.0" y="0.0" w="235.0" h="269.0" h-a-x="235" n="fingeringOLower" />
+  <g c="ED20" x="0.0" y="275.0" w="278.51" h="89.0" h-a-x="278" n="fingeringSubstitutionAbove" />
+  <g c="ED21" x="-0.22" y="-91.49" w="278.22" h="86.49" h-a-x="278" n="fingeringSubstitutionBelow" />
+  <g c="ED22" x="0.0" y="105.63" w="216.0" h="42.81" h-a-x="216" n="fingeringSubstitutionDash" />
+  <g c="ED23" x="0.0" y="0.0" w="176.65" h="282.05" h-a-x="177" n="fingeringMultipleNotes" />
+  <g c="ED24" x="19.81" y="-7.01" w="185.32" h="260.75" h-a-x="225" n="fingering6" />
+  <g c="ED25" x="20.07" y="0.15" w="170.93" h="235.1" h-a-x="211" n="fingering7" />
+  <g c="ED26" x="20.0" y="0.0" w="146.0" h="291.0" h-a-x="186" n="fingering8" />
+  <g c="ED27" x="20.0" y="0.0" w="159.0" h="315.0" h-a-x="199" n="fingering9" />
+  <g c="ED28" x="0.0" y="-21.0" w="124.0" h="296.0" h-a-x="104" n="fingeringLeftParenthesis" />
+  <g c="ED29" x="-20.0" y="-30.0" w="114.12" h="302.25" h-a-x="94" n="fingeringRightParenthesis" />
+  <g c="ED2A" x="0.0" y="-30.0" w="124.0" h="296.53" h-a-x="94" n="fingeringLeftBracket" />
+  <g c="ED2B" x="-20.0" y="-28.13" w="99.0" h="279.19" h-a-x="79" n="fingeringRightBracket" />
+  <g c="ED2C" x="25.0" y="60.0" w="130.14" h="130.0" h-a-x="180" n="fingeringSeparatorMiddleDot" />
+  <g c="ED2D" x="25.0" y="62.61" w="136.0" h="125.39" h-a-x="186" n="fingeringSeparatorMiddleDotWhite" />
+  <g c="ED2E" x="0.0" y="-63.44" w="182.0" h="371.44" h-a-x="182" n="fingeringSeparatorSlash" />
+  <g c="ED80" x="20.0" y="-1.0" w="180.23" h="252.0" h-a-x="220" n="fingering0Italic" />
+  <g c="ED81" x="19.8" y="0.0" w="147.2" h="247.0" h-a-x="187" n="fingering1Italic" />
+  <g c="ED82" x="20.0" y="0.94" w="188.19" h="237.06" h-a-x="228" n="fingering2Italic" />
+  <g c="ED83" x="20.0" y="0.0" w="182.0" h="251.52" h-a-x="222" n="fingering3Italic" />
+  <g c="ED84" x="19.61" y="-13.0" w="162.39" h="288.0" h-a-x="202" n="fingering4Italic" />
+  <g c="ED85" x="20.0" y="0.0" w="187.0" h="260.0" h-a-x="227" n="fingering5Italic" />
+  <g c="ED86" x="19.81" y="-7.01" w="185.32" h="260.75" h-a-x="225" n="fingering6Italic" />
+  <g c="ED87" x="20.07" y="0.15" w="170.93" h="235.1" h-a-x="211" n="fingering7Italic" />
+  <g c="ED88" x="20.0" y="0.0" w="146.0" h="291.0" h-a-x="186" n="fingering8Italic" />
+  <g c="ED89" x="20.0" y="0.0" w="159.0" h="315.0" h-a-x="199" n="fingering9Italic" />
+  <g c="ED8A" x="0.0" y="-21.0" w="124.0" h="296.0" h-a-x="104" n="fingeringLeftParenthesisItalic" />
+  <g c="ED8B" x="-20.0" y="-30.0" w="114.12" h="302.25" h-a-x="94" n="fingeringRightParenthesisItalic" />
+  <g c="ED8C" x="0.0" y="-30.0" w="124.0" h="296.53" h-a-x="94" n="fingeringLeftBracketItalic" />
+  <g c="ED8D" x="-20.0" y="-28.13" w="99.0" h="279.19" h-a-x="79" n="fingeringRightBracketItalic" />
   <g c="E240" x="0.0" y="-819.0" w="261.0" h="819.0" h-a-x="261" n="flag8thUp">
     <a n="graceNoteSlashNE" x="1.28" y="-0.8" />
     <a n="graceNoteSlashSW" x="-0.64" y="-2.46" />
