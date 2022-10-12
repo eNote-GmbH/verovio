@@ -1154,6 +1154,8 @@
         <glyph glyph-code="E4BB" smufl-name="articLaissezVibrerBelow"/>
         <glyph glyph-code="E4BC" smufl-name="articMarcatoTenutoAbove"/>
         <glyph glyph-code="E4BD" smufl-name="articMarcatoTenutoBelow"/>
+        <glyph glyph-code="E4BE" smufl-name="articReversedAccentAbove"/>
+        <glyph glyph-code="E4BF" smufl-name="articReversedAccentBelow"/>
         <range_end>U+E4BF</range_end>
         <range_start>U+E4A0</range_start>
     </articulation>
