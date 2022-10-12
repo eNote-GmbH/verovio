@@ -1212,4 +1212,6 @@
   <g c="F52C" x="-198.0" y="-3.0" w="174.0" h="470.0" h-a-x="0" n="figbassFlatLongerStem" />
   <g c="F52D" x="-143.0" y="-110.0" w="119.0" h="478.0" h-a-x="0" n="figbassNaturalLongerStem" />
   <g c="F52E" x="-220.0" y="-146.0" w="192.0" h="538.0" h-a-x="0" n="figbassSharpLongerStem" />
+  <g c="E4BE" x="0.0" y="0.0" w="460.0" h="268.0" h-a-x="460" n="articReversedAccentAbove"/>
+  <g c="E4BF" x="0.0" y="-268.0" w="460.0" h="268.0" h-a-x="460" n="articReversedAccentBelow"/>
 </bounding-boxes>
