@@ -3059,37 +3059,37 @@
     </metronomMarks>
     <fingering>
         <description>Fingering</description>
-        <!--<glyph glyph-code="ED10" smufl-name="fingering0" />-->
-        <!--<glyph glyph-code="ED11" smufl-name="fingering1" />-->
-        <!--<glyph glyph-code="ED12" smufl-name="fingering2" />-->
-        <!--<glyph glyph-code="ED13" smufl-name="fingering3" />-->
-        <!--<glyph glyph-code="ED14" smufl-name="fingering4" />-->
-        <!--<glyph glyph-code="ED15" smufl-name="fingering5" />-->
-        <!--<glyph glyph-code="ED16" smufl-name="fingeringTUpper" />-->
-        <!--<glyph glyph-code="ED17" smufl-name="fingeringPLower" />-->
-        <!--<glyph glyph-code="ED18" smufl-name="fingeringTLower" />-->
-        <!--<glyph glyph-code="ED19" smufl-name="fingeringILower" />-->
-        <!--<glyph glyph-code="ED1A" smufl-name="fingeringMLower" />-->
-        <!--<glyph glyph-code="ED1B" smufl-name="fingeringALower" />-->
-        <!--<glyph glyph-code="ED1C" smufl-name="fingeringCLower" />-->
-        <!--<glyph glyph-code="ED1D" smufl-name="fingeringXLower" />-->
-        <!--<glyph glyph-code="ED1E" smufl-name="fingeringELower" />-->
-        <!--<glyph glyph-code="ED1F" smufl-name="fingeringOLower" />-->
-        <!--<glyph glyph-code="ED20" smufl-name="fingeringSubstitutionAbove" />-->
-        <!--<glyph glyph-code="ED21" smufl-name="fingeringSubstitutionBelow" />-->
-        <!--<glyph glyph-code="ED22" smufl-name="fingeringSubstitutionDash" />-->
-        <!--<glyph glyph-code="ED23" smufl-name="fingeringMultipleNotes" />-->
-        <!--<glyph glyph-code="ED24" smufl-name="fingering6" />-->
-        <!--<glyph glyph-code="ED25" smufl-name="fingering7" />-->
-        <!--<glyph glyph-code="ED26" smufl-name="fingering8" />-->
-        <!--<glyph glyph-code="ED27" smufl-name="fingering9" />-->
-        <!--<glyph glyph-code="ED28" smufl-name="fingeringLeftParenthesis" />-->
-        <!--<glyph glyph-code="ED29" smufl-name="fingeringRightParenthesis" />-->
-        <!--<glyph glyph-code="ED2A" smufl-name="fingeringLeftBracket" />-->
-        <!--<glyph glyph-code="ED2B" smufl-name="fingeringRightBracket" />-->
-        <!--<glyph glyph-code="ED2C" smufl-name="fingeringSeparatorMiddleDot" />-->
-        <!--<glyph glyph-code="ED2D" smufl-name="fingeringSeparatorMiddleDotWhite" />-->
-        <!--<glyph glyph-code="ED2E" smufl-name="fingeringSeparatorSlash" />-->
+        <glyph glyph-code="ED10" smufl-name="fingering0" />
+        <glyph glyph-code="ED11" smufl-name="fingering1" />
+        <glyph glyph-code="ED12" smufl-name="fingering2" />
+        <glyph glyph-code="ED13" smufl-name="fingering3" />
+        <glyph glyph-code="ED14" smufl-name="fingering4" />
+        <glyph glyph-code="ED15" smufl-name="fingering5" />
+        <glyph glyph-code="ED16" smufl-name="fingeringTUpper" />
+        <glyph glyph-code="ED17" smufl-name="fingeringPLower" />
+        <glyph glyph-code="ED18" smufl-name="fingeringTLower" />
+        <glyph glyph-code="ED19" smufl-name="fingeringILower" />
+        <glyph glyph-code="ED1A" smufl-name="fingeringMLower" />
+        <glyph glyph-code="ED1B" smufl-name="fingeringALower" />
+        <glyph glyph-code="ED1C" smufl-name="fingeringCLower" />
+        <glyph glyph-code="ED1D" smufl-name="fingeringXLower" />
+        <glyph glyph-code="ED1E" smufl-name="fingeringELower" />
+        <glyph glyph-code="ED1F" smufl-name="fingeringOLower" />
+        <glyph glyph-code="ED20" smufl-name="fingeringSubstitutionAbove" />
+        <glyph glyph-code="ED21" smufl-name="fingeringSubstitutionBelow" />
+        <glyph glyph-code="ED22" smufl-name="fingeringSubstitutionDash" />
+        <glyph glyph-code="ED23" smufl-name="fingeringMultipleNotes" />
+        <glyph glyph-code="ED24" smufl-name="fingering6" />
+        <glyph glyph-code="ED25" smufl-name="fingering7" />
+        <glyph glyph-code="ED26" smufl-name="fingering8" />
+        <glyph glyph-code="ED27" smufl-name="fingering9" />
+        <glyph glyph-code="ED28" smufl-name="fingeringLeftParenthesis" />
+        <glyph glyph-code="ED29" smufl-name="fingeringRightParenthesis" />
+        <glyph glyph-code="ED2A" smufl-name="fingeringLeftBracket" />
+        <glyph glyph-code="ED2B" smufl-name="fingeringRightBracket" />
+        <glyph glyph-code="ED2C" smufl-name="fingeringSeparatorMiddleDot" />
+        <glyph glyph-code="ED2D" smufl-name="fingeringSeparatorMiddleDotWhite" />
+        <glyph glyph-code="ED2E" smufl-name="fingeringSeparatorSlash" />
         <range_end>U+ED2E</range_end>
         <range_start>U+ED10</range_start>
     </fingering>
@@ -3134,22 +3134,22 @@
     </standardAccidentalsChordSymbols>
     <fingeringSupplement>
         <description>Fingering supplement</description>
-        <!--<glyph glyph-code="ED80" smufl-name="fingering0Italic" />-->
-        <!--<glyph glyph-code="ED81" smufl-name="fingering1Italic" />-->
-        <!--<glyph glyph-code="ED82" smufl-name="fingering2Italic" />-->
-        <!--<glyph glyph-code="ED83" smufl-name="fingering3Italic" />-->
-        <!--<glyph glyph-code="ED84" smufl-name="fingering4Italic" />-->
-        <!--<glyph glyph-code="ED85" smufl-name="fingering5Italic" />-->
-        <!--<glyph glyph-code="ED86" smufl-name="fingering6Italic" />-->
-        <!--<glyph glyph-code="ED87" smufl-name="fingering7Italic" />-->
-        <!--<glyph glyph-code="ED88" smufl-name="fingering8Italic" />-->
-        <!--<glyph glyph-code="ED89" smufl-name="fingering9Italic" />-->
-        <!--<glyph glyph-code="ED8A" smufl-name="fingeringLeftParenthesisItalic" />-->
-        <!--<glyph glyph-code="ED8B" smufl-name="fingeringRightParenthesisItalic" />-->
-        <!--<glyph glyph-code="ED8C" smufl-name="fingeringLeftBracketItalic" />-->
-        <!--<glyph glyph-code="ED8D" smufl-name="fingeringRightBracketItalic" />-->
-        <!--<glyph glyph-code="ED8E" smufl-name="fingeringQLower" />-->
-        <!--<glyph glyph-code="ED8F" smufl-name="fingeringSLower" />-->
+        <glyph glyph-code="ED80" smufl-name="fingering0Italic" />
+        <glyph glyph-code="ED81" smufl-name="fingering1Italic" />
+        <glyph glyph-code="ED82" smufl-name="fingering2Italic" />
+        <glyph glyph-code="ED83" smufl-name="fingering3Italic" />
+        <glyph glyph-code="ED84" smufl-name="fingering4Italic" />
+        <glyph glyph-code="ED85" smufl-name="fingering5Italic" />
+        <glyph glyph-code="ED86" smufl-name="fingering6Italic" />
+        <glyph glyph-code="ED87" smufl-name="fingering7Italic" />
+        <glyph glyph-code="ED88" smufl-name="fingering8Italic" />
+        <glyph glyph-code="ED89" smufl-name="fingering9Italic" />
+        <glyph glyph-code="ED8A" smufl-name="fingeringLeftParenthesisItalic" />
+        <glyph glyph-code="ED8B" smufl-name="fingeringRightParenthesisItalic" />
+        <glyph glyph-code="ED8C" smufl-name="fingeringLeftBracketItalic" />
+        <glyph glyph-code="ED8D" smufl-name="fingeringRightBracketItalic" />
+        <glyph glyph-code="ED8E" smufl-name="fingeringQLower" />
+        <glyph glyph-code="ED8F" smufl-name="fingeringSLower" />
         <range_end>U+ED9F</range_end>
         <range_start>U+ED80</range_start>
     </fingeringSupplement>
