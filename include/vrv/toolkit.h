@@ -288,7 +288,6 @@ public:
      * @return True if the option was successfully set
      */
     bool SetOption(const std::string &option, const std::string &value);
-    bool SetOption(const std::string &option, const bool value);
 
     /**
      * Reset all options to default values
