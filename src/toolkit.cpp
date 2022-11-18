@@ -929,6 +929,16 @@ bool Toolkit::SaveFile(const std::string &filename, const std::string &jsonOptio
     return true;
 }
 
+std::string Toolkit::GetOptions() const
+{
+    return this->GetOptions(false);
+}
+
+std::string Toolkit::GetDefaultOptions() const
+{
+    return this->GetOptions(true);
+}
+
 std::string Toolkit::GetOptions(bool defaultValues) const
 {
     jsonxx::Object o;
@@ -1106,6 +1116,8 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
 
     m_options->Sync();
 
+    // Forcing font resource to be reset if the font is given in the options
+    if (json.has<jsonxx::String>("font")) this->SetFont(m_options->m_font.GetValue());
     // Reset fonts
     this->SetMusicFont(m_options->m_font.GetValue());
     this->SetTextFont(m_options->m_textFont.GetValue());
@@ -1460,6 +1472,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     svg.SetFormatRaw(m_options->m_svgFormatRaw.GetValue());
     svg.SetRemoveXlink(m_options->m_svgRemoveXlink.GetValue());
     svg.SetAdditionalAttributes(m_options->m_svgAdditionalAttribute.GetValue());
+    svg.SetSmuflTextFont((option_SMUFLTEXTFONT)m_options->m_smuflTextFont.GetValue());
 
     // render the page
     this->RenderToDeviceContext(pageNo, &svg);

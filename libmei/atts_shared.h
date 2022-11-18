@@ -1265,6 +1265,10 @@ public:
      * to the default value)
      **/
     ///@{
+    void SetDirDist(data_MEASUREMENTSIGNED dirDist_) { m_dirDist = dirDist_; }
+    data_MEASUREMENTSIGNED GetDirDist() const { return m_dirDist; }
+    bool HasDirDist() const;
+    //
     void SetDynamDist(data_MEASUREMENTSIGNED dynamDist_) { m_dynamDist = dynamDist_; }
     data_MEASUREMENTSIGNED GetDynamDist() const { return m_dynamDist; }
     bool HasDynamDist() const;
@@ -1273,12 +1277,18 @@ public:
     data_MEASUREMENTSIGNED GetHarmDist() const { return m_harmDist; }
     bool HasHarmDist() const;
     //
-    void SetTextDist(data_MEASUREMENTSIGNED textDist_) { m_textDist = textDist_; }
-    data_MEASUREMENTSIGNED GetTextDist() const { return m_textDist; }
-    bool HasTextDist() const;
+    void SetRehDist(data_MEASUREMENTSIGNED rehDist_) { m_rehDist = rehDist_; }
+    data_MEASUREMENTSIGNED GetRehDist() const { return m_rehDist; }
+    bool HasRehDist() const;
+    //
+    void SetTempoDist(data_MEASUREMENTSIGNED tempoDist_) { m_tempoDist = tempoDist_; }
+    data_MEASUREMENTSIGNED GetTempoDist() const { return m_tempoDist; }
+    bool HasTempoDist() const;
     ///@}
 
 private:
+    /** Records the default distance from the staff for directives. **/
+    data_MEASUREMENTSIGNED m_dirDist;
     /** Records the default distance from the staff for dynamic marks. **/
     data_MEASUREMENTSIGNED m_dynamDist;
     /**
@@ -1286,10 +1296,12 @@ private:
      * guitar chord grids or functional labels.
      **/
     data_MEASUREMENTSIGNED m_harmDist;
-    /** Determines how far from the staff to render text elements. **/
-    data_MEASUREMENTSIGNED m_textDist;
+    /** Records the default distance from the staff for rehearsal marks. **/
+    data_MEASUREMENTSIGNED m_rehDist;
+    /** Records the default distance from the staff for tempo marks. **/
+    data_MEASUREMENTSIGNED m_tempoDist;
 
-    /* include <atttext.dist> */
+    /* include <atttempo.dist> */
 };
 
 //----------------------------------------------------------------------------
@@ -1426,22 +1438,22 @@ private:
 };
 
 //----------------------------------------------------------------------------
-// AttDurationLogical
+// AttDurationLog
 //----------------------------------------------------------------------------
 
-class AttDurationLogical : public Att {
+class AttDurationLog : public Att {
 public:
-    AttDurationLogical();
-    virtual ~AttDurationLogical();
+    AttDurationLog();
+    virtual ~AttDurationLog();
 
     /** Reset the default values for the attribute class **/
-    void ResetDurationLogical();
+    void ResetDurationLog();
 
     /** Read the values for the attribute class **/
-    bool ReadDurationLogical(pugi::xml_node element);
+    bool ReadDurationLog(pugi::xml_node element);
 
     /** Write the values for the attribute class **/
-    bool WriteDurationLogical(pugi::xml_node element);
+    bool WriteDurationLog(pugi::xml_node element);
 
     /**
      * @name Setters, getters and presence checker for class members.
@@ -3673,22 +3685,22 @@ private:
 };
 
 //----------------------------------------------------------------------------
-// AttOriginTimestampLogical
+// AttOriginTimestampLog
 //----------------------------------------------------------------------------
 
-class AttOriginTimestampLogical : public Att {
+class AttOriginTimestampLog : public Att {
 public:
-    AttOriginTimestampLogical();
-    virtual ~AttOriginTimestampLogical();
+    AttOriginTimestampLog();
+    virtual ~AttOriginTimestampLog();
 
     /** Reset the default values for the attribute class **/
-    void ResetOriginTimestampLogical();
+    void ResetOriginTimestampLog();
 
     /** Read the values for the attribute class **/
-    bool ReadOriginTimestampLogical(pugi::xml_node element);
+    bool ReadOriginTimestampLog(pugi::xml_node element);
 
     /** Write the values for the attribute class **/
-    bool WriteOriginTimestampLogical(pugi::xml_node element);
+    bool WriteOriginTimestampLog(pugi::xml_node element);
 
     /**
      * @name Setters, getters and presence checker for class members.
@@ -4258,22 +4270,22 @@ private:
 };
 
 //----------------------------------------------------------------------------
-// AttRestdurationLogical
+// AttRestdurationLog
 //----------------------------------------------------------------------------
 
-class AttRestdurationLogical : public Att {
+class AttRestdurationLog : public Att {
 public:
-    AttRestdurationLogical();
-    virtual ~AttRestdurationLogical();
+    AttRestdurationLog();
+    virtual ~AttRestdurationLog();
 
     /** Reset the default values for the attribute class **/
-    void ResetRestdurationLogical();
+    void ResetRestdurationLog();
 
     /** Read the values for the attribute class **/
-    bool ReadRestdurationLogical(pugi::xml_node element);
+    bool ReadRestdurationLog(pugi::xml_node element);
 
     /** Write the values for the attribute class **/
-    bool WriteRestdurationLogical(pugi::xml_node element);
+    bool WriteRestdurationLog(pugi::xml_node element);
 
     /**
      * @name Setters, getters and presence checker for class members.
@@ -5377,22 +5389,22 @@ private:
 };
 
 //----------------------------------------------------------------------------
-// AttTimestampLogical
+// AttTimestampLog
 //----------------------------------------------------------------------------
 
-class AttTimestampLogical : public Att {
+class AttTimestampLog : public Att {
 public:
-    AttTimestampLogical();
-    virtual ~AttTimestampLogical();
+    AttTimestampLog();
+    virtual ~AttTimestampLog();
 
     /** Reset the default values for the attribute class **/
-    void ResetTimestampLogical();
+    void ResetTimestampLog();
 
     /** Read the values for the attribute class **/
-    bool ReadTimestampLogical(pugi::xml_node element);
+    bool ReadTimestampLog(pugi::xml_node element);
 
     /** Write the values for the attribute class **/
-    bool WriteTimestampLogical(pugi::xml_node element);
+    bool WriteTimestampLog(pugi::xml_node element);
 
     /**
      * @name Setters, getters and presence checker for class members.
@@ -5416,22 +5428,22 @@ private:
 };
 
 //----------------------------------------------------------------------------
-// AttTimestamp2Logical
+// AttTimestamp2Log
 //----------------------------------------------------------------------------
 
-class AttTimestamp2Logical : public Att {
+class AttTimestamp2Log : public Att {
 public:
-    AttTimestamp2Logical();
-    virtual ~AttTimestamp2Logical();
+    AttTimestamp2Log();
+    virtual ~AttTimestamp2Log();
 
     /** Reset the default values for the attribute class **/
-    void ResetTimestamp2Logical();
+    void ResetTimestamp2Log();
 
     /** Read the values for the attribute class **/
-    bool ReadTimestamp2Logical(pugi::xml_node element);
+    bool ReadTimestamp2Log(pugi::xml_node element);
 
     /** Write the values for the attribute class **/
-    bool WriteTimestamp2Logical(pugi::xml_node element);
+    bool WriteTimestamp2Log(pugi::xml_node element);
 
     /**
      * @name Setters, getters and presence checker for class members.

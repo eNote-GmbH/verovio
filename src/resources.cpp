@@ -44,9 +44,9 @@ bool Resources::InitFonts(const std::string &musicFont, const std::string &textF
 {
     // We will need to rethink this for adding the option to add custom fonts
     // Font Bravura first since it is expected to have always all symbols
-    if (!LoadFont("Bravura")) LogError("Bravura font could not be loaded.");
+    if (!LoadFont("Bravura", false)) LogError("Bravura font could not be loaded.");
     // The Leipzig as the default font
-    if (!LoadFont("Leipzig")) LogError("Leipzig font could not be loaded.");
+    if (!LoadFont("Leipzig", false)) LogError("Leipzig font could not be loaded.");
 
     if (!SetMusicFont(musicFont)) {
         LogError("Font '%s' could not be loaded.", musicFont.c_str());
@@ -107,6 +107,16 @@ char32_t Resources::GetGlyphCode(const std::string &smuflName) const
     return m_glyphNameTable.count(smuflName) ? m_glyphNameTable.at(smuflName) : 0;
 }
 
+bool Resources::IsSmuflFallbackNeeded(const std::u32string &text) const
+{
+    for (int i = 0; i < (int)text.length(); ++i) {
+        char32_t c = text.at(i);
+        const Glyph *glyph = this->GetGlyph(c);
+        if (glyph && glyph->GetFallback()) return true;
+    }
+    return false;
+}
+
 void Resources::SelectTextFont(data_FONTWEIGHT fontWeight, data_FONTSTYLE fontStyle) const
 {
     if (fontWeight == FONTWEIGHT_NONE) {
@@ -150,7 +160,7 @@ char32_t Resources::GetSmuflGlyphForUnicodeChar(const char32_t unicodeChar)
     return smuflChar;
 }
 
-bool Resources::LoadFont(const std::string &fontName)
+bool Resources::LoadFont(const std::string &fontName, bool withFallback)
 {
     pugi::xml_document doc;
     const std::string filename = Resources::GetPath() + "/" + fontName + ".xml";
@@ -162,8 +172,14 @@ bool Resources::LoadFont(const std::string &fontName)
     }
     pugi::xml_node root = doc.first_child();
     if (!root.attribute("units-per-em")) {
-        LogError("No units-per-em attribute in bouding box file");
+        LogError("No units-per-em attribute in bounding box file");
         return false;
+    }
+
+    if (withFallback) {
+        for (auto &glyph : m_fontGlyphTable) {
+            glyph.second.SetFallback(true);
+        }
     }
 
     const int unitsPerEm = atoi(root.attribute("units-per-em").value());
@@ -197,6 +213,7 @@ bool Resources::LoadFont(const std::string &fontName)
         }
 
         const char32_t smuflCode = (char32_t)strtol(c_attribute.value(), NULL, 16);
+        glyph.SetFallback(false);
         m_fontGlyphTable[smuflCode] = glyph;
         m_glyphNameTable[n_attribute.value()] = smuflCode;
     }

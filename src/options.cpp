@@ -27,6 +27,9 @@ const std::map<int, std::string> Option::s_breaks = { { BREAKS_none, "none" }, {
 const std::map<int, std::string> Option::s_condense
     = { { CONDENSE_none, "none" }, { CONDENSE_auto, "auto" }, { CONDENSE_encoded, "encoded" } };
 
+const std::map<int, std::string> Option::s_elision = { { ELISION_regular, "regular" }, { ELISION_narrow, "narrow" },
+    { ELISION_wide, "wide" }, { ELISION_unicode, "unicode" } };
+
 const std::map<int, std::string> Option::s_footer
     = { { FOOTER_none, "none" }, { FOOTER_auto, "auto" }, { FOOTER_encoded, "encoded" }, { FOOTER_always, "always" } };
 
@@ -41,6 +44,9 @@ const std::map<int, std::string> Option::s_pedalStyle = { { PEDALSTYLE_NONE, "au
 
 const std::map<int, std::string> Option::s_systemDivider = { { SYSTEMDIVIDER_none, "none" },
     { SYSTEMDIVIDER_auto, "auto" }, { SYSTEMDIVIDER_left, "left" }, { SYSTEMDIVIDER_left_right, "left-right" } };
+
+const std::map<int, std::string> Option::s_smuflTextFont
+    = { { SMUFLTEXTFONT_embedded, "embedded" }, { SMUFLTEXTFONT_linked, "linked" }, { SMUFLTEXTFONT_none, "none" } };
 
 //----------------------------------------------------------------------------
 // Option
@@ -1098,6 +1104,10 @@ Options::Options()
     m_shrinkToFit.Init(false);
     this->Register(&m_shrinkToFit, "shrinkToFit", &m_general);
 
+    m_smuflTextFont.SetInfo("Smufl text font", "Specify if the smufl text font is embedded, linked, or ignored");
+    m_smuflTextFont.Init(SMUFLTEXTFONT_embedded, &Option::s_smuflTextFont);
+    this->Register(&m_smuflTextFont, "smuflTextFont", &m_general);
+
     m_staccatoCenter.SetInfo(
         "Center staccato", "Align staccato and staccatissimo articulations with center of the note");
     m_staccatoCenter.Init(false);
@@ -1308,6 +1318,10 @@ Options::Options()
         "Ledger line extension", "The amount by which a ledger line should extend either side of a notehead");
     m_ledgerLineExtension.Init(0.54, 0.20, 1.00);
     this->Register(&m_ledgerLineExtension, "ledgerLineExtension", &m_generalLayout);
+
+    m_lyricElision.SetInfo("Lyric elision", "The lyric elision width");
+    m_lyricElision.Init(ELISION_regular, &Option::s_elision);
+    this->Register(&m_lyricElision, "lyricElision", &m_generalLayout);
 
     m_lyricHyphenLength.SetInfo("Lyric hyphen length", "The lyric hyphen and dash length");
     m_lyricHyphenLength.Init(1.20, 0.50, 3.00);

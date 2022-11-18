@@ -44,7 +44,7 @@ Artic::Artic()
     : LayerElement(ARTIC, "artic-")
     , VisualOffsetInterface()
     , AttArticulation()
-    , AttArticulationGestural()
+    , AttArticulationGes()
     , AttColor()
     , AttEnclosingChars()
     , AttExtSym()
@@ -52,7 +52,7 @@ Artic::Artic()
 {
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ARTICULATION);
-    this->RegisterAttClass(ATT_ARTICULATIONGESTURAL);
+    this->RegisterAttClass(ATT_ARTICULATIONGES);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
     this->RegisterAttClass(ATT_EXTSYM);
@@ -68,7 +68,7 @@ void Artic::Reset()
     LayerElement::Reset();
     VisualOffsetInterface::Reset();
     this->ResetArticulation();
-    this->ResetArticulationGestural();
+    this->ResetArticulationGes();
     this->ResetColor();
     this->ResetEnclosingChars();
     this->ResetExtSym();
@@ -403,7 +403,7 @@ int Artic::AdjustArtic(FunctorParams *functorParams)
 
     Stem *stem = vrv_cast<Stem *>(params->m_parent->FindDescendantByType(STEM));
     Flag *flag = vrv_cast<Flag *>(params->m_parent->FindDescendantByType(FLAG));
-    // Avoid in artic to be in legder lines
+    // Avoid in artic to be in ledger lines
     if (this->GetDrawingPlace() == STAFFREL_above) {
         int yAboveStem
             = params->m_parent->GetDrawingTop(params->m_doc, staff->m_drawingStaffSize, false) - staff->GetDrawingY();

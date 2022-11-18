@@ -33,7 +33,7 @@ Accid::Accid()
     , PositionInterface()
     , VisualOffsetInterface()
     , AttAccidental()
-    , AttAccidentalGestural()
+    , AttAccidentalGes()
     , AttAccidLog()
     , AttColor()
     , AttEnclosingChars()
@@ -45,7 +45,7 @@ Accid::Accid()
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ACCIDENTAL);
-    this->RegisterAttClass(ATT_ACCIDENTALGESTURAL);
+    this->RegisterAttClass(ATT_ACCIDENTALGES);
     this->RegisterAttClass(ATT_ACCIDLOG);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
@@ -64,7 +64,7 @@ void Accid::Reset()
     PositionInterface::Reset();
     VisualOffsetInterface::Reset();
     this->ResetAccidental();
-    this->ResetAccidentalGestural();
+    this->ResetAccidentalGes();
     this->ResetAccidLog();
     this->ResetColor();
     this->ResetEnclosingChars();

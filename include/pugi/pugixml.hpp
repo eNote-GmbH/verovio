@@ -1,7 +1,7 @@
 /**
- * pugixml parser - version 1.11
+ * pugixml parser - version 1.13
  * --------------------------------------------------------
- * Copyright (C) 2006-2020, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
+ * Copyright (C) 2006-2022, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
  * Report bugs and download new versions at https://pugixml.org/
  *
  * This library is distributed under the MIT License. See notice at the end
@@ -11,11 +11,10 @@
  * Copyright (C) 2003, by Kristen Wegner (kristen@tima.net)
  */
 
+// Define version macro; evaluates to major * 1000 + minor * 10 + patch so that it's safe to use in less-than comparisons
+// Note: pugixml used major * 100 + minor * 10 + patch format up until 1.9 (which had version identifier 190); starting from pugixml 1.10, the minor version number is two digits
 #ifndef PUGIXML_VERSION
-// Define version macro; evaluates to major * 1000 + minor * 10 + patch so that it's safe to use in less-than
-// comparisons Note: pugixml used major * 100 + minor * 10 + patch format up until 1.9 (which had version identifier
-// 190); starting from pugixml 1.10, the minor version number is two digits
-#define PUGIXML_VERSION 1110
+#	define PUGIXML_VERSION 1130 // 1.13
 #endif
 
 // Include user configuration file (this can define various configuration macros)
@@ -114,10 +113,13 @@
 
 // If C++ is 2011 or higher, use 'nullptr'
 #ifndef PUGIXML_NULL
-#if __cplusplus >= 201103
-#define PUGIXML_NULL nullptr
-#else
-#define PUGIXML_NULL 0
+#	if __cplusplus >= 201103
+#		define PUGIXML_NULL nullptr
+#	elif defined(_MSC_VER) && _MSC_VER >= 1600
+#		define PUGIXML_NULL nullptr
+#	else
+#		define PUGIXML_NULL 0
+#	endif
 #endif
 #endif
 
@@ -314,9 +316,11 @@ public:
     It begin() const { return _begin; }
     It end() const { return _end; }
 
-private:
-    It _begin, _end;
-};
+		bool empty() const { return _begin == _end; }
+
+	private:
+		It _begin, _end;
+	};
 
 // Writer interface for node printing (see xml_node::print)
 class PUGIXML_CLASS xml_writer {
@@ -411,9 +415,10 @@ public:
     // attribute is empty
     bool as_bool(bool def = false) const;
 
-    // Set attribute name/value (returns false if attribute is empty or there is not enough memory)
-    bool set_name(const char_t *rhs);
-    bool set_value(const char_t *rhs);
+		// Set attribute name/value (returns false if attribute is empty or there is not enough memory)
+		bool set_name(const char_t* rhs);
+		bool set_value(const char_t* rhs, size_t sz);
+		bool set_value(const char_t* rhs);
 
     // Set attribute value with type conversion (numbers are converted to strings, boolean is converted to
     // "true"/"false")
@@ -547,9 +552,10 @@ public:
     // Get child value of child with specified name. Equivalent to child(name).child_value().
     const char_t *child_value(const char_t *name) const;
 
-    // Set node name/value (returns false if node is empty, there is not enough memory, or node can not have name/value)
-    bool set_name(const char_t *rhs);
-    bool set_value(const char_t *rhs);
+		// Set node name/value (returns false if node is empty, there is not enough memory, or node can not have name/value)
+		bool set_name(const char_t* rhs);
+		bool set_value(const char_t* rhs, size_t sz);
+		bool set_value(const char_t* rhs);
 
     // Add attribute with specified name. Returns added attribute, or empty attribute on errors.
     xml_attribute append_attribute(const char_t *name);
@@ -777,8 +783,9 @@ public:
     // Get text as bool (returns true if first character is in '1tTyY' set), or the default value if object is empty
     bool as_bool(bool def = false) const;
 
-    // Set text (returns false if object is empty or there is not enough memory)
-    bool set(const char_t *rhs);
+		// Set text (returns false if object is empty or there is not enough memory)
+		bool set(const char_t* rhs, size_t sz);
+		bool set(const char_t* rhs);
 
     // Set text with type conversion (numbers are converted to strings, boolean is converted to "true"/"false")
     bool set(int rhs);
@@ -855,12 +862,12 @@ public:
     xml_node &operator*() const;
     xml_node *operator->() const;
 
-    const xml_node_iterator &operator++();
-    xml_node_iterator operator++(int);
+		xml_node_iterator& operator++();
+		xml_node_iterator operator++(int);
 
-    const xml_node_iterator &operator--();
-    xml_node_iterator operator--(int);
-};
+		xml_node_iterator& operator--();
+		xml_node_iterator operator--(int);
+	};
 
 // Attribute iterator (a bidirectional iterator over a collection of xml_attribute)
 class PUGIXML_CLASS xml_attribute_iterator {
@@ -896,12 +903,12 @@ public:
     xml_attribute &operator*() const;
     xml_attribute *operator->() const;
 
-    const xml_attribute_iterator &operator++();
-    xml_attribute_iterator operator++(int);
+		xml_attribute_iterator& operator++();
+		xml_attribute_iterator operator++(int);
 
-    const xml_attribute_iterator &operator--();
-    xml_attribute_iterator operator--(int);
-};
+		xml_attribute_iterator& operator--();
+		xml_attribute_iterator operator--(int);
+	};
 
 // Named node range helper
 class PUGIXML_CLASS xml_named_node_iterator {
@@ -931,11 +938,11 @@ public:
     xml_node &operator*() const;
     xml_node *operator->() const;
 
-    const xml_named_node_iterator &operator++();
-    xml_named_node_iterator operator++(int);
+		xml_named_node_iterator& operator++();
+		xml_named_node_iterator operator++(int);
 
-    const xml_named_node_iterator &operator--();
-    xml_named_node_iterator operator--(int);
+		xml_named_node_iterator& operator--();
+		xml_named_node_iterator operator--(int);
 
 private:
     mutable xml_node _wrap;
@@ -1489,7 +1496,7 @@ std::bidirectional_iterator_tag PUGIXML_FUNCTION __iterator_category(const pugi:
 #endif
 
 /**
- * Copyright (c) 2006-2020 Arseny Kapoulkine
+ * Copyright (c) 2006-2022 Arseny Kapoulkine
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
