@@ -158,13 +158,13 @@ public:
      * @name Get the height or width for a glyph taking into account the staff and grace sizes
      */
     ///@{
-    int GetGlyphHeight(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphWidth(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphLeft(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphRight(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphBottom(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphTop(wchar_t code, int staffSize, bool graceSize) const;
-    int GetGlyphAdvX(wchar_t code, int staffSize, bool graceSize) const;
+    int GetGlyphHeight(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphWidth(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphLeft(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphRight(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphBottom(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphTop(char32_t code, int staffSize, bool graceSize) const;
+    int GetGlyphAdvX(char32_t code, int staffSize, bool graceSize) const;
     int GetDrawingUnit(int staffSize) const;
     int GetDrawingDoubleUnit(int staffSize) const;
     int GetDrawingStaffSize(int staffSize) const;
@@ -191,10 +191,10 @@ public:
      * The staff size must already be taken into account in the FontInfo
      */
     ///@{
-    int GetTextGlyphHeight(wchar_t code, const FontInfo *font, bool graceSize) const;
-    int GetTextGlyphWidth(wchar_t code, const FontInfo *font, bool graceSize) const;
-    int GetTextGlyphAdvX(wchar_t code, const FontInfo *font, bool graceSize) const;
-    int GetTextGlyphDescender(wchar_t code, const FontInfo *font, bool graceSize) const;
+    int GetTextGlyphHeight(char32_t code, const FontInfo *font, bool graceSize) const;
+    int GetTextGlyphWidth(char32_t code, const FontInfo *font, bool graceSize) const;
+    int GetTextGlyphAdvX(char32_t code, const FontInfo *font, bool graceSize) const;
+    int GetTextGlyphDescender(char32_t code, const FontInfo *font, bool graceSize) const;
     int GetTextLineHeight(const FontInfo *font, bool graceSize) const;
     int GetTextXHeight(const FontInfo *font, bool graceSize) const;
     ///@}
@@ -208,6 +208,12 @@ public:
     FontInfo *GetDrawingLyricFont(int staffSize);
     FontInfo *GetFingeringFont(int staffSize);
     ///@}
+
+    /**
+     * Get the ratio between the lyric font size and the music font size.
+     * This is used when the music font is used within text.
+     */
+    double GetMusicToLyricFontSizeRatio() const;
 
     /**
      * @name Getters for the object margins (left and right).
@@ -479,7 +485,7 @@ private:
     int CalcMusicFontSize();
 
 public:
-    Page *m_selectionPreceeding;
+    Page *m_selectionPreceding;
     Page *m_selectionFollowing;
     std::string m_selectionStart;
     std::string m_selectionEnd;
@@ -490,12 +496,12 @@ public:
     pugi::xml_document m_header;
 
     /**
-     * A copy of the header tree stored as pugi::xml_document
+     * A copy of the front tree stored as pugi::xml_document
      */
     pugi::xml_document m_front;
 
     /**
-     * A copy of the header tree stored as pugi::xml_document
+     * A copy of the back tree stored as pugi::xml_document
      */
     pugi::xml_document m_back;
 

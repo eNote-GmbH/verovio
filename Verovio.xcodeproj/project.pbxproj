@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,6 +16,7 @@
 		35FDEBD124B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD224B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
 		35FDEBD324B6DC5B00AC1696 /* fing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 35FDEBD024B6DC5B00AC1696 /* fing.cpp */; };
+		3673E5E628E1DF0C0048BAFA /* graphic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3673E5E428E1DF0C0048BAFA /* graphic.cpp */; };
 		36E0442C2347A9150054F141 /* expansionmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36E0442B2347A9150054F141 /* expansionmap.cpp */; };
 		36E0442E2347A9290054F141 /* expansionmap.h in Headers */ = {isa = PBXBuildFile; fileRef = 36E0442D2347A9290054F141 /* expansionmap.h */; };
 		400FEDD3206FA743000D3233 /* gracegrp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400FEDD2206FA743000D3233 /* gracegrp.cpp */; };
@@ -1260,6 +1261,11 @@
 		BD2E4D982875880600B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
 		BD2E4D9A2875882100B04350 /* stem.h in Headers */ = {isa = PBXBuildFile; fileRef = BD2E4D992875881B00B04350 /* stem.h */; };
 		BD2E4D9B2875882200B04350 /* stem.h in Headers */ = {isa = PBXBuildFile; fileRef = BD2E4D992875881B00B04350 /* stem.h */; };
+		BD6E5C3D290007C90039B0F1 /* graphic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3673E5E428E1DF0C0048BAFA /* graphic.cpp */; };
+		BD6E5C3E290007CA0039B0F1 /* graphic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3673E5E428E1DF0C0048BAFA /* graphic.cpp */; };
+		BD6E5C3F290007CB0039B0F1 /* graphic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3673E5E428E1DF0C0048BAFA /* graphic.cpp */; };
+		BD6E5C40290007CE0039B0F1 /* graphic.h in Headers */ = {isa = PBXBuildFile; fileRef = 3673E5E528E1DF0C0048BAFA /* graphic.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD6E5C41290007CE0039B0F1 /* graphic.h in Headers */ = {isa = PBXBuildFile; fileRef = 3673E5E528E1DF0C0048BAFA /* graphic.h */; };
 		BD87768327CE8A11005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
 		BD87768427CE8A19005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
 		BD87768527CE8A1A005B97EA /* layerdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD87768227CE8A11005B97EA /* layerdef.cpp */; };
@@ -1340,6 +1346,8 @@
 		2D2A799B1A698137000A441B /* chord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chord.h; path = include/vrv/chord.h; sourceTree = "<group>"; };
 		35FDEBCD24B6DBC100AC1696 /* fing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fing.h; path = include/vrv/fing.h; sourceTree = "<group>"; };
 		35FDEBD024B6DC5B00AC1696 /* fing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fing.cpp; path = src/fing.cpp; sourceTree = "<group>"; };
+		3673E5E428E1DF0C0048BAFA /* graphic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = graphic.cpp; path = src/graphic.cpp; sourceTree = "<group>"; };
+		3673E5E528E1DF0C0048BAFA /* graphic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = graphic.h; path = include/vrv/graphic.h; sourceTree = "<group>"; };
 		36E0442B2347A9150054F141 /* expansionmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = expansionmap.cpp; path = src/expansionmap.cpp; sourceTree = "<group>"; };
 		36E0442D2347A9290054F141 /* expansionmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = expansionmap.h; path = include/vrv/expansionmap.h; sourceTree = "<group>"; };
 		400FEDD1206FA742000D3233 /* gracegrp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gracegrp.h; path = include/vrv/gracegrp.h; sourceTree = "<group>"; };
@@ -1971,10 +1979,14 @@
 			children = (
 				4DA0EAC122BB779300A7EBEB /* facsimile.cpp */,
 				4DA0EAD022BB77AF00A7EBEB /* facsimile.h */,
+				3673E5E428E1DF0C0048BAFA /* graphic.cpp */,
+				3673E5E528E1DF0C0048BAFA /* graphic.h */,
 				4DA0EAC022BB779300A7EBEB /* surface.cpp */,
 				4DA0EAD522BB77AF00A7EBEB /* surface.h */,
 				4DA0EAC222BB779400A7EBEB /* zone.cpp */,
 				4DA0EAD222BB77AF00A7EBEB /* zone.h */,
+				3673E5E428E1DF0C0048BAFA /* graphic.cpp */,
+				3673E5E528E1DF0C0048BAFA /* graphic.h */,
 			);
 			name = facselements;
 			sourceTree = "<group>";
@@ -2523,6 +2535,7 @@
 				4DF9D29C1C1B3F0A0069E8C8 /* attconverter.h in Headers */,
 				8F59293918854BF800FE51AD /* clef.h in Headers */,
 				4DA0EADB22BB77AF00A7EBEB /* editortoolkit_neume.h in Headers */,
+				BD6E5C41290007CE0039B0F1 /* graphic.h in Headers */,
 				4DB3D89A1F7C326800B5FC2B /* fb.h in Headers */,
 				4D1D733E1A1D08CD001E08F6 /* glyph.h in Headers */,
 				4DB3D8C71F83D0FD00B5FC2B /* breath.h in Headers */,
@@ -2930,6 +2943,7 @@
 				BB4C4B4222A932D7001F6AF0 /* beam.h in Headers */,
 				BB4C4BA222A932E5001F6AF0 /* scoredefinterface.h in Headers */,
 				BB4C4AA922A932A0001F6AF0 /* devicecontext.h in Headers */,
+				BD6E5C40290007CE0039B0F1 /* graphic.h in Headers */,
 				BB4C4A9D22A9328F001F6AF0 /* options.h in Headers */,
 				BB4C4A6322A9321F001F6AF0 /* atts_cmn.h in Headers */,
 				BBC19FBF22B37CA000100F42 /* all.h in Headers */,
@@ -3021,7 +3035,7 @@
 		8F086EA0188534680037FD8E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1410;
 				TargetAttributes = {
 					BB4C4A5122A930A3001F6AF0 = {
 						CreatedOnToolsVersion = 10.2.1;
@@ -3077,8 +3091,11 @@
 		};
 		4D9C5F361ADBADDA005D3031 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			inputFileListPaths = (
 			);
 			inputPaths = (
 			);
@@ -3168,6 +3185,7 @@
 				4D1694151E3A44F300569BF4 /* dynam.cpp in Sources */,
 				4D308105203DB6B500BC44F6 /* ref.cpp in Sources */,
 				4D1694161E3A44F300569BF4 /* pedal.cpp in Sources */,
+				BD6E5C3D290007C90039B0F1 /* graphic.cpp in Sources */,
 				4D1694171E3A44F300569BF4 /* mensur.cpp in Sources */,
 				BD0562372518CD20004057EB /* beamspan.cpp in Sources */,
 				4D1694181E3A44F300569BF4 /* text.cpp in Sources */,
@@ -3520,6 +3538,7 @@
 				4DF28A051A754DF000BA9F7D /* floatingobject.cpp in Sources */,
 				4DF9D2831C18DC490069E8C8 /* atts_mei.cpp in Sources */,
 				4D3FF8DB19BADD7A00B105B5 /* atts_pagebased.cpp in Sources */,
+				3673E5E628E1DF0C0048BAFA /* graphic.cpp in Sources */,
 				4DEC4DB621C8270100D1D273 /* unclear.cpp in Sources */,
 				4D89F90E201771AE00A4D336 /* num.cpp in Sources */,
 				4DB351131C8040B1002DD057 /* anchoredtext.cpp in Sources */,
@@ -3613,6 +3632,7 @@
 				4DB3D8B51F83D09100B5FC2B /* iohumdrum.cpp in Sources */,
 				4DDBBCC61C2EBAE7001AB50A /* view_text.cpp in Sources */,
 				8F3DD34618854B2E0051330C /* layerelement.cpp in Sources */,
+				BD6E5C3E290007CA0039B0F1 /* graphic.cpp in Sources */,
 				4DB3D8CA1F83D10700B5FC2B /* fermata.cpp in Sources */,
 				BD0562382518CD20004057EB /* beamspan.cpp in Sources */,
 				4D798CBE1B8AEDBA007281CA /* drawinginterface.cpp in Sources */,
@@ -3836,6 +3856,7 @@
 				BB4C4ACD22A932B6001F6AF0 /* sb.cpp in Sources */,
 				BB4C4AA822A932A0001F6AF0 /* devicecontext.cpp in Sources */,
 				BB4C4B7322A932D7001F6AF0 /* space.cpp in Sources */,
+				BD6E5C3F290007CB0039B0F1 /* graphic.cpp in Sources */,
 				402492BF232E70000017BB75 /* gracegrp.cpp in Sources */,
 				BB4C4A6622A9321F001F6AF0 /* atts_critapp.cpp in Sources */,
 				BD0562392518CD20004057EB /* beamspan.cpp in Sources */,
@@ -3989,6 +4010,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				DEAD_CODE_STRIPPING = YES;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -3998,6 +4021,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				DEAD_CODE_STRIPPING = YES;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -4029,6 +4054,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
@@ -4087,6 +4113,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
@@ -4116,10 +4143,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				DEAD_CODE_STRIPPING = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					NO_HUMDRUM_SUPPORT,
 				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -4129,7 +4158,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
+				DEAD_CODE_STRIPPING = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = NO_HUMDRUM_SUPPORT;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -4139,9 +4170,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = "";
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -4151,9 +4184,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = "";
 				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -4195,7 +4230,12 @@
 				INFOPLIST_FILE = bindings/iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rism.VerovioFramework;
@@ -4243,7 +4283,12 @@
 				INFOPLIST_FILE = bindings/iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rism.VerovioFramework;

@@ -45,6 +45,7 @@ SvgDeviceContext::SvgDeviceContext() : DeviceContext(SVG_DEVICE_CONTEXT)
 
     m_committed = false;
     m_vrvTextFont = false;
+    m_vrvTextFontFallback = false;
 
     m_mmOutput = false;
     m_svgBoundingBoxes = false;
@@ -83,6 +84,37 @@ bool SvgDeviceContext::CopyFileToStream(const std::string &filename, std::ostrea
     return true;
 }
 
+void SvgDeviceContext::IncludeTextFont(const std::string &fontname, const Resources *resources)
+{
+    assert(resources);
+
+    std::string cssContent;
+
+    if (m_smuflTextFont == SMUFLTEXTFONT_embedded) {
+        const std::string cssFontPath = StringFormat("%s/%s.css", resources->GetPath().c_str(), fontname.c_str());
+        std::ifstream cssFontFile(cssFontPath);
+        if (!cssFontFile.is_open()) {
+            LogWarning("The CSS font for '%s' could not be loaded and will not be embedded in the SVG",
+                resources->GetCurrentFontName().c_str());
+        }
+        else {
+            std::stringstream cssFontStream;
+            cssFontStream << cssFontFile.rdbuf();
+            cssContent = cssFontStream.str();
+        }
+    }
+    else {
+        std::string versionPath
+            = (VERSION_DEV) ? "develop" : StringFormat("%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+        cssContent = StringFormat("@import url(\"https://www.verovio.org/javascript/%s/data/%s.css\");",
+            versionPath.c_str(), fontname.c_str());
+    }
+
+    pugi::xml_node css = m_svgNode.append_child("style");
+    css.append_attribute("type") = "text/css";
+    css.append_child(pugi::node_pcdata).set_value(cssContent.c_str());
+}
+
 void SvgDeviceContext::Commit(bool xml_declaration)
 {
     if (m_committed) {
@@ -108,13 +140,17 @@ void SvgDeviceContext::Commit(bool xml_declaration)
         m_svgNode.prepend_attribute("width") = StringFormat(format, width).c_str();
     }
 
-    // add the woff VerovioText font if needed
-    const Resources *resources = this->GetResources(true);
-    if (m_vrvTextFont && resources) {
-        const std::string woffPath = resources->GetPath() + "/woff.xml";
-        pugi::xml_document woffDoc;
-        woffDoc.load_file(woffPath.c_str());
-        m_svgNode.prepend_copy(woffDoc.first_child());
+    // add the woff2 font if needed
+    if (m_smuflTextFont != SMUFLTEXTFONT_none) {
+        const Resources *resources = this->GetResources(true);
+        // include the selected font
+        if (m_vrvTextFont && resources) {
+            this->IncludeTextFont(resources->GetCurrentFontName(), resources);
+        }
+        // include the Leipzig fallback font
+        if (m_vrvTextFontFallback && resources) {
+            this->IncludeTextFont("Leipzig", resources);
+        }
     }
 
     // header
@@ -390,6 +426,7 @@ void SvgDeviceContext::StartPage()
 {
     // Initialize the flag to false because we want to know if the font needs to be included in the SVG
     m_vrvTextFont = false;
+    m_vrvTextFontFallback = false;
 
     // default styles
     std::string defaultFontDefinition{ "g.page-margin{font-family:" + m_defaultFontName + ";} " +
@@ -754,9 +791,9 @@ void SvgDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffs
     if (currentBrush.GetOpacity() != 1.0)
         polygonChild.append_attribute("fill-opacity") = StringFormat("%f", currentBrush.GetOpacity()).c_str();
 
-    std::string pointsString;
-    for (int i = 0; i < n; ++i) {
-        pointsString += StringFormat("%d,%d ", points[i].x + xOffset, points[i].y + yOffset);
+    std::string pointsString = StringFormat("%d,%d", points[0].x + xOffset, points[0].y + yOffset);
+    for (int i = 1; i < n; ++i) {
+        pointsString += " " + StringFormat("%d,%d", points[i].x + xOffset, points[i].y + yOffset);
     }
     polygonChild.append_attribute("points") = pointsString.c_str();
 }
@@ -881,7 +918,8 @@ void SvgDeviceContext::EndText()
 
 // draw text element with optional parameters to specify the bounding box of the text
 // if the bounding box is specified then append a rect child
-void SvgDeviceContext::DrawText(const std::string &text, const std::wstring &wtext, int x, int y, int width, int height)
+void SvgDeviceContext::DrawText(
+    const std::string &text, const std::u32string &wtext, int x, int y, int width, int height)
 {
     assert(m_fontStack.top());
 
@@ -905,9 +943,20 @@ void SvgDeviceContext::DrawText(const std::string &text, const std::wstring &wte
     // textChild.append_attribute("xml:space") = "preserve";
     // Set the @font-family only if it is not the same as in the parent node
     if (!fontFaceName.empty() && (fontFaceName != currentFaceName)) {
-        textChild.append_attribute("font-family") = m_fontStack.top()->GetFaceName().c_str();
-        // Special case where we want to specifiy if the VerovioText font (woff) needs to be included in the output
-        if (fontFaceName == "VerovioText") this->VrvTextFont();
+        // Special case where we want to specifiy if the woff2 font needs to be included in the output
+        if (m_fontStack.top()->GetSmuflFont() != SMUFL_NONE) {
+            if (m_fontStack.top()->GetSmuflFont() == SMUFL_FONT_FALLBACK) {
+                this->VrvTextFontFallback();
+                textChild.append_attribute("font-family") = "Leipzig";
+            }
+            else {
+                this->VrvTextFont();
+                textChild.append_attribute("font-family") = m_fontStack.top()->GetFaceName().c_str();
+            }
+        }
+        else {
+            textChild.append_attribute("font-family") = m_fontStack.top()->GetFaceName().c_str();
+        }
     }
     if (m_fontStack.top()->GetPointSize() != 0) {
         textChild.append_attribute("font-size") = StringFormat("%dpx", m_fontStack.top()->GetPointSize()).c_str();
@@ -948,7 +997,7 @@ void SvgDeviceContext::DrawRotatedText(const std::string &text, int x, int y, do
     // TODO
 }
 
-void SvgDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, bool setSmuflGlyph)
+void SvgDeviceContext::DrawMusicText(const std::u32string &text, int x, int y, bool setSmuflGlyph)
 {
     assert(m_fontStack.top());
 
@@ -965,7 +1014,7 @@ void SvgDeviceContext::DrawMusicText(const std::wstring &text, int x, int y, boo
 
     // print chars one by one
     for (unsigned int i = 0; i < text.length(); ++i) {
-        wchar_t c = text.at(i);
+        char32_t c = text.at(i);
         const Glyph *glyph = resources->GetGlyph(c);
         if (!glyph) {
             continue;

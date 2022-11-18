@@ -64,6 +64,7 @@ class FloatingElement;
 class FTrem;
 class Gliss;
 class GraceGrp;
+class Graphic;
 class GrpSym;
 class Hairpin;
 class HalfmRpt;
@@ -492,6 +493,7 @@ private:
     void WriteZone(pugi::xml_node currentNode, Zone *zone);
     void WriteSurface(pugi::xml_node currentNode, Surface *surface);
     void WriteFacsimile(pugi::xml_node currentNode, Facsimile *facsimile);
+    void WriteGraphic(pugi::xml_node currentNode, Graphic *graphic);
     ///@}
 
     /**
@@ -531,7 +533,7 @@ private:
      * Must be used in conjunction with (pugi::format_default | pugi::format_no_escapes).
      * Unused for now (see WriteText) because of un-escaped entities in the header.
      */
-    std::wstring EscapeSMuFL(std::wstring data);
+    std::u32string EscapeSMuFL(std::u32string data);
 
     /** @name Methods for converting members into MEI attributes. */
     ///@{
@@ -826,6 +828,7 @@ private:
      */
     ///@{
     bool ReadFacsimile(Doc *doc, pugi::xml_node facsimile);
+    bool ReadGraphic(Surface *parent, pugi::xml_node graphic);
     bool ReadSurface(Facsimile *parent, pugi::xml_node surface);
     bool ReadTupletSpanAsTuplet(Measure *measure, pugi::xml_node tupletSpan);
     bool ReadZone(Surface *parent, pugi::xml_node zone);
@@ -859,8 +862,8 @@ private:
     ///@{
     void SetMeiID(pugi::xml_node element, Object *object);
     DocType StrToDocType(std::string type);
-    std::wstring LeftTrim(std::wstring str);
-    std::wstring RightTrim(std::wstring str);
+    std::u32string LeftTrim(std::u32string str);
+    std::u32string RightTrim(std::u32string str);
     bool ReadXMLComment(Object *object, pugi::xml_node element);
     ///@}
 

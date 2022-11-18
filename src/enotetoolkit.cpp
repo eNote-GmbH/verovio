@@ -306,7 +306,7 @@ bool EnoteToolkit::EditNoteAccidental(const std::string &noteID, const std::opti
         Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
         if (accid) {
             accid->SetAccid(type);
-            if (resetAccidGes) accid->ResetAccidentalGestural();
+            if (resetAccidGes) accid->ResetAccidentalGes();
             accid->SetType(UserContentType);
             return true;
         }
@@ -897,7 +897,7 @@ void EnoteToolkit::SetTextChildren(ControlElement *element, const std::list<std:
     // Add new text children
     std::for_each(textEntries.cbegin(), textEntries.cend(), [element](const std::string &entry) {
         Text *text = new Text();
-        text->SetText(UTF8to16(entry));
+        text->SetText(UTF8to32(entry));
         element->AddChild(text);
     });
 }

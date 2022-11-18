@@ -259,7 +259,6 @@ protected:
     void DrawLayerChildren(DeviceContext *dc, Object *parent, Layer *layer, Staff *staff, Measure *measure);
     void DrawTextChildren(DeviceContext *dc, Object *parent, TextDrawingParams &params);
     void DrawFbChildren(DeviceContext *dc, Object *parent, TextDrawingParams &params);
-    void DrawSymbolChildren(DeviceContext *dc, Object *parent, Staff *staff, TextDrawingParams &params);
     void DrawRunningChildren(DeviceContext *dc, Object *parent, TextDrawingParams &params);
     ///@}
 
@@ -345,13 +344,13 @@ protected:
      */
     ///@{
     void DrawAcciaccaturaSlash(DeviceContext *dc, Stem *stem, Staff *staff);
-    void DrawClefEnclosing(DeviceContext *dc, Clef *clef, Staff *staff, wchar_t glyph, int x, int y);
+    void DrawClefEnclosing(DeviceContext *dc, Clef *clef, Staff *staff, char32_t glyph, int x, int y);
     void DrawDotsPart(DeviceContext *dc, int x, int y, unsigned char dots, const Staff *staff, bool dimin = false);
     void DrawKeyAccid(DeviceContext *dc, KeyAccid *keyAccid, Staff *staff, Clef *clef, int clefLocOffset, int &x);
     void DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int horizOffset);
     /** Returns the width of the drawn figures */
     int DrawMeterSigFigures(DeviceContext *dc, int x, int y, MeterSig *meterSig, int den, Staff *staff);
-    void DrawMRptPart(DeviceContext *dc, int xCentered, wchar_t smulfCode, int num, bool line, Staff *staff);
+    void DrawMRptPart(DeviceContext *dc, int xCentered, char32_t smulfCode, int num, bool line, Staff *staff);
     ///@}
 
     /**
@@ -386,7 +385,7 @@ protected:
     void DrawNum(DeviceContext *dc, Num *num, TextDrawingParams &params);
     void DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params);
     void DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params);
-    void DrawSymbol(DeviceContext *dc, Staff *staff, Symbol *symbol, TextDrawingParams &params);
+    void DrawSymbol(DeviceContext *dc, Symbol *symbol, TextDrawingParams &params);
     void DrawText(DeviceContext *dc, Text *text, TextDrawingParams &params);
     void DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params, int staffSize);
 
@@ -419,13 +418,13 @@ protected:
     void DrawControlElement(DeviceContext *dc, ControlElement *element, Measure *measure, System *system);
     void DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *system);
     void DrawArpeg(DeviceContext *dc, Arpeg *arpeg, Measure *measure, System *system);
-    void DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, wchar_t startGlyph, wchar_t fillGlyph,
-        wchar_t endGlyph, int x, int y, int height, bool cueSize);
+    void DrawArpegEnclosing(DeviceContext *dc, Arpeg *arpeg, Staff *staff, char32_t startGlyph, char32_t fillGlyph,
+        char32_t endGlyph, int x, int y, int height, bool cueSize);
     void DrawBreath(DeviceContext *dc, Breath *breath, Measure *measure, System *system);
     void DrawCaesura(DeviceContext *dc, Caesura *caesura, Measure *measure, System *system);
     void DrawDir(DeviceContext *dc, Dir *dir, Measure *measure, System *system);
     void DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *system);
-    void DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, const std::wstring &dynamSymbol,
+    void DrawDynamSymbolOnly(DeviceContext *dc, Staff *staff, Dynam *dynam, const std::u32string &dynamSymbol,
         data_HORIZONTALALIGNMENT alignment, TextDrawingParams &params);
     void DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, System *system);
     void DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *system);
@@ -547,18 +546,19 @@ protected:
     void DrawHorizontalSegmentedLine(
         DeviceContext *dc, int y1, SegmentedLine &line, int width, int dashLength = 0, int gapLength = 0);
     void DrawSmuflCode(
-        DeviceContext *dc, int x, int y, wchar_t code, int staffSize, bool dimin, bool setBBGlyph = false);
+        DeviceContext *dc, int x, int y, char32_t code, int staffSize, bool dimin, bool setBBGlyph = false);
     void DrawThickBezierCurve(
         DeviceContext *dc, Point bezier[4], int thickness, int staffSize, int penWidth, int penStyle = AxSOLID);
     void DrawPartFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2, int fillSection);
-    void DrawTextString(DeviceContext *dc, std::wstring str, TextDrawingParams &params);
-    void DrawDynamString(DeviceContext *dc, std::wstring str, TextDrawingParams &params, Rend *rend);
-    void DrawHarmString(DeviceContext *dc, std::wstring str, TextDrawingParams &params);
-    void DrawSmuflLine(DeviceContext *dc, Point orig, int length, int staffSize, bool dimin, wchar_t fill,
-        wchar_t start = 0, wchar_t end = 0);
-    void DrawSmuflString(DeviceContext *dc, int x, int y, std::wstring s, data_HORIZONTALALIGNMENT alignment,
+    void DrawTextString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
+    void DrawDirString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
+    void DrawDynamString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params, Rend *rend);
+    void DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
+    void DrawSmuflLine(DeviceContext *dc, Point orig, int length, int staffSize, bool dimin, char32_t fill,
+        char32_t start = 0, char32_t end = 0);
+    void DrawSmuflString(DeviceContext *dc, int x, int y, std::u32string s, data_HORIZONTALALIGNMENT alignment,
         int staffSize = 100, bool dimin = false, bool setBBGlyph = false);
-    void DrawLyricString(DeviceContext *dc, std::wstring str, int staffSize = 100,
+    void DrawLyricString(DeviceContext *dc, const std::u32string &str, int staffSize = 100,
         std::optional<TextDrawingParams> params = std::nullopt);
     void DrawNotFilledEllipse(DeviceContext *dc, int x1, int y1, int x2, int y2, int lineThinkness);
     void DrawFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2);
@@ -587,9 +587,9 @@ private:
      */
     ///@{
     data_STEMDIRECTION GetTupletCoordinates(Tuplet *tuplet, Layer *layer, Point *start, Point *end, Point *center);
-    std::wstring IntToTupletFigures(unsigned short number);
-    std::wstring IntToTimeSigFigures(unsigned short number);
-    std::wstring IntToSmuflFigures(unsigned short number, int offset);
+    std::u32string IntToTupletFigures(unsigned short number);
+    std::u32string IntToTimeSigFigures(unsigned short number);
+    std::u32string IntToSmuflFigures(unsigned short number, int offset);
     int NestedTuplets(Object *object);
     int GetSylYRel(int verseN, Staff *staff);
     int GetFYRel(F *f, Staff *staff);

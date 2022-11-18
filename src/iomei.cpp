@@ -55,6 +55,7 @@
 #include "functorparams.h"
 #include "gliss.h"
 #include "gracegrp.h"
+#include "graphic.h"
 #include "grpsym.h"
 #include "hairpin.h"
 #include "halfmrpt.h"
@@ -1691,8 +1692,8 @@ void MEIOutput::WriteScoreDef(pugi::xml_node currentNode, ScoreDef *scoreDef)
     scoreDef->WriteDistances(currentNode);
     scoreDef->WriteEndings(currentNode);
     scoreDef->WriteOptimization(currentNode);
-    scoreDef->WriteScoreDefGes(currentNode);
     scoreDef->WriteTimeBase(currentNode);
+    scoreDef->WriteTuning(currentNode);
 }
 
 void MEIOutput::WriteRunningElement(pugi::xml_node currentNode, RunningElement *runningElement)
@@ -2246,7 +2247,7 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
     // Execption for MEI basic
     if (!this->IsTreeObject(accid)) {
         accid->WriteAccidental(currentNode);
-        accid->WriteAccidentalGestural(currentNode);
+        accid->WriteAccidentalGes(currentNode);
         return;
     }
 
@@ -2254,7 +2255,7 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
     this->WritePositionInterface(currentNode, accid);
     this->WriteVisualOffsetInterface(currentNode, accid);
     accid->WriteAccidental(currentNode);
-    accid->WriteAccidentalGestural(currentNode);
+    accid->WriteAccidentalGes(currentNode);
     accid->WriteAccidLog(currentNode);
     accid->WriteColor(currentNode);
     accid->WriteEnclosingChars(currentNode);
@@ -2277,7 +2278,7 @@ void MEIOutput::WriteArtic(pugi::xml_node currentNode, Artic *artic)
     this->WriteLayerElement(currentNode, artic);
     this->WriteVisualOffsetInterface(currentNode, artic);
     artic->WriteArticulation(currentNode);
-    artic->WriteArticulationGestural(currentNode);
+    artic->WriteArticulationGes(currentNode);
     artic->WriteColor(currentNode);
     artic->WriteEnclosingChars(currentNode);
     artic->WriteExtSym(currentNode);
@@ -2751,6 +2752,7 @@ void MEIOutput::WriteFacsimile(pugi::xml_node currentNode, Facsimile *facsimile)
 {
     assert(facsimile);
     this->WriteXmlId(currentNode, facsimile);
+    facsimile->WriteTyped(currentNode);
 
     // Write Surface(s)
     for (Object *child = facsimile->GetFirst(); child != NULL; child = facsimile->GetNext()) {
@@ -2764,6 +2766,16 @@ void MEIOutput::WriteFacsimile(pugi::xml_node currentNode, Facsimile *facsimile)
     }
 }
 
+void MEIOutput::WriteGraphic(pugi::xml_node currentNode, Graphic *graphic)
+{
+    assert(graphic);
+    this->WriteXmlId(currentNode, graphic);
+    graphic->WritePointing(currentNode);
+    graphic->WriteWidth(currentNode);
+    graphic->WriteHeight(currentNode);
+    graphic->WriteTyped(currentNode);
+}
+
 void MEIOutput::WriteSurface(pugi::xml_node currentNode, Surface *surface)
 {
     assert(surface);
@@ -2772,7 +2784,11 @@ void MEIOutput::WriteSurface(pugi::xml_node currentNode, Surface *surface)
     surface->WriteTyped(currentNode);
 
     for (Object *child = surface->GetFirst(); child != NULL; child = surface->GetNext()) {
-        if (child->GetClassId() == ZONE) {
+        if (child->GetClassId() == GRAPHIC) {
+            pugi::xml_node childNode = currentNode.append_child("graphic");
+            this->WriteGraphic(childNode, dynamic_cast<Graphic *>(child));
+        }
+        else if (child->GetClassId() == ZONE) {
             pugi::xml_node childNode = currentNode.append_child("zone");
             this->WriteZone(childNode, dynamic_cast<Zone *>(child));
         }
@@ -2863,10 +2879,10 @@ void MEIOutput::WriteSymbol(pugi::xml_node currentNode, Symbol *symbol)
 {
     assert(symbol);
 
+    this->WriteTextElement(currentNode, symbol);
     symbol->WriteColor(currentNode);
     symbol->WriteExtSym(currentNode);
-
-    this->WriteXmlId(currentNode, symbol);
+    symbol->WriteTypography(currentNode);
 }
 
 void MEIOutput::WriteText(pugi::xml_node element, Text *text)
@@ -2874,10 +2890,10 @@ void MEIOutput::WriteText(pugi::xml_node element, Text *text)
     if (!text->GetText().empty()) {
         pugi::xml_node nodechild = element.append_child(pugi::node_pcdata);
         if (m_doc->GetOptions()->m_outputSmuflXmlEntities.GetValue()) {
-            nodechild.text() = UTF16to8(EscapeSMuFL(text->GetText()).c_str()).c_str();
+            nodechild.text() = UTF32to8(EscapeSMuFL(text->GetText()).c_str()).c_str();
         }
         else {
-            nodechild.text() = UTF16to8(text->GetText()).c_str();
+            nodechild.text() = UTF32to8(text->GetText()).c_str();
         }
     }
 }
@@ -2896,8 +2912,8 @@ void MEIOutput::WriteDurationInterface(pugi::xml_node element, DurationInterface
 
     interface->WriteAugmentDots(element);
     interface->WriteBeamSecondary(element);
-    interface->WriteDurationGestural(element);
-    interface->WriteDurationLogical(element);
+    interface->WriteDurationGes(element);
+    interface->WriteDurationLog(element);
     interface->WriteDurationQuality(element);
     interface->WriteDurationRatio(element);
     interface->WriteFermataPresent(element);
@@ -2967,7 +2983,7 @@ void MEIOutput::WriteTimePointInterface(pugi::xml_node element, TimePointInterfa
 
     interface->WriteStaffIdent(element);
     interface->WriteStartId(element);
-    interface->WriteTimestampLogical(element);
+    interface->WriteTimestampLog(element);
 }
 
 void MEIOutput::WriteTimeSpanningInterface(pugi::xml_node element, TimeSpanningInterface *interface)
@@ -2976,7 +2992,7 @@ void MEIOutput::WriteTimeSpanningInterface(pugi::xml_node element, TimeSpanningI
 
     this->WriteTimePointInterface(element, interface);
     interface->WriteStartEndId(element);
-    interface->WriteTimestamp2Logical(element);
+    interface->WriteTimestamp2Log(element);
 }
 
 void MEIOutput::WriteVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface)
@@ -3165,32 +3181,33 @@ void MEIOutput::WriteUnclear(pugi::xml_node currentNode, Unclear *unclear)
     unclear->WriteSource(currentNode);
 }
 
-std::wstring MEIOutput::EscapeSMuFL(std::wstring data)
+std::u32string MEIOutput::EscapeSMuFL(std::u32string data)
 {
-    std::wstring buffer;
+    std::u32string buffer;
     // approximate that we won't have a 1.1 longer string (for optimization)
     buffer.reserve(data.size() * 1.1);
     for (size_t pos = 0; pos != data.size(); ++pos) {
         if (data[pos] == '&') {
-            buffer.append(L"&amp;");
+            buffer.append(U"&amp;");
         }
         else if (data[pos] == '\"') {
-            buffer.append(L"&quot;");
+            buffer.append(U"&quot;");
         }
         else if (data[pos] == '\'') {
-            buffer.append(L"&apos;");
+            buffer.append(U"&apos;");
         }
         else if (data[pos] == '<') {
-            buffer.append(L"&lt;");
+            buffer.append(U"&lt;");
         }
         else if (data[pos] == '>') {
-            buffer.append(L"&gt;");
+            buffer.append(U"&gt;");
         }
-        // Unicode private area for SMuFL characters
-        else if ((data[pos] > 0xE000) && (data[pos] < 0xF8FF)) {
-            std::wostringstream ss;
+        // Unicode private area for SMuFL characters (and unicode music symbols)
+        else if (data[pos] > 0xE000) {
+            std::ostringstream ss;
             ss << std::hex << (int)data[pos];
-            buffer.append(L"&#x").append(ss.str()).append(L";");
+            std::u32string smuflCode = UTF8to32(ss.str());
+            buffer.append(U"&#x").append(smuflCode).append(U";");
         }
         else
             buffer.append(&data[pos], 1);
@@ -3287,8 +3304,8 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
             return false;
         }
     }
-    // filter for dir
-    else if (filterParent->Is(DIR)) {
+    // filter for dir or tempo
+    else if (filterParent->Is({ DIR, TEMPO })) {
         if (element == "") {
             return true;
         }
@@ -3356,6 +3373,9 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
             return true;
         }
         else if (element == "rend") {
+            return true;
+        }
+        else if (element == "symbol") {
             return true;
         }
         else {
@@ -3730,6 +3750,9 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
             m_doc->m_drawingPageHeight = m_doc->GetFacsimile()->GetMaxY();
             m_doc->m_drawingPageWidth = m_doc->GetFacsimile()->GetMaxX();
         }
+        if (facsimile.next_sibling("facsimile")) {
+            LogWarning("Only first <facsimile> is processed");
+        }
     }
 
     front = music.child("front");
@@ -3742,7 +3765,7 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
     back = music.child("back");
     if (!back.empty()) {
         m_doc->m_back.reset();
-        // copy the complete front into the master document
+        // copy the complete back into the master document
         m_doc->m_back.append_copy(back);
     }
 
@@ -4549,8 +4572,8 @@ bool MEIInput::ReadScoreDef(Object *parent, pugi::xml_node scoreDef)
     vrvScoreDef->ReadDistances(scoreDef);
     vrvScoreDef->ReadEndings(scoreDef);
     vrvScoreDef->ReadOptimization(scoreDef);
-    vrvScoreDef->ReadScoreDefGes(scoreDef);
     vrvScoreDef->ReadTimeBase(scoreDef);
+    vrvScoreDef->ReadTuning(scoreDef);
 
     this->ReadUnsupportedAttr(scoreDef, vrvScoreDef);
     return this->ReadScoreDefChildren(vrvScoreDef, scoreDef);
@@ -5961,7 +5984,7 @@ bool MEIInput::ReadAccid(Object *parent, pugi::xml_node accid)
     this->ReadPositionInterface(accid, vrvAccid);
     this->ReadVisualOffsetInterface(accid, vrvAccid);
     vrvAccid->ReadAccidental(accid);
-    vrvAccid->ReadAccidentalGestural(accid);
+    vrvAccid->ReadAccidentalGes(accid);
     vrvAccid->ReadAccidLog(accid);
     vrvAccid->ReadColor(accid);
     vrvAccid->ReadEnclosingChars(accid);
@@ -5981,7 +6004,7 @@ bool MEIInput::ReadArtic(Object *parent, pugi::xml_node artic)
 
     this->ReadVisualOffsetInterface(artic, vrvArtic);
     vrvArtic->ReadArticulation(artic);
-    vrvArtic->ReadArticulationGestural(artic);
+    vrvArtic->ReadArticulationGes(artic);
     vrvArtic->ReadColor(artic);
     vrvArtic->ReadEnclosingChars(artic);
     vrvArtic->ReadExtSym(artic);
@@ -6124,8 +6147,8 @@ void MEIInput::ReadAccidAttr(pugi::xml_node node, Object *object)
 {
     AttAccidental accidental;
     accidental.ReadAccidental(node);
-    AttAccidentalGestural accidentalGestural;
-    accidentalGestural.ReadAccidentalGestural(node);
+    AttAccidentalGes accidentalGestural;
+    accidentalGestural.ReadAccidentalGes(node);
     if (accidental.HasAccid() || accidentalGestural.HasAccidGes()) {
         Accid *vrvAccid = new Accid();
         vrvAccid->IsAttribute(true);
@@ -6775,6 +6798,13 @@ bool MEIInput::ReadRend(Object *parent, pugi::xml_node rend)
         vrvRend->SetHalign(HORIZONTALALIGNMENT_NONE);
         vrvRend->SetValign(VERTICALALIGNMENT_NONE);
     }
+    // Previously we would use @fontame="VerovioText"
+    // Now changeto @fontfam="smufl"
+    if (vrvRend->HasFontname() && vrvRend->GetFontname() == "VerovioText") {
+        LogWarning("Using rend@fontname with 'VerovioText' is deprecated. Use 'rend@fontfam=\"smufl\"' instead");
+        vrvRend->SetFontfam("smufl");
+        vrvRend->SetFontname("");
+    }
 
     parent->AddChild(vrvRend);
     this->ReadUnsupportedAttr(rend, vrvRend);
@@ -6801,18 +6831,11 @@ bool MEIInput::ReadSvg(Object *parent, pugi::xml_node svg)
 bool MEIInput::ReadSymbol(Object *parent, pugi::xml_node symbol)
 {
     Symbol *vrvSymbol = new Symbol();
-    this->SetMeiID(symbol, vrvSymbol);
-
-    if (parent->IsEditorialElement()) {
-        std::string meiElementName = parent->GetClassName();
-        std::transform(meiElementName.begin(), meiElementName.begin() + 1, meiElementName.begin(), ::tolower);
-        LogWarning("Element <%s> within <%s> is not supported and will not be rendered", symbol.name(),
-            meiElementName.c_str());
-        vrvSymbol->m_visibility = Hidden;
-    }
+    this->ReadTextElement(symbol, vrvSymbol);
 
     vrvSymbol->ReadColor(symbol);
     vrvSymbol->ReadExtSym(symbol);
+    vrvSymbol->ReadTypography(symbol);
 
     parent->AddChild(vrvSymbol);
     this->ReadUnsupportedAttr(symbol, vrvSymbol);
@@ -6824,7 +6847,7 @@ bool MEIInput::ReadText(Object *parent, pugi::xml_node text, bool trimLeft, bool
     Text *vrvText = new Text();
 
     assert(text.text());
-    std::wstring str = UTF8to16(text.text().as_string());
+    std::u32string str = UTF8to32(text.text().as_string());
     if (trimLeft) str = this->LeftTrim(str);
     if (trimRight) str = this->RightTrim(str);
 
@@ -6849,8 +6872,8 @@ bool MEIInput::ReadDurationInterface(pugi::xml_node element, DurationInterface *
 
     interface->ReadAugmentDots(element);
     interface->ReadBeamSecondary(element);
-    interface->ReadDurationGestural(element);
-    interface->ReadDurationLogical(element);
+    interface->ReadDurationGes(element);
+    interface->ReadDurationLog(element);
     interface->ReadDurationQuality(element);
     interface->ReadDurationRatio(element);
     interface->ReadFermataPresent(element);
@@ -6917,7 +6940,7 @@ bool MEIInput::ReadTimePointInterface(pugi::xml_node element, TimePointInterface
 {
     interface->ReadStaffIdent(element);
     interface->ReadStartId(element);
-    interface->ReadTimestampLogical(element);
+    interface->ReadTimestampLog(element);
     return true;
 }
 
@@ -6925,7 +6948,7 @@ bool MEIInput::ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInt
 {
     this->ReadTimePointInterface(element, interface);
     interface->ReadStartEndId(element);
-    interface->ReadTimestamp2Logical(element);
+    interface->ReadTimestamp2Log(element);
     return true;
 }
 
@@ -7637,17 +7660,17 @@ DocType MEIInput::StrToDocType(std::string type)
     return Raw;
 }
 
-std::wstring MEIInput::LeftTrim(std::wstring str)
+std::u32string MEIInput::LeftTrim(std::u32string str)
 {
-    std::wstring::size_type pos = 0;
+    std::u32string::size_type pos = 0;
     while (pos < str.size() && iswspace(str[pos])) pos++;
     str.erase(0, pos);
     return str;
 }
 
-std::wstring MEIInput::RightTrim(std::wstring str)
+std::u32string MEIInput::RightTrim(std::u32string str)
 {
-    std::wstring::size_type pos = str.size();
+    std::u32string::size_type pos = str.size();
     while (pos > 0 && iswspace(str[pos - 1])) pos--;
     str.erase(pos);
     return str;
@@ -7857,7 +7880,7 @@ void MEIInput::UpgradeStaffDefTo_4_0_0(pugi::xml_node staffDef, StaffDef *vrvSta
 {
     if (staffDef.attribute("label")) {
         Text *text = new Text();
-        text->SetText(UTF8to16(staffDef.attribute("label").value()));
+        text->SetText(UTF8to32(staffDef.attribute("label").value()));
         Label *label = new Label();
         label->AddChild(text);
         vrvStaffDef->AddChild(label);
@@ -7865,7 +7888,7 @@ void MEIInput::UpgradeStaffDefTo_4_0_0(pugi::xml_node staffDef, StaffDef *vrvSta
     }
     if (staffDef.attribute("label.abbr")) {
         Text *text = new Text();
-        text->SetText(UTF8to16(staffDef.attribute("label.abbr").value()));
+        text->SetText(UTF8to32(staffDef.attribute("label.abbr").value()));
         LabelAbbr *labelAbbr = new LabelAbbr();
         labelAbbr->AddChild(text);
         vrvStaffDef->AddChild(labelAbbr);
@@ -7881,7 +7904,7 @@ void MEIInput::UpgradeStaffGrpTo_4_0_0(pugi::xml_node staffGrp, StaffGrp *vrvSta
     }
     if (staffGrp.attribute("label")) {
         Text *text = new Text();
-        text->SetText(UTF8to16(staffGrp.attribute("label").value()));
+        text->SetText(UTF8to32(staffGrp.attribute("label").value()));
         Label *label = new Label();
         label->AddChild(text);
         vrvStaffGrp->AddChild(label);
@@ -7889,7 +7912,7 @@ void MEIInput::UpgradeStaffGrpTo_4_0_0(pugi::xml_node staffGrp, StaffGrp *vrvSta
     }
     if (staffGrp.attribute("label.abbr")) {
         Text *text = new Text();
-        text->SetText(UTF8to16(staffGrp.attribute("label.abbr").value()));
+        text->SetText(UTF8to32(staffGrp.attribute("label.abbr").value()));
         LabelAbbr *labelAbbr = new LabelAbbr();
         labelAbbr->AddChild(text);
         vrvStaffGrp->AddChild(labelAbbr);
@@ -7942,6 +7965,19 @@ void MEIInput::UpgradePageTo_3_0_0(Page *page, Doc *doc)
     // LogDebug("PPUFactor: %f", m_PPUFactor);
 }
 
+bool MEIInput::ReadGraphic(Surface *parent, pugi::xml_node graphic)
+{
+    assert(parent);
+    Graphic *vrvGraphic = new Graphic();
+    this->SetMeiID(graphic, vrvGraphic);
+    vrvGraphic->ReadPointing(graphic);
+    vrvGraphic->ReadWidth(graphic);
+    vrvGraphic->ReadHeight(graphic);
+    vrvGraphic->ReadTyped(graphic);
+    parent->AddChild(vrvGraphic);
+    return true;
+}
+
 bool MEIInput::ReadSurface(Facsimile *parent, pugi::xml_node surface)
 {
     assert(parent);
@@ -7951,7 +7987,10 @@ bool MEIInput::ReadSurface(Facsimile *parent, pugi::xml_node surface)
     vrvSurface->ReadTyped(surface);
 
     for (pugi::xml_node child = surface.first_child(); child; child = child.next_sibling()) {
-        if (strcmp(child.name(), "zone") == 0) {
+        if (strcmp(child.name(), "graphic") == 0) {
+            this->ReadGraphic(vrvSurface, child);
+        }
+        else if (strcmp(child.name(), "zone") == 0) {
             this->ReadZone(vrvSurface, child);
         }
         else {
@@ -7979,6 +8018,7 @@ bool MEIInput::ReadFacsimile(Doc *doc, pugi::xml_node facsimile)
     Facsimile *vrvFacsimile = new Facsimile();
     // Read xmlId (if present)
     this->SetMeiID(facsimile, vrvFacsimile);
+    vrvFacsimile->ReadTyped(facsimile);
     // Read children
     for (pugi::xml_node child = facsimile.first_child(); child; child = child.next_sibling()) {
         if (strcmp(child.name(), "surface") == 0) {

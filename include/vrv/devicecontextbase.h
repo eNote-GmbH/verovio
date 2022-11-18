@@ -14,6 +14,7 @@
 
 #include "attdef.h"
 #include "vrv.h"
+#include "vrvdef.h"
 
 namespace vrv {
 
@@ -141,6 +142,7 @@ public:
         m_faceName.clear();
         m_encoding = 0; // was wxFONTENCODING_DEFAULT;
         m_widthToHeightRatio = 1.0;
+        m_smuflFont = SMUFL_NONE;
     }
     virtual ~FontInfo(){};
 
@@ -154,16 +156,19 @@ public:
     int GetFamily() const { return m_family; }
     int GetEncoding() const { return m_encoding; }
     float GetWidthToHeightRatio() const { return m_widthToHeightRatio; }
+    SmuflTextFont GetSmuflFont() const { return m_smuflFont; }
 
     void SetPointSize(int pointSize) { m_pointSize = pointSize; }
     void SetStyle(data_FONTSTYLE style) { m_style = style; }
     void SetWeight(data_FONTWEIGHT weight) { m_weight = weight; }
     void SetUnderlined(bool underlined) { m_underlined = underlined; }
     void SetSupSubScript(bool supSubScript) { m_supSubScript = supSubScript; }
-    void SetFaceName(const char *faceName) { m_faceName = faceName; }
+    void SetFaceName(const std::string &faceName) { m_faceName = faceName; }
     void SetFamily(int family) { m_family = family; }
     void SetEncoding(int encoding) { m_encoding = encoding; }
     void SetWidthToHeightRatio(float ratio) { m_widthToHeightRatio = ratio; }
+    void SetSmuflFont(SmuflTextFont smuflFont) { m_smuflFont = smuflFont; }
+    void SetSmuflWithFallback(bool fallback) { m_smuflFont = (fallback) ? SMUFL_FONT_FALLBACK : SMUFL_FONT_SELECTED; }
 
 private:
     int m_pointSize;
@@ -175,6 +180,7 @@ private:
     std::string m_faceName;
     int m_encoding;
     float m_widthToHeightRatio;
+    SmuflTextFont m_smuflFont;
 };
 
 // ---------------------------------------------------------------------------

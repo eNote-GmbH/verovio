@@ -25,24 +25,24 @@ namespace vrv {
 
 static const ClassRegistrar<Symbol> s_factory("symbol", SYMBOL);
 
-Symbol::Symbol() : Object(SYMBOL, "symbol-"), AttColor(), AttExtSym()
+Symbol::Symbol() : TextElement(SYMBOL, "symbol-"), AttColor(), AttExtSym(), AttTypography()
 {
     this->Reset();
 
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_EXTSYM);
+    this->RegisterAttClass(ATT_TYPOGRAPHY);
 }
 
 Symbol::~Symbol() {}
 
 void Symbol::Reset()
 {
-    Object::Reset();
+    TextElement::Reset();
 
     this->ResetColor();
     this->ResetExtSym();
-
-    m_visibility = Visible;
+    this->ResetTypography();
 }
 
 bool Symbol::IsSupportedChild(Object *child)
@@ -50,19 +50,19 @@ bool Symbol::IsSupportedChild(Object *child)
     return false;
 }
 
-wchar_t Symbol::GetSymbolGlyph() const
+char32_t Symbol::GetSymbolGlyph() const
 {
     const Resources *resources = this->GetDocResources();
     if (!resources) return 0;
 
     // If there is glyph.num, prioritize it
     if (this->HasGlyphNum()) {
-        wchar_t code = this->GetGlyphNum();
+        char32_t code = this->GetGlyphNum();
         if (NULL != resources->GetGlyph(code)) return code;
     }
     // If there is glyph.name (second priority)
     else if (this->HasGlyphName()) {
-        wchar_t code = resources->GetGlyphCode(this->GetGlyphName());
+        char32_t code = resources->GetGlyphCode(this->GetGlyphName());
         if (NULL != resources->GetGlyph(code)) return code;
     }
 

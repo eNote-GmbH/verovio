@@ -76,7 +76,7 @@ public:
     /**
      * Retrieves the appropriate SMuFL code for a data_CLEFSHAPE
      */
-    wchar_t GetClefGlyph(const data_NOTATIONTYPE notationType) const;
+    char32_t GetClefGlyph(const data_NOTATIONTYPE notationType) const;
 
     /**
      * Retrieves the appropriate SMuFL code for a data_CLEFSHAPE
