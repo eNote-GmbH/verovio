@@ -739,4 +739,6 @@
   </g>
   <g c="E99F" x="0.0" y="-81.0" w="119.0" h="162.0" h-a-x="119" n="chantStrophicus" />
   <g c="E04A" x="1.0" y="-95.0" w="448.0" h="1191.0" h-a-x="450" n="segnoSerpent1" />
+  <g c="E4BE" x="0.0" y="0.0" w="347.0" h="236.0" h-a-x="347" n="articReversedAccentAbove"/>
+  <g c="E4BF" x="0.0" y="-236.0" w="347.0" h="236.0" h-a-x="347" n="articReversedAccentBelow"/>
 </bounding-boxes>
