@@ -306,7 +306,7 @@ bool EnoteToolkit::EditNoteAccidental(const std::string &noteID, const std::opti
         Accid *accid = vrv_cast<Accid *>(note->GetChild(0, ACCID));
         if (accid) {
             accid->SetAccid(type);
-            if (resetAccidGes) accid->ResetAccidentalGestural();
+            if (resetAccidGes) accid->ResetAccidentalGes();
             accid->SetType(UserContentType);
             return true;
         }
