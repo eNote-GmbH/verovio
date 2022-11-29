@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "smufl.h"
+#include "vrv.h"
 #include "vrvdef.h"
 
 //----------------------------------------------------------------------------
@@ -29,6 +30,15 @@ namespace vrv {
 thread_local std::string Resources::s_defaultPath = VRV_RESOURCE_DIR;
 const Resources::StyleAttributes Resources::k_defaultStyle{ data_FONTWEIGHT::FONTWEIGHT_normal,
     data_FONTSTYLE::FONTSTYLE_normal };
+
+//----------------------------------------------------------------------------
+// Function defined in toolkitdef.h
+//----------------------------------------------------------------------------
+
+void SetDefaultResourcePath(const std::string &path)
+{
+    Resources::SetDefaultPath(path);
+}
 
 //----------------------------------------------------------------------------
 // Resources
@@ -232,7 +242,7 @@ bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes 
     pugi::xml_parse_result result = doc.load_file(filename.c_str());
     if (!result) {
         // File not found, default bounding boxes will be used
-        LogMessage("Cannot load bounding boxes for text font '%s'", filename.c_str());
+        LogInfo("Cannot load bounding boxes for text font '%s'", filename.c_str());
         return false;
     }
     pugi::xml_node root = doc.first_child();

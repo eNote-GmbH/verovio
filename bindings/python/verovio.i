@@ -120,6 +120,18 @@ def renderToTimemap(toolkit, options = {}):
     return json.loads($action(toolkit, json.dumps(options)))
 %}
 
+// Toolkit::RenderToTimemapFile
+%feature("shadow") vrv::Toolkit::RenderToTimemapFile(const std::string &, const std::string &) %{
+def renderToTimemapFile(toolkit, filename, options = {}):
+    return json.loads($action(toolkit, filename, json.dumps(options)))
+%}
+
+// Toolkit::SaveFile
+%feature("shadow") vrv::Toolkit::SaveFile(const std::string &, const std::string &) %{
+def saveFile(toolkit, filename, options = {}):
+    return json.loads($action(toolkit, filename, json.dumps(options)))
+%}
+
 // Toolkit::Select
 %feature("shadow") vrv::Toolkit::Select(const std::string &) %{
 def select(toolkit, selection):
@@ -143,10 +155,12 @@ def validatePAE(toolkit, data):
 %module(package="verovio") verovio
 %include "std_string.i"
 %include "../../include/vrv/toolkit.h"
+%include "../../include/vrv/toolkitdef.h"
 
 %{
     #include "../../include/vrv/toolkit.h"
-
+    #include "../../include/vrv/toolkitdef.h"
+    
     using namespace vrv;
     using namespace std;
 %}

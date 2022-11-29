@@ -256,6 +256,7 @@ int main(int argc, char **argv)
         { "all-pages", no_argument, 0, 'a' }, //
         { "input-from", required_argument, 0, 'f' }, //
         { "help", required_argument, 0, 'h' }, //
+        { "log-level", required_argument, 0, 'l' }, //
         { "outfile", required_argument, 0, 'o' }, //
         { "page", required_argument, 0, 'p' }, //
         { "resources", required_argument, 0, 'r' }, //
@@ -317,7 +318,7 @@ int main(int argc, char **argv)
     vrv::Option *opt = NULL;
     vrv::OptionBool *optBool = NULL;
     std::string resourcePath = toolkit.GetResourcePath();
-    while ((c = getopt_long(argc, argv, "ab:f:h:o:p:r:s:t:vx:z", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ab:f:h:l:o:p:r:s:t:vx:z", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 key = long_options[option_index].name;
@@ -327,15 +328,6 @@ int main(int argc, char **argv)
                     vrv::LogError("Unrecognized option %s has been skipped.", badOption.c_str());
                     continue;
                 }
-
-                // Handle deprecated options
-                /*
-                if (key == "condense-encoded") {
-                    vrv::LogWarning("Option --condense-encoded is deprecated; use --condense encoded instead");
-                    options->m_condense.SetValue("encoded");
-                    break;
-                }
-                */
 
                 if (optBool) {
                     optBool->SetValue(true);
@@ -359,6 +351,8 @@ int main(int argc, char **argv)
                     exit(1);
                 };
                 break;
+
+            case 'l': vrv::EnableLog(vrv::StrToLogLevel(std::string(optarg))); break;
 
             case 'o': outfile = std::string(optarg); break;
 
@@ -437,6 +431,12 @@ int main(int argc, char **argv)
     if (!toolkit.SetResourcePath(resourcePath)) {
         std::cerr << "Fonts could not be initialized successfully; please check the contents of the resource directory."
                   << std::endl;
+        exit(1);
+    }
+
+    // Load a specified font
+    if (!toolkit.SetOptions(vrv::StringFormat("{\"font\": \"%s\" }", options->m_font.GetValue().c_str()))) {
+        std::cerr << "Font '" << options->m_font.GetValue() << "' could not be loaded." << std::endl;
         exit(1);
     }
 

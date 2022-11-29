@@ -14,6 +14,16 @@ using namespace vrv;
 
 extern "C" {
 
+void enableLog(bool value)
+{
+    EnableLog(value);
+}
+
+void enableLogToBuffer(bool value)
+{
+    EnableLogToBuffer(value);
+}
+
 /****************************************************************
  * Methods exported to use the Toolkit class
  ****************************************************************/
@@ -35,7 +45,7 @@ void *vrvToolkit_constructorResourcePath(const char *resourcePath)
 void vrvToolkit_destructor(void *tkPtr)
 {
     Toolkit *tk = static_cast<Toolkit *>(tkPtr);
-    LogMessage("Deleting toolkit");
+    LogInfo("Deleting toolkit");
     delete tk;
 }
 

@@ -58,11 +58,6 @@ const char *UTF_16_BE_BOM = "\xFE\xFF";
 const char *UTF_16_LE_BOM = "\xFF\xFE";
 const char *ZIP_SIGNATURE = "\x50\x4B\x03\x04";
 
-void SetDefaultResourcePath(const std::string &path)
-{
-    Resources::SetDefaultPath(path);
-}
-
 //----------------------------------------------------------------------------
 // Toolkit
 //----------------------------------------------------------------------------
@@ -165,10 +160,6 @@ bool Toolkit::SetOutputTo(std::string const &outputTo)
         m_outputTo = MEI;
     }
     else if (outputTo == "mei-pb") {
-        m_outputTo = MEI;
-    }
-    else if (outputTo == "pb-mei") {
-        LogWarning("Output to 'pb-mei' is deprecated, use 'mei-pb' instead.");
         m_outputTo = MEI;
     }
     else if (outputTo == "midi") {
@@ -448,7 +439,7 @@ bool Toolkit::LoadZipData(const std::vector<unsigned char> &bytes)
     }
 
     if (!filename.empty()) {
-        LogMessage("Loading file '%s' in the archive", filename.c_str());
+        LogInfo("Loading file '%s' in the archive", filename.c_str());
         return this->LoadData(file.read(filename));
     }
     else {
@@ -518,7 +509,7 @@ bool Toolkit::LoadData(const std::string &data)
     }
 #ifndef NO_HUMDRUM_SUPPORT
     else if (inputFormat == HUMDRUM) {
-        // LogMessage("Importing Humdrum data");
+        // LogInfo("Importing Humdrum data");
 
         // HumdrumInput *input = new HumdrumInput(&m_doc);
         input = new HumdrumInput(&m_doc);
@@ -544,7 +535,7 @@ bool Toolkit::LoadData(const std::string &data)
     else if (inputFormat == HUMMEI) {
         // convert first to MEI and then load MEI data via MEIInput.  This
         // allows using XPath processing.
-        // LogMessage("Importing Humdrum data via MEI");
+        // LogInfo("Importing Humdrum data via MEI");
         Doc tempdoc;
         tempdoc.SetOptions(m_doc.GetOptions());
         HumdrumInput *tempinput = new HumdrumInput(&tempdoc);
@@ -690,7 +681,7 @@ bool Toolkit::LoadData(const std::string &data)
     }
 #endif
     else {
-        LogMessage("Unsupported format");
+        LogInfo("Unsupported format");
         return false;
     }
 
@@ -1082,15 +1073,15 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
 
         if (json.has<jsonxx::Number>(iter->first)) {
             opt->SetValueDbl(json.get<jsonxx::Number>(iter->first));
-            // LogMessage("Double: %f", json.get<jsonxx::Number>(iter->first));
+            // LogInfo("Double: %f", json.get<jsonxx::Number>(iter->first));
         }
         else if (json.has<jsonxx::Boolean>(iter->first)) {
             opt->SetValueBool(json.get<jsonxx::Boolean>(iter->first));
-            // LogMessage("Bool: %d", json.get<jsonxx::Boolean>(iter->first));
+            // LogInfo("Bool: %d", json.get<jsonxx::Boolean>(iter->first));
         }
         else if (json.has<jsonxx::String>(iter->first)) {
             opt->SetValue(json.get<jsonxx::String>(iter->first));
-            // LogMessage("String: %s", json.get<jsonxx::String>(iter->first).c_str());
+            // LogInfo("String: %s", json.get<jsonxx::String>(iter->first).c_str());
         }
         else if (json.has<jsonxx::Array>(iter->first)) {
             jsonxx::Array values = json.get<jsonxx::Array>(iter->first);
@@ -1123,41 +1114,6 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     }
 
     return true;
-}
-
-std::string Toolkit::GetOption(const std::string &option, bool defaultValue) const
-{
-    if (m_options->GetItems()->count(option) == 0) {
-        LogError("Unsupported option '%s'", option.c_str());
-        return "[unspecified]";
-    }
-    Option *opt = m_options->GetItems()->at(option);
-    assert(opt);
-    return (defaultValue) ? opt->GetDefaultStrValue() : opt->GetStrValue();
-}
-
-bool Toolkit::SetOption(const std::string &option, const std::string &value)
-{
-    // Set option value
-    if (m_options->GetItems()->count(option) == 0) {
-        LogError("Unsupported option '%s'", option.c_str());
-        return false;
-    }
-    Option *opt = m_options->GetItems()->at(option);
-    assert(opt);
-    const bool ok = opt->SetValue(value);
-
-    // Reset fonts if necessary
-    if (ok) {
-        if (opt == &m_options->m_font) {
-            this->SetMusicFont(value);
-        }
-        else if (opt == &m_options->m_textFont) {
-            this->SetTextFont(value);
-        }
-    }
-
-    return ok;
 }
 
 void Toolkit::ResetOptions()
@@ -1218,7 +1174,7 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
     }
     // If not found at all
     if (!element) {
-        LogMessage("Element with id '%s' could not be found", xmlId.c_str());
+        LogInfo("Element with id '%s' could not be found", xmlId.c_str());
         return o.json();
     }
 
@@ -1230,7 +1186,7 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
     ArrayOfStrAttr::iterator iter;
     for (iter = attributes.begin(); iter != attributes.end(); ++iter) {
         o << (*iter).first << (*iter).second;
-        // LogMessage("Element %s - %s", (*iter).first.c_str(), (*iter).second.c_str());
+        // LogInfo("Element %s - %s", (*iter).first.c_str(), (*iter).second.c_str());
     }
     return o.json();
 }
@@ -1405,6 +1361,7 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
     assert(userScale != 0.0);
 
     if (m_options->m_scaleToPageSize.GetValue()) {
+        deviceContext->SetBaseSize(width, height);
         height *= (1.0 / userScale);
         width *= (1.0 / userScale);
     }
@@ -1951,6 +1908,12 @@ void Toolkit::ClearHumdrumBuffer()
 #endif
 }
 
+void Toolkit::SetInputFrom(FileFormat format)
+{
+    LogWarning("This method is deprecated. Use SetInputFormat(std::string) instead.");
+    m_inputFrom = format;
+}
+
 std::string Toolkit::ConvertMEIToHumdrum(const std::string &meiData)
 {
 #ifndef NO_HUMDRUM_SUPPORT
@@ -2076,10 +2039,10 @@ void Toolkit::LogRuntime() const
         const int minutes = seconds / 60.0;
         if (minutes > 0) {
             seconds -= 60.0 * minutes;
-            LogMessage("Total runtime is %d min %.3f s.", minutes, seconds);
+            LogInfo("Total runtime is %d min %.3f s.", minutes, seconds);
         }
         else {
-            LogMessage("Total runtime is %.3f s.", seconds);
+            LogInfo("Total runtime is %.3f s.", seconds);
         }
     }
     else {
