@@ -265,7 +265,8 @@ int main(int argc, char **argv)
         { "version", no_argument, 0, 'v' }, //
         { "xml-id-seed", required_argument, 0, 'x' }, //
         // standard input - long options only or - as filename
-        { "stdin", no_argument, 0, 'z' }, { 0, 0, 0, 0 }
+        { "stdin", no_argument, 0, 'z' }, //
+        { 0, 0, 0, 0 }
     };
 
     int baseSize = sizeof(base_options) / sizeof(option);
@@ -429,7 +430,7 @@ int main(int argc, char **argv)
 
     // Load the music font from the resource directory
     if (!toolkit.SetResourcePath(resourcePath)) {
-        std::cerr << "Fonts could not be initialized successfully; please check the contents of the resource directory."
+        std::cerr << "The music font could not be loaded; please check the contents of the resource directory."
                   << std::endl;
         exit(1);
     }
@@ -440,10 +441,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    if (outformat == "pb-mei") {
-        outformat = "mei-pb";
-        vrv::LogWarning("Output to 'pb-mei' is deprecated, use 'mei-pb' instead.");
-    }
     if ((outformat != "svg") && (outformat != "mei") && (outformat != "mei-basic") && (outformat != "mei-pb")
         && (outformat != "midi") && (outformat != "timemap") && (outformat != "humdrum") && (outformat != "hum")
         && (outformat != "pae")) {
