@@ -597,6 +597,8 @@
   <g c="E948" x="-120.0" y="-760.0" w="320.0" h="760.0" h-a-x="211" n="mensuralCombStemDownFlagExtended" />
   <g c="EC85" x="20.0" y="-319.0" w="402.0" h="637.0" h-a-x="442" n="timeSigCut2" />
   <g c="EC86" x="20.0" y="-319.0" w="372.0" h="637.0" h-a-x="412" n="timeSigCut3" />
+  <g c="F408" x="0.0" y="-676.0" w="610.0" h="1264.0" h-a-x="610" n="cClefFrench" />
+  <g c="F4BF" x="0.0" y="-600.0" w="465.0" h="1200.0" h-a-x="465" n="cClefFrench20C" />
   <g c="E903" x="0.0" y="-220.0" w="515.0" h="440.0" h-a-x="515" n="mensuralFclef" />
   <g c="EC80" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketLeft" />
   <g c="EC81" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketRight" />
