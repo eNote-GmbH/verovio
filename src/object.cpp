@@ -17,6 +17,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "altsyminterface.h"
 #include "chord.h"
 #include "clef.h"
 #include "comparison.h"
@@ -44,6 +45,7 @@
 #include "surface.h"
 #include "syl.h"
 #include "syllable.h"
+#include "symboltable.h"
 #include "system.h"
 #include "systemmilestone.h"
 #include "tempo.h"
@@ -289,13 +291,12 @@ void Object::MoveChildrenFrom(Object *sourceParent, int idx, bool allowTypeChang
     int i;
     for (i = 0; i < (int)sourceParent->m_children.size(); ++i) {
         Object *child = sourceParent->Relinquish(i);
-        child->SetParent(this);
         if (idx != -1) {
             this->InsertChild(child, idx);
             idx++;
         }
         else {
-            m_children.push_back(child);
+            AddChild(child);
         }
     }
 }
@@ -318,7 +319,6 @@ void Object::InsertBefore(Object *child, Object *newChild)
     assert(this->GetChildIndex(newChild) == -1);
 
     int idx = this->GetChildIndex(child);
-    newChild->SetParent(this);
     this->InsertChild(newChild, idx);
 
     this->Modify();
@@ -330,7 +330,6 @@ void Object::InsertAfter(Object *child, Object *newChild)
     assert(this->GetChildIndex(newChild) == -1);
 
     int idx = this->GetChildIndex(child);
-    newChild->SetParent(this);
     this->InsertChild(newChild, idx + 1);
 
     this->Modify();
@@ -522,8 +521,9 @@ int Object::GetIdx() const
 
 void Object::InsertChild(Object *element, int idx)
 {
-    // With this method we require the parent to be set before
-    assert(element->GetParent() == this);
+    // With this method we require the parent to be NULL
+    assert(!element->GetParent());
+    element->SetParent(this);
 
     if (idx >= (int)m_children.size()) {
         m_children.push_back(element);
@@ -1572,6 +1572,9 @@ void Functor::Call(const Object *ptr, FunctorParams *functorParams)
 // ObjectFactory methods
 //----------------------------------------------------------------------------
 
+thread_local MapOfStrConstructors ObjectFactory::s_ctorsRegistry;
+thread_local MapOfStrClassIds ObjectFactory::s_classIdsRegistry;
+
 ObjectFactory *ObjectFactory::GetInstance()
 {
     static thread_local ObjectFactory factory;
@@ -1868,6 +1871,26 @@ int Object::PrepareFacsimile(FunctorParams *functorParams)
         else if (this->Is(SYL)) {
             params->m_zonelessSyls.push_back(this);
         }
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+int Object::PrepareAltSym(FunctorParams *functorParams)
+{
+    PrepareAltSymParams *params = vrv_params_cast<PrepareAltSymParams *>(functorParams);
+    assert(params);
+
+    if (this->Is(SCORE)) {
+        Score *score = vrv_cast<Score *>(this);
+        assert(score);
+        params->m_symbolTable = vrv_cast<SymbolTable *>(score->GetScoreDef()->FindDescendantByType(SYMBOLTABLE));
+    }
+
+    if (this->HasInterface(INTERFACE_ALT_SYM)) {
+        AltSymInterface *interface = this->GetAltSymInterface();
+        assert(interface);
+        interface->InterfacePrepareAltSym(functorParams, this);
     }
 
     return FUNCTOR_CONTINUE;

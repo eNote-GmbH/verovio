@@ -1871,9 +1871,14 @@ void MusicXmlInput::ReadMusicXmlBarLine(pugi::xml_node node, Measure *measure, c
             }
         }
         else if (endingType == "stop" || endingType == "discontinue") {
-            m_endingStack.back().second.m_endingType = endingType;
-            if (NotInEndingStack(measure->GetN())) {
-                m_endingStack.back().first.push_back(measure);
+            if (m_endingStack.empty()) {
+                LogWarning("MusicXML import: Dangling ending tag skipped");
+            }
+            else {
+                m_endingStack.back().second.m_endingType = endingType;
+                if (NotInEndingStack(measure->GetN())) {
+                    m_endingStack.back().first.push_back(measure);
+                }
             }
         }
     }
@@ -2184,7 +2189,9 @@ void MusicXmlInput::ReadMusicXmlDirection(
                         riter->first->SetTstamp2(std::pair<int, double>(measureDifference, timeStamp - 0.5));
                     }
                     if (wedge->node().attribute("spread")) {
-                        riter->first->SetOpening(wedge->node().attribute("spread").as_double() / 5);
+                        data_MEASUREMENTSIGNED opening;
+                        opening.SetVu(wedge->node().attribute("spread").as_double() / 5);
+                        riter->first->SetOpening(opening);
                     }
                     m_hairpinStack.erase(std::next(riter).base());
                     return;
@@ -3665,8 +3672,7 @@ bool MusicXmlInput::ReadMusicXmlBeamsAndTuplets(const pugi::xml_node &node, Laye
             = (beamNodes.end() != std::find(beamNodes.begin(), beamNodes.end(), nextTupletStart.node()));
         bool isTupletEndInBeam = (beamNodes.end() != std::find(beamNodes.begin(), beamNodes.end(), tupletEnd));
         // in case if there is only start/end of the tuplet in the beam, then we need to use beamSpan instead
-        if ((tupletEnd != beamEnd)
-            && ((isTupletStartInBeam && !isTupletEndInBeam) || (!isTupletStartInBeam && isTupletEndInBeam))) {
+        if ((tupletEnd != beamEnd) && (isTupletStartInBeam != isTupletEndInBeam)) {
             // TODO: same call as in else-case is intentional. Proper beamSpan support will need to be implemented
             // before this case can be handled correctly
             ReadMusicXmlBeamStart(node, beamStart.node(), layer);

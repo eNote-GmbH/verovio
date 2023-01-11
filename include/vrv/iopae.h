@@ -9,7 +9,7 @@
 #define __VRV_IOPAE_H__
 
 /*
- * There are two implementation of the Plaine and Easie parser.
+ * There are two implementation of the Plaine & Easie parser.
  * The new one was introduced in Verovio 3.7.
  * In order to build with the old parser, the following define needs to be uncommented
  */
@@ -177,8 +177,8 @@ private:
     bool m_docScoreDef; // Indicates that we are writing the document scoreDef
     bool m_mensural; // Indicates that the incipit is mensural (initial staffDef)
     bool m_skip; // Processing a staff or a layer to skip
-    int m_layerN; // The @n of the first layer within the first staff
-    int m_staffN; // The @n of the first staff (initial staffDef)
+    int m_layerN; // The \@n of the first layer within the first staff
+    int m_staffN; // The \@n of the first staff (initial staffDef)
     int m_currentOct; // The current octave
     int m_currentDur; // The current duration
     int m_currentDots;
@@ -193,7 +193,7 @@ private:
 //----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
-// namespace for local Plain and Easy classes
+// namespace for local Plaine & Easie classes
 //----------------------------------------------------------------------------
 
 namespace pae {
@@ -407,6 +407,9 @@ public:
     // dummy validation log
     jsonxx::Object GetValidationLog();
 
+    // dummy setter
+    void SetScoreBased(bool scoreBased) {}
+
 #ifndef NO_PAE_SUPPORT
     bool Import(const std::string &pae) override;
 
@@ -520,14 +523,24 @@ public:
      */
     jsonxx::Object GetValidationLog();
 
+    /**
+     * Setter for scoreBased flag (false by default).
+     */
+    void SetScoreBased(bool scoreBased) { m_scoreBased = scoreBased; }
+
 #ifndef NO_PAE_SUPPORT
     bool Import(const std::string &input) override;
 
 private:
     /**
-     * Convert the old-style @clef:... @keysig:... @data:... to a JSON input
+     * Convert the old-style \@clef:... \@keysig:... \@data:... to a JSON input
      */
     jsonxx::Object InputKeysToJson(const std::string &inputKeys);
+
+    /**
+     * Convert single-line incipits with $clef@timesig%keysig data to JSON input
+     */
+    jsonxx::Object SingleLineToJson(const std::string &singleLine);
 
     /**
      * Helper to add a token to the list.
@@ -677,7 +690,7 @@ private:
 
     /**
      * A flag indicating the incipit is mensural.
-     * Based on the @clef of the input.
+     * Based on the \@clef of the input.
      */
     bool m_isMensural;
 
@@ -692,6 +705,11 @@ private:
      * A flag indicating we had errors when parsing the incipit in non pedantic mode.
      */
     bool m_hasErrors;
+
+    /**
+     * A flag indicating the document should be kept as score-based.
+     */
+    bool m_scoreBased;
 
     /**
      * @name The scoreDef clef, keysig and timesig.

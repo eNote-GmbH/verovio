@@ -105,19 +105,19 @@ public:
     std::string GetLog();
 
     /**
-     * Return the version number
+     * Return the version number.
      *
      * @return the version number as a string
      */
     std::string GetVersion();
 
     /**
-     * Reset the seed used to generate MEI xml:id attribute values
+     * Reset the seed used to generate MEI \@xml:id attribute values
      *
-     * Passing 0 will seed the xml:id generator with a random (time-based) seed value.
+     * Passing 0 will seed the \@xml:id generator with a random (time-based) seed value.
      * This method will have no effect if the --xml-id-checksum option is set.
      *
-     * @param seed The seed value for generating the xml:id values (0 for a time-based random seed)
+     * @param seed The seed value for generating the \@xml:id values (0 for a time-based random seed)
      */
     void ResetXmlIdSeed(int seed);
 
@@ -170,7 +170,7 @@ public:
     bool LoadZipDataBuffer(const unsigned char *data, int length);
 
     /**
-     * Validate the Plaine and Easie file from the file system.
+     * Validate the Plaine & Easie code from a file.
      *
      * The method calls Toolkit::ValidatePAE.
      *
@@ -182,7 +182,7 @@ public:
     std::string ValidatePAEFile(const std::string &filename);
 
     /**
-     * Validate the Plaine and Easie code passed in the string data.
+     * Validate the Plaine & Easie code passed in the string data.
      *
      * A single JSON object is returned when there is a global input error.
      * When reading the input succeeds, validation is grouped by input keys.
@@ -195,7 +195,7 @@ public:
     std::string ValidatePAE(const std::string &data);
 
     /**
-     * Return the number of pages in the loaded document
+     * Return the number of pages in the loaded document.
      *
      * The number of pages depends one the page size and if encoded layout was taken into account or not.
      *
@@ -213,30 +213,30 @@ public:
     ///@{
 
     /**
-     * Return a dictionary of all the options with their current value
+     * Return a dictionary of all the options with their current value.
      *
      * @return A stringified JSON object
      */
     std::string GetOptions() const;
 
     /**
-     * Return a dictionary of all the options with their default value
+     * Return a dictionary of all the options with their default value.
      *
      * @return A stringified JSON object
      */
     std::string GetDefaultOptions() const;
 
     /**
-     * Return all available options grouped by category
+     * Return all available options grouped by category.
      *
-     * For each option, returns the type, the default value, and the minimum and maximum value (when available)
+     * For each option, returns the type, the default value, and the minimum and maximum value (when available).
      *
      * @return A stringified JSON object
      */
     std::string GetAvailableOptions() const;
 
     /**
-     * Set option values
+     * Set option values.
      *
      * The name of each option to be set is to be given as JSON key.
      *
@@ -251,7 +251,7 @@ public:
     void ResetOptions();
 
     /**
-     * Set the scale option
+     * Set the scale option.
      *
      * @remark nojs
      *
@@ -261,7 +261,7 @@ public:
     bool SetScale(int scale);
 
     /**
-     * Get the scale option
+     * Get the scale option.
      *
      * @remark nojs
      *
@@ -270,7 +270,7 @@ public:
     int GetScale() { return m_options->m_scale.GetValue(); }
 
     /**
-     * Set the input from option
+     * Set the input from option.
      *
      * @remark nojs
      *
@@ -280,7 +280,7 @@ public:
     bool SetInputFrom(std::string const &inputFrom);
 
     /**
-     * Set the output to option
+     * Set the output to option.
      *
      * @remark nojs
      *
@@ -291,6 +291,7 @@ public:
 
     /**
      * Set the value for a selection.
+     *
      * The selection will be applied only when some data is loaded or the layout is redone.
      * The selection can be reset (cancelled) by passing an empty string or an empty JSON object.
      * A selection across multiple mdivs is not possible.
@@ -310,7 +311,7 @@ public:
     ///@{
 
     /**
-     * Edit the MEI data
+     * Edit the MEI data.
      *
      * @param editorAction The editor actions as a stringified JSON object
      * @return True if the edit action was successfully applied
@@ -318,7 +319,7 @@ public:
     bool Edit(const std::string &editorAction);
 
     /**
-     * Return the editor status
+     * Return the editor status.
      *
      * @return The editor status as a string
      **/
@@ -334,7 +335,7 @@ public:
     ///@{
 
     /**
-     * Render the first page of the data to SVG
+     * Render the first page of the data to SVG.
      *
      * This method is a wrapper for setting options, loading data and rendering the first page.
      * It will return an empty string if the options cannot be set or the data cannot be loaded.
@@ -359,14 +360,14 @@ public:
      *
      * @remark nojs
      *
-     * @param @filename The output filename
-     * @param @pageNo The page to render (1-based)
+     * @param filename The output filename
+     * @param pageNo The page to render (1-based)
      * @return True if the file was successfully written
      */
     bool RenderToSVGFile(const std::string &filename, int pageNo = 1);
 
     /**
-     * Render the document to MIDI
+     * Render the document to MIDI.
      *
      * @return A MIDI file as a base64 encoded string
      */
@@ -377,13 +378,13 @@ public:
      *
      * @remark nojs
      *
-     * @param @filename The output filename
+     * @param filename The output filename
      * @return True if the file was successfully written
      */
     bool RenderToMIDIFile(const std::string &filename);
 
     /**
-     * Render a document to Plaine and Easie
+     * Render a document to Plaine & Easie code.
      *
      * Only the top staff / layer is exported.
      *
@@ -392,32 +393,32 @@ public:
     std::string RenderToPAE();
 
     /**
-     * Render a document to Plaine and Easie and save it to the file
+     * Render a document to Plaine & Easie code and save it to the file.
      *
      * Only the top staff / layer is exported.
      *
      * @remark nojs
      *
-     * @param @filename The output filename
+     * @param filename The output filename
      * @return True if the file was successfully written
      */
     bool RenderToPAEFile(const std::string &filename);
 
     /**
-     * Render a document to a timemap
+     * Render a document to a timemap.
      *
-     * @param @jsonOptions A stringified JSON objects with the timemap options
+     * @param jsonOptions A stringified JSON objects with the timemap options
      * @return The timemap as a string
      */
     std::string RenderToTimemap(const std::string &jsonOptions = "");
 
     /**
-     * Render a document to timemap and save it to the file
+     * Render a document to timemap and save it to the file.
      *
      * @remark nojs
      *
-     * @param @filename The output filename
-     * @param @jsonOptions A stringified JSON objects with the timemap options
+     * @param filename The output filename
+     * @param jsonOptions A stringified JSON objects with the timemap options
      * @return True if the file was successfully written
      */
     bool RenderToTimemapFile(const std::string &filename, const std::string &jsonOptions = "");
@@ -432,7 +433,7 @@ public:
     ///@{
 
     /**
-     * Get the humdrum buffer
+     * Get the humdrum buffer.
      *
      * @return The humdrum buffer as a string
      */
@@ -460,11 +461,11 @@ public:
     std::string ConvertHumdrumToMIDI(const std::string &humdrumData);
 
     /**
-     * Write the humdrum buffer to the file
+     * Write the humdrum buffer to the file.
      *
      * @remark nojs
      *
-     * @param @filename The output filename
+     * @param filename The output filename
      * @return True if the file was successfully written
      */
     bool GetHumdrumFile(const std::string &filename);
@@ -479,17 +480,17 @@ public:
     ///@{
 
     /**
-     * Get the MEI as a string
+     * Get the MEI as a string.
      *
      * @param jsonOptions A stringified JSON object with the output options
      * pageNo: integer; (1-based), all pages if none (or 0) specified;
      * scoreBased: true or false; true by default;
-     * removeIds: true or false; false by default - remove all @xml:id not used in the data;
+     * removeIds: true or false; false by default - remove all \@xml:id not used in the data;
      */
     std::string GetMEI(const std::string &jsonOptions = "");
 
     /**
-     * Get the MEI and save it to the file
+     * Get the MEI and save it to the file.
      *
      * @remark nojs
      *
@@ -509,17 +510,17 @@ public:
     ///@{
 
     /**
-     * Return descriptive features as a JSON string
+     * Return descriptive features as a JSON string.
      *
-     * The features are tailored for implementing incipit search
+     * The features are tailored for implementing incipit search.
      *
-     * @param options A stringified JSON object with the feature extraction options
+     * @param jsonOptions A stringified JSON object with the feature extraction options
      * @return A stringified JSON object with the requested features
      */
-    std::string GetDescriptiveFeatures(const std::string &options);
+    std::string GetDescriptiveFeatures(const std::string &jsonOptions);
 
     /**
-     * Returns array of IDs of elements being currently played
+     * Return array of IDs of elements being currently played.
      *
      * @param millisec The time in milliseconds
      * @return A stringified JSON object with the page and notes being played
@@ -527,68 +528,68 @@ public:
     std::string GetElementsAtTime(int millisec);
 
     /**
-     * Return the page on which the element is the ID (xml:id) is rendered
+     * Return the page on which the element is the ID (\@xml:id) is rendered
      *
      * This takes into account the current layout options.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return the page number (1-based) where the element is (0 if not found)
      */
     int GetPageWithElement(const std::string &xmlId);
 
     /**
-     * Return element attributes as a JSON string
+     * Return element attributes as a JSON string.
      *
-     * The attributes returned include the ones not supported by Verovio
+     * The attributes returned include the ones not supported by Verovio.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return A stringified JSON object with all attributes
      */
     std::string GetElementAttr(const std::string &xmlId);
 
     /**
-     * Returns the ID string of the notated (the original) element
+     * Return the ID string of the notated (the original) element.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
-     * @return A stringified JSON object with all IDs
+     * @param xmlId the ID (\@xml:id) of the element being looked for
+     * @return An ID string
      */
     std::string GetNotatedIdForElement(const std::string &xmlId);
 
     /**
-     * Returns a vector of ID strings of all elements (the notated and the expanded) for a given element
+     * Return a vector of ID strings of all elements (the notated and the expanded) for a given element.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return A stringified JSON object with all IDs
      */
     std::string GetExpansionIdsForElement(const std::string &xmlId);
 
     /**
-     * Return the time at which the element is the ID (xml:id) is played
+     * Return the time at which the element is the ID (\@xml:id) is played
      *
      * RenderToMIDI() must be called prior to using this method.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return The time in milliseconds
      */
     int GetTimeForElement(const std::string &xmlId);
 
     /**
-     * Return MIDI values of the element with the ID (xml:id)
+     * Return MIDI values of the element with the ID (\@xml:id)
      *
-     * RenderToMIDI() must be called prior to using this method
+     * RenderToMIDI() must be called prior to using this method.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return A stringified JSON object with the MIDI values
      */
     std::string GetMIDIValuesForElement(const std::string &xmlId);
 
     /**
-     * Return a JSON object string with the following key values for a given note
+     * Return a JSON object string with the following key values for a given note.
      *
      * Return scoreTimeOnset, scoreTimeOffset, scoreTimeTiedDuration,
      * realTimeOnsetMilliseconds, realTimeOffsetMilliseconds, realTimeTiedDurationMilliseconds.
      *
-     * @param xmlId the ID (xml:id) of the element being looked for
+     * @param xmlId the ID (\@xml:id) of the element being looked for
      * @return A stringified JSON object with the values
      */
     std::string GetTimesForElement(const std::string &xmlId);
@@ -601,7 +602,7 @@ public:
     ///@{
 
     /**
-     * Redo the layout of the loaded data
+     * Redo the layout of the loaded data.
      *
      * This can be called once the rendering option were changed, for example with a new page (sceen) height or a new
      * zoom level.
@@ -612,7 +613,7 @@ public:
     void RedoLayout(const std::string &jsonOptions = "");
 
     /**
-     * Redo the layout of the pitch postitions of the current drawing page
+     * Redo the layout of the pitch postitions of the current drawing page.
      *
      * Only the note vertical positions are recalculated with this method.
      * RedoLayout() needs to be called for a full recalculation.
@@ -660,7 +661,7 @@ public:
     void SkipLayoutOnLoad(bool value);
 
     /**
-     * Render the page to the deviceContext
+     * Render the page to the deviceContext.
      *
      * Page number is 1-based.
      *
@@ -676,39 +677,39 @@ public:
     Options *GetOptionsObj() { return m_options; }
 
     /**
-     * Copy the data to the cstring internal buffer
+     * Copy the data to the cstring internal buffer.
      *
      * @ingroup nodoc
      */
     void SetCString(const std::string &data);
 
     /**
-     * Return the content of the cstring internal buffer
+     * Return the content of the cstring internal buffer.
      *
-     * Return "[unspecified]" if the buffer has not been allocated
+     * Return "[unspecified]" if the buffer has not been allocated.
      *
      * @ingroup nodoc
      */
     const char *GetCString();
 
     /**
-     * Write the Humdrum buffer to the outputstream
+     * Write the Humdrum buffer to the outputstream.
      *
      * @ingroup nodoc
      */
     void GetHumdrum(std::ostream &output);
 
     /**
-     * Copy the data to the humdrum internal buffer
+     * Copy the data to the humdrum internal buffer.
      *
      * @ingroup nodoc
      */
     void SetHumdrumBuffer(const char *contents);
 
     /**
-     * Return the content of the humdrum internal buffer
+     * Return the content of the humdrum internal buffer.
      *
-     * Return "[empty]" if the buffer has not been allocated
+     * Return "[empty]" if the buffer has not been allocated.
      *
      * @ingroup nodoc
      */
