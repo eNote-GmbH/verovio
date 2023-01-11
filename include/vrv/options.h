@@ -773,6 +773,7 @@ public:
     //
     OptionDbl m_bottomMarginArtic;
     OptionDbl m_bottomMarginHarm;
+    OptionDbl m_bottomMarginOctave;
     OptionDbl m_bottomMarginPgHead;
     //
     OptionDbl m_leftMarginAccid;
