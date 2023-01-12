@@ -40,13 +40,13 @@ void VisualOffsetInterface::Reset()
 void VisualOffsetInterface::AlterPosition(std::vector<std::pair<int *, int *>> &points, ClassId classId, int unit) const
 {
     // visual offset values
-    const int xAdjust = this->HasHo() ? this->GetHo() * unit : 0;
-    const int yAdjust = this->HasVo() ? this->GetVo() * unit : 0;
+    const int xAdjust = this->HasHo() ? this->GetHo().GetVu() * unit : 0;
+    const int yAdjust = this->HasVo() ? this->GetVo().GetVu() * unit : 0;
     // visual offset2 values
-    const int xStartAdjust = this->HasStartho() ? this->GetStartho() * unit : 0;
-    const int xEndAdjust = this->HasEndho() ? this->GetEndho() * unit : 0;
-    const int yStartAdjust = this->HasStartvo() ? this->GetStartvo() * unit : 0;
-    const int yEndAdjust = this->HasEndvo() ? this->GetEndvo() * unit : 0;
+    const int xStartAdjust = this->HasStartho() ? this->GetStartho().GetVu() * unit : 0;
+    const int xEndAdjust = this->HasEndho() ? this->GetEndho().GetVu() * unit : 0;
+    const int yStartAdjust = this->HasStartvo() ? this->GetStartvo().GetVu() * unit : 0;
+    const int yEndAdjust = this->HasEndvo() ? this->GetEndvo().GetVu() * unit : 0;
 
     const int size = static_cast<int>(points.size());
     // If there are no elements to process - return
