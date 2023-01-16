@@ -1203,11 +1203,13 @@ void View::DrawFConnector(DeviceContext *dc, F *f, int x1, int x2, Staff *staff,
     // Because <f> is a TextElement the extendor is placed in the parent <fb>
     Fb *fb = (graphic) ? vrv_cast<Fb *>(graphic->GetFirstAncestor(FB)) : NULL;
 
+    // temporary object in order not to reset the F bounding box.
+    F fConnector;
     if (fb) {
         dc->ResumeGraphic(fb, fb->GetID());
     }
     else {
-        dc->StartGraphic(f, "", f->GetID(), SPANNING);
+        dc->StartGraphic(&fConnector, "", f->GetID(), SPANNING);
     }
 
     dc->DeactivateGraphic();
@@ -1223,7 +1225,7 @@ void View::DrawFConnector(DeviceContext *dc, F *f, int x1, int x2, Staff *staff,
         dc->EndResumedGraphic(fb, this);
     }
     else {
-        dc->EndGraphic(f, this);
+        dc->EndGraphic(&fConnector, this);
     }
 }
 
@@ -2442,6 +2444,10 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
             continue;
         }
         const int staffSize = (*staffIter)->m_drawingStaffSize;
+
+        if ((system->GetFirst(MEASURE) != measure) && adjustPosition) {
+            params.m_x = (*staffIter)->GetDrawingX();
+        }
 
         params.m_enclosedRend.clear();
         params.m_y = reh->GetDrawingY() + yMargin * m_doc->GetDrawingUnit(staffSize);
