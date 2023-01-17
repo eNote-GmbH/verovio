@@ -52,6 +52,31 @@ public:
 
     /**
      *************************************************************************
+     * Cancellation methods
+     *************************************************************************
+     */
+    ///@{
+
+    /**
+     * Cancel the layout process
+     *
+     * This aborts (shortcuts) subsequent calls to the toolkit instance.
+     *
+     * Should be called from another thread.
+     */
+    void CancelLayout();
+
+    /**
+     * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
+     *
+     * May be called from another thread.
+     */
+    void ContinueLayout();
+
+    ///@}
+
+    /**
+     *************************************************************************
      * Search methods
      *************************************************************************
      */
