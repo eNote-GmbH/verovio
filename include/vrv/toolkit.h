@@ -634,26 +634,6 @@ public:
     ///@{
 
     /**
-     * Cancel the layout process
-     *
-     * This aborts (shortcuts) subsequent calls to the toolkit instance.
-     *
-     * Should be called from another thread.
-     *
-     * @ingroup nodoc
-     */
-    void CancelLayout();
-
-    /**
-     * Continue without aborting (shortcutting) subsequent calls to the toolkit instance.
-     *
-     * May be called from another thread.
-     *
-     * @ingroup nodoc
-     */
-    void ContinueLayout();
-
-    /**
      * Skip the layout on load to speed up MIDI or timemap output
      *
      * @ingroup nodoc

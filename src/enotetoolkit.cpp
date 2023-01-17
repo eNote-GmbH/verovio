@@ -37,6 +37,16 @@ EnoteToolkit::EnoteToolkit(bool initFont) : Toolkit(initFont) {}
 
 EnoteToolkit::~EnoteToolkit() {}
 
+void EnoteToolkit::CancelLayout()
+{
+    m_doc.SetAbortMode(true);
+}
+
+void EnoteToolkit::ContinueLayout()
+{
+    m_doc.SetAbortMode(false);
+}
+
 Measure *EnoteToolkit::FindMeasureByID(const std::string &id)
 {
     std::vector<Measure *> measures = this->FindAllMeasures(&m_doc);

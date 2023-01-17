@@ -1247,16 +1247,6 @@ std::string Toolkit::GetVersion()
     return vrv::GetVersion();
 }
 
-void Toolkit::CancelLayout()
-{
-    m_doc.SetAbortMode(true);
-}
-
-void Toolkit::ContinueLayout()
-{
-    m_doc.SetAbortMode(false);
-}
-
 void Toolkit::ResetXmlIdSeed(int seed)
 {
     m_options->m_xmlIdSeed.SetValue(seed);
