@@ -1090,7 +1090,7 @@ void View::DrawControlElementConnector(
     const int minDashSpace = m_doc->GetOptions()->m_extenderLineMinSpace.GetValue() * unit;
     const int halfDashLength = unit * 2 / 3;
 
-    int dist = x2 - x1;
+    const int dist = x2 - x1;
     int nbDashes = dist / dashSpace;
 
     int margin = dist / 2;
@@ -1126,8 +1126,7 @@ void View::DrawControlElementConnector(
         dc->DeactivateGraphic();
     }
 
-    int i;
-    for (i = 0; i < nbDashes; ++i) {
+    for (int i = 0; i < nbDashes; ++i) {
         int x = x1 + margin + (i * dashSpace);
         x = std::max(x, x1);
 
@@ -1297,7 +1296,7 @@ void View::DrawSylConnectorLines(DeviceContext *dc, int x1, int x2, int y, Syl *
         const int halfDashLength = dashLength / 2;
 
         const int dashSpace = m_doc->GetDrawingStaffSize(staff->m_drawingStaffSize) * 5 / 3;
-        int dist = x2 - x1;
+        const int dist = x2 - x1;
         int nbDashes = dist / dashSpace;
 
         int margin = dist / 2;
@@ -1313,8 +1312,7 @@ void View::DrawSylConnectorLines(DeviceContext *dc, int x1, int x2, int y, Syl *
             margin = (dist - ((nbDashes - 1) * dashSpace)) / 2;
         }
 
-        int i;
-        for (i = 0; i < nbDashes; ++i) {
+        for (int i = 0; i < nbDashes; ++i) {
             int x = x1 + margin + (i * dashSpace);
             x = std::max(x, x1);
 

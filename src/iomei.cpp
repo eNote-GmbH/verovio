@@ -3245,7 +3245,7 @@ std::u32string MEIOutput::EscapeSMuFL(std::u32string data)
     std::u32string buffer;
     // approximate that we won't have a 1.1 longer string (for optimization)
     buffer.reserve(data.size() * 1.1);
-    for (size_t pos = 0; pos != data.size(); ++pos) {
+    for (int pos = 0; pos != data.size(); ++pos) {
         if (data[pos] == '&') {
             buffer.append(U"&amp;");
         }
@@ -6902,7 +6902,7 @@ bool MEIInput::ReadTextChildren(Object *parent, pugi::xml_node parentNode, Objec
         else {
             LogWarning("Element <%s> is unknown and will be ignored", xmlElement.name());
         }
-        i++;
+        ++i;
     }
     return success;
 }
@@ -7868,8 +7868,7 @@ bool MEIInput::ReadTupletSpanAsTuplet(Measure *measure, pugi::xml_node tupletSpa
     int startIdx = startChild->GetIdx();
     int endIdx = endChild->GetIdx();
     // LogDebug("%d %d %s!", startIdx, endIdx, start->GetID().c_str());
-    int i;
-    for (i = endIdx; i >= startIdx; i--) {
+    for (int i = endIdx; i >= startIdx; --i) {
         LayerElement *element = dynamic_cast<LayerElement *>(parentLayer->DetachChild(i));
         if (element) tuplet->AddChild(element);
     }
@@ -7945,9 +7944,9 @@ void MEIInput::NormalizeAttributes(pugi::xml_node &xmlElement)
         std::string name = elem.name();
         std::string value = elem.value();
 
-        size_t pos = value.find_first_not_of(' ');
+        int pos = (int)value.find_first_not_of(' ');
         if (pos != std::string::npos) value = value.substr(pos);
-        pos = value.find_last_not_of(' ');
+        pos = (int)value.find_last_not_of(' ');
         if (pos != std::string::npos) value = value.substr(0, pos + 1);
 
         elem.set_value(value.c_str());

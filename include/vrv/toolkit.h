@@ -634,13 +634,6 @@ public:
     ///@{
 
     /**
-     * Skip the layout on load to speed up MIDI or timemap output
-     *
-     * @ingroup nodoc
-     */
-    void SkipLayoutOnLoad(bool value);
-
-    /**
      * Render the page to the deviceContext.
      *
      * Page number is 1-based.
@@ -772,9 +765,6 @@ protected:
     FileFormat m_outputTo;
 
     Options *m_options;
-
-private:
-    bool m_skipLayoutOnLoad;
 
     /**
      * The C buffer string.
