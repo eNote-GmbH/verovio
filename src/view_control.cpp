@@ -297,13 +297,12 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
         x2 += endRadius;
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = interface->GetTstampStaves(measure, element);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
+    bool isFirst = true;
+    for (Staff *staff : staffList) {
 
         // TimeSpanning element are not necessary floating elements (e.g., syl) - we have a bounding box only for them
         if (element->IsControlElement()) {
-            Staff *staff = *staffIter;
             if (element->Is({ PHRASE, SLUR })) {
                 if (this->GetSlurHandling() == SlurHandling::Ignore) break;
                 Slur *slur = vrv_cast<Slur *>(element);
@@ -321,17 +320,15 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
         dc->StartVisualOffset(element, m_doc->GetDrawingUnit((*staffIter)->m_drawingStaffSize));
         if (element->Is(DIR)) {
             // cast to Dir check in DrawControlElementConnector
-            this->DrawControlElementConnector(
-                dc, dynamic_cast<Dir *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawControlElementConnector(dc, dynamic_cast<Dir *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(DYNAM)) {
             // cast to Dynam check in DrawControlElementConnector
-            this->DrawControlElementConnector(
-                dc, dynamic_cast<Dynam *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawControlElementConnector(dc, dynamic_cast<Dynam *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(FIGURE)) {
             // cast to F check in DrawFConnector
-            this->DrawFConnector(dc, dynamic_cast<F *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawFConnector(dc, dynamic_cast<F *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(BEAMSPAN)) {
             // cast to BeamSpan check in DrawBeamSpan
@@ -339,73 +336,73 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
         }
         else if (element->Is(BRACKETSPAN)) {
             // cast to BracketSpan check in DrawBracketSpan
-            this->DrawBracketSpan(dc, dynamic_cast<BracketSpan *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawBracketSpan(dc, dynamic_cast<BracketSpan *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(GLISS)) {
             // For gliss we limit support to one value in @staff
-            if (staffIter != staffList.begin()) continue;
+            if (!isFirst) continue;
             // cast to Gliss check in DrawGliss
-            this->DrawGliss(dc, dynamic_cast<Gliss *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawGliss(dc, dynamic_cast<Gliss *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(HAIRPIN)) {
             // cast to Hairpin check in DrawHairpin
-            this->DrawHairpin(dc, dynamic_cast<Hairpin *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawHairpin(dc, dynamic_cast<Hairpin *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(LV)) {
             // For ties we limit support to one value in @staff
-            if (staffIter != staffList.begin()) continue;
+            if (!isFirst) continue;
             // cast to Tie check in DrawTie
-            this->DrawTie(dc, dynamic_cast<Tie *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawTie(dc, dynamic_cast<Tie *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(PHRASE)) {
             // Check if slurs should be ignored
             if (this->GetSlurHandling() == SlurHandling::Ignore) continue;
             // For phrases (slurs) we limit support to one value in @staff
-            if (staffIter != staffList.begin()) continue;
+            if (!isFirst) continue;
             // cast to Slur check in DrawSlur
-            this->DrawSlur(dc, dynamic_cast<Slur *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawSlur(dc, dynamic_cast<Slur *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(OCTAVE)) {
             // cast to Slur check in DrawOctave
-            this->DrawOctave(dc, dynamic_cast<Octave *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawOctave(dc, dynamic_cast<Octave *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(PEDAL)) {
-            this->DrawPedalLine(dc, dynamic_cast<Pedal *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawPedalLine(dc, dynamic_cast<Pedal *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(PITCHINFLECTION)) {
             // cast to PitchInflection check in DrawPitchInflection
             this->DrawPitchInflection(
-                dc, dynamic_cast<PitchInflection *>(element), x1, x2, *staffIter, spanningType, graphic);
+                dc, dynamic_cast<PitchInflection *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(SLUR)) {
             // Check if slurs should be ignored
             if (this->GetSlurHandling() == SlurHandling::Ignore) continue;
             // For slurs we limit support to one value in @staff
-            if (staffIter != staffList.begin()) continue;
+            if (!isFirst) continue;
             // cast to Slur check in DrawSlur
-            this->DrawSlur(dc, dynamic_cast<Slur *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawSlur(dc, dynamic_cast<Slur *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(SYL)) {
             // prolong to the end of the notehead
             x2 += endRadius;
             // cast to Syl check in DrawSylConnector
-            this->DrawSylConnector(dc, dynamic_cast<Syl *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawSylConnector(dc, dynamic_cast<Syl *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(TEMPO)) {
             // cast to Tempo check in DrawControlElementConnector
-            this->DrawControlElementConnector(
-                dc, dynamic_cast<Tempo *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawControlElementConnector(dc, dynamic_cast<Tempo *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(TIE)) {
             // For ties we limit support to one value in @staff
-            if (staffIter != staffList.begin()) continue;
+            if (!isFirst) continue;
             // cast to Slur check in DrawTie
-            this->DrawTie(dc, dynamic_cast<Tie *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawTie(dc, dynamic_cast<Tie *>(element), x1, x2, staff, spanningType, graphic);
         }
         else if (element->Is(TRILL)) {
             // cast to Trill check in DrawTrill
-            this->DrawTrillExtension(dc, dynamic_cast<Trill *>(element), x1, x2, *staffIter, spanningType, graphic);
+            this->DrawTrillExtension(dc, dynamic_cast<Trill *>(element), x1, x2, staff, spanningType, graphic);
         }
+        isFirst = false;
         dc->EndVisualOffset(element);
     }
 }
@@ -1478,13 +1475,12 @@ void View::DrawBreath(DeviceContext *dc, Breath *breath, Measure *measure, Syste
         alignment = HORIZONTALALIGNMENT_left;
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = breath->GetTstampStaves(measure, breath);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), breath, breath->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), breath, breath->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
         const int y = breath->GetDrawingY();
 
         if (symbolDef) {
@@ -1581,13 +1577,12 @@ void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *m
     // dir are left aligned by default (with both @tstamp and @startid)
     if (alignment == HORIZONTALALIGNMENT_NONE) alignment = HORIZONTALALIGNMENT_left;
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = interface->GetTstampStaves(measure, element);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), element, start, *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), element, start, staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         params.m_enclosedRend.clear();
         params.m_y = element->GetDrawingY();
@@ -1595,8 +1590,8 @@ void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *m
 
         int xAdjust = 0;
         const bool isBetweenStaves = (place == STAFFREL_between)
-            || ((place == STAFFREL_below) && (*staffIter != measure->GetLast(STAFF)))
-            || ((place == STAFFREL_above) && (*staffIter != measure->GetFirst(STAFF)));
+            || ((place == STAFFREL_below) && (staff != measure->GetLast(STAFF)))
+            || ((place == STAFFREL_above) && (staff != measure->GetFirst(STAFF)));
         if (isBetweenStaves
             && (interface->GetStart()->GetAlignment()->GetTime()
                 == measure->m_measureAligner.GetRightBarLineAlignment()->GetTime())
@@ -1663,13 +1658,12 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         alignment = (dynam->GetStart()->Is(TIMESTAMP_ATTR)) ? HORIZONTALALIGNMENT_left : HORIZONTALALIGNMENT_center;
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = dynam->GetTstampStaves(measure, dynam);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), dynam, dynam->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), dynam, dynam->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         params.m_enclosedRend.clear();
         params.m_y = dynam->GetDrawingY();
@@ -1692,7 +1686,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         if (isSymbolOnly) {
             const bool singleGlyphs = m_doc->GetOptions()->m_dynamSingleGlyphs.GetValue();
             std::u32string dynamSymbol = dynam->GetSymbolStr(singleGlyphs);
-            this->DrawDynamSymbolOnly(dc, *staffIter, dynam, dynamSymbol, alignment, params);
+            this->DrawDynamSymbolOnly(dc, staff, dynam, dynamSymbol, alignment, params);
         }
         else {
             dc->SetBrush(m_currentColour, AxSOLID);
@@ -1772,12 +1766,12 @@ void View::DrawFb(DeviceContext *dc, Staff *staff, Fb *fb, TextDrawingParams &pa
     const int lineHeight = m_doc->GetTextLineHeight(fontDim, false);
     const int startX = params.m_x;
 
-    fontDim->SetPointSize(m_doc->GetDrawingLyricFont((staff)->m_drawingStaffSize)->GetPointSize());
+    fontDim->SetPointSize(m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize());
 
     dc->SetBrush(m_currentColour, AxSOLID);
     dc->SetFont(fontDim);
 
-    for (auto current : fb->GetChildren()) {
+    for (Object *current : fb->GetChildren()) {
         dc->StartText(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_left);
         if (current->Is(FIGURE)) {
             // dynamic_cast assert in DrawF
@@ -1914,13 +1908,12 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
     // center fingering
     data_HORIZONTALALIGNMENT alignment = HORIZONTALALIGNMENT_center;
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = fing->GetTstampStaves(measure, fing);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), fing, fing->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), fing, fing->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         params.m_enclosedRend.clear();
         params.m_y = fing->GetDrawingY();
@@ -2114,19 +2107,18 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
         alignment = (harm->GetStart()->Is(TIMESTAMP_ATTR)) ? HORIZONTALALIGNMENT_left : HORIZONTALALIGNMENT_center;
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = harm->GetTstampStaves(measure, harm);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), harm, harm->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), harm, harm->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         params.m_enclosedRend.clear();
         params.m_y = harm->GetDrawingY();
 
         if (harm->GetFirst() && harm->GetFirst()->Is(FB)) {
-            this->DrawFb(dc, *staffIter, dynamic_cast<Fb *>(harm->GetFirst()), params);
+            this->DrawFb(dc, staff, dynamic_cast<Fb *>(harm->GetFirst()), params);
         }
         else {
             params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
@@ -2175,14 +2167,13 @@ void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, Sy
     std::u32string str;
     str.push_back(code);
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = mordent->GetTstampStaves(measure, mordent);
 
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), mordent, mordent->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), mordent, mordent->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
         int y = mordent->GetDrawingY();
 
         const int mordentHeight = (symbolDef) ? symbolDef->GetSymbolHeight(m_doc, staffSize, false)
@@ -2326,7 +2317,6 @@ void View::DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *
             }
         }
 
-        std::vector<Staff *>::iterator staffIter;
         std::vector<Staff *> staffList = pedal->GetTstampStaves(measure, pedal);
 
         int code = SMUFL_E655_keyboardPedalUp;
@@ -2343,11 +2333,11 @@ void View::DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *
         }
         str.push_back(code);
 
-        for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-            if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), pedal, pedal->GetStart(), *staffIter)) {
+        for (Staff *staff : staffList) {
+            if (!system->SetCurrentFloatingPositioner(staff->GetN(), pedal, pedal->GetStart(), staff)) {
                 continue;
             }
-            const int staffSize = (*staffIter)->m_drawingStaffSize;
+            const int staffSize = staff->m_drawingStaffSize;
             // Basic method that use bounding box
             const int y = pedal->GetDrawingY();
 
@@ -2409,16 +2399,15 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
     // Rehearsal marks are center aligned by default;
     if (alignment == 0) alignment = HORIZONTALALIGNMENT_center;
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = reh->GetTstampStaves(measure, reh);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), reh, reh->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), reh, reh->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         if ((system->GetFirst(MEASURE) != measure) && adjustPosition) {
-            params.m_x = (*staffIter)->GetDrawingX();
+            params.m_x = staff->GetDrawingX();
         }
 
         params.m_enclosedRend.clear();
@@ -2468,15 +2457,14 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
     // Tempo are left aligned by default;
     if (alignment == 0) alignment = HORIZONTALALIGNMENT_left;
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = tempo->GetTstampStaves(measure, tempo);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), tempo, tempo->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), tempo, tempo->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
-        params.m_x = tempo->GetDrawingXRelativeToStaff((*staffIter)->GetN());
+        params.m_x = tempo->GetDrawingXRelativeToStaff(staff->GetN());
         params.m_enclosedRend.clear();
         params.m_y = tempo->GetDrawingY();
         params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
@@ -2542,13 +2530,12 @@ void View::DrawTrill(DeviceContext *dc, Trill *trill, Measure *measure, System *
         str.push_back(code);
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = trill->GetTstampStaves(measure, trill);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), trill, trill->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), trill, trill->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
         const int y = trill->GetDrawingY();
 
         const int trillHeight = (symbolDef) ? symbolDef->GetSymbolHeight(m_doc, staffSize, false)
@@ -2633,13 +2620,12 @@ void View::DrawTurn(DeviceContext *dc, Turn *turn, Measure *measure, System *sys
     std::u32string str;
     str.push_back(code);
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList = turn->GetTstampStaves(measure, turn);
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), turn, turn->GetStart(), *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), turn, turn->GetStart(), staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
 
         const int y = turn->GetDrawingY();
 
@@ -2816,7 +2802,6 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
         dc->StartGraphic(ending, "", ending->GetID(), SPANNING);
     }
 
-    std::vector<Staff *>::iterator staffIter;
     std::vector<Staff *> staffList;
     assert(system->GetDrawingScoreDef());
     assert(measure);
@@ -2836,11 +2821,11 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
         staffList = measure->GetFirstStaffGrpStaves(system->GetDrawingScoreDef());
     }
 
-    for (staffIter = staffList.begin(); staffIter != staffList.end(); ++staffIter) {
-        if (!system->SetCurrentFloatingPositioner((*staffIter)->GetN(), ending, objectX, *staffIter)) {
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), ending, objectX, staff)) {
             continue;
         }
-        const int staffSize = (*staffIter)->m_drawingStaffSize;
+        const int staffSize = staff->m_drawingStaffSize;
         const int y1 = ending->GetDrawingY();
 
         dc->StartCustomGraphic("voltaBracket");
