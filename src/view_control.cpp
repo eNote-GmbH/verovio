@@ -317,7 +317,7 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
             }
         }
 
-        dc->StartVisualOffset(element, m_doc->GetDrawingUnit((*staffIter)->m_drawingStaffSize));
+        dc->StartVisualOffset(element, m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
         if (element->Is(DIR)) {
             // cast to Dir check in DrawControlElementConnector
             this->DrawControlElementConnector(dc, dynamic_cast<Dir *>(element), x1, x2, staff, spanningType, graphic);
