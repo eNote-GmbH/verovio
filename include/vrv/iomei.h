@@ -168,6 +168,8 @@ class Unclear;
 class Verse;
 class Zone;
 
+class EnoteToolkit;
+
 // Helper enums
 ///@{
 enum class MatchLocation { Before, Here, After };
@@ -597,6 +599,9 @@ private:
  * Under development.
  */
 class MEIInput : public Input {
+    // Allow EnoteToolkit to access the private read methods
+    friend class EnoteToolkit;
+
 public:
     // constructors and destructors
     MEIInput(Doc *doc);

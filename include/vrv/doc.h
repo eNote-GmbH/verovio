@@ -8,6 +8,10 @@
 #ifndef __VRV_DOC_H__
 #define __VRV_DOC_H__
 
+#include <atomic>
+
+//----------------------------------------------------------------------------
+
 #include "devicecontextbase.h"
 #include "expansionmap.h"
 #include "facsimile.h"
@@ -80,6 +84,14 @@ public:
     ///@{
     const Resources &GetResources() const { return m_resources; }
     Resources &GetResourcesForModification() { return m_resources; }
+    ///@}
+
+    /**
+     * @name Access the abort flag
+     */
+    ///@{
+    void SetAbortMode(bool value) { m_abort = value; };
+    bool AbortRequested() const { return m_abort; };
     ///@}
 
     /**
@@ -541,6 +553,11 @@ private:
      * The resources (glyph table).
      */
     Resources m_resources;
+
+    /**
+     * Abort flag which triggers the cancellation of layout from another thread
+     */
+    std::atomic_bool m_abort;
 
     /**
      * @name Holds a pointer to the current score/scoreDef.

@@ -161,13 +161,19 @@ void Page::LayOut(bool force)
         return;
     }
 
-    this->LayOutHorizontally();
-    this->JustifyHorizontally();
-    this->LayOutVertically();
-    this->JustifyVertically();
-
     Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
+
+    this->LayOutHorizontally();
+    if (doc->AbortRequested()) return;
+
+    this->JustifyHorizontally();
+
+    this->LayOutVertically();
+    if (doc->AbortRequested()) return;
+
+    this->JustifyVertically();
+
     if (doc->GetOptions()->m_svgBoundingBoxes.GetValue()) {
         View view;
         view.SetDoc(doc);
@@ -367,6 +373,10 @@ void Page::LayOutHorizontally()
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     // Adjust the position of outside articulations
     AdjustArticParams adjustArticParams(doc);
     Functor adjustArtic(&Object::AdjustArtic);
@@ -517,6 +527,10 @@ void Page::LayOutVertically()
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     // Adjust the position of outside articulations with slurs end and start positions
     FunctorDocParams adjustArticWithSlursParams(doc);
     Functor adjustArticWithSlurs(&Object::AdjustArticWithSlurs);
@@ -553,6 +567,10 @@ void Page::LayOutVertically()
     Functor calcBBoxOverflows(&Object::CalcBBoxOverflows);
     Functor calcBBoxOverflowsEnd(&Object::CalcBBoxOverflowsEnd);
     this->Process(&calcBBoxOverflows, &calcBBoxOverflowsParams, &calcBBoxOverflowsEnd);
+
+    if (doc->AbortRequested()) {
+        return;
+    }
 
     // Adjust the positioners of floating elements (slurs, hairpin, dynam, etc)
     Functor adjustFloatingPositioners(&Object::AdjustFloatingPositioners);
