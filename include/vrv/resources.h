@@ -56,11 +56,13 @@ public:
      */
     ///@{
     /** Init the SMufL music and text fonts */
-    bool InitFonts();
-    /** Init the text font (bounding boxes and ASCII only) */
-    bool InitTextFont(const std::string &fontName, const StyleAttributes &style);
-    /** Select a particular font */
-    bool SetFont(const std::string &fontName);
+    bool InitFonts(const std::string &musicFont, const std::string &textFont);
+    /** Load the text font (bounding boxes and ASCII only) */
+    bool LoadTextFont(const std::string &fontName, const StyleAttributes &style);
+    /** Select a particular music font */
+    bool SetMusicFont(const std::string &fontName);
+    /** Select a particular text font */
+    bool SetTextFont(const std::string &fontName, bool usePostfixes = true);
     std::string GetCurrentFontName() const { return m_fontName; }
     ///@}
 

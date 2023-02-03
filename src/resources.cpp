@@ -50,7 +50,7 @@ Resources::Resources()
     m_currentStyle = k_defaultStyle;
 }
 
-bool Resources::InitFonts()
+bool Resources::InitFonts(const std::string &musicFont, const std::string &textFont)
 {
     // We will need to rethink this for adding the option to add custom fonts
     // Font Bravura first since it is expected to have always all symbols
@@ -58,27 +58,14 @@ bool Resources::InitFonts()
     // The Leipzig as the default font
     if (!LoadFont("Leipzig", false)) LogError("Leipzig font could not be loaded.");
 
-    if (m_fontGlyphTable.size() < SMUFL_COUNT) {
-        LogError("Expected %d default SMuFL glyphs but could load only %d.", SMUFL_COUNT, m_fontGlyphTable.size());
+    if (!SetMusicFont(musicFont)) {
+        LogError("Font '%s' could not be loaded.", musicFont.c_str());
         return false;
     }
 
-    struct TextFontInfo_type {
-        const StyleAttributes m_style;
-        const std::string m_fileName;
-        bool m_isMandatory;
-    };
-
-    static const TextFontInfo_type textFontInfos[]
-        = { { k_defaultStyle, "Times", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "Times-bold", false },
-              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "Times-bold-italic", false },
-              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "Times-italic", false } };
-
-    for (const auto &textFontInfo : textFontInfos) {
-        if (!InitTextFont(textFontInfo.m_fileName, textFontInfo.m_style) && textFontInfo.m_isMandatory) {
-            LogError("Text font could not be initialized.");
-            return false;
-        }
+    if (!SetTextFont(textFont)) {
+        LogError("Font '%s' could not be loaded.", textFont.c_str());
+        return false;
     }
 
     m_currentStyle = k_defaultStyle;
@@ -86,9 +73,33 @@ bool Resources::InitFonts()
     return true;
 }
 
-bool Resources::SetFont(const std::string &fontName)
+bool Resources::SetMusicFont(const std::string &fontName)
 {
     return LoadFont(fontName);
+}
+
+bool Resources::SetTextFont(const std::string &fontName, const bool usePostfixes)
+{
+    struct TextFontInfo_type {
+        const StyleAttributes m_style;
+        const std::string m_postfix;
+        bool m_isMandatory;
+    };
+
+    static const TextFontInfo_type textFontInfos[]
+        = { { k_defaultStyle, "", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "-bold", false },
+              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "-bold-italic", false },
+              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "-italic", false } };
+
+    for (const auto &textFontInfo : textFontInfos) {
+        const bool success
+            = LoadTextFont(fontName + (usePostfixes ? textFontInfo.m_postfix : ""), textFontInfo.m_style);
+        if (!success && textFontInfo.m_isMandatory) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 const Glyph *Resources::GetGlyph(char32_t smuflCode) const
@@ -220,7 +231,7 @@ bool Resources::LoadFont(const std::string &fontName, bool withFallback)
     return true;
 }
 
-bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes &style)
+bool Resources::LoadTextFont(const std::string &fontName, const StyleAttributes &style)
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;
