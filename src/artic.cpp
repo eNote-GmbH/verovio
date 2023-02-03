@@ -42,6 +42,7 @@ static const ClassRegistrar<Artic> s_factory("artic", ARTIC);
 
 Artic::Artic()
     : LayerElement(ARTIC, "artic-")
+    , VisualOffsetInterface()
     , AttArticulation()
     , AttArticulationGes()
     , AttColor()
@@ -49,6 +50,7 @@ Artic::Artic()
     , AttExtSym()
     , AttPlacementRelEvent()
 {
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ARTICULATION);
     this->RegisterAttClass(ATT_ARTICULATIONGES);
     this->RegisterAttClass(ATT_COLOR);
@@ -64,6 +66,7 @@ Artic::~Artic() {}
 void Artic::Reset()
 {
     LayerElement::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetArticulation();
     this->ResetArticulationGes();
     this->ResetColor();

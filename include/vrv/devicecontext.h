@@ -27,6 +27,7 @@ class Glyph;
 class Object;
 class View;
 class Zone;
+class VisualOffsetInterface;
 
 extern "C" {
 static inline double DegToRad(double deg)
@@ -38,6 +39,16 @@ static inline double RadToDeg(double deg)
     return (deg * 180.0) / M_PI;
 }
 }
+
+/**
+ * Helper struct to store elements and their offsets in the VisualOffsetInterface
+ */
+struct VisualOffsetData {
+    std::string id;
+    const VisualOffsetInterface *offsetInterface;
+    ClassId classId;
+    int drawingUnit;
+};
 
 // ---------------------------------------------------------------------------
 // DeviceContext
@@ -122,6 +133,7 @@ public:
         m_baseWidth = width;
         m_baseHeight = height;
     }
+    void SetDefaultFontName(const std::string &defaultFontName) { m_defaultFontName = defaultFontName; }
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
     int GetContentHeight() const { return m_contentHeight; }
@@ -309,6 +321,15 @@ public:
      */
     virtual bool UseGlobalStyling() { return false; }
 
+    /**
+     * @name Method for starting, ending and applying visual offsets
+     */
+    ///@{
+    virtual void StartVisualOffset(const Object *object, int drawingUnit);
+    virtual void EndVisualOffset(const Object *object);
+    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points);
+    ///@}
+
     //----------------//
     // Static methods //
     //----------------//
@@ -332,6 +353,9 @@ protected:
 
     Zone *m_facsimile = NULL;
 
+    /** stores default font for global styling*/
+    std::string m_defaultFontName;
+
 private:
     /** The class id representing the actual (derived) class */
     ClassId m_classId;
@@ -353,6 +377,8 @@ private:
     /** stores the scale as requested by the used */
     double m_userScaleX;
     double m_userScaleY;
+
+    std::stack<VisualOffsetData> m_offsetList;
 };
 
 } // namespace vrv

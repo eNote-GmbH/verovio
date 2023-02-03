@@ -156,6 +156,7 @@ Rest::Rest()
     : LayerElement(REST, "rest-")
     , DurationInterface()
     , PositionInterface()
+    , VisualOffsetInterface()
     , AttColor()
     , AttCue()
     , AttExtSym()
@@ -163,6 +164,7 @@ Rest::Rest()
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
     this->RegisterAttClass(ATT_EXTSYM);
@@ -177,6 +179,7 @@ void Rest::Reset()
     LayerElement::Reset();
     DurationInterface::Reset();
     PositionInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCue();
     this->ResetExtSym();

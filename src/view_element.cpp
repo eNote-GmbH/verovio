@@ -82,6 +82,7 @@ void View::DrawLayerElement(DeviceContext *dc, LayerElement *element, Layer *lay
         m_currentColour = AxNONE;
     }
 
+    dc->StartVisualOffset(element, m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
     if (element->Is(ACCID)) {
         this->DrawAccid(dc, element, layer, staff, measure);
     }
@@ -213,6 +214,7 @@ void View::DrawLayerElement(DeviceContext *dc, LayerElement *element, Layer *lay
         // This should never happen
         LogError("Element '%s' cannot be drawn", element->GetClassName().c_str());
     }
+    dc->EndVisualOffset(element);
 
     m_currentColour = previousColor;
 }
