@@ -1737,7 +1737,7 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
 
         FontInfo labelTxt;
         if (!dc->UseGlobalStyling()) {
-            labelTxt.SetFaceName(m_options->m_textFont.GetValue().c_str());
+            labelTxt.SetFaceName(m_options->m_textFont.GetValue());
         }
         int pointSize = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize();
         if (layerElement && layerElement->GetDrawingCueSize()) {

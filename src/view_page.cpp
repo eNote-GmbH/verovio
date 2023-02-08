@@ -554,7 +554,7 @@ void View::DrawLabels(
 
     FontInfo labelTxt;
     if (!dc->UseGlobalStyling()) {
-        labelTxt.SetFaceName(m_options->m_textFont.GetValue().c_str());
+        labelTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
     labelTxt.SetPointSize(m_doc->GetDrawingLyricFont(staffSize)->GetPointSize());
 
@@ -1169,7 +1169,7 @@ void View::DrawMNum(DeviceContext *dc, MNum *mnum, Measure *measure, int yOffset
 
         FontInfo mnumTxt;
         if (!dc->UseGlobalStyling()) {
-            mnumTxt.SetFaceName(m_options->m_textFont.GetValue().c_str());
+            mnumTxt.SetFaceName(m_options->m_textFont.GetValue());
             mnumTxt.SetStyle(FONTSTYLE_italic);
         }
 
