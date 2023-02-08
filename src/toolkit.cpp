@@ -1106,6 +1106,8 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     // Forcing font resource to be reset if the font is given in the options
     if (json.has<jsonxx::String>("font")) {
         this->SetMusicFont(m_options->m_font.GetValue());
+    }
+    if (json.has<jsonxx::String>("textFont")) {
         this->SetTextFont(m_options->m_textFont.GetValue());
     }
 
