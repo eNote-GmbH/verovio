@@ -197,7 +197,10 @@ public:
     /**
      * See Object::CalcArtic
      */
+    ///@{
     int CalcArtic(FunctorParams *functorParams) override;
+    int CalcArticEnd(FunctorParams *functorParams) override;
+    ///@}
 
     /**
      * See Object::CalcStem

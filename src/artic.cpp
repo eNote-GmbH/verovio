@@ -308,6 +308,27 @@ bool Artic::IsCentered(data_ARTICULATION artic)
     return false;
 }
 
+void Artic::UpdateArticPosition(ListOfObjects &artics)
+{
+    data_ARTICULATION artic = this->GetArticFirst();
+    if ((artic != ARTICULATION_stacc) && (artic != ARTICULATION_ten)) return;
+
+    ListOfObjects::iterator iter = std::find_if(artics.begin(), artics.end(), [this](Object *object) {
+        if (object == this) return false;
+        Artic *artic = vrv_cast<Artic *>(object);
+        if ((this->GetPlace() != STAFFREL_NONE) && (artic->m_drawingPlace != this->m_drawingPlace)) return false;
+        return true;
+    });
+
+    if (iter != artics.end()) {
+        Artic *otherArtic = vrv_cast<Artic *>(*iter);
+        if (otherArtic->IsOutsideArtic()) {
+            this->m_isOutside = true;
+            this->m_drawingPlace = otherArtic->m_drawingPlace;
+        }
+    }
+}
+
 //----------------------------------------------------------------------------
 // Functor methods
 //----------------------------------------------------------------------------
@@ -420,7 +441,7 @@ int Artic::AdjustArtic(FunctorParams *functorParams)
         yOut = std::min(yIn, -staffHeight);
     }
 
-    yRel = this->IsInsideArtic() ? yIn : yOut;
+    yRel = (this->IsInsideArtic() && !this->m_isOutside)? yIn : yOut;
     this->SetDrawingYRel(yRel);
 
     // Adjust according to the position of a previous artic

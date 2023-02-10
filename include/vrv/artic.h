@@ -131,6 +131,8 @@ public:
      * See Object::ResetData
      */
     int ResetData(FunctorParams *functorParams) override;
+    
+    void UpdateArticPosition(ListOfObjects &artics);
 
 private:
     bool IsInsideArtic(data_ARTICULATION artic) const;
@@ -153,6 +155,8 @@ public:
 private:
     //
     data_STAFFREL m_drawingPlace;
+
+    bool m_isOutside = false;
 };
 
 } // namespace vrv

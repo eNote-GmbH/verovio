@@ -335,7 +335,8 @@ void Page::ResetAligners()
     // Adjust the position of outside articulations
     CalcArticParams calcArticParams(doc);
     Functor calcArtic(&Object::CalcArtic);
-    this->Process(&calcArtic, &calcArticParams);
+    Functor calcArticEnd(&Object::CalcArticEnd);
+    this->Process(&calcArtic, &calcArticParams, &calcArticEnd);
 
     CalcSlurDirectionParams calcSlurDirectionParams(doc);
     Functor calcSlurDirection(&Object::CalcSlurDirection);

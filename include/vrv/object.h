@@ -1060,6 +1060,11 @@ public:
     virtual int CalcArtic(FunctorParams *) { return FUNCTOR_CONTINUE; }
 
     /**
+     * End Functor for Object::CalcArticEnd
+     */
+    virtual int CalcArticEnd(FunctorParams *) { return FUNCTOR_CONTINUE; }
+
+    /**
      * Calculate the vertical position adjustment for the beam if it overlaps with layer elements
      */
     virtual int AdjustBeams(FunctorParams *) { return FUNCTOR_CONTINUE; }

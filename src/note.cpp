@@ -997,6 +997,23 @@ int Note::CalcArtic(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
+int Note::CalcArticEnd(FunctorParams *functorParams)
+{
+    CalcArticParams *params = vrv_params_cast<CalcArticParams *>(functorParams);
+    assert(params);
+
+    ClassIdComparison matchType(ARTIC);
+    ListOfObjects artics;
+    this->FindAllDescendantsByComparison(&artics, &matchType);
+
+    if (artics.size() < 2) return FUNCTOR_CONTINUE;
+
+    for (auto object : artics) {
+        Artic *artic = vrv_cast<Artic *>(object);
+        artic->UpdateArticPosition(artics);
+    }
+}
+
 int Note::AdjustArtic(FunctorParams *functorParams)
 {
     AdjustArticParams *params = vrv_params_cast<AdjustArticParams *>(functorParams);
