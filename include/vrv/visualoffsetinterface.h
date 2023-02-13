@@ -9,6 +9,7 @@
 #define __VRV_VISUAL_OFFSET_INTERFACE_H__
 
 #include "atts_shared.h"
+#include "interface.h"
 #include "vrvdef.h"
 
 namespace vrv {
