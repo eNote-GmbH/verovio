@@ -83,7 +83,7 @@ bridge-omrc:
     refs:
       - omrc-python-ci
   # needs:
-  #   - build-linux
+  #   - build-toolkit
   trigger:
     project: Verovio/omrc-python
     branch: omrc-python-ci
