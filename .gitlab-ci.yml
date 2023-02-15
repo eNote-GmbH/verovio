@@ -7,6 +7,7 @@ stages:
   - build-viewer
   - deploy-viewer
   - deploy-editor
+  - build-omrc
 
 variables:
   EMSCRIPTEN_REPOSITORY: "https://github.com/emscripten-core/emsdk.git"
@@ -74,4 +75,16 @@ bridge:
   trigger:
     project: Verovio/verovio-humdrum-viewer
     branch: enote-develop
+    strategy: depend
+
+bridge-omrc:
+  stage: build-omrc
+  only:
+    refs:
+      - develop
+  needs:
+    - build-toolkit
+  trigger:
+    project: Verovio/omrc-python
+    branch: main
     strategy: depend
