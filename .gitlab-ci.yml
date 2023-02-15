@@ -78,7 +78,7 @@ stages:
 #     strategy: depend
 
 bridge-omrc:
-  stage: deploy-omrc
+  stage: build-omrc
   only:
     refs:
       - omrc-python-ci
