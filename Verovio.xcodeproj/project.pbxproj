@@ -1334,7 +1334,7 @@
 		BD0CAE342859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
 		BD0CAE352859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
 		BD0CAE362859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; };
-		BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; };
+		BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD2E4D95287587FD00B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
 		BD2E4D962875880500B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
 		BD2E4D972875880500B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
@@ -2073,8 +2073,6 @@
 			children = (
 				4DA0EAC122BB779300A7EBEB /* facsimile.cpp */,
 				4DA0EAD022BB77AF00A7EBEB /* facsimile.h */,
-				3673E5E428E1DF0C0048BAFA /* graphic.cpp */,
-				3673E5E528E1DF0C0048BAFA /* graphic.h */,
 				4DA0EAC022BB779300A7EBEB /* surface.cpp */,
 				4DA0EAD522BB77AF00A7EBEB /* surface.h */,
 				4DA0EAC222BB779400A7EBEB /* zone.cpp */,
@@ -3095,7 +3093,6 @@
 				35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */,
 				BB4C4B3E22A932D7001F6AF0 /* artic.h in Headers */,
 				BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */,
-				4DA0EABE22BB772C00A7EBEB /* atts_neumes.h in Headers */,
 				BB4C4B2222A932CF001F6AF0 /* dir.h in Headers */,
 				BB4C4B3C22A932D7001F6AF0 /* accid.h in Headers */,
 				BB4C4B5622A932D7001F6AF0 /* keysig.h in Headers */,
