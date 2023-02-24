@@ -40,7 +40,7 @@ build-xc-framework:
   script:
     - ./build_xcframework.sh
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "develop"'
+    - if: '$CI_COMMIT_REF_NAME == "enote-dev"'
 
 build-linux:
   extends: .build-template
@@ -65,7 +65,7 @@ build-toolkit:
     paths:
       - emscripten/build/verovio-toolkit.js*
 
-bridge:
+bridge-vhv:
   stage: deploy-editor
   only:
     refs:
@@ -81,7 +81,7 @@ bridge-omrc:
   stage: build-omrc
   only:
     refs:
-      - develop
+      - enote-dev
   needs:
     - build-toolkit
   trigger:
