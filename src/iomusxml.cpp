@@ -547,7 +547,7 @@ void MusicXmlInput::FillSpace(Layer *layer, int dur)
 
 void MusicXmlInput::GenerateID(pugi::xml_node node)
 {
-    std::string id = StringFormat("%s-%s", node.name(), Object::GenerateRandID().c_str()).c_str();
+    std::string id = StringFormat("%s-%s", node.name(), Object::GenerateHashID().c_str()).c_str();
     std::transform(id.begin(), id.end(), id.begin(), ::tolower);
     node.append_attribute("xml:id").set_value(id.c_str());
 }
@@ -2681,6 +2681,11 @@ void MusicXmlInput::ReadMusicXmlNote(
     const int duration = node.child("duration").text().as_int();
     const int noteStaffNum = node.child("staff").text().as_int();
     const pugi::xml_node rest = node.child("rest");
+    if (m_ppq < 0 && duration && !typeStr.empty()) {
+        // if divisions are missing, try to calculate
+        m_ppq = (double)duration * pow(2, ConvertTypeToDur(typeStr) - 2) / 4;
+    }
+
     if (rest) {
         const std::string stepStr = rest.child("display-step").text().as_string();
         const std::string octaveStr = rest.child("display-octave").text().as_string();
