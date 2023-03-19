@@ -373,7 +373,9 @@ int Artic::CalcArtic(FunctorParams *functorParams)
 
     /************** adjust the xRel position **************/
 
-    this->SetDrawingXRel(CalculateHorizontalShift(params->m_doc, params->m_parent, params->m_stemDir));
+    Stem *stem = vrv_cast<Stem *>(params->m_parent->FindDescendantByType(STEM));
+    this->SetDrawingXRel(
+        CalculateHorizontalShift(params->m_doc, params->m_parent, params->m_stemDir, stem->IsVirtual()));
 
     /************** set cross-staff / layer **************/
 
@@ -544,10 +546,11 @@ int Artic::ResetData(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
-int Artic::CalculateHorizontalShift(const Doc *doc, const LayerElement *parent, data_STEMDIRECTION stemDir) const
+int Artic::CalculateHorizontalShift(
+    const Doc *doc, const LayerElement *parent, data_STEMDIRECTION stemDir, const bool virtualStem) const
 {
     int shift = parent->GetDrawingRadius(doc);
-    if ((parent->GetChildCount(ARTIC) > 1) || (doc->GetOptions()->m_staccatoCenter.GetValue())) {
+    if (virtualStem || (parent->GetChildCount(ARTIC) > 1) || (doc->GetOptions()->m_staccatoCenter.GetValue())) {
         return shift;
     }
     data_ARTICULATION artic = this->GetArticFirst();
