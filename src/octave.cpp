@@ -200,13 +200,4 @@ FunctorCode Octave::AcceptEnd(ConstFunctor &functor) const
     return functor.VisitOctaveEnd(this);
 }
 
-int Octave::ResetVerticalAlignment(FunctorParams *functorParams)
-{
-    FloatingObject::ResetVerticalAlignment(functorParams);
-
-    this->ResetDrawingExtenderX();
-
-    return FUNCTOR_CONTINUE;
-}
-
 } // namespace vrv
