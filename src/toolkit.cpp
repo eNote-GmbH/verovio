@@ -170,6 +170,9 @@ bool Toolkit::SetOutputTo(std::string const &outputTo)
     else if (outputTo == "timemap") {
         m_outputTo = TIMEMAP;
     }
+    else if (outputTo == "expansionmap") {
+        m_outputTo = EXPANSIONMAP;
+    }
     else if (outputTo == "pae") {
         m_outputTo = PAE;
     }
@@ -318,8 +321,6 @@ bool Toolkit::LoadFile(const std::string &filename)
     // read the file into the std::string:
     std::string content(fileSize, 0);
     in.read(&content[0], fileSize);
-
-    m_doc.m_expansionMap.Reset();
 
     return this->LoadData(content);
 }
@@ -470,6 +471,8 @@ bool Toolkit::LoadData(const std::string &data)
 {
     std::string newData;
     Input *input = NULL;
+
+    m_doc.m_expansionMap.Reset();
 
     if (m_options->m_xmlIdChecksum.GetValue()) {
         crcInit();
@@ -1703,6 +1706,15 @@ std::string Toolkit::RenderToTimemap(const std::string &jsonOptions)
     return output;
 }
 
+std::string Toolkit::RenderToExpansionMap()
+{
+    this->ResetLogBuffer();
+
+    std::string output;
+    m_doc.ExportExpansionMap(output);
+    return output;
+}
+
 std::string Toolkit::GetElementsAtTime(int millisec)
 {
     this->ResetLogBuffer();
@@ -1791,6 +1803,19 @@ bool Toolkit::RenderToTimemapFile(const std::string &filename, const std::string
 
     this->ResetLogBuffer();
     std::string outputString = this->RenderToTimemap(jsonOptions);
+
+    std::ofstream output(filename.c_str());
+    if (!output.is_open()) {
+        return false;
+    }
+    output << outputString;
+
+    return true;
+}
+
+bool Toolkit::RenderToExpansionMapFile(const std::string &filename)
+{
+    std::string outputString = this->RenderToExpansionMap();
 
     std::ofstream output(filename.c_str());
     if (!output.is_open()) {

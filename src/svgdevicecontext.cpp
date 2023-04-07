@@ -201,8 +201,7 @@ void SvgDeviceContext::Commit(bool xml_declaration)
 
     // add description statement
     pugi::xml_node desc = m_svgNode.prepend_child("desc");
-    desc.append_child(pugi::node_pcdata)
-        .set_value(StringFormat("Engraved by Verovio %s", GetVersion().c_str()).c_str());
+    desc.text().set(StringFormat("Engraved by Verovio %s", GetVersion().c_str()).c_str());
 
     // save the glyph data to m_outdata
     std::string indent = (m_indent == -1) ? "\t" : std::string(m_indent, ' ');
@@ -445,7 +444,7 @@ void SvgDeviceContext::StartPage()
     if (this->UseGlobalStyling()) {
         m_currentNode = m_currentNode.append_child("style");
         m_currentNode.append_attribute("type") = "text/css";
-        m_currentNode.append_child(pugi::node_pcdata).set_value(defaultFontDefinition.c_str());
+        m_currentNode.text().set(defaultFontDefinition.c_str());
         m_currentNode = m_svgNodeStack.back();
     }
 

@@ -423,6 +423,13 @@ public:
     std::string RenderToTimemap(const std::string &jsonOptions = "");
 
     /**
+     * Render a document's expansionMap, if existing
+     *
+     * @return The expansionMap as a string
+     */
+    std::string RenderToExpansionMap();
+
+    /**
      * Render a document to timemap and save it to the file.
      *
      * @remark nojs
@@ -432,6 +439,15 @@ public:
      * @return True if the file was successfully written
      */
     bool RenderToTimemapFile(const std::string &filename, const std::string &jsonOptions = "");
+
+    /**
+     * Render a document's expansionMap and save it to a file.
+     *
+     * @remark nojs
+     *
+     * @param filename The output filename
+     */
+    bool RenderToExpansionMapFile(const std::string &filename);
 
     //@}
 

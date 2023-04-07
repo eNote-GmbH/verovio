@@ -954,7 +954,8 @@ Options::Options()
     m_baseOptions.AddOption(&m_scale);
 
     m_outputTo.SetInfo("Output to",
-        "Select output format to: \"mei\", \"mei-pb\", \"mei-basic\", \"svg\", \"midi\", \"timemap\", \"humdrum\" or "
+        "Select output format to: \"mei\", \"mei-pb\", \"mei-basic\", \"svg\", \"midi\", \"timemap\", "
+        "\"expansionmap\", \"humdrum\" or "
         "\"pae\"");
     m_outputTo.Init("svg");
     m_outputTo.SetKey("outputTo");
@@ -1503,7 +1504,7 @@ Options::Options()
     m_systemExtendLast.Init(false);
     this->Register(&m_systemExtendLast, "extendLastMeasure", &m_generalLayout);
 
-    m_systemMaxPerPage.SetInfo("Max. System per Page", "Maximun number of systems per page");
+    m_systemMaxPerPage.SetInfo("Max. System per Page", "Maximum number of systems per page");
     m_systemMaxPerPage.Init(0, 0, 24);
     this->Register(&m_systemMaxPerPage, "systemMaxPerPage", &m_generalLayout);
 
