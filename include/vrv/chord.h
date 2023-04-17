@@ -212,11 +212,6 @@ public:
     int InitOnsetOffsetEnd(FunctorParams *functorParams) override;
 
     /**
-     * See Object::JustifyYAdjustCrossStaff
-     */
-    int JustifyYAdjustCrossStaff(FunctorParams *functorParams) override;
-
-    /**
      * See Object::GenerateMIDI
      */
     int GenerateMIDI(FunctorParams *functorParams) override;
