@@ -140,6 +140,7 @@
 #import <VerovioFramework/git_commit.h>
 #import <VerovioFramework/functor.h>
 #import <VerovioFramework/rend.h>
+#import <VerovioFramework/justifyfunctor.h>
 #import <VerovioFramework/pagemilestone.h>
 #import <VerovioFramework/adjustsylspacingfunctor.h>
 #import <VerovioFramework/adjustclefchangesfunctor.h>
@@ -164,6 +165,7 @@
 #import <VerovioFramework/adjustdotsfunctor.h>
 #import <VerovioFramework/metersiggrp.h>
 #import <VerovioFramework/custos.h>
+#import <VerovioFramework/castofffunctor.h>
 #import <VerovioFramework/adjustxposfunctor.h>
 #import <VerovioFramework/calcbboxoverflowsfunctor.h>
 #import <VerovioFramework/mrpt2.h>
