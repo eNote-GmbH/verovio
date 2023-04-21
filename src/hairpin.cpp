@@ -47,6 +47,7 @@ Hairpin::Hairpin()
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_HAIRPINLOG);
     this->RegisterAttClass(ATT_HAIRPINVIS);
+    this->RegisterAttClass(ATT_LINERENDBASE);
     this->RegisterAttClass(ATT_PLACEMENTRELSTAFF);
     this->RegisterAttClass(ATT_VERTICALGROUP);
 
@@ -63,6 +64,7 @@ void Hairpin::Reset()
     this->ResetColor();
     this->ResetHairpinLog();
     this->ResetHairpinVis();
+    this->ResetLineRendBase();
     this->ResetPlacementRelStaff();
     this->ResetVerticalGroup();
 
