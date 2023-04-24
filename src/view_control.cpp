@@ -73,6 +73,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
     assert(measure);
     assert(element);
 
+    dc->StartVisualOffset(element, m_doc->GetDrawingUnit(100));
     // For dir, dynam, fermata, and harm, we do not consider the @tstamp2 for rendering
     if (element->Is(
             { BEAMSPAN, BRACKETSPAN, FIGURE, GLISS, HAIRPIN, LV, OCTAVE, PHRASE, PITCHINFLECTION, SLUR, TIE })) {
@@ -161,6 +162,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
         assert(turn);
         this->DrawTurn(dc, turn, measure, system);
     }
+    dc->EndVisualOffset(element);
 }
 
 void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *system)
@@ -315,6 +317,7 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
             }
         }
 
+        dc->StartVisualOffset(element, m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
         if (element->Is(DIR)) {
             // cast to Dir check in DrawControlElementConnector
             this->DrawControlElementConnector(dc, dynamic_cast<Dir *>(element), x1, x2, staff, spanningType, graphic);
@@ -400,6 +403,7 @@ void View::DrawTimeSpanningElement(DeviceContext *dc, Object *element, System *s
             this->DrawTrillExtension(dc, dynamic_cast<Trill *>(element), x1, x2, staff, spanningType, graphic);
         }
         isFirst = false;
+        dc->EndVisualOffset(element);
     }
 }
 
@@ -628,25 +632,41 @@ void View::DrawHairpin(
     dc->SetPen(m_currentColour, hairpinThickness, style, 0, 0, AxCAP_SQUARE, AxJOIN_BEVEL);
     if (startY == 0) {
         Point p[3];
-        p[0] = { ToDeviceContextX(x2), ToDeviceContextY(y2 - endY / 2) };
+        int yTop = y2 + endY / 2;
+        int yBottom = y2 - endY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &x2, &yBottom }, { &x1, &y1 }, { &ignore, &yTop } });
+        p[0] = { ToDeviceContextX(x2), ToDeviceContextY(yBottom) };
         p[1] = { ToDeviceContextX(x1), ToDeviceContextY(y1) };
-        p[2] = { p[0].x, ToDeviceContextY(y2 + endY / 2) };
+        p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
     else if (endY == 0) {
         Point p[3];
-        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(y1 - startY / 2) };
+        int yTop = y1 + startY / 2;
+        int yBottom = y1 - startY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &x1, &yBottom }, { &x2, &y2 }, { &ignore, &yTop } });
+        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yBottom) };
         p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y2) };
-        p[2] = { p[0].x, ToDeviceContextY(y1 + startY / 2) };
+        p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
     else {
         Point p[2];
-        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(y1 - startY / 2) };
-        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y2 - endY / 2) };
+        int yLeft = y1 - startY / 2;
+        int yRight = y2 - endY / 2;
+        dc->ApplyVisualOffset({ { &x1, &yLeft }, { &x2, &yRight } });
+        p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yLeft) };
+        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(yRight) };
         dc->DrawPolyline(2, p);
-        p[0].y = ToDeviceContextY(y1 + startY / 2);
-        p[1].y = ToDeviceContextY(y2 + endY / 2);
+
+        yLeft = y1 + startY / 2;
+        yRight = y2 + endY / 2;
+        int ignore = 0;
+        dc->ApplyVisualOffset({ { &ignore, &yLeft }, { &ignore, &yRight } });
+        p[0].y = ToDeviceContextY(yLeft);
+        p[1].y = ToDeviceContextY(yRight);
         dc->DrawPolyline(2, p);
     }
     dc->ResetPen();
@@ -762,9 +782,9 @@ void View::DrawOctave(
             x2 = x1 + unit - lineWidth / 2;
         }
         else {
+            dc->ApplyVisualOffset({ { &x1, &y1 }, { &x2, &y2 } });
             dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1), ToDeviceContextX(x2), ToDeviceContextY(y1));
         }
-
         octave->SetDrawingExtenderX(x1, x2);
 
         if (octave->GetLendsym() != LINESTARTENDSYMBOL_none) {
@@ -1565,7 +1585,7 @@ void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *m
 
     FontInfo dirTxt;
     if (!dc->UseGlobalStyling()) {
-        dirTxt.SetFaceName("Times");
+        dirTxt.SetFaceName(m_options->m_textFont.GetValue());
         dirTxt.SetStyle(FONTSTYLE_italic);
     }
 
@@ -1643,7 +1663,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
 
     FontInfo dynamTxt;
     if (!dc->UseGlobalStyling()) {
-        dynamTxt.SetFaceName("Times");
+        dynamTxt.SetFaceName(m_options->m_textFont.GetValue());
         dynamTxt.SetStyle(FONTSTYLE_italic);
     }
 
@@ -1903,7 +1923,7 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
 
     FontInfo fingTxt;
     if (!dc->UseGlobalStyling()) {
-        fingTxt.SetFaceName("Times");
+        fingTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
 
     TextDrawingParams params;
@@ -2052,20 +2072,20 @@ void View::DrawGliss(DeviceContext *dc, Gliss *gliss, int x1, int x2, Staff *sta
             break;
         }
         case LINEFORM_dashed:
-            dc->SetPen(m_currentColour, lineWidth, AxSHORT_DASH, 0, 0, AxCAP_ROUND, AxJOIN_ARCS);
+            dc->SetPen(m_currentColour, lineWidth, AxSHORT_DASH, 0, 0, AxCAP_ROUND, AxJOIN_MITER);
             dc->SetBrush(m_currentColour, AxSOLID);
             dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1), ToDeviceContextX(x2), ToDeviceContextY(y2));
             dc->ResetPen();
             break;
         case LINEFORM_dotted:
-            dc->SetPen(m_currentColour, lineWidth * 3 / 2, AxDOT, 0, 0, AxCAP_ROUND, AxJOIN_ARCS);
+            dc->SetPen(m_currentColour, lineWidth * 3 / 2, AxDOT, 0, 0, AxCAP_ROUND, AxJOIN_MITER);
             dc->SetBrush(m_currentColour, AxSOLID);
             dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1), ToDeviceContextX(x2), ToDeviceContextY(y2));
             dc->ResetPen();
             break;
         case LINEFORM_solid: [[fallthrough]];
         default: {
-            dc->SetPen(m_currentColour, lineWidth, AxSOLID, 0, 0, AxCAP_ROUND, AxJOIN_ARCS);
+            dc->SetPen(m_currentColour, lineWidth, AxSOLID, 0, 0, AxCAP_ROUND, AxJOIN_MITER);
             dc->SetBrush(m_currentColour, AxSOLID);
             dc->DrawLine(ToDeviceContextX(x1), ToDeviceContextY(y1), ToDeviceContextX(x2), ToDeviceContextY(y2));
             dc->ResetPen();
@@ -2095,7 +2115,7 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
 
     FontInfo harmTxt;
     if (!dc->UseGlobalStyling()) {
-        harmTxt.SetFaceName("Times");
+        harmTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
 
     TextDrawingParams params;
@@ -2367,7 +2387,7 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
 
     FontInfo rehTxt;
     if (!dc->UseGlobalStyling()) {
-        rehTxt.SetFaceName("Times");
+        rehTxt.SetFaceName(m_options->m_textFont.GetValue());
         rehTxt.SetWeight(FONTWEIGHT_bold);
     }
 
@@ -2449,7 +2469,7 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
 
     FontInfo tempoTxt;
     if (!dc->UseGlobalStyling()) {
-        tempoTxt.SetFaceName("Times");
+        tempoTxt.SetFaceName(m_options->m_textFont.GetValue());
         tempoTxt.SetWeight(FONTWEIGHT_bold);
     }
 

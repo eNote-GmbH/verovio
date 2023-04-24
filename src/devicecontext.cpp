@@ -325,4 +325,28 @@ void DeviceContext::AddGlyphToTextExtend(const Glyph *glyph, TextExtend *extend)
     extend->m_descent = std::max(-y, extend->m_descent);
 }
 
+void DeviceContext::StartVisualOffset(const Object *object, int drawingUnit)
+{
+    const VisualOffsetInterface *vo = object->GetVisualOffsetInterface();
+    // make sure that we have interface we correct values first
+    if (!vo || (!vo->HasOffsetValues() && !vo->HasOffset2Values())) return;
+
+    m_offsetList.push({ object->GetID(), vo, object->GetClassId(), drawingUnit });
+}
+
+void DeviceContext::EndVisualOffset(const Object *object)
+{
+    if (!m_offsetList.empty() && (m_offsetList.top().id == object->GetID())) {
+        m_offsetList.pop();
+    }
+}
+
+void DeviceContext::ApplyVisualOffset(std::vector<std::pair<int *, int *>> points)
+{
+    if (m_offsetList.empty()) return;
+
+    m_offsetList.top().offsetInterface->AlterPosition(
+        points, m_offsetList.top().classId, m_offsetList.top().drawingUnit);
+}
+
 } // namespace vrv

@@ -72,6 +72,7 @@ Chord::Chord()
     , DrawingListInterface()
     , StemmedDrawingInterface()
     , DurationInterface()
+    , VisualOffsetInterface()
     , AttChordVis()
     , AttColor()
     , AttCue()
@@ -82,6 +83,7 @@ Chord::Chord()
     , AttVisibility()
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_CHORDVIS);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
@@ -105,6 +107,7 @@ void Chord::Reset()
     DrawingListInterface::Reset();
     StemmedDrawingInterface::Reset();
     DurationInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetChordVis();
     this->ResetColor();
     this->ResetCue();

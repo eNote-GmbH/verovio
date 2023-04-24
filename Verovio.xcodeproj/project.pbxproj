@@ -1329,6 +1329,12 @@
 		BD0562372518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
 		BD0562382518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
 		BD0562392518CD20004057EB /* beamspan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0562352518CD20004057EB /* beamspan.cpp */; };
+		BD0CAE312859E3840049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE332859E3A10049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE342859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE352859E3A20049950E /* visualoffsetinterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */; };
+		BD0CAE362859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; };
+		BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0CAE322859E3980049950E /* visualoffsetinterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD2E4D95287587FD00B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
 		BD2E4D962875880500B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
 		BD2E4D972875880500B04350 /* stem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD2E4D94287587FD00B04350 /* stem.cpp */; };
@@ -2125,6 +2131,8 @@
 		BBC19FC222B38C1400100F42 /* VerovioFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VerovioFramework.h; sourceTree = "<group>"; };
 		BD05622E2518CD12004057EB /* beamspan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = beamspan.h; path = include/vrv/beamspan.h; sourceTree = "<group>"; };
 		BD0562352518CD20004057EB /* beamspan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = beamspan.cpp; path = src/beamspan.cpp; sourceTree = "<group>"; };
+		BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = visualoffsetinterface.cpp; path = src/visualoffsetinterface.cpp; sourceTree = "<group>"; };
+		BD0CAE322859E3980049950E /* visualoffsetinterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = visualoffsetinterface.h; path = include/vrv/visualoffsetinterface.h; sourceTree = "<group>"; };
 		BD2E4D94287587FD00B04350 /* stem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stem.cpp; path = src/stem.cpp; sourceTree = "<group>"; };
 		BD2E4D992875881B00B04350 /* stem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stem.h; path = include/vrv/stem.h; sourceTree = "<group>"; };
 		BD87768127CE89FA005B97EA /* layerdef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = layerdef.h; path = include/vrv/layerdef.h; sourceTree = "<group>"; };
@@ -2412,12 +2420,12 @@
 			children = (
 				4DA0EAC122BB779300A7EBEB /* facsimile.cpp */,
 				4DA0EAD022BB77AF00A7EBEB /* facsimile.h */,
-				3673E5E428E1DF0C0048BAFA /* graphic.cpp */,
-				3673E5E528E1DF0C0048BAFA /* graphic.h */,
 				4DA0EAC022BB779300A7EBEB /* surface.cpp */,
 				4DA0EAD522BB77AF00A7EBEB /* surface.h */,
 				4DA0EAC222BB779400A7EBEB /* zone.cpp */,
 				4DA0EAD222BB77AF00A7EBEB /* zone.h */,
+				3673E5E428E1DF0C0048BAFA /* graphic.cpp */,
+				3673E5E528E1DF0C0048BAFA /* graphic.h */,
 			);
 			name = facselements;
 			sourceTree = "<group>";
@@ -2597,6 +2605,8 @@
 				4DA60EDF1B6307A8006E2DFC /* textdirinterface.h */,
 				4DF289FE1A7545E500BA9F7D /* timeinterface.cpp */,
 				4DF289FC1A7545CC00BA9F7D /* timeinterface.h */,
+				BD0CAE302859E3840049950E /* visualoffsetinterface.cpp */,
+				BD0CAE322859E3980049950E /* visualoffsetinterface.h */,
 			);
 			name = interfaces;
 			sourceTree = "<group>";
@@ -2725,6 +2735,8 @@
 				8F59291418854BF800FE51AD /* doc.h */,
 				4D27E13627F582BB00D64FBD /* docselection.cpp */,
 				4D27E13327F582AB00D64FBD /* docselection.h */,
+				E73B37FD2726B4740063B232 /* enotetoolkit.cpp */,
+				E73B37FA2726B4470063B232 /* enotetoolkit.h */,
 				36E0442B2347A9150054F141 /* expansionmap.cpp */,
 				36E0442D2347A9290054F141 /* expansionmap.h */,
 				4D79643826C6B3520026288B /* featureextractor.cpp */,
@@ -3094,6 +3106,7 @@
 				4DACC9C42990F29A00B55913 /* atts_analytical.h in Headers */,
 				4DB3D8D21F83D12000B5FC2B /* octave.h in Headers */,
 				4DB3D8E21F83D15C00B5FC2B /* chord.h in Headers */,
+				E73B37FB2726B4470063B232 /* enotetoolkit.h in Headers */,
 				4DD11DC52240E78B00A405D8 /* c_wrapper.h in Headers */,
 				403BEFFA206C010100D022D5 /* beatrpt.h in Headers */,
 				8F59293418854BF800FE51AD /* verticalaligner.h in Headers */,
@@ -3131,6 +3144,7 @@
 				40C2E4212052A6EC0003625F /* pb.h in Headers */,
 				40BD9393206B95120037BF8E /* annot.h in Headers */,
 				4D81351B2322C2CC00F59C01 /* keyaccid.h in Headers */,
+				BD0CAE362859E3A50049950E /* visualoffsetinterface.h in Headers */,
 				4DEC4DD621C8295700D1D273 /* del.h in Headers */,
 				4DB726C81B8BB0F30040231B /* text.h in Headers */,
 				4D308101203DB69D00BC44F6 /* ref.h in Headers */,
@@ -3526,6 +3540,7 @@
 				4D674B40255F40AC008AEF4C /* plica.h in Headers */,
 				4D79643226C6AA720026288B /* featureextractor.h in Headers */,
 				4DACC9EB2990F29A00B55913 /* attmodule.h in Headers */,
+				E73B37FC2726B4470063B232 /* enotetoolkit.h in Headers */,
 				BB4C4ABC22A932B6001F6AF0 /* instrdef.h in Headers */,
 				BB4C4B7622A932D7001F6AF0 /* syl.h in Headers */,
 				BB4C4AEA22A932BC001F6AF0 /* del.h in Headers */,
@@ -3625,6 +3640,7 @@
 				BB4C4A9E22A9328F001F6AF0 /* smufl.h in Headers */,
 				35FDEBCF24B6DBC100AC1696 /* fing.h in Headers */,
 				BB4C4B3E22A932D7001F6AF0 /* artic.h in Headers */,
+				BD0CAE372859E3A50049950E /* visualoffsetinterface.h in Headers */,
 				BB4C4B2222A932CF001F6AF0 /* dir.h in Headers */,
 				BB4C4B3C22A932D7001F6AF0 /* accid.h in Headers */,
 				BB4C4B5622A932D7001F6AF0 /* keysig.h in Headers */,
@@ -3857,6 +3873,7 @@
 				4DB3D8D91F83D13C00B5FC2B /* turn.cpp in Sources */,
 				4DA0EAC422BB779400A7EBEB /* surface.cpp in Sources */,
 				4D1694051E3A44F300569BF4 /* iodarms.cpp in Sources */,
+				BD0CAE332859E3A10049950E /* visualoffsetinterface.cpp in Sources */,
 				4DEC4DAF21C81F0600D1D273 /* sic.cpp in Sources */,
 				E75EA9FE29CC3A8B003A97A7 /* calcarticfunctor.cpp in Sources */,
 				4D81351F2322C41800F59C01 /* keyaccid.cpp in Sources */,
@@ -4079,6 +4096,7 @@
 				4D1694591E3A44F300569BF4 /* custos.cpp in Sources */,
 				4D16945A1E3A44F300569BF4 /* dot.cpp in Sources */,
 				4D20740B22A4FDFA00E0765F /* course.cpp in Sources */,
+				E73B37FF2726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4113,6 +4131,7 @@
 				8F086EE8188539540037FD8E /* devicecontext.cpp in Sources */,
 				4D543E221B80AACF004B823C /* view_control.cpp in Sources */,
 				4DC12A781F7400B9000440E9 /* runningelement.cpp in Sources */,
+				BD0CAE312859E3840049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAEE22BB77C300A7EBEB /* editortoolkit_cmn.cpp in Sources */,
 				E78F204A29D98D2300CD5910 /* adjustxrelfortranscriptionfunctor.cpp in Sources */,
 				4DACC9FC2990F29A00B55913 /* atts_fingering.cpp in Sources */,
@@ -4138,6 +4157,7 @@
 				8F086EEC188539540037FD8E /* io.cpp in Sources */,
 				E75A69A029CCF8A200414819 /* adjustbeamsfunctor.cpp in Sources */,
 				4DACC9762990F29A00B55913 /* atts_neumes.cpp in Sources */,
+				E73B37FE2726B4740063B232 /* enotetoolkit.cpp in Sources */,
 				4D796B5E1D78641900A15238 /* harm.cpp in Sources */,
 				4DB3072F1AC9ED2500EE0982 /* space.cpp in Sources */,
 				4DEC4D7E21C804C500D1D273 /* add.cpp in Sources */,
@@ -4415,6 +4435,7 @@
 				4D1BE7861C6A40A80086DC0E /* pugixml.cpp in Sources */,
 				E75EA9FF29CC3A8B003A97A7 /* calcarticfunctor.cpp in Sources */,
 				400FEDD5206FA74D000D3233 /* gracegrp.cpp in Sources */,
+				BD0CAE342859E3A20049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAC522BB779400A7EBEB /* surface.cpp in Sources */,
 				4DB726C61B8BB0E80040231B /* text.cpp in Sources */,
 				4D79642326C167100026288B /* pagemilestone.cpp in Sources */,
@@ -4634,6 +4655,7 @@
 				4DB3D8B91F83D0C600B5FC2B /* systemmilestone.cpp in Sources */,
 				4D2073FA22A3BCE000E0765F /* tabdursym.cpp in Sources */,
 				4DEC4DB421C826E000D1D273 /* supplied.cpp in Sources */,
+				E73B38002726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4690,6 +4712,7 @@
 				BB4C4B0522A932C3001F6AF0 /* pgfoot.cpp in Sources */,
 				4DF092A82497711800239195 /* phrase.cpp in Sources */,
 				BB4C4ABF22A932B6001F6AF0 /* labelabbr.cpp in Sources */,
+				BD0CAE352859E3A20049950E /* visualoffsetinterface.cpp in Sources */,
 				4DA0EAC622BB779400A7EBEB /* surface.cpp in Sources */,
 				E75EAA0029CC3A8C003A97A7 /* calcarticfunctor.cpp in Sources */,
 				BB4C4ADB22A932BC001F6AF0 /* abbr.cpp in Sources */,
@@ -4912,6 +4935,7 @@
 				BB4C4BA122A932E5001F6AF0 /* scoredefinterface.cpp in Sources */,
 				BB4C4B4322A932D7001F6AF0 /* beatrpt.cpp in Sources */,
 				BB4C4AB122A932A6001F6AF0 /* iodarms.cpp in Sources */,
+				E73B38012726B4740063B232 /* enotetoolkit.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

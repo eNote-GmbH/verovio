@@ -534,6 +534,16 @@
   </g>
   <g c="E4F2" x="0.0" y="-250.0" w="276.0" h="433.0" h-a-x="277" n="restQuarterOld" />
   <g c="E4F6" x="0.0" y="-260.0" w="304.0" h="443.0" h-a-x="304" n="restQuarterZ" />
+  <g c="ED10" x="20.0" y="0.0" w="220.0" h="246.0" h-a-x="260" n="fingering0" />
+  <g c="ED11" x="21.0" y="-1.0" w="149.0" h="247.0" h-a-x="190" n="fingering1" />
+  <g c="ED12" x="19.05" y="0.0" w="166.95" h="246.0" h-a-x="206" n="fingering2" />
+  <g c="ED13" x="20.0" y="0.0" w="166.0" h="246.0" h-a-x="206" n="fingering3" />
+  <g c="ED14" x="19.0" y="0.0" w="199.0" h="246.0" h-a-x="238" n="fingering4" />
+  <g c="ED15" x="20.0" y="0.0" w="149.0" h="251.0" h-a-x="189" n="fingering5" />
+  <g c="ED24" x="20.0" y="0.0" w="176.0" h="246.0" h-a-x="216" n="fingering6" />
+  <g c="ED25" x="20.0" y="0.0" w="162.0" h="246.0" h-a-x="202" n="fingering7" />
+  <g c="ED26" x="20.0" y="0.0" w="188.0" h="246.0" h-a-x="229" n="fingering8" />
+  <g c="ED27" x="20.0" y="-0.16" w="179.0" h="246.16" h-a-x="219" n="fingering9" />
   <g c="E630" x="0.0" y="0.0" w="206.0" h="266.0" h-a-x="206" n="pluckedSnapPizzicatoBelow" />
   <g c="E631" x="0.0" y="0.0" w="206.0" h="266.0" h-a-x="206" n="pluckedSnapPizzicatoAbove" />
   <g c="E632" x="0.0" y="0.0" w="266.0" h="206.0" h-a-x="266" n="pluckedBuzzPizzicato" />
@@ -587,6 +597,8 @@
   <g c="E948" x="-120.0" y="-760.0" w="320.0" h="760.0" h-a-x="211" n="mensuralCombStemDownFlagExtended" />
   <g c="EC85" x="20.0" y="-319.0" w="402.0" h="637.0" h-a-x="442" n="timeSigCut2" />
   <g c="EC86" x="20.0" y="-319.0" w="372.0" h="637.0" h-a-x="412" n="timeSigCut3" />
+  <g c="F408" x="0.0" y="-676.0" w="610.0" h="1264.0" h-a-x="610" n="cClefFrench" />
+  <g c="F4BF" x="0.0" y="-600.0" w="465.0" h="1200.0" h-a-x="465" n="cClefFrench20C" />
   <g c="E903" x="0.0" y="-220.0" w="515.0" h="440.0" h-a-x="515" n="mensuralFclef" />
   <g c="EC80" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketLeft" />
   <g c="EC81" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketRight" />

@@ -32,6 +32,7 @@ static const ClassRegistrar<Accid> s_factory("accid", ACCID);
 Accid::Accid()
     : LayerElement(ACCID, "accid-")
     , PositionInterface()
+    , VisualOffsetInterface()
     , AttAccidental()
     , AttAccidentalGes()
     , AttAccidLog()
@@ -43,6 +44,7 @@ Accid::Accid()
 {
 
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ACCIDENTAL);
     this->RegisterAttClass(ATT_ACCIDENTALGES);
     this->RegisterAttClass(ATT_ACCIDLOG);
@@ -61,6 +63,7 @@ void Accid::Reset()
 {
     LayerElement::Reset();
     PositionInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetAccidental();
     this->ResetAccidentalGes();
     this->ResetAccidLog();

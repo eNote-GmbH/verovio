@@ -198,13 +198,19 @@ void Page::LayOut(bool force)
         return;
     }
 
-    this->LayOutHorizontally();
-    this->JustifyHorizontally();
-    this->LayOutVertically();
-    this->JustifyVertically();
-
     Doc *doc = vrv_cast<Doc *>(this->GetFirstAncestor(DOC));
     assert(doc);
+
+    this->LayOutHorizontally();
+    if (doc->AbortRequested()) return;
+
+    this->JustifyHorizontally();
+
+    this->LayOutVertically();
+    if (doc->AbortRequested()) return;
+
+    this->JustifyVertically();
+
     if (doc->GetOptions()->m_svgBoundingBoxes.GetValue()) {
         View view;
         view.SetDoc(doc);
@@ -381,6 +387,10 @@ void Page::LayOutHorizontally()
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     // Adjust the position of outside articulations
     AdjustArticFunctor adjustArtic(doc);
     this->Process(adjustArtic);
@@ -498,6 +508,10 @@ void Page::LayOutVertically()
     view.SetPage(this->GetIdx(), false);
     view.DrawCurrentPage(&bBoxDC, false);
 
+    if (doc->AbortRequested()) {
+        return;
+    }
+
     // Adjust the position of outside articulations with slurs end and start positions
     AdjustArticWithSlursFunctor adjustArticWithSlurs(doc);
     this->Process(adjustArticWithSlurs);
@@ -526,6 +540,10 @@ void Page::LayOutVertically()
     // Fill the arrays of bounding boxes (above and below) for each staff alignment for which the box overflows.
     CalcBBoxOverflowsFunctor calcBBoxOverflows(doc);
     this->Process(calcBBoxOverflows);
+
+    if (doc->AbortRequested()) {
+        return;
+    }
 
     // Adjust the positioners of floating elements (slurs, hairpin, dynam, etc)
     AdjustFloatingPositionersFunctor adjustFloatingPositioners(doc);

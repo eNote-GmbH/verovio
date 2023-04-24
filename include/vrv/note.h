@@ -25,6 +25,7 @@
 #include "layerelement.h"
 #include "pitchinterface.h"
 #include "transposition.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -49,6 +50,7 @@ class Note : public LayerElement,
              public DurationInterface,
              public PitchInterface,
              public PositionInterface,
+             public VisualOffsetInterface,
              public AttColor,
              public AttColoration,
              public AttCue,
@@ -90,6 +92,11 @@ public:
     const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
+    }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 

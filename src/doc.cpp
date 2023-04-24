@@ -87,6 +87,8 @@ Doc::Doc() : Object(DOC, "doc-")
 {
     m_options = new Options();
 
+    m_abort = false;
+
     // owned pointers need to be set to NULL;
     m_selectionPreceding = NULL;
     m_selectionFollowing = NULL;
@@ -566,6 +568,10 @@ bool Doc::ExportFeatures(std::string &output, const std::string &options)
 
 void Doc::PrepareData()
 {
+    if (this->AbortRequested()) {
+        return;
+    }
+
     /************ Reset and initialization ************/
 
     if (m_dataPreparationDone) {
@@ -942,6 +948,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         return;
     }
 
+    if (this->AbortRequested()) {
+        return;
+    }
+
     std::list<Score *> scores = this->GetScores();
     assert(!scores.empty());
 
@@ -962,6 +972,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
         unCastOffPage->LayOutHorizontallyWithCache(true);
     }
 
+    if (this->AbortRequested()) {
+        return;
+    }
+
     Page *castOffSinglePage = new Page();
 
     System *leftoverSystem = NULL;
@@ -980,6 +994,10 @@ void Doc::CastOffDocBase(bool useSb, bool usePb, bool smart)
     assert(unCastOffPage && !unCastOffPage->GetParent());
     delete unCastOffPage;
     unCastOffPage = NULL;
+
+    if (this->AbortRequested()) {
+        return;
+    }
 
     // Store the cast off system widths => these are used to adjust the horizontal spacing
     // for a given duration during page layout

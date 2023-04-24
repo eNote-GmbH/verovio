@@ -73,11 +73,6 @@ Toolkit::Toolkit(bool initFont)
     m_humdrumBuffer = NULL;
     m_cString = NULL;
 
-    if (initFont) {
-        Resources &resources = m_doc.GetResourcesForModification();
-        resources.InitFonts();
-    }
-
     m_options = m_doc.GetOptions();
 
     m_editorToolkit = NULL;
@@ -85,6 +80,11 @@ Toolkit::Toolkit(bool initFont)
 #ifndef NO_RUNTIME
     m_runtimeClock = NULL;
 #endif
+
+    if (initFont) {
+        Resources &resources = m_doc.GetResourcesForModification();
+        resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
+    }
 }
 
 Toolkit::~Toolkit()
@@ -118,13 +118,21 @@ bool Toolkit::SetResourcePath(const std::string &path)
 {
     Resources &resources = m_doc.GetResourcesForModification();
     resources.SetPath(path);
-    return resources.InitFonts();
+    return resources.InitFonts(m_options->m_font.GetValue(), m_options->m_textFont.GetValue());
 }
 
-bool Toolkit::SetFont(const std::string &fontName)
+bool Toolkit::SetMusicFont(const std::string &fontName)
 {
     Resources &resources = m_doc.GetResourcesForModification();
-    const bool ok = resources.SetFont(fontName);
+    const bool ok = resources.SetMusicFont(fontName);
+    if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
+    return ok;
+}
+
+bool Toolkit::SetTextFont(const std::string &fontName)
+{
+    Resources &resources = m_doc.GetResourcesForModification();
+    const bool ok = resources.SetTextFont(fontName);
     if (!ok) LogWarning("Font '%s' could not be loaded", fontName.c_str());
     return ok;
 }
@@ -1101,7 +1109,12 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     m_options->Sync();
 
     // Forcing font resource to be reset if the font is given in the options
-    if (json.has<jsonxx::String>("font")) this->SetFont(m_options->m_font.GetValue());
+    if (json.has<jsonxx::String>("font")) {
+        this->SetMusicFont(m_options->m_font.GetValue());
+    }
+    if (json.has<jsonxx::String>("textFont")) {
+        this->SetTextFont(m_options->m_textFont.GetValue());
+    }
 
     return true;
 }
@@ -1111,8 +1124,9 @@ void Toolkit::ResetOptions()
     std::for_each(m_options->GetItems()->begin(), m_options->GetItems()->end(),
         [](const MapOfStrOptions::value_type &opt) { opt.second->Reset(); });
 
-    // Set the (default) font
-    this->SetFont(m_options->m_font.GetValue());
+    // Set the (default) fonts
+    this->SetMusicFont(m_options->m_font.GetValue());
+    this->SetTextFont(m_options->m_textFont.GetValue());
 }
 
 void Toolkit::PrintOptionUsageOutput(const vrv::Option *option, std::ostream &output) const
@@ -1444,11 +1458,16 @@ bool Toolkit::RenderToDeviceContext(int pageNo, DeviceContext *deviceContext)
         return false;
     }
 
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     // Page number is one-based - correct it to 0-based first
     pageNo--;
 
     // Get the current system for the SVG clipping size
     m_view.SetPage(pageNo);
+    if (m_doc.AbortRequested()) return true;
 
     // Adjusting page width and height according to the options
     int width = m_options->m_pageWidth.GetUnfactoredValue();
@@ -1511,6 +1530,7 @@ std::string Toolkit::RenderToSVG(int pageNo, bool xmlDeclaration)
     // We will need to set the size of the page after having drawn it depending on the options
     SvgDeviceContext svg;
     svg.SetResources(&m_doc.GetResources());
+    svg.SetDefaultFontName(m_options->m_textFont.GetValue());
 
     int indent = (m_options->m_outputIndentTab.GetValue()) ? -1 : m_options->m_outputIndent.GetValue();
     svg.SetIndent(indent);
@@ -1597,6 +1617,10 @@ void Toolkit::GetHumdrum(std::ostream &output)
 
 std::string Toolkit::RenderToMIDI()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1614,6 +1638,10 @@ std::string Toolkit::RenderToMIDI()
 
 std::string Toolkit::RenderToPAE()
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     this->ResetLogBuffer();
 
     if (this->GetPageCount() == 0) {
@@ -1631,6 +1659,10 @@ std::string Toolkit::RenderToPAE()
 
 bool Toolkit::RenderToPAEFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     std::string outputString = this->RenderToPAE();
@@ -1646,6 +1678,10 @@ bool Toolkit::RenderToPAEFile(const std::string &filename)
 
 std::string Toolkit::RenderToTimemap(const std::string &jsonOptions)
 {
+    if (m_doc.AbortRequested()) {
+        return "";
+    }
+
     bool includeMeasures = false;
     bool includeRests = false;
 
@@ -1744,6 +1780,10 @@ std::string Toolkit::GetElementsAtTime(int millisec)
 
 bool Toolkit::RenderToMIDIFile(const std::string &filename)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
     this->ResetLogBuffer();
 
     smf::MidiFile outputfile;
@@ -1757,6 +1797,11 @@ bool Toolkit::RenderToMIDIFile(const std::string &filename)
 
 bool Toolkit::RenderToTimemapFile(const std::string &filename, const std::string &jsonOptions)
 {
+    if (m_doc.AbortRequested()) {
+        return true;
+    }
+
+    this->ResetLogBuffer();
     std::string outputString = this->RenderToTimemap(jsonOptions);
 
     std::ofstream output(filename.c_str());

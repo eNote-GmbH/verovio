@@ -554,7 +554,7 @@ void View::DrawLabels(
 
     FontInfo labelTxt;
     if (!dc->UseGlobalStyling()) {
-        labelTxt.SetFaceName("Times");
+        labelTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
     labelTxt.SetPointSize(m_doc->GetDrawingLyricFont(staffSize)->GetPointSize());
 
@@ -1169,7 +1169,7 @@ void View::DrawMNum(DeviceContext *dc, MNum *mnum, Measure *measure, int yOffset
 
         FontInfo mnumTxt;
         if (!dc->UseGlobalStyling()) {
-            mnumTxt.SetFaceName("Times");
+            mnumTxt.SetFaceName(m_options->m_textFont.GetValue());
             mnumTxt.SetStyle(FONTSTYLE_italic);
         }
 
@@ -1284,8 +1284,13 @@ void View::DrawStaffLines(DeviceContext *dc, Staff *staff, Measure *measure, Sys
         y2 = y1 - staff->GetWidth() * tan(d * M_PI / 180.0);
     }
     else {
+        int extendedWidth = 0;
+        if (m_doc->GetOptions()->m_systemExtendLast.GetValue() && system->IsLastOfMdiv()
+            && system->m_drawingTotalWidth) {
+            extendedWidth = m_doc->m_drawingPageContentWidth - system->m_drawingTotalWidth;
+        }
         x1 = measure->GetDrawingX();
-        x2 = x1 + measure->GetWidth();
+        x2 = x1 + measure->GetWidth() + extendedWidth;
         y1 = staff->GetDrawingY();
         y2 = y1;
     }

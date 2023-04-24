@@ -32,6 +32,7 @@
 #import <VerovioFramework/multirest.h>
 #import <VerovioFramework/expansion.h>
 #import <VerovioFramework/btrem.h>
+#import <VerovioFramework/enotetoolkit.h>
 #import <VerovioFramework/arpeg.h>
 #import <VerovioFramework/zone.h>
 #import <VerovioFramework/restore.h>
@@ -109,6 +110,7 @@
 #import <VerovioFramework/beamspan.h>
 #import <VerovioFramework/editortoolkit_mensural.h>
 #import <VerovioFramework/add.h>
+#import <VerovioFramework/visualoffsetinterface.h>
 #import <VerovioFramework/durationinterface.h>
 #import <VerovioFramework/subst.h>
 #import <VerovioFramework/staffdef.h>

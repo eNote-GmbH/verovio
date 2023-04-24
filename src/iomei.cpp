@@ -2049,6 +2049,7 @@ void MEIOutput::WriteHairpin(pugi::xml_node currentNode, Hairpin *hairpin)
 
     this->WriteControlElement(currentNode, hairpin);
     this->WriteTimeSpanningInterface(currentNode, hairpin);
+    this->WriteVisualOffsetInterface(currentNode, hairpin);
     hairpin->WriteColor(currentNode);
     hairpin->WriteHairpinLog(currentNode);
     hairpin->WriteHairpinVis(currentNode);
@@ -2110,6 +2111,7 @@ void MEIOutput::WriteOctave(pugi::xml_node currentNode, Octave *octave)
 
     this->WriteControlElement(currentNode, octave);
     this->WriteTimeSpanningInterface(currentNode, octave);
+    this->WriteVisualOffsetInterface(currentNode, octave);
     octave->WriteColor(currentNode);
     octave->WriteExtender(currentNode);
     octave->WriteLineRend(currentNode);
@@ -2177,6 +2179,7 @@ void MEIOutput::WriteSlur(pugi::xml_node currentNode, Slur *slur)
 
     this->WriteControlElement(currentNode, slur);
     this->WriteTimeSpanningInterface(currentNode, slur);
+    this->WriteVisualOffsetInterface(currentNode, slur);
     slur->WriteColor(currentNode);
     slur->WriteCurvature(currentNode);
     slur->WriteCurveRend(currentNode);
@@ -2219,6 +2222,7 @@ void MEIOutput::WriteTie(pugi::xml_node currentNode, Tie *tie)
 
     this->WriteControlElement(currentNode, tie);
     this->WriteTimeSpanningInterface(currentNode, tie);
+    this->WriteVisualOffsetInterface(currentNode, tie);
     tie->WriteColor(currentNode);
     tie->WriteCurvature(currentNode);
     tie->WriteCurveRend(currentNode);
@@ -2291,6 +2295,7 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
 
     this->WriteLayerElement(currentNode, accid);
     this->WritePositionInterface(currentNode, accid);
+    this->WriteVisualOffsetInterface(currentNode, accid);
     accid->WriteAccidental(currentNode);
     accid->WriteAccidentalGes(currentNode);
     accid->WriteAccidLog(currentNode);
@@ -2313,6 +2318,7 @@ void MEIOutput::WriteArtic(pugi::xml_node currentNode, Artic *artic)
     }
 
     this->WriteLayerElement(currentNode, artic);
+    this->WriteVisualOffsetInterface(currentNode, artic);
     artic->WriteArticulation(currentNode);
     artic->WriteArticulationGes(currentNode);
     artic->WriteColor(currentNode);
@@ -2370,6 +2376,7 @@ void MEIOutput::WriteChord(pugi::xml_node currentNode, Chord *chord)
 
     this->WriteLayerElement(currentNode, chord);
     this->WriteDurationInterface(currentNode, chord);
+    this->WriteVisualOffsetInterface(currentNode, chord);
     chord->WriteChordVis(currentNode);
     chord->WriteColor(currentNode);
     chord->WriteCue(currentNode);
@@ -2401,6 +2408,7 @@ void MEIOutput::WriteClef(pugi::xml_node currentNode, Clef *clef)
 
     this->WriteLayerElement(currentNode, clef);
     this->WriteFacsimileInterface(currentNode, clef);
+    this->WriteVisualOffsetInterface(currentNode, clef);
     clef->WriteClefLog(currentNode);
     clef->WriteClefShape(currentNode);
     clef->WriteColor(currentNode);
@@ -2665,6 +2673,7 @@ void MEIOutput::WriteNote(pugi::xml_node currentNode, Note *note)
     this->WriteDurationInterface(currentNode, note);
     this->WritePitchInterface(currentNode, note);
     this->WritePositionInterface(currentNode, note);
+    this->WriteVisualOffsetInterface(currentNode, note);
     note->WriteColor(currentNode);
     note->WriteColoration(currentNode);
     note->WriteCue(currentNode);
@@ -2688,6 +2697,7 @@ void MEIOutput::WriteRest(pugi::xml_node currentNode, Rest *rest)
     this->WriteLayerElement(currentNode, rest);
     this->WriteDurationInterface(currentNode, rest);
     this->WritePositionInterface(currentNode, rest);
+    this->WriteVisualOffsetInterface(currentNode, rest);
     rest->WriteColor(currentNode);
     rest->WriteCue(currentNode);
     rest->WriteExtSym(currentNode);
@@ -3046,6 +3056,16 @@ void MEIOutput::WriteTimeSpanningInterface(pugi::xml_node element, TimeSpanningI
     this->WriteTimePointInterface(element, interface);
     interface->WriteStartEndId(element);
     interface->WriteTimestamp2Log(element);
+}
+
+void MEIOutput::WriteVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface)
+{
+    assert(interface);
+
+    interface->WriteVisualOffsetHo(element);
+    interface->WriteVisualOffsetVo(element);
+    interface->WriteVisualOffset2Ho(element);
+    interface->WriteVisualOffset2Vo(element);
 }
 
 void MEIOutput::WriteUnsupportedAttr(pugi::xml_node element, Object *object)
@@ -5210,6 +5230,10 @@ bool MEIInput::ReadLayerDefChildren(Object *parent, pugi::xml_node parentNode)
 
 bool MEIInput::ReadMeasure(Object *parent, pugi::xml_node measure)
 {
+    if (m_doc->AbortRequested()) {
+        return true;
+    }
+
     Measure *vrvMeasure = new Measure();
     if (m_doc->IsMensuralMusicOnly()) {
         LogWarning("Mixing mensural and non mensural music is not supported. Trying to go ahead...");
@@ -5585,6 +5609,7 @@ bool MEIInput::ReadHairpin(Object *parent, pugi::xml_node hairpin)
     this->ReadControlElement(hairpin, vrvHairpin);
 
     this->ReadTimeSpanningInterface(hairpin, vrvHairpin);
+    this->ReadVisualOffsetInterface(hairpin, vrvHairpin);
     vrvHairpin->ReadColor(hairpin);
     vrvHairpin->ReadHairpinLog(hairpin);
     vrvHairpin->ReadHairpinVis(hairpin);
@@ -5669,6 +5694,7 @@ bool MEIInput::ReadOctave(Object *parent, pugi::xml_node octave)
     this->ReadControlElement(octave, vrvOctave);
 
     this->ReadTimeSpanningInterface(octave, vrvOctave);
+    this->ReadVisualOffsetInterface(octave, vrvOctave);
     vrvOctave->ReadColor(octave);
     vrvOctave->ReadExtender(octave);
     vrvOctave->ReadLineRend(octave);
@@ -5765,6 +5791,7 @@ bool MEIInput::ReadSlur(Object *parent, pugi::xml_node slur)
     this->ReadControlElement(slur, vrvSlur);
 
     this->ReadTimeSpanningInterface(slur, vrvSlur);
+    this->ReadVisualOffsetInterface(slur, vrvSlur);
     vrvSlur->ReadColor(slur);
     vrvSlur->ReadCurvature(slur);
     vrvSlur->ReadCurveRend(slur);
@@ -5798,6 +5825,7 @@ bool MEIInput::ReadTie(Object *parent, pugi::xml_node tie)
     this->ReadControlElement(tie, vrvTie);
 
     this->ReadTimeSpanningInterface(tie, vrvTie);
+    this->ReadVisualOffsetInterface(tie, vrvTie);
     vrvTie->ReadColor(tie);
     vrvTie->ReadCurvature(tie);
     vrvTie->ReadCurveRend(tie);
@@ -6146,6 +6174,7 @@ bool MEIInput::ReadAccid(Object *parent, pugi::xml_node accid)
     this->ReadLayerElement(accid, vrvAccid);
 
     this->ReadPositionInterface(accid, vrvAccid);
+    this->ReadVisualOffsetInterface(accid, vrvAccid);
     vrvAccid->ReadAccidental(accid);
     vrvAccid->ReadAccidentalGes(accid);
     vrvAccid->ReadAccidLog(accid);
@@ -6165,6 +6194,7 @@ bool MEIInput::ReadArtic(Object *parent, pugi::xml_node artic)
     Artic *vrvArtic = new Artic();
     this->ReadLayerElement(artic, vrvArtic);
 
+    this->ReadVisualOffsetInterface(artic, vrvArtic);
     vrvArtic->ReadArticulation(artic);
     vrvArtic->ReadArticulationGes(artic);
     vrvArtic->ReadColor(artic);
@@ -6257,6 +6287,7 @@ bool MEIInput::ReadChord(Object *parent, pugi::xml_node chord)
     }
 
     this->ReadDurationInterface(chord, vrvChord);
+    this->ReadVisualOffsetInterface(chord, vrvChord);
     vrvChord->ReadChordVis(chord);
     vrvChord->ReadColor(chord);
     vrvChord->ReadCue(chord);
@@ -6289,6 +6320,7 @@ bool MEIInput::ReadClef(Object *parent, pugi::xml_node clef)
     Clef *vrvClef = new Clef();
     this->ReadLayerElement(clef, vrvClef);
     this->ReadFacsimileInterface(clef, vrvClef);
+    this->ReadVisualOffsetInterface(clef, vrvClef);
 
     vrvClef->ReadClefLog(clef);
     vrvClef->ReadClefShape(clef);
@@ -6627,6 +6659,7 @@ bool MEIInput::ReadNote(Object *parent, pugi::xml_node note)
     this->ReadDurationInterface(note, vrvNote);
     this->ReadPitchInterface(note, vrvNote);
     this->ReadPositionInterface(note, vrvNote);
+    this->ReadVisualOffsetInterface(note, vrvNote);
     vrvNote->ReadColor(note);
     vrvNote->ReadColoration(note);
     vrvNote->ReadCue(note);
@@ -6679,6 +6712,7 @@ bool MEIInput::ReadRest(Object *parent, pugi::xml_node rest)
 
     this->ReadDurationInterface(rest, vrvRest);
     this->ReadPositionInterface(rest, vrvRest);
+    this->ReadVisualOffsetInterface(rest, vrvRest);
     vrvRest->ReadColor(rest);
     vrvRest->ReadCue(rest);
     vrvRest->ReadExtSym(rest);
@@ -6996,7 +7030,7 @@ bool MEIInput::ReadRend(Object *parent, pugi::xml_node rend)
         vrvRend->SetValign(VERTICALALIGNMENT_NONE);
     }
     // Previously we would use @fontame="VerovioText"
-    // Now changeto @fontfam="smufl"
+    // Now change to @fontfam="smufl"
     if (vrvRend->HasFontname() && vrvRend->GetFontname() == "VerovioText") {
         LogWarning("Using rend@fontname with 'VerovioText' is deprecated. Use 'rend@fontfam=\"smufl\"' instead");
         vrvRend->SetFontfam("smufl");
@@ -7170,6 +7204,16 @@ bool MEIInput::ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInt
     this->ReadTimePointInterface(element, interface);
     interface->ReadStartEndId(element);
     interface->ReadTimestamp2Log(element);
+    return true;
+}
+
+bool MEIInput::ReadVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface)
+{
+    interface->ReadVisualOffsetHo(element);
+    interface->ReadVisualOffsetVo(element);
+    interface->ReadVisualOffset2Ho(element);
+    interface->ReadVisualOffset2Vo(element);
+
     return true;
 }
 

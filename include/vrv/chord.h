@@ -12,6 +12,7 @@
 #include "drawinginterface.h"
 #include "durationinterface.h"
 #include "layerelement.h"
+#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -34,6 +35,7 @@ class Chord : public LayerElement,
               public DrawingListInterface,
               public StemmedDrawingInterface,
               public DurationInterface,
+              public VisualOffsetInterface,
               public AttChordVis,
               public AttColor,
               public AttCue,
@@ -65,6 +67,11 @@ public:
     const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
+    }
+    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
+    const VisualOffsetInterface *GetVisualOffsetInterface() const override
+    {
+        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 
