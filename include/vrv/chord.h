@@ -36,6 +36,7 @@ class Chord : public LayerElement,
               public StemmedDrawingInterface,
               public DurationInterface,
               public VisualOffsetInterface,
+              public AttChordVis,
               public AttColor,
               public AttCue,
               public AttGraced,
@@ -180,9 +181,9 @@ public:
     std::list<const Note *> GetAdjacentNotesList(const Staff *staff, int loc) const;
 
     /**
-     * Recalculate the m_clusters vector
+     * Recalculate the m_noteGroups vector
      */
-    void CalculateClusters();
+    void CalculateNoteGroups();
 
     //----------//
     // Functors //
@@ -196,14 +197,6 @@ public:
     FunctorCode Accept(ConstFunctor &functor) const override;
     FunctorCode AcceptEnd(MutableFunctor &functor) override;
     FunctorCode AcceptEnd(ConstFunctor &functor) const override;
-    ///@}
-
-    /**
-     * See Object::ConvertMarkupAnalytical
-     */
-    ///@{
-    int ConvertMarkupAnalytical(FunctorParams *functorParams) override;
-    int ConvertMarkupAnalyticalEnd(FunctorParams *functorParams) override;
     ///@}
 
     /**
@@ -230,9 +223,9 @@ protected:
     MapOfDotLocs CalcDotLocations(int layerCount, bool primary) const override;
 
     /**
-     * Clear the m_clusters vector and delete all the objects.
+     * Clear the m_noteGroups vector and delete all the objects.
      */
-    void ClearClusters() const;
+    void ClearNoteGroups() const;
 
     /**
      * Filter the flat list and keep only Note elements.
@@ -243,9 +236,9 @@ public:
     //
 private:
     /**
-     * The list of chord clusters
+     * The list of chord note groups
      */
-    mutable std::list<ChordCluster *> m_clusters;
+    mutable std::list<ChordNoteGroup *> m_noteGroups;
 };
 
 } // namespace vrv

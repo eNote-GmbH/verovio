@@ -60,12 +60,6 @@ public:
 
     data_ARTICULATION GetArticFirst() const;
 
-    /**
-     * Split the multi-valued artic attributes into distinct artic elements.
-     * Applied by ConvertMarkupArtic functor.
-     */
-    void SplitMultival(Object *parent);
-
     void GetAllArtics(bool direction, std::vector<Artic *> &artics);
 
     /**
@@ -130,11 +124,6 @@ public:
     FunctorCode AcceptEnd(MutableFunctor &functor) override;
     FunctorCode AcceptEnd(ConstFunctor &functor) const override;
     ///@}
-
-    /**
-     * See Object::ConvertMarkupArtic
-     */
-    int ConvertMarkupArtic(FunctorParams *functorParams) override;
 
 private:
     bool IsInsideArtic(data_ARTICULATION artic) const;
