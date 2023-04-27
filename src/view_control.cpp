@@ -629,7 +629,7 @@ void View::DrawHairpin(
         default: style = AxSOLID; break;
     }
 
-    dc->SetPen(m_currentColour, hairpinThickness, style, 0, 0, AxCAP_SQUARE, AxJOIN_BEVEL);
+    dc->SetPen(m_currentColour, hairpinThickness, style, 0, 0, AxCAP_SQUARE, AxJOIN_MITER);
     if (startY == 0) {
         Point p[3];
         int yTop = y2 + endY / 2;
