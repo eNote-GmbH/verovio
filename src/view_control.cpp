@@ -537,39 +537,42 @@ void View::DrawHairpin(
     FloatingPositioner *leftLink = hairpin->GetCorrespFloatingPositioner(hairpin->GetLeftLink());
     FloatingPositioner *rightLink = hairpin->GetCorrespFloatingPositioner(hairpin->GetRightLink());
 
+    const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+    const hairpinLog_FORM form = hairpin->GetForm();
+    const bool niente = (hairpin->HasNiente()) ? (hairpin->GetNiente() == BOOLEAN_true) : false;
+
     int adjustedX1 = x1;
     if (leftLink) {
-        adjustedX1 = leftLink->GetContentRight() + m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / 2;
+        adjustedX1 = leftLink->GetContentRight() + unit / 2;
+        adjustedX1 += (niente && (form == hairpinLog_FORM_cres)) ? unit / 3 : 0;
     }
     int adjustedX2 = x2;
     if (rightLink) {
-        adjustedX2 = rightLink->GetContentLeft() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize) / 2;
+        adjustedX2 = rightLink->GetContentLeft() - unit / 2;
+        adjustedX2 -= (niente && (form == hairpinLog_FORM_dim)) ? unit / 3 : 0;
     }
 
     // Beginning of a system, very short hairpin needs to be push left
     if (spanningType == SPANNING_END) {
-        if ((adjustedX2 - adjustedX1) < (m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * 2)) {
-            adjustedX1 = adjustedX2 - 2 * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        if ((adjustedX2 - adjustedX1) < (unit * 2)) {
+            adjustedX1 = adjustedX2 - 2 * unit;
         }
     }
 
     // In any case, a hairpin should not be shorter than 2 units.
     // If shorter, with groups, this will screw up vertical alignment and push everything down - to be improved by
     // deactivating grp?
-    if ((adjustedX2 - adjustedX1) >= m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * 2) {
+    if ((adjustedX2 - adjustedX1) >= unit * 2) {
         x1 = adjustedX1;
         x2 = adjustedX2;
     }
 
     // Store the full drawing length
-    const auto [leftOverlap, rightOverlap] = hairpin->GetBarlineOverlapAdjustment(
-        m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize), x1, x2, spanningType);
+    const auto [leftOverlap, rightOverlap] = hairpin->GetBarlineOverlapAdjustment(unit * 2, x1, x2, spanningType);
     x1 += leftOverlap;
     x2 -= rightOverlap;
 
     hairpin->SetDrawingLength(x2 - x1);
-
-    hairpinLog_FORM form = hairpin->GetForm();
 
     // For now we calculate everything based on cresc.
     int startY = 0;
@@ -597,17 +600,15 @@ void View::DrawHairpin(
     // Now swap start/end for dim.
     if (form == hairpinLog_FORM_dim) std::swap(startY, endY);
 
-    int y1 = hairpin->GetDrawingY();
-    int y2 = y1;
+    int y = hairpin->GetDrawingY();
 
     // Improve alignment with dynamics
     if (hairpin->GetPlace() != STAFFREL_within) {
         int shiftY = -(m_doc->GetDrawingStemWidth(staff->m_drawingStaffSize)) / 2;
         if (hairpin->GetPlace() != STAFFREL_between) {
-            shiftY += m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+            shiftY += unit;
         }
-        y1 += shiftY;
-        y2 += shiftY;
+        y += shiftY;
     }
 
     /************** draw it **************/
@@ -619,8 +620,7 @@ void View::DrawHairpin(
         dc->StartGraphic(hairpin, "", hairpin->GetID(), SPANNING);
     }
 
-    const double hairpinThickness
-        = m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * m_options->m_hairpinThickness.GetValue();
+    const double hairpinThickness = m_options->m_hairpinThickness.GetValue() * unit;
 
     int style;
     switch (hairpin->GetLform()) {
@@ -632,37 +632,52 @@ void View::DrawHairpin(
     dc->SetPen(m_currentColour, hairpinThickness, style, 0, 0, AxCAP_SQUARE, AxJOIN_MITER);
     if (startY == 0) {
         Point p[3];
-        int yTop = y2 + endY / 2;
-        int yBottom = y2 - endY / 2;
+        int yTop = y + endY / 2;
+        int yBottom = y - endY / 2;
         int ignore = 0;
-        dc->ApplyVisualOffset({ { &x2, &yBottom }, { &x1, &y1 }, { &ignore, &yTop } });
+        dc->ApplyVisualOffset({ { &x2, &yBottom }, { &x1, &y }, { &ignore, &yTop } });
         p[0] = { ToDeviceContextX(x2), ToDeviceContextY(yBottom) };
-        p[1] = { ToDeviceContextX(x1), ToDeviceContextY(y1) };
+        p[1] = { ToDeviceContextX(x1), ToDeviceContextY(y) };
         p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
-    else if (endY == 0) {
+    else if ((endY == 0) && !niente) {
         Point p[3];
-        int yTop = y1 + startY / 2;
-        int yBottom = y1 - startY / 2;
+        int yTop = y + startY / 2;
+        int yBottom = y - startY / 2;
         int ignore = 0;
-        dc->ApplyVisualOffset({ { &x1, &yBottom }, { &x2, &y2 }, { &ignore, &yTop } });
+        dc->ApplyVisualOffset({ { &x1, &yBottom }, { &x2, &y }, { &ignore, &yTop } });
         p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yBottom) };
-        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y2) };
+        p[1] = { ToDeviceContextX(x2), ToDeviceContextY(y) };
         p[2] = { p[0].x, ToDeviceContextY(yTop) };
         dc->DrawPolyline(3, p);
     }
     else {
+        if (niente) {
+            dc->SetBrush(m_currentColour, AxTRANSPARENT);
+            if (startY == 0) {
+                dc->DrawCircle(ToDeviceContextX(x1), ToDeviceContextY(y), unit / 2);
+                startY = unit * endY / (x2 - x1) / 2;
+                x1 += unit / 2;
+            }
+            else if (endY == 0) {
+                dc->DrawCircle(ToDeviceContextX(x2), ToDeviceContextY(y), unit / 2);
+                endY = unit * startY / (x2 - x1) / 2;
+                x2 -= unit / 2;
+            }
+            dc->ResetBrush();
+        }
+
         Point p[2];
-        int yLeft = y1 - startY / 2;
-        int yRight = y2 - endY / 2;
+        int yLeft = y - startY / 2;
+        int yRight = y - endY / 2;
         dc->ApplyVisualOffset({ { &x1, &yLeft }, { &x2, &yRight } });
         p[0] = { ToDeviceContextX(x1), ToDeviceContextY(yLeft) };
         p[1] = { ToDeviceContextX(x2), ToDeviceContextY(yRight) };
         dc->DrawPolyline(2, p);
 
-        yLeft = y1 + startY / 2;
-        yRight = y2 + endY / 2;
+        yLeft = y + startY / 2;
+        yRight = y + endY / 2;
         int ignore = 0;
         dc->ApplyVisualOffset({ { &ignore, &yLeft }, { &ignore, &yRight } });
         p[0].y = ToDeviceContextY(yLeft);
@@ -2423,6 +2438,11 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
     if (alignment == 0) alignment = HORIZONTALALIGNMENT_center;
 
     std::vector<Staff *> staffList = reh->GetTstampStaves(measure, reh);
+    if (staffList.empty()) {
+        Staff *staff = measure->GetTopVisibleStaff();
+        if (staff) staffList.push_back(staff);
+    }
+
     for (Staff *staff : staffList) {
         if (!system->SetCurrentFloatingPositioner(staff->GetN(), reh, reh->GetStart(), staff)) {
             continue;
@@ -2942,6 +2962,8 @@ void View::DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params,
     const int lineThickness = m_options->m_textEnclosureThickness.GetValue() * staffSize;
     const int margin = m_doc->GetDrawingUnit(staffSize);
 
+    dc->SetPushBack();
+
     for (const auto rend : params.m_enclosedRend) {
         int x1 = rend->GetContentLeft() - margin;
         int x2 = rend->GetContentRight() + margin;
@@ -2965,6 +2987,8 @@ void View::DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params,
             this->DrawNotFilledEllipse(dc, x1, y1, x2, y2, lineThickness);
         }
     }
+
+    dc->ResetPushBack();
 }
 
 } // namespace vrv

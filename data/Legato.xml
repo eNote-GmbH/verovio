@@ -301,10 +301,10 @@
   <g c="E4C8" x="0.0" y="0.0" w="715.0" h="408.0" h-a-x="716" n="fermataVeryLongAbove" />
   <g c="E4C9" x="0.0" y="-408.0" w="715.0" h="408.0" h-a-x="716" n="fermataVeryLongBelow" />
   <g c="E4CE" x="1.0" y="2.0" w="151.0" h="249.0" h-a-x="153" n="breathMarkComma" />
-  <g c="E4D1" x="0.0" y="-1.0" w="384.0" h="533.0" h-a-x="385" n="caesura" />
-  <g c="E4D2" x="0.0" y="0.0" w="663.0" h="532.0" h-a-x="663" n="caesuraThick" />
-  <g c="E4D3" x="0.0" y="0.0" w="186.0" h="533.0" h-a-x="185" n="caesuraShort" />
-  <g c="E4D4" x="0.0" y="0.0" w="373.0" h="530.0" h-a-x="373" n="caesuraCurved" />
+  <g c="E4D1" x="0.0" y="-1.0" w="359.0" h="451.0" h-a-x="360" n="caesura" />
+  <g c="E4D2" x="0.0" y="0.0" w="600.0" h="450.0" h-a-x="600" n="caesuraThick" />
+  <g c="E4D3" x="0.0" y="0.0" w="160.0" h="350.0" h-a-x="160" n="caesuraShort" />
+  <g c="E4D4" x="0.0" y="0.0" w="340.0" h="450.0" h-a-x="340" n="caesuraCurved" />
   <g c="E4E0" x="0.0" y="-249.0" w="381.0" h="499.0" h-a-x="381" n="restMaxima" />
   <g c="E4E1" x="0.0" y="-249.0" w="125.0" h="499.0" h-a-x="125" n="restLonga" />
   <g c="E4E2" x="0.0" y="0.0" w="125.0" h="250.0" h-a-x="126" n="restDoubleWhole" />
@@ -597,6 +597,10 @@
   <g c="EBCA" x="0.0" y="0.0" w="131.0" h="296.0" h-a-x="131" n="luteFrenchFretL" />
   <g c="EBCB" x="0.0" y="0.0" w="411.0" h="275.0" h-a-x="411" n="luteFrenchFretM" />
   <g c="EBCC" x="0.0" y="0.0" w="321.0" h="302.0" h-a-x="321" n="luteFrenchFretN" />
+  <g c="EBCD" x="0.0" y="0.0" w="276.0" h="242.0" h-a-x="276" n="luteFrench7thCourse" />
+  <g c="EBCE" x="0.0" y="-34.0" w="459.0" h="344.0" h-a-x="459" n="luteFrench8thCourse" />
+  <g c="EBCF" x="0.0" y="-34.0" w="569.0" h="344.0" h-a-x="569" n="luteFrench9thCourse" />
+  <g c="EBD0" x="0.0" y="-34.0" w="679.0" h="344.0" h-a-x="679" n="luteFrench10thCourse" />
   <g c="EBE0" x="24.0" y="-1.0" w="257.0" h="301.0" h-a-x="256" n="luteItalianFret0" />
   <g c="EBE1" x="24.0" y="0.0" w="138.0" h="300.0" h-a-x="138" n="luteItalianFret1" />
   <g c="EBE2" x="24.0" y="-3.0" w="239.0" h="304.0" h-a-x="239" n="luteItalianFret2" />
@@ -680,4 +684,5 @@
   <g c="ED8F" x="0.0" y="-7.0" w="210.0" h="270.0" h-a-x="210" n="fingeringSLower" />
   <g c="E4BE" x="0.0" y="0.0" w="460.0" h="268.0" h-a-x="460" n="articReversedAccentAbove" />
   <g c="E4BF" x="0.0" y="-268.0" w="460.0" h="268.0" h-a-x="460" n="articReversedAccentBelow" />
+  <g c="E4D7" x="0.0" y="0.0" w="52.0" h="350.0" h-a-x="52" n="caesuraSingleStroke" />
 </bounding-boxes>

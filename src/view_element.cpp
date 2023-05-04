@@ -945,6 +945,11 @@ void View::DrawKeySig(DeviceContext *dc, LayerElement *element, Layer *layer, St
     assert(staff);
     assert(measure);
 
+    if (staff->IsTablature()) {
+        // Encoded keySig will not be shown on tablature
+        return;
+    }
+
     KeySig *keySig = vrv_cast<KeySig *>(element);
     assert(keySig);
 
@@ -1709,7 +1714,7 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     if (syl->HasFontstyle()) {
         currentFont.SetStyle(syl->GetFontstyle());
     }
-    if (syl->GetStart()->GetDrawingCueSize()) {
+    if (syl->GetStart() && syl->GetStart()->GetDrawingCueSize()) {
         currentFont.SetPointSize(m_doc->GetCueSize(currentFont.GetPointSize()));
     }
     dc->SetFont(&currentFont);

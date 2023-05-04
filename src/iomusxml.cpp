@@ -1353,6 +1353,7 @@ short int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(
             if (key) {
                 KeySig *meiKey = ConvertKey(key.node());
                 staffDef->AddChild(meiKey);
+                if (staffDef->GetNotationtype() == NOTATIONTYPE_tab_guitar) meiKey->IsAttribute(true);
             }
 
             // staff details
@@ -1360,7 +1361,7 @@ short int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(
             xpath = StringFormat("staff-details[@number='%d']", i + 1);
             staffDetails = it->select_node(xpath.c_str());
             if (!staffDetails) {
-                staffDetails = it->select_node("staff-details");
+                staffDetails = it->select_node("staff-details[not(@number)]");
             }
             short int staffLines = staffDetails.node().select_node("staff-lines").node().text().as_int();
             if (staffLines) {
@@ -1374,7 +1375,7 @@ short int MusicXmlInput::ReadMusicXmlPartAttributesAsStaffDef(
                 staffDef->SetScale(staffDef->AttScalable::StrToPercent(scaleStr + "%"));
             }
             // Tablature?
-            if (staffDetails.node().child("staff-tuning") || staffDef->GetNotationtype() == NOTATIONTYPE_tab_guitar) {
+            if (staffDetails.node().child("staff-tuning") || (staffDef->GetNotationtype() == NOTATIONTYPE_tab_guitar)) {
                 // tablature type.  MusicXML does not support German tablature.
                 if (HasAttributeWithValue(staffDetails.node(), "show-frets", "letters")) {
                     staffDef->SetNotationtype(NOTATIONTYPE_tab_lute_french);
@@ -2217,6 +2218,9 @@ void MusicXmlInput::ReadMusicXmlDirection(
                     const int measureDifference = m_measureCounts.at(measure) - iter->second.m_lastMeasureCount;
                     if (measureDifference >= 0) {
                         iter->first->SetTstamp2(std::pair<int, double>(measureDifference, timeStamp));
+                    }
+                    if (wedge->node().attribute("niente")) {
+                        iter->first->SetNiente(ConvertWordToBool(wedge->node().attribute("niente").as_string()));
                     }
                     if (wedge->node().attribute("spread")) {
                         data_MEASUREMENTSIGNED opening;

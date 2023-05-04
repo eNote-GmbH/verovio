@@ -301,8 +301,15 @@ std::u32string Note::GetTabFretString(data_NOTATIONTYPE notationType) const
             //      Temporary kludge, use SMUFL_EBE4_luteItalianFret4 ... .
             fretStr.push_back(SMUFL_EBE4_luteItalianFret4 + course - 11);
         }
+        else if (course >= 7 && fret == 0) {
+            // SMUFL has glyphs for 7th to 10th open courses
+            static_assert(SMUFL_EBCE_luteFrench8thCourse == SMUFL_EBCD_luteFrench7thCourse + 1);
+            static_assert(SMUFL_EBCF_luteFrench9thCourse == SMUFL_EBCD_luteFrench7thCourse + 2);
+            static_assert(SMUFL_EBD0_luteFrench10thCourse == SMUFL_EBCD_luteFrench7thCourse + 3);
+            fretStr = SMUFL_EBCD_luteFrench7thCourse + course - 7;
+        }
         else {
-            // courses 8..10 use slashes followed by fret letter
+            // stopped courses 8..10 use slashes followed by fret letter
             if (course >= 8) {
                 // TODO need SMUFL_xxxx_luteDiapasonSlash or 3 glyphs "/", "//", "///".
                 //      Temporary kludge, use SMUFL_E101_noteheadSlashHorizontalEnds, doesn't
@@ -987,8 +994,9 @@ int Note::GenerateMIDI(FunctorParams *functorParams)
                 params->m_heldNotes[course - 1].m_stopTime = startTime; // stop now
 
             // end all previously held notes that have reached their stoptime
+            // or if the new pitch is already sounding, on any course
             for (auto &held : params->m_heldNotes) {
-                if (held.m_pitch > 0 && held.m_stopTime <= startTime) {
+                if (held.m_pitch > 0 && (held.m_stopTime <= startTime || held.m_pitch == pitch)) {
                     params->m_midiFile->addNoteOff(params->m_midiTrack, held.m_stopTime * tpq, channel, held.m_pitch);
                     held.m_pitch = 0;
                     held.m_stopTime = 0;
