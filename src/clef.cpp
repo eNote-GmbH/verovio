@@ -16,7 +16,6 @@
 #include "comparison.h"
 #include "doc.h"
 #include "functor.h"
-#include "functorparams.h"
 #include "layer.h"
 #include "scoredefinterface.h"
 #include "smufl.h"
@@ -218,7 +217,7 @@ char32_t Clef::GetClefGlyph(const data_NOTATIONTYPE notationtype) const
 // Clef functors methods
 //----------------------------------------------------------------------------
 
-FunctorCode Clef::Accept(MutableFunctor &functor)
+FunctorCode Clef::Accept(Functor &functor)
 {
     return functor.VisitClef(this);
 }
@@ -228,7 +227,7 @@ FunctorCode Clef::Accept(ConstFunctor &functor) const
     return functor.VisitClef(this);
 }
 
-FunctorCode Clef::AcceptEnd(MutableFunctor &functor)
+FunctorCode Clef::AcceptEnd(Functor &functor)
 {
     return functor.VisitClefEnd(this);
 }

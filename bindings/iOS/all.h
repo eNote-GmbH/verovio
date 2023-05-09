@@ -13,8 +13,8 @@
 #import <VerovioFramework/harm.h>
 #import <VerovioFramework/featureextractor.h>
 #import <VerovioFramework/keyaccid.h>
+#import <VerovioFramework/miscfunctor.h>
 #import <VerovioFramework/fing.h>
-#import <VerovioFramework/functorparams.h>
 #import <VerovioFramework/comparison.h>
 #import <VerovioFramework/toolkit.h>
 #import <VerovioFramework/rest.h>
@@ -34,6 +34,7 @@
 #import <VerovioFramework/btrem.h>
 #import <VerovioFramework/enotetoolkit.h>
 #import <VerovioFramework/arpeg.h>
+#import <VerovioFramework/savefunctor.h>
 #import <VerovioFramework/zone.h>
 #import <VerovioFramework/restore.h>
 #import <VerovioFramework/linkinginterface.h>
@@ -139,6 +140,7 @@
 #import <VerovioFramework/interface.h>
 #import <VerovioFramework/git_commit.h>
 #import <VerovioFramework/functor.h>
+#import <VerovioFramework/convertfunctor.h>
 #import <VerovioFramework/rend.h>
 #import <VerovioFramework/justifyfunctor.h>
 #import <VerovioFramework/pagemilestone.h>
@@ -154,6 +156,7 @@
 #import <VerovioFramework/iomei.h>
 #import <VerovioFramework/caesura.h>
 #import <VerovioFramework/editortoolkit_cmn.h>
+#import <VerovioFramework/midifunctor.h>
 #import <VerovioFramework/mensur.h>
 #import <VerovioFramework/stem.h>
 #import <VerovioFramework/slur.h>
@@ -190,6 +193,7 @@
 #import <VerovioFramework/syl.h>
 #import <VerovioFramework/annot.h>
 #import <VerovioFramework/calcstemfunctor.h>
+#import <VerovioFramework/transposefunctor.h>
 #import <VerovioFramework/horizontalaligner.h>
 #import <VerovioFramework/pb.h>
 #import <VerovioFramework/pgfoot2.h>

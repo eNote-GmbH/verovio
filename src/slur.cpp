@@ -23,7 +23,6 @@
 #include "findlayerelementsfunctor.h"
 #include "ftrem.h"
 #include "functor.h"
-#include "functorparams.h"
 #include "layer.h"
 #include "layerelement.h"
 #include "note.h"
@@ -2013,7 +2012,7 @@ void Slur::CalcInitialCurve(const Doc *doc, FloatingCurvePositioner *curve, Near
 // Functors methods
 //----------------------------------------------------------------------------
 
-FunctorCode Slur::Accept(MutableFunctor &functor)
+FunctorCode Slur::Accept(Functor &functor)
 {
     return functor.VisitSlur(this);
 }
@@ -2023,7 +2022,7 @@ FunctorCode Slur::Accept(ConstFunctor &functor) const
     return functor.VisitSlur(this);
 }
 
-FunctorCode Slur::AcceptEnd(MutableFunctor &functor)
+FunctorCode Slur::AcceptEnd(Functor &functor)
 {
     return functor.VisitSlurEnd(this);
 }
