@@ -343,8 +343,6 @@ void View::DrawSmuflString(DeviceContext *dc, int x, int y, std::u32string s, da
 {
     assert(dc);
 
-    int xDC = ToDeviceContextX(x);
-
     dc->SetBrush(m_currentColor, AxSOLID);
     dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, dimin));
 
