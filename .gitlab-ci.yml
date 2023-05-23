@@ -123,6 +123,6 @@ bridge-omrc:
   needs:
     - build-toolkit
   trigger:
-    project: Verovio/omrc-python
+    project: omr/omr-dataset-generator
     branch: main
     strategy: depend
