@@ -1,12 +1,8 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "verovio"
 description="A library and toolkit for engraving MEI music notation into SVG"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = {text = "LGPLv3"}
 classifiers = [
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
@@ -21,3 +17,7 @@ homepage = "https://www.verovio.org"
 documentation = "https://book.verovio.org"
 repository = "https://github.com/rism-digital/verovio.git"
 changelog = "https://github.com/rism-digital/verovio/blob/develop/CHANGELOG.md"
+
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta:__legacy__"
