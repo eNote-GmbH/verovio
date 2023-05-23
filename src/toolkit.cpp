@@ -357,7 +357,7 @@ bool Toolkit::LoadUTF16File(const std::string &filename)
     fin.seekg(0, std::ios::end);
     std::streamsize wfileSize = (std::streamsize)fin.tellg();
     fin.clear();
-    // Skip the BOM
+
     fin.seekg(0, std::wios::beg);
 
     std::u16string u16data((wfileSize / 2) + 1, '\0');
@@ -372,6 +372,11 @@ bool Toolkit::LoadUTF16File(const std::string &filename)
             std::swap(p[0], p[1]);
             return c;
         });
+    }
+
+    // Skip the BOM
+    if (u16data.at(0) == u'\uFEFF') {
+        u16data.erase(0, 1);
     }
 
     std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> convert;
