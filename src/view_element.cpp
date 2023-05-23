@@ -73,13 +73,13 @@ void View::DrawLayerElement(DeviceContext *dc, LayerElement *element, Layer *lay
         return;
     }
 
-    int previousColor = m_currentColour;
+    int previousColor = m_currentColor;
 
     if (element == m_currentElement) {
-        m_currentColour = AxRED;
+        m_currentColor = AxRED;
     }
     else {
-        m_currentColour = AxNONE;
+        m_currentColor = AxNONE;
     }
 
     dc->StartVisualOffset(element, m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
@@ -216,7 +216,7 @@ void View::DrawLayerElement(DeviceContext *dc, LayerElement *element, Layer *lay
     }
     dc->EndVisualOffset(element);
 
-    m_currentColour = previousColor;
+    m_currentColor = previousColor;
 }
 
 //----------------------------------------------------------------------------
@@ -1705,7 +1705,7 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     dc->StartGraphic(syl, "", syl->GetID());
     dc->DeactivateGraphicY();
 
-    dc->SetBrush(m_currentColour, AxSOLID);
+    dc->SetBrush(m_currentColor, AxSOLID);
 
     FontInfo currentFont = *m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize);
     if (syl->HasFontweight()) {
@@ -1817,7 +1817,7 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
         params.m_y = staff->GetDrawingY() + this->GetSylYRel(std::max(1, verse->GetN()), staff);
         params.m_pointSize = labelTxt.GetPointSize();
 
-        dc->SetBrush(m_currentColour, AxSOLID);
+        dc->SetBrush(m_currentColor, AxSOLID);
         dc->SetFont(&labelTxt);
 
         dc->StartGraphic(graphic, "", graphic->GetID());
