@@ -100,7 +100,7 @@ deploy-viewer:
     - git config user.email "ci-cd@enote.com"
     - git config user.name "git-bot"
     - git add .
-    - git commit -m "[git-bot] Automated Update via GitLab Pipeline"
+    - git commit --allow-empty -m "[git-bot] Automated Update via GitLab Pipeline"
     - git push -q https://$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git master
 
 bridge-vhv:
