@@ -92,7 +92,7 @@ deploy-viewer:
   script:
     - apt-get update
     - apt-get install gettext-base
-    - git clone https://$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git /tmp/helm-charts
+    - git clone https://git-bot:$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git /tmp/helm-charts
     - cd /tmp/helm-charts
     - rm dev/verovio-web-viewer/values.yaml
     - envsubst '${TAG}' < "dev/verovio-web-viewer/values-template.yaml" > "dev/verovio-web-viewer/values.yaml"
@@ -101,7 +101,7 @@ deploy-viewer:
     - git config user.name "git-bot"
     - git add .
     - git commit --allow-empty -m "[git-bot] Automated Update via GitLab Pipeline"
-    - git push -q https://$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git master
+    - git push -q https://git-bot:$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git master
 
 bridge-vhv:
   stage: deploy-editor
