@@ -92,16 +92,16 @@ deploy-viewer:
   script:
     - apt-get update
     - apt-get install gettext-base
-    - git clone https://$GITHUB_PERSONAL_TOKEN@github.com/eNote-GmbH/helm-charts.git /tmp/helm-charts
+    - git clone https://$GITLAB_TOKEN@gitlab.gitlab.enote.com/SRE/helm-charts.git /tmp/helm-charts
     - cd /tmp/helm-charts
     - rm dev/verovio-web-viewer/values.yaml
     - envsubst '${TAG}' < "dev/verovio-web-viewer/values-template.yaml" > "dev/verovio-web-viewer/values.yaml"
     - git config credential.helper 'cache --timeout=120'
     - git config user.email "ci-cd@enote.com"
-    - git config user.name "enotecicd"
+    - git config user.name "git-bot"
     - git add .
-    - git commit -m "Update via GitLab"
-    - git push -q https://$GITHUB_PERSONAL_TOKEN@github.com/eNote-GmbH/helm-charts.git master
+    - git commit -m "[git-bot] Automated Update via GitLab Pipeline"
+    - git push -q https://$GITLAB_TOKEN@gitlab.gitlab.enote.com/SRE/helm-charts.git master
 
 bridge-vhv:
   stage: deploy-editor
