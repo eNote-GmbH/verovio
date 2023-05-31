@@ -141,6 +141,8 @@ int Hairpin::CalcHeight(const Doc *doc, int staffSize, char spanningType, const 
 void Hairpin::SetLeftLink(ControlElement *leftLink)
 {
     m_leftLink = leftLink;
+    if (!leftLink) return;
+
     if (this->GetDrawingGrpId() != 0) {
         // LogDebug("Grp id LF already set %d", this->GetDrawingGrpId());
         return;
@@ -156,6 +158,8 @@ void Hairpin::SetLeftLink(ControlElement *leftLink)
 void Hairpin::SetRightLink(ControlElement *rightLink)
 {
     m_rightLink = rightLink;
+    if (!rightLink) return;
+
     int grpId = this->GetDrawingGrpId();
     if (grpId == 0) {
         grpId = this->SetDrawingGrpObject(this);
