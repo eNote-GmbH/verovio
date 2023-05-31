@@ -145,7 +145,7 @@ setup(name='verovio',
                 'verovio.data.Petaluma',
                 'verovio.data.text'],
       # cf. https://docs.python.org/3/distutils/examples.html#pure-python-distribution-by-package
-      package_dir={'verovio': [f for f in os.listdir('./bindings/python') if (f.endswith('.py')],
+      package_dir={'verovio': [f for f in os.listdir('./bindings/python') if f.endswith('.py')],
                    'verovio.data': './data'},
       package_data={
           'verovio.data': [f for f in os.listdir('./data') if (f.endswith('.xml') or f.endswith(".css") or f.endswith(".svg"))],
