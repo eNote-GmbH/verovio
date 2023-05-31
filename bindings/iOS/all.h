@@ -87,6 +87,7 @@
 #import <VerovioFramework/editortoolkit_neume.h>
 #import <VerovioFramework/elementpart.h>
 #import <VerovioFramework/ending.h>
+#import <VerovioFramework/enotetoolkit.h>
 #import <VerovioFramework/expan.h>
 #import <VerovioFramework/expansion.h>
 #import <VerovioFramework/expansionmap.h>
@@ -242,6 +243,7 @@
 #import <VerovioFramework/verse.h>
 #import <VerovioFramework/verticalaligner.h>
 #import <VerovioFramework/view.h>
+#import <VerovioFramework/visualoffsetinterface.h>
 #import <VerovioFramework/vrv.h>
 #import <VerovioFramework/vrvdef.h>
 #import <VerovioFramework/zone.h>

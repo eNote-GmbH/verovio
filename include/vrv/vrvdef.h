@@ -115,7 +115,6 @@ enum ClassId : uint16_t {
     MEASURE_ALIGNER,
     MENSUR_ATTR,
     METERSIG_ATTR,
-    METERSIGGRP,
     PAGE,
     PAGES,
     STAFF,
@@ -227,6 +226,7 @@ enum ClassId : uint16_t {
     LIGATURE,
     MENSUR,
     METERSIG,
+    METERSIGGRP,
     MREST,
     MRPT,
     MRPT2,
@@ -293,7 +293,8 @@ enum InterfaceId {
     INTERFACE_SCOREDEF,
     INTERFACE_TEXT_DIR,
     INTERFACE_TIME_POINT,
-    INTERFACE_TIME_SPANNING
+    INTERFACE_TIME_SPANNING,
+    INTERFACE_VISUAL_OFFSET
 };
 
 //----------------------------------------------------------------------------

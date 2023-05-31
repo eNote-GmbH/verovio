@@ -43,6 +43,7 @@ static const ClassRegistrar<Artic> s_factory("artic", ARTIC);
 
 Artic::Artic()
     : LayerElement(ARTIC, "artic-")
+    , VisualOffsetInterface()
     , AttArticulation()
     , AttArticulationGes()
     , AttColor()
@@ -50,6 +51,7 @@ Artic::Artic()
     , AttExtSym()
     , AttPlacementRelEvent()
 {
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ARTICULATION);
     this->RegisterAttClass(ATT_ARTICULATIONGES);
     this->RegisterAttClass(ATT_COLOR);
@@ -65,6 +67,7 @@ Artic::~Artic() {}
 void Artic::Reset()
 {
     LayerElement::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetArticulation();
     this->ResetArticulationGes();
     this->ResetColor();
@@ -161,12 +164,13 @@ char32_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) cons
     if (place == STAFFREL_above) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A0_articAccentAbove;
+            case ARTICULATION_acc_inv: return SMUFL_E4BE_articReversedAccentAbove;
             case ARTICULATION_acc_soft: return SMUFL_ED40_articSoftAccentAbove;
             case ARTICULATION_stacc: return SMUFL_E4A2_articStaccatoAbove;
             case ARTICULATION_ten: return SMUFL_E4A4_articTenutoAbove;
-            case ARTICULATION_stacciss: return SMUFL_E4A8_articStaccatissimoWedgeAbove;
+            case ARTICULATION_stacciss: return SMUFL_E4A6_articStaccatissimoAbove;
             case ARTICULATION_marc: return SMUFL_E4AC_articMarcatoAbove;
-            case ARTICULATION_spicc: return SMUFL_E4A6_articStaccatissimoAbove;
+            case ARTICULATION_spicc: return SMUFL_E4A8_articStaccatissimoWedgeAbove;
             // case ARTICULATION_doit;
             // case ARTICULATION_scoop;
             // case ARTICULATION_rip;
@@ -200,12 +204,13 @@ char32_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) cons
     else if (place == STAFFREL_below) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A1_articAccentBelow;
+            case ARTICULATION_acc_inv: return SMUFL_E4BF_articReversedAccentBelow;
             case ARTICULATION_acc_soft: return SMUFL_ED41_articSoftAccentBelow;
             case ARTICULATION_stacc: return SMUFL_E4A3_articStaccatoBelow;
             case ARTICULATION_ten: return SMUFL_E4A5_articTenutoBelow;
-            case ARTICULATION_stacciss: return SMUFL_E4A9_articStaccatissimoWedgeBelow;
+            case ARTICULATION_stacciss: return SMUFL_E4A7_articStaccatissimoBelow;
             case ARTICULATION_marc: return SMUFL_E4AD_articMarcatoBelow;
-            case ARTICULATION_spicc: return SMUFL_E4A7_articStaccatissimoBelow;
+            case ARTICULATION_spicc: return SMUFL_E4A9_articStaccatissimoWedgeBelow;
             case ARTICULATION_dnbow: return SMUFL_E611_stringsDownBowTurned;
             case ARTICULATION_upbow: return SMUFL_E613_stringsUpBowTurned;
             case ARTICULATION_harm: return SMUFL_E614_stringsHarmonic;

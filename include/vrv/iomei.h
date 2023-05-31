@@ -168,6 +168,8 @@ class Unclear;
 class Verse;
 class Zone;
 
+class EnoteToolkit;
+
 // Helper enums
 ///@{
 enum class MatchLocation { Before, Here, After };
@@ -532,6 +534,7 @@ private:
     void WriteTextDirInterface(pugi::xml_node currentNode, TextDirInterface *interface);
     void WriteTimePointInterface(pugi::xml_node currentNode, TimePointInterface *interface);
     void WriteTimeSpanningInterface(pugi::xml_node currentNode, TimeSpanningInterface *interface);
+    void WriteVisualOffsetInterface(pugi::xml_node currentNode, VisualOffsetInterface *interface);
     ///@}
 
     /**
@@ -596,6 +599,9 @@ private:
  * Under development.
  */
 class MEIInput : public Input {
+    // Allow EnoteToolkit to access the private read methods
+    friend class EnoteToolkit;
+
 public:
     // constructors and destructors
     MEIInput(Doc *doc);
@@ -829,6 +835,7 @@ private:
     bool ReadTextDirInterface(pugi::xml_node element, TextDirInterface *interface);
     bool ReadTimePointInterface(pugi::xml_node element, TimePointInterface *interface);
     bool ReadTimeSpanningInterface(pugi::xml_node element, TimeSpanningInterface *interface);
+    bool ReadVisualOffsetInterface(pugi::xml_node element, VisualOffsetInterface *interface);
     ///@}
 
     /**

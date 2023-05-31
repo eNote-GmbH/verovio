@@ -7300,5 +7300,19 @@
                 0.444
             ]
         }
+    },
+    "glyphsWithAlternates": {
+        "cClef": {
+            "alternates": [
+                {
+                    "codepoint": "U+F408", 
+                    "name": "cClefFrench"
+                }, 
+                {
+                    "codepoint": "U+F4BF", 
+                    "name": "cClefFrench20C"
+                }
+            ]
+        }
     }
 }

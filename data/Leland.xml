@@ -503,6 +503,26 @@
   <g c="ECA7" x="0.0" y="-172.0" w="711.0" h="1073.0" h-a-x="712" n="metNote8thUp" />
   <g c="ECA9" x="0.0" y="-172.0" w="711.0" h="1098.0" h-a-x="712" n="metNote16thUp" />
   <g c="ECB7" x="0.0" y="-78.0" w="155.0" h="156.0" h-a-x="155" n="metAugmentationDot" />
+  <g c="ED10" x="0.0" y="-5.0" w="187.0" h="260.0" h-a-x="187" n="fingering0" />
+  <g c="ED11" x="0.0" y="0.0" w="147.0" h="255.0" h-a-x="147" n="fingering1" />
+  <g c="ED12" x="0.0" y="-1.0" w="184.0" h="256.0" h-a-x="184" n="fingering2" />
+  <g c="ED13" x="0.0" y="-5.0" w="182.0" h="260.0" h-a-x="182" n="fingering3" />
+  <g c="ED14" x="0.0" y="0.0" w="190.0" h="255.0" h-a-x="190" n="fingering4" />
+  <g c="ED15" x="0.0" y="-5.0" w="181.0" h="260.0" h-a-x="181" n="fingering5" />
+  <g c="ED24" x="0.0" y="-5.0" w="187.0" h="260.0" h-a-x="187" n="fingering6" />
+  <g c="ED25" x="0.0" y="-5.0" w="180.0" h="260.0" h-a-x="180" n="fingering7" />
+  <g c="ED26" x="0.0" y="-5.0" w="187.0" h="260.0" h-a-x="187" n="fingering8" />
+  <g c="ED27" x="0.0" y="-5.0" w="187.0" h="260.0" h-a-x="187" n="fingering9" />
+  <g c="ED80" x="0.0" y="-5.0" w="191.0" h="259.0" h-a-x="191" n="fingering0Italic" />
+  <g c="ED81" x="0.0" y="0.0" w="167.0" h="254.0" h-a-x="167" n="fingering1Italic" />
+  <g c="ED82" x="0.0" y="0.0" w="208.0" h="254.0" h-a-x="208" n="fingering2Italic" />
+  <g c="ED83" x="0.0" y="-5.0" w="195.0" h="258.0" h-a-x="195" n="fingering3Italic" />
+  <g c="ED84" x="0.0" y="0.0" w="200.0" h="254.0" h-a-x="200" n="fingering4Italic" />
+  <g c="ED85" x="0.0" y="-5.0" w="206.0" h="259.0" h-a-x="206" n="fingering5Italic" />
+  <g c="ED86" x="0.0" y="-5.0" w="195.0" h="259.0" h-a-x="195" n="fingering6Italic" />
+  <g c="ED87" x="0.0" y="-5.0" w="190.0" h="259.0" h-a-x="190" n="fingering7Italic" />
+  <g c="ED88" x="0.0" y="-5.0" w="198.0" h="259.0" h-a-x="198" n="fingering8Italic" />
+  <g c="ED89" x="0.0" y="-5.0" w="195.0" h="259.0" h-a-x="195" n="fingering9Italic" />
   <g c="F400" x="0.0" y="5.0" w="90.0" h="990.0" h-a-x="90" n="braceSmall" />
   <g c="F401" x="-1.0" y="4.59" w="52.0" h="990.41" h-a-x="51" n="braceLarge" />
   <g c="F402" x="0.0" y="4.59" w="44.0" h="990.41" h-a-x="44" n="braceLarger" />

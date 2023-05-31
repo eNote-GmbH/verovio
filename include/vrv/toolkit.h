@@ -90,7 +90,15 @@ public:
     bool SetResourcePath(const std::string &path);
 
     /**
-     * Get the log content for the latest operation.
+     * Set the font in the resources
+     */
+    ///@{
+    bool SetMusicFont(const std::string &fontName);
+    bool SetTextFont(const std::string &fontName);
+    ///@}
+
+    /**
+     * Get the log content for the latest operation
      *
      * @return The log content as a string
      */
@@ -780,7 +788,7 @@ private:
 
 public:
     //
-private:
+protected:
     Doc m_doc;
     DocSelection m_docSelection;
     View m_view;

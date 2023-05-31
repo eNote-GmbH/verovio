@@ -29,4 +29,12 @@ echo "Generating Leland files ..."
 $PYTHON generate.py extract Leland
 $PYTHON generate.py css Leland
 
+echo "Generating Legato files ..."
+$PYTHON generate.py extract Legato
+$PYTHON generate.py css Legato
+
+echo "Generating Maestro files ..."
+$PYTHON generate.py extract Maestro
+$PYTHON generate.py css Maestro
+
 echo "Done!"

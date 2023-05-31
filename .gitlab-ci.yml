@@ -1,0 +1,128 @@
+---
+stages:
+  - clang-format
+  - build-xc
+  - build
+  - build-toolkit
+  - build-viewer
+  - deploy-viewer
+  - deploy-editor
+  - build-omrc
+
+variables:
+  EMSCRIPTEN_REPOSITORY: "https://github.com/emscripten-core/emsdk.git"
+  EMSCRIPTEN_DIRECTORY: "emsdk"
+
+.build-template:
+  stage: build
+  script:
+    - cd tools
+    - cmake ../cmake -DNO_ABC_SUPPORT=ON -DNO_HUMDRUM_SUPPORT=ON -DNO_PAE_SUPPORT=ON
+    - make -j 10
+
+clang:
+  stage: clang-format
+  tags:
+    - mac-ai
+  script:
+    - clang-format -n -Werror src/*.cpp
+    - clang-format -n -Werror include/vrv/*.h
+
+build-osx:
+  extends: .build-template
+  tags:
+    - mac-ai
+
+build-xc-framework:
+  stage: build-xc
+  tags:
+    - mac-ai
+  script:
+    - ./build_xcframework.sh
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "enote-dev"'
+
+build-linux:
+  extends: .build-template
+  image:
+    name: rikorose/gcc-cmake
+    entrypoint: [""]
+
+build-toolkit:
+  stage: build-toolkit
+  image:
+    name: rikorose/gcc-cmake
+    entrypoint: [""]
+  script:
+    - git clone $EMSCRIPTEN_REPOSITORY $EMSCRIPTEN_DIRECTORY
+    - cd $EMSCRIPTEN_DIRECTORY
+    - ./emsdk install latest
+    - ./emsdk activate latest
+    - source emsdk_env.sh
+    - cd ../emscripten
+    - ./buildToolkit -c -H -M
+  artifacts:
+    paths:
+      - emscripten/build/verovio.js
+
+build-viewer:
+  stage: build-viewer
+  dependencies:
+    - build-toolkit
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "TESTING TOOLKIT JS"
+    - pwd
+    - ls -ltra
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+deploy-viewer:
+  stage: deploy-viewer
+  image:
+    name: bitnami/git
+    entrypoint: ["bash"]
+  except:
+    - external_pull_requests
+  variables:
+    TAG: $CI_COMMIT_SHA
+  script:
+    - apt-get update
+    - apt-get install gettext-base
+    - git clone https://git-bot:$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git /tmp/helm-charts
+    - cd /tmp/helm-charts
+    - rm dev/verovio-web-viewer/values.yaml
+    - envsubst '${TAG}' < "dev/verovio-web-viewer/values-template.yaml" > "dev/verovio-web-viewer/values.yaml"
+    - git config credential.helper 'cache --timeout=120'
+    - git config user.email "ci-cd@enote.com"
+    - git config user.name "git-bot"
+    - git add .
+    - git commit --allow-empty -m "[git-bot] Automated Update via GitLab Pipeline"
+    - git push -q https://git-bot:$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git master
+
+bridge-vhv:
+  stage: deploy-editor
+  only:
+    refs:
+      - enote-stage
+  needs:
+    - build-toolkit
+  trigger:
+    project: Verovio/verovio-humdrum-viewer
+    branch: enote-develop
+    strategy: depend
+
+bridge-omrc:
+  stage: build-omrc
+  only:
+    refs:
+      - enote-dev
+  needs:
+    - build-toolkit
+  trigger:
+    project: omr/omr-dataset-generator
+    branch: main
+    strategy: depend

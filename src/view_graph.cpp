@@ -137,6 +137,7 @@ void View::DrawFilledRectangle(DeviceContext *dc, int x1, int y1, int x2, int y2
 {
     assert(dc);
 
+    dc->ApplyVisualOffset({ { &x1, &y1 }, { &x2, &y2 } });
     this->DrawFilledRoundedRectangle(dc, x1, y1, x2, y2, 0);
 
     return;
@@ -224,6 +225,7 @@ void View::DrawDot(DeviceContext *dc, int x, int y, int staffSize, bool dimin)
     dc->SetPen(m_currentColor, 0, AxSOLID);
     dc->SetBrush(m_currentColor, AxSOLID);
 
+    dc->ApplyVisualOffset({ { &x, &y } });
     dc->DrawCircle(ToDeviceContextX(x), ToDeviceContextY(y), r);
 
     dc->ResetPen();
@@ -288,6 +290,7 @@ void View::DrawSmuflCode(DeviceContext *dc, int x, int y, char32_t code, int sta
     dc->SetBrush(m_currentColor, AxSOLID);
     dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, dimin));
 
+    dc->ApplyVisualOffset({ { &x, &y } });
     dc->DrawMusicText(str, ToDeviceContextX(x), ToDeviceContextY(y), setBBGlyph);
 
     dc->ResetFont();
@@ -340,23 +343,22 @@ void View::DrawSmuflString(DeviceContext *dc, int x, int y, std::u32string s, da
 {
     assert(dc);
 
-    int xDC = ToDeviceContextX(x);
-
     dc->SetBrush(m_currentColor, AxSOLID);
     dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, dimin));
 
     if (alignment == HORIZONTALALIGNMENT_center) {
         TextExtend extend;
         dc->GetSmuflTextExtent(s, &extend);
-        xDC -= extend.m_width / 2;
+        x -= extend.m_width / 2;
     }
     else if (alignment == HORIZONTALALIGNMENT_right) {
         TextExtend extend;
         dc->GetSmuflTextExtent(s, &extend);
-        xDC -= extend.m_width;
+        x -= extend.m_width;
     }
 
-    dc->DrawMusicText(s, xDC, ToDeviceContextY(y), setBBGlyph);
+    dc->ApplyVisualOffset({ { &x, &y } });
+    dc->DrawMusicText(s, ToDeviceContextX(x), ToDeviceContextY(y), setBBGlyph);
 
     dc->ResetFont();
     dc->ResetBrush();
@@ -371,11 +373,15 @@ void View::DrawThickBezierCurve(
 
     BoundingBox::CalcThickBezier(bezier, thickness, bez1, bez2);
 
+    dc->ApplyVisualOffset({ { &bez1[0].x, &bez1[0].y }, { &bez1[1].x, &bez1[1].y }, { &bez1[2].x, &bez1[2].y },
+        { &bez1[3].x, &bez1[3].y } });
     bez1[0] = ToDeviceContext(bez1[0]);
     bez1[1] = ToDeviceContext(bez1[1]);
     bez1[2] = ToDeviceContext(bez1[2]);
     bez1[3] = ToDeviceContext(bez1[3]);
 
+    dc->ApplyVisualOffset({ { &bez2[0].x, &bez2[0].y }, { &bez2[1].x, &bez2[1].y }, { &bez2[2].x, &bez2[2].y },
+        { &bez2[3].x, &bez2[3].y } });
     bez2[0] = ToDeviceContext(bez2[0]);
     bez2[1] = ToDeviceContext(bez2[1]);
     bez2[2] = ToDeviceContext(bez2[2]);

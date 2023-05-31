@@ -317,8 +317,8 @@ void SvgDeviceContext::StartGraphic(
         }
     }
 
-    // m_currentNode.append_attribute("style") = StringFormat("stroke: #%s; stroke-opacity: %f; fill: #%s; fill-opacity:
-    // %f;",
+    // m_currentNode.append_attribute("style") = StringFormat("stroke: #%s; stroke-opacity: %g; fill: #%s; fill-opacity:
+    // %g;",
     // this->GetColor(currentPen.GetColor()).c_str(), currentPen.GetOpacity(),
     // this->GetColor(currentBrush.GetColor()).c_str(), currentBrush.GetOpacity()).c_str();
 }
@@ -424,7 +424,7 @@ void SvgDeviceContext::RotateGraphic(Point const &orig, double angle)
         return;
     }
 
-    m_currentNode.append_attribute("transform") = StringFormat("rotate(%f %d,%d)", angle, orig.x, orig.y).c_str();
+    m_currentNode.append_attribute("transform") = StringFormat("rotate(%g %d,%d)", angle, orig.x, orig.y).c_str();
 }
 
 void SvgDeviceContext::StartPage()
@@ -434,15 +434,17 @@ void SvgDeviceContext::StartPage()
     m_vrvTextFontFallback = false;
 
     // default styles
+    std::string defaultFontDefinition{ "g.page-margin{font-family:" + m_defaultFontName + ";} " +
+        //"g.page-margin{background: pink;} "
+        //"g.bounding-box{stroke:red; stroke-width:10} "
+        //"g.content-bounding-box{stroke:blue; stroke-width:10} "
+        "g.ending, g.fing, g.reh, g.tempo{font-weight:bold;} g.dir, g.dynam, "
+        "g.mNum{font-style:italic;} g.label{font-weight:normal;}" };
+
     if (this->UseGlobalStyling()) {
         m_currentNode = m_currentNode.append_child("style");
         m_currentNode.append_attribute("type") = "text/css";
-        m_currentNode.text().set("g.page-margin{font-family:Times,serif;} "
-                                 //"g.page-margin{background: pink;} "
-                                 //"g.bounding-box{stroke:red; stroke-width:10} "
-                                 //"g.content-bounding-box{stroke:blue; stroke-width:10} "
-                                 "g.ending, g.fing, g.reh, g.tempo{font-weight:bold;} g.dir, g.dynam, "
-                                 "g.mNum{font-style:italic;} g.label{font-weight:normal;}");
+        m_currentNode.text().set(defaultFontDefinition.c_str());
         m_currentNode = m_svgNodeStack.back();
     }
 
@@ -744,7 +746,7 @@ void SvgDeviceContext::DrawPolyline(int n, Point points[], int xOffset, int yOff
         polylineChild.append_attribute("stroke-width") = StringFormat("%d", currentPen.GetWidth()).c_str();
     }
     if (currentPen.GetOpacity() != 1.0) {
-        polylineChild.append_attribute("stroke-opacity") = StringFormat("%f", currentPen.GetOpacity()).c_str();
+        polylineChild.append_attribute("stroke-opacity") = StringFormat("%g", currentPen.GetOpacity()).c_str();
     }
 
     this->AppendStrokeLineCap(polylineChild, currentPen);
@@ -777,7 +779,7 @@ void SvgDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffs
         polygonChild.append_attribute("stroke-width") = StringFormat("%d", currentPen.GetWidth()).c_str();
     }
     if (currentPen.GetOpacity() != 1.0) {
-        polygonChild.append_attribute("stroke-opacity") = StringFormat("%f", currentPen.GetOpacity()).c_str();
+        polygonChild.append_attribute("stroke-opacity") = StringFormat("%g", currentPen.GetOpacity()).c_str();
     }
 
     this->AppendStrokeLineJoin(polygonChild, currentPen);
@@ -786,7 +788,7 @@ void SvgDeviceContext::DrawPolygon(int n, Point points[], int xOffset, int yOffs
     if (currentBrush.GetColor() != AxNONE)
         polygonChild.append_attribute("fill") = this->GetColor(currentBrush.GetColor()).c_str();
     if (currentBrush.GetOpacity() != 1.0)
-        polygonChild.append_attribute("fill-opacity") = StringFormat("%f", currentBrush.GetOpacity()).c_str();
+        polygonChild.append_attribute("fill-opacity") = StringFormat("%g", currentBrush.GetOpacity()).c_str();
 
     std::string pointsString = StringFormat("%d,%d", points[0].x + xOffset, points[0].y + yOffset);
     for (int i = 1; i < n; ++i) {
@@ -811,7 +813,7 @@ void SvgDeviceContext::DrawRoundedRectangle(int x, int y, int width, int height,
         if (currentPen.GetWidth() > 1)
             rectChild.append_attribute("stroke-width") = StringFormat("%d", currentPen.GetWidth()).c_str();
         if (currentPen.GetOpacity() != 1.0)
-            rectChild.append_attribute("stroke-opacity") = StringFormat("%f", currentPen.GetOpacity()).c_str();
+            rectChild.append_attribute("stroke-opacity") = StringFormat("%g", currentPen.GetOpacity()).c_str();
     }
 
     if (m_brushStack.size()) {
@@ -819,7 +821,7 @@ void SvgDeviceContext::DrawRoundedRectangle(int x, int y, int width, int height,
         if (currentBrush.GetColor() != AxNONE)
             rectChild.append_attribute("fill") = this->GetColor(currentBrush.GetColor()).c_str();
         if (currentBrush.GetOpacity() != 1.0)
-            rectChild.append_attribute("fill-opacity") = StringFormat("%f", currentBrush.GetOpacity()).c_str();
+            rectChild.append_attribute("fill-opacity") = StringFormat("%g", currentBrush.GetOpacity()).c_str();
     }
 
     // negative heights or widths are not allowed in SVG
@@ -1028,7 +1030,7 @@ void SvgDeviceContext::DrawMusicText(const std::u32string &text, int x, int y, b
         useChild.append_attribute("height") = StringFormat("%dpx", m_fontStack.top()->GetPointSize()).c_str();
         useChild.append_attribute("width") = StringFormat("%dpx", m_fontStack.top()->GetPointSize()).c_str();
         if (m_fontStack.top()->GetWidthToHeightRatio() != 1.0f) {
-            useChild.append_attribute("transform") = StringFormat("matrix(%f,0,0,1,%f,0)",
+            useChild.append_attribute("transform") = StringFormat("matrix(%g,0,0,1,%g,0)",
                 m_fontStack.top()->GetWidthToHeightRatio(), x * (1. - m_fontStack.top()->GetWidthToHeightRatio()))
                                                          .c_str();
         }
@@ -1058,7 +1060,7 @@ void SvgDeviceContext::DrawGraphicUri(int x, int y, int width, int height, const
 void SvgDeviceContext::DrawSvgShape(int x, int y, int width, int height, double scale, pugi::xml_node svg)
 {
     m_currentNode.append_attribute("transform")
-        = StringFormat("translate(%d, %d) scale(%f, %f)", x, y, scale * DEFINITION_FACTOR, scale * DEFINITION_FACTOR)
+        = StringFormat("translate(%d, %d) scale(%g, %g)", x, y, scale * DEFINITION_FACTOR, scale * DEFINITION_FACTOR)
               .c_str();
 
     // Remove the ID in the SVG because it might be duplicated and that will not be valid

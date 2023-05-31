@@ -34,9 +34,16 @@ namespace vrv {
 
 static const ClassRegistrar<Tie> s_factory("tie", TIE);
 
-Tie::Tie() : ControlElement(TIE, "tie-"), TimeSpanningInterface(), AttColor(), AttCurvature(), AttCurveRend()
+Tie::Tie()
+    : ControlElement(TIE, "tie-")
+    , TimeSpanningInterface()
+    , VisualOffsetInterface()
+    , AttColor()
+    , AttCurvature()
+    , AttCurveRend()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -45,9 +52,15 @@ Tie::Tie() : ControlElement(TIE, "tie-"), TimeSpanningInterface(), AttColor(), A
 }
 
 Tie::Tie(ClassId classId)
-    : ControlElement(classId, "tie-"), TimeSpanningInterface(), AttColor(), AttCurvature(), AttCurveRend()
+    : ControlElement(classId, "tie-")
+    , TimeSpanningInterface()
+    , VisualOffsetInterface()
+    , AttColor()
+    , AttCurvature()
+    , AttCurveRend()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -56,9 +69,15 @@ Tie::Tie(ClassId classId)
 }
 
 Tie::Tie(ClassId classId, const std::string &classIdStr)
-    : ControlElement(classId, classIdStr), TimeSpanningInterface(), AttColor(), AttCurvature(), AttCurveRend()
+    : ControlElement(classId, classIdStr)
+    , TimeSpanningInterface()
+    , VisualOffsetInterface()
+    , AttColor()
+    , AttCurvature()
+    , AttCurveRend()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_CURVEREND);
@@ -72,6 +91,7 @@ void Tie::Reset()
 {
     ControlElement::Reset();
     TimeSpanningInterface::Reset();
+    VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCurvature();
     this->ResetCurveRend();
