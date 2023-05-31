@@ -19,5 +19,5 @@ repository = "https://github.com/rism-digital/verovio.git"
 changelog = "https://github.com/rism-digital/verovio/blob/develop/CHANGELOG.md"
 
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta:__legacy__"

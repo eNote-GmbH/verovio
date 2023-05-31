@@ -145,7 +145,7 @@ setup(name='verovio',
                 'verovio.data.Petaluma',
                 'verovio.data.text'],
       # cf. https://docs.python.org/3/distutils/examples.html#pure-python-distribution-by-package
-      package_dir={'verovio': './bindings/python',
+      package_dir={'verovio': [f for f in os.listdir('./bindings/python') if (f.endswith('.py')],
                    'verovio.data': './data'},
       package_data={
           'verovio.data': [f for f in os.listdir('./data') if (f.endswith('.xml') or f.endswith(".css") or f.endswith(".svg"))],
@@ -156,7 +156,7 @@ setup(name='verovio',
           'verovio.data.Petaluma': os.listdir('./data/Petaluma'),
           'verovio.data.text': os.listdir('./data/text'),
       },
-      python_requires='>=3.7',
+      python_requires='>=3.8',
       project_urls={
           'Bug Reports': 'https://github.com/rism-digital/verovio/issues',
           'Source': 'https://github.com/rism-digital/verovio',
