@@ -19,8 +19,6 @@
   <g c="E0A2" x="0.0" y="-133.0" w="405.0" h="266.0" h-a-x="405" n="noteheadWhole">
     <a n="cutOutNW" x="0.06" y="0.24" />
     <a n="cutOutSE" x="1.57" y="-0.23" />
-    <a n="stemDownNW" x="0.0" y="0.0" />
-    <a n="stemUpSE" x="1.62" y="0.0" />
   </g>
   <g c="E0A4" x="0.0" y="-133.0" w="314.0" h="266.0" h-a-x="314" n="noteheadBlack">
     <a n="cutOutNW" x="0.14" y="0.24" />
@@ -126,7 +124,7 @@
   <g c="E524" x="0.0" y="0.0" w="194.0" h="270.0" h-a-x="194" n="dynamicSforzando" />
   <g c="E525" x="-36.0" y="-16.0" w="296.0" h="265.0" h-a-x="260" n="dynamicZ" />
   <g c="E650" x="0.0" y="0.0" w="695.0" h="514.0" h-a-x="695" n="keyboardPedalPed" />
-  <g c="E655" x="0.0" y="0.0" w="431.0" h="418.0" h-a-x="431" n="keyboardPedalUp" />
+  <g c="E655" x="0.0" y="-1.0" w="431.0" h="418.0" h-a-x="431" n="keyboardPedalUp" />
   <g c="E046" x="0.0" y="-22.0" w="935.0" h="428.0" h-a-x="935" n="daCapo" />
   <g c="E045" x="0.0" y="-14.0" w="860.0" h="418.0" h-a-x="860" n="dalSegno" />
   <g c="E047" x="0.0" y="0.0" w="411.0" h="513.0" h-a-x="411" n="segno" />
@@ -601,8 +599,6 @@
   <g c="EBD0" x="0.0" y="-16.0" w="610.0" h="285.0" h-a-x="610" n="luteFrench10thCourse" />
   <g c="EC85" x="20.0" y="-319.0" w="402.0" h="637.0" h-a-x="442" n="timeSigCut2" />
   <g c="EC86" x="20.0" y="-319.0" w="372.0" h="637.0" h-a-x="412" n="timeSigCut3" />
-  <g c="F408" x="0.0" y="-676.0" w="610.0" h="1264.0" h-a-x="610" n="cClefFrench" />
-  <g c="F4BF" x="0.0" y="-600.0" w="465.0" h="1200.0" h-a-x="465" n="cClefFrench20C" />
   <g c="E903" x="0.0" y="-220.0" w="515.0" h="440.0" h-a-x="515" n="mensuralFclef" />
   <g c="EC80" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketLeft" />
   <g c="EC81" x="0.0" y="-590.0" w="120.0" h="1180.0" h-a-x="120" n="timeSigBracketRight" />
@@ -649,9 +645,9 @@
   <g c="266D" x="28.0" y="56.0" w="220.0" h="714.0" h-a-x="269" n="musicFlatSign" />
   <g c="266E" x="28.0" y="-140.0" w="174.0" h="779.0" h-a-x="225" n="musicNaturalSign" />
   <g c="266F" x="28.0" y="-127.0" w="218.0" h="771.0" h-a-x="272" n="musicSharpSign" />
-  <g c="E1D0" x="0.0" y="-152.0" w="595.0" h="307.0" h-a-x="595" n="noteDoubleWhole" />
-  <g c="E1D1" x="0.0" y="-224.0" w="484.0" h="454.0" h-a-x="484" n="noteDoubleWholeSquare" />
-  <g c="E1D2" x="0.0" y="-125.0" w="417.0" h="248.0" h-a-x="417" n="noteWhole" />
+  <g c="E1D0" x="0.0" y="-170.0" w="545.0" h="340.0" h-a-x="545" n="noteDoubleWhole" />
+  <g c="E1D1" x="0.0" y="-170.0" w="348.0" h="340.0" h-a-x="348" n="noteDoubleWholeSquare" />
+  <g c="E1D2" x="0.0" y="-133.0" w="405.0" h="266.0" h-a-x="405" n="noteWhole" />
   <g c="E1D3" x="0.0" y="-132.0" w="310.0" h="971.0" h-a-x="310" n="noteHalfUp" />
   <g c="E1D5" x="0.0" y="-129.0" w="302.0" h="968.0" h-a-x="302" n="noteQuarterUp" />
   <g c="E1D7" x="0.0" y="-125.0" w="502.0" h="1003.0" h-a-x="502" n="note8thUp" />
@@ -691,8 +687,8 @@
   <g c="EA65" x="12.0" y="-0.36" w="97.14" h="434.36" h-a-x="121" n="figbassNatural" />
   <g c="EA66" x="12.87" y="0.29" w="121.89" h="429.41" h-a-x="149" n="figbassSharp" />
   <g c="EA67" x="12.38" y="-0.0" w="159.02" h="148.5" h-a-x="182" n="figbassDoubleSharp" />
-  <g c="ECA0" x="0.0" y="-152.0" w="595.0" h="307.0" h-a-x="595" n="metNoteDoubleWhole" />
-  <g c="ECA1" x="2.0" y="-222.0" w="480.0" h="450.0" h-a-x="484" n="metNoteDoubleWholeSquare" />
+  <g c="ECA0" x="0.0" y="-170.0" w="545.0" h="340.0" h-a-x="545" n="metNoteDoubleWhole" />
+  <g c="ECA1" x="0.0" y="-170.0" w="348.0" h="340.0" h-a-x="348" n="metNoteDoubleWholeSquare" />
   <g c="ECA2" x="2.0" y="-122.0" w="412.0" h="242.0" h-a-x="417" n="metNoteWhole" />
   <g c="ECA3" x="2.0" y="-130.0" w="306.0" h="798.0" h-a-x="310" n="metNoteHalfUp" />
   <g c="ECA5" x="2.0" y="-126.0" w="300.0" h="794.0" h-a-x="302" n="metNoteQuarterUp" />

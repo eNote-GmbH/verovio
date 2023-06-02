@@ -411,8 +411,8 @@
   <g c="E650" x="0.0" y="-7.0" w="917.0" h="507.0" h-a-x="917" n="keyboardPedalPed" />
   <g c="E651" x="0.0" y="-7.0" w="450.0" h="507.0" h-a-x="443" n="keyboardPedalP" />
   <g c="E655" x="0.0" y="0.0" w="450.0" h="450.0" h-a-x="450" n="keyboardPedalUp" />
-  <g c="E659" x="-0.65" y="-4.7" w="996.3" h="545.4" h-a-x="996" n="keyboardPedalSost" />
-  <g c="E65A" x="-0.05" y="-4.7" w="377.1" h="545.4" h-a-x="377" n="keyboardPedalS" />
+  <g c="E659" x="-1.0" y="-5.0" w="997.0" h="546.0" h-a-x="996" n="keyboardPedalSost" />
+  <g c="E65A" x="0.0" y="-5.0" w="377.0" h="546.0" h-a-x="377" n="keyboardPedalS" />
   <g c="E770" x="0.0" y="-4.0" w="230.0" h="743.0" h-a-x="230" n="pictBeaterSoftXylophoneUp" />
   <g c="E771" x="0.0" y="-4.0" w="230.0" h="743.0" h-a-x="230" n="pictBeaterSoftXylophoneDown" />
   <g c="E772" x="0.0" y="-1.0" w="436.0" h="661.0" h-a-x="437" n="pictBeaterSoftXylophoneRight" />
