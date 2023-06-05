@@ -156,6 +156,9 @@ setup(name='verovio',
           'verovio.data.Petaluma': os.listdir('./data/Petaluma'),
           'verovio.data.text': os.listdir('./data/text'),
       },
+      install_requires=[
+          'importlib_resources',
+      ],
       python_requires='>=3.7',
       project_urls={
           'Bug Reports': 'https://github.com/rism-digital/verovio/issues',
