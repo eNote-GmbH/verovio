@@ -103,18 +103,6 @@ deploy-viewer:
     - git commit --allow-empty -m "[git-bot] Automated Update via GitLab Pipeline"
     - git push -q https://git-bot:$GITLAB_TOKEN@gitlab.gitlab.enote.com/sre/helm-charts.git master
 
-bridge-vhv:
-  stage: deploy-editor
-  only:
-    refs:
-      - enote-stage
-  needs:
-    - build-toolkit
-  trigger:
-    project: Verovio/verovio-humdrum-viewer
-    branch: enote-develop
-    strategy: depend
-
 bridge-omrc:
   stage: build-omrc
   only:
