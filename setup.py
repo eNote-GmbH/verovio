@@ -90,11 +90,10 @@ else:
                            '-DNO_PAE_SUPPORT']
 
 verovio_module = Extension('verovio._verovio',
-                           sources=
-                                glob('./src/*.cpp') + 
-                                glob('./src/hum/*.cpp') +
-                                glob('./libmei/dist/*.cpp') +
-                                glob('./libmei/addons/*.cpp') +
+                           sources=glob('./src/*.cpp') +
+                           glob('./src/hum/*.cpp') +
+                           glob('./libmei/dist/*.cpp') +
+                           glob('./libmei/addons/*.cpp') +
                            [
                                './src/crc/crc.cpp',
                                './src/json/jsonxx.cc',
@@ -156,9 +155,6 @@ setup(name='verovio',
           'verovio.data.Petaluma': os.listdir('./data/Petaluma'),
           'verovio.data.text': os.listdir('./data/text'),
       },
-      install_requires=[
-          'importlib_resources',
-      ],
       python_requires='>=3.7',
       project_urls={
           'Bug Reports': 'https://github.com/rism-digital/verovio/issues',
