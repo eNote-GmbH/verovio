@@ -33,7 +33,8 @@ class Accid : public LayerElement,
               public AttAccidLog,
               public AttColor,
               public AttEnclosingChars,
-              public AttExtSym,
+              public AttExtSymAuth,
+              public AttExtSymNames,
               public AttPlacementOnStaff,
               public AttPlacementRelEvent {
 public:

@@ -42,11 +42,13 @@ public:
      * Functor interface
      */
     ///@{
+    FunctorCode VisitDiv(Div *div) override;
     FunctorCode VisitChord(Chord *chord) override;
     FunctorCode VisitFloatingObject(FloatingObject *floatingObject) override;
     FunctorCode VisitKeySig(KeySig *keySig) override;
-    FunctorCode VisitRunningElement(RunningElement *runningElement) override;
+    FunctorCode VisitRepeatMark(RepeatMark *repeatMark) override;
     FunctorCode VisitScore(Score *score) override;
+    FunctorCode VisitTextLayoutElement(TextLayoutElement *textLayoutElement) override;
     ///@}
 
 protected:
@@ -327,12 +329,11 @@ public:
     bool ImplementsEndInterface() const override { return false; }
 
     /*
-     * Getter and modifier for the interface / id tuples
+     * Getter and modifier for the interface / id pairs
      */
     ///@{
-    const ArrayOfPlistInterfaceIDTuples &GetInterfaceIDTuples() const { return m_interfaceIDTuples; }
-    void InsertInterfaceIDTuple(const std::string &elementID, PlistInterface *interface);
-    void ClearInterfaceIDTuples() { m_interfaceIDTuples.clear(); }
+    const ArrayOfPlistInterfaceIDPairs &GetInterfaceIDPairs() const { return m_interfaceIDPairs; }
+    void InsertInterfaceIDPair(const std::string &elementID, PlistInterface *interface);
     ///@}
 
     /*
@@ -349,8 +350,8 @@ private:
 public:
     //
 private:
-    // Holds the interface / id tuples to match
-    ArrayOfPlistInterfaceIDTuples m_interfaceIDTuples;
+    // Holds the interface / id pairs to match
+    ArrayOfPlistInterfaceIDPairs m_interfaceIDPairs;
 };
 
 //----------------------------------------------------------------------------

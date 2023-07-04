@@ -23,6 +23,7 @@
 #include "comparison.h"
 #include "controlelement.h"
 #include "devicecontext.h"
+#include "div.h"
 #include "doc.h"
 #include "editorial.h"
 #include "ending.h"
@@ -1122,7 +1123,7 @@ void View::DrawMeterSigGrp(DeviceContext *dc, Layer *layer, Staff *staff)
                         [](Object *object) {
                             MeterSig *meterSig = vrv_cast<MeterSig *>(object);
                             assert(meterSig);
-                            return ((meterSig->GetForm() == METERFORM_invis) || !meterSig->HasCount());
+                            return ((meterSig->GetVisible() == BOOLEAN_false) || !meterSig->HasCount());
                         }),
         childList.end());
 
@@ -1639,6 +1640,10 @@ void View::DrawSystemChildren(DeviceContext *dc, Object *parent, System *system)
         else if (current->IsSystemElement()) {
             // cast to SystemElement check in DrawSystemEditorial element
             this->DrawSystemElement(dc, dynamic_cast<SystemElement *>(current), system);
+        }
+        else if (current->Is(DIV)) {
+            // cast to Div check in DrawDiv element
+            this->DrawDiv(dc, dynamic_cast<Div *>(current), system);
         }
         else if (current->IsEditorialElement()) {
             // cast to EditorialElement check in DrawSystemEditorial element

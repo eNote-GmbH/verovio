@@ -40,7 +40,8 @@ class Rest : public LayerElement,
              public VisualOffsetInterface,
              public AttColor,
              public AttCue,
-             public AttExtSym,
+             public AttExtSymAuth,
+             public AttExtSymNames,
              public AttRestVisMensural {
 public:
     /**

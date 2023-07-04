@@ -465,6 +465,12 @@
   <g c="E888" x="-1.0" y="-6.0" w="278.0" h="322.0" h-a-x="264" n="tuplet8" />
   <g c="E889" x="-1.0" y="-7.0" w="253.0" h="324.0" h-a-x="248" n="tuplet9" />
   <g c="E88A" x="37.0" y="41.0" w="109.0" h="220.0" h-a-x="175" n="tupletColon" />
+  <g c="E8F3" x="0.0" y="250.0" w="20.0" h="250.0" h-a-x="20" n="chantDivisioMinima" />
+  <g c="E8F4" x="0.0" y="-250.0" w="20.0" h="500.0" h-a-x="20" n="chantDivisioMaior" />
+  <g c="E8F5" x="0.0" y="-374.0" w="20.0" h="746.0" h-a-x="20" n="chantDivisioMaxima" />
+  <g c="E8F6" x="0.0" y="-374.0" w="117.0" h="746.0" h-a-x="117" n="chantDivisioFinalis" />
+  <g c="E8F7" x="0.0" y="247.0" w="85.0" h="253.0" h-a-x="85" n="chantVirgula" />
+  <g c="E8F8" x="-21.0" y="254.0" w="167.0" h="246.0" h-a-x="146" n="chantCaesura" />
   <g c="E901" x="0.0" y="-163.0" w="309.0" h="1106.0" h-a-x="309" n="mensuralGclefPetrucci" />
   <g c="E902" x="0.0" y="-222.0" w="276.0" h="444.0" h-a-x="276" n="chantFclef" />
   <g c="E903" x="0.0" y="-190.0" w="317.0" h="380.0" h-a-x="317" n="mensuralFclef" />
@@ -613,6 +619,42 @@
   <g c="EB20" x="0.0" y="0.0" w="905.0" h="550.0" h-a-x="905" n="elecRewind" />
   <g c="EB21" x="0.0" y="0.0" w="978.0" h="550.0" h-a-x="978" n="elecSkipForwards" />
   <g c="EB22" x="0.0" y="0.0" w="978.0" h="550.0" h-a-x="978" n="elecSkipBackwards" />
+  <g c="EC00" x="0.0" y="-8.0" w="265.0" h="354.0" h-a-x="265" n="luteGermanALower" />
+  <g c="EC01" x="0.0" y="-12.0" w="241.0" h="482.0" h-a-x="241" n="luteGermanBLower" />
+  <g c="EC02" x="0.0" y="-7.0" w="186.0" h="353.0" h-a-x="186" n="luteGermanCLower" />
+  <g c="EC03" x="0.0" y="-6.0" w="254.0" h="469.0" h-a-x="254" n="luteGermanDLower" />
+  <g c="EC04" x="0.0" y="-8.0" w="214.0" h="353.0" h-a-x="214" n="luteGermanELower" />
+  <g c="EC05" x="0.0" y="-100.0" w="186.0" h="589.0" h-a-x="186" n="luteGermanFLower" />
+  <g c="EC06" x="0.0" y="-116.0" w="258.0" h="454.0" h-a-x="258" n="luteGermanGLower" />
+  <g c="EC07" x="0.0" y="-71.0" w="253.0" h="561.0" h-a-x="253" n="luteGermanHLower" />
+  <g c="EC08" x="-23.0" y="-86.0" w="147.0" h="552.0" h-a-x="124" n="luteGermanILower" />
+  <g c="EC09" x="0.0" y="-8.0" w="224.0" h="516.0" h-a-x="224" n="luteGermanKLower" />
+  <g c="EC0A" x="0.0" y="-17.0" w="141.0" h="514.0" h-a-x="141" n="luteGermanLLower" />
+  <g c="EC0B" x="0.0" y="1.0" w="425.0" h="345.0" h-a-x="425" n="luteGermanMLower" />
+  <g c="EC0C" x="0.0" y="-5.0" w="282.0" h="352.0" h-a-x="282" n="luteGermanNLower" />
+  <g c="EC0D" x="0.0" y="-5.0" w="254.0" h="356.0" h-a-x="254" n="luteGermanOLower" />
+  <g c="EC0E" x="0.0" y="-138.0" w="307.0" h="472.0" h-a-x="307" n="luteGermanPLower" />
+  <g c="EC0F" x="0.0" y="-117.0" w="257.0" h="467.0" h-a-x="257" n="luteGermanQLower" />
+  <g c="EC10" x="0.0" y="-7.0" w="221.0" h="352.0" h-a-x="221" n="luteGermanRLower" />
+  <g c="EC11" x="0.0" y="-98.0" w="228.0" h="588.0" h-a-x="228" n="luteGermanSLower" />
+  <g c="EC12" x="0.0" y="-1.0" w="177.0" h="436.0" h-a-x="177" n="luteGermanTLower" />
+  <g c="EC13" x="0.0" y="-5.0" w="259.0" h="351.0" h-a-x="259" n="luteGermanVLower" />
+  <g c="EC14" x="0.0" y="-63.0" w="260.0" h="423.0" h-a-x="260" n="luteGermanXLower" />
+  <g c="EC15" x="0.0" y="-103.0" w="281.0" h="464.0" h-a-x="281" n="luteGermanYLower" />
+  <g c="EC16" x="0.0" y="-125.0" w="205.0" h="470.0" h-a-x="205" n="luteGermanZLower" />
+  <g c="EC17" x="0.0" y="-16.0" w="423.0" h="524.0" h-a-x="423" n="luteGermanAUpper" />
+  <g c="EC18" x="0.0" y="-13.0" w="529.0" h="527.0" h-a-x="529" n="luteGermanBUpper" />
+  <g c="EC19" x="0.0" y="-18.0" w="430.0" h="535.0" h-a-x="430" n="luteGermanCUpper" />
+  <g c="EC1A" x="0.0" y="-15.0" w="500.0" h="524.0" h-a-x="500" n="luteGermanDUpper" />
+  <g c="EC1B" x="0.0" y="-9.0" w="395.0" h="528.0" h-a-x="395" n="luteGermanEUpper" />
+  <g c="EC1C" x="0.0" y="-89.0" w="353.0" h="607.0" h-a-x="353" n="luteGermanFUpper" />
+  <g c="EC1D" x="0.0" y="-7.0" w="515.0" h="523.0" h-a-x="515" n="luteGermanGUpper" />
+  <g c="EC1E" x="0.0" y="-95.0" w="429.0" h="605.0" h-a-x="429" n="luteGermanHUpper" />
+  <g c="EC1F" x="0.0" y="-101.0" w="442.0" h="620.0" h-a-x="442" n="luteGermanIUpper" />
+  <g c="EC20" x="0.0" y="-12.0" w="407.0" h="525.0" h-a-x="407" n="luteGermanKUpper" />
+  <g c="EC21" x="0.0" y="-16.0" w="395.0" h="527.0" h-a-x="395" n="luteGermanLUpper" />
+  <g c="EC22" x="0.0" y="-28.0" w="663.0" h="540.0" h-a-x="663" n="luteGermanMUpper" />
+  <g c="EC23" x="0.0" y="-18.0" w="512.0" h="531.0" h-a-x="512" n="luteGermanNUpper" />
   <g c="EC80" x="0.0" y="-616.0" w="135.0" h="1232.0" h-a-x="81" n="timeSigBracketLeft" />
   <g c="EC81" x="0.0" y="-616.0" w="135.0" h="1232.0" h-a-x="135" n="timeSigBracketRight" />
   <g c="EC82" x="0.0" y="-364.0" w="135.0" h="728.0" h-a-x="78" n="timeSigBracketLeftSmall" />

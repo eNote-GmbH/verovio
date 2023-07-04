@@ -46,6 +46,7 @@
 #include "pitchinflection.h"
 #include "reh.h"
 #include "rend.h"
+#include "repeatmark.h"
 #include "score.h"
 #include "slur.h"
 #include "smufl.h"
@@ -100,7 +101,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
     else if (element->Is(DIR)) {
         Dir *dir = vrv_cast<Dir *>(element);
         assert(dir);
-        this->DrawDirOrOrnam(dc, dir, measure, system);
+        this->DrawControlElementText(dc, dir, measure, system);
         system->AddToDrawingListIfNecessary(dir);
     }
     else if (element->Is(DYNAM)) {
@@ -132,7 +133,7 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
     else if (element->Is(ORNAM)) {
         Ornam *ornam = vrv_cast<Ornam *>(element);
         assert(ornam);
-        this->DrawDirOrOrnam(dc, ornam, measure, system);
+        this->DrawControlElementText(dc, ornam, measure, system);
     }
     else if (element->Is(PEDAL)) {
         Pedal *pedal = vrv_cast<Pedal *>(element);
@@ -144,6 +145,11 @@ void View::DrawControlElement(DeviceContext *dc, ControlElement *element, Measur
         Reh *reh = vrv_cast<Reh *>(element);
         assert(reh);
         this->DrawReh(dc, reh, measure, system);
+    }
+    else if (element->Is(REPEATMARK)) {
+        RepeatMark *repeatMark = vrv_cast<RepeatMark *>(element);
+        assert(repeatMark);
+        this->DrawRepeatMark(dc, repeatMark, measure, system);
     }
     else if (element->Is(TEMPO)) {
         Tempo *tempo = vrv_cast<Tempo *>(element);
@@ -1581,7 +1587,7 @@ void View::DrawCaesura(DeviceContext *dc, Caesura *caesura, Measure *measure, Sy
     dc->EndGraphic(caesura, this);
 }
 
-void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *measure, System *system)
+void View::DrawControlElementText(DeviceContext *dc, ControlElement *element, Measure *measure, System *system)
 {
     assert(dc);
     assert(system);
@@ -1607,12 +1613,7 @@ void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *m
         dirTxt.SetStyle(FONTSTYLE_italic);
     }
 
-    TextDrawingParams params;
-
     const int lineCount = interfaceTextDir->GetNumberOfLines(element);
-
-    // If we have not timestamp
-    params.m_x = start->GetDrawingX() + start->GetDrawingRadius(m_doc);
 
     data_HORIZONTALALIGNMENT alignment = element->GetChildRendAlignment();
     // dir are left aligned by default (with both @tstamp and @startid)
@@ -1625,7 +1626,9 @@ void View::DrawDirOrOrnam(DeviceContext *dc, ControlElement *element, Measure *m
         }
         const int staffSize = staff->m_drawingStaffSize;
 
-        params.m_enclosedRend.clear();
+        TextDrawingParams params;
+        // If we have not timestamp
+        params.m_x = start->GetDrawingX() + start->GetDrawingRadius(m_doc);
         params.m_y = element->GetDrawingY();
         params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
@@ -1685,12 +1688,7 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         dynamTxt.SetStyle(FONTSTYLE_italic);
     }
 
-    TextDrawingParams params;
-
     const int lineCount = dynam->GetNumberOfLines(dynam);
-
-    // If we have not timestamp
-    params.m_x = dynam->GetStart()->GetDrawingX() + dynam->GetStart()->GetDrawingRadius(m_doc);
 
     data_HORIZONTALALIGNMENT alignment = dynam->GetChildRendAlignment();
     // dynam are left aligned by default;
@@ -1706,9 +1704,12 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         }
         const int staffSize = staff->m_drawingStaffSize;
 
-        params.m_enclosedRend.clear();
+        TextDrawingParams params;
+        // If we have not timestamp
+        params.m_x = dynam->GetStart()->GetDrawingX() + dynam->GetStart()->GetDrawingRadius(m_doc);
         params.m_y = dynam->GetDrawingY();
         params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
+
         if (dynam->HasEnclose()) {
             params.m_textEnclose = dynam->GetEnclose();
         }
@@ -1944,8 +1945,6 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
         fingTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
 
-    TextDrawingParams params;
-    params.m_x = fing->GetStart()->GetDrawingX() + fing->GetStart()->GetDrawingRadius(m_doc);
     // center fingering
     data_HORIZONTALALIGNMENT alignment = HORIZONTALALIGNMENT_center;
 
@@ -1956,7 +1955,8 @@ void View::DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *sys
         }
         const int staffSize = staff->m_drawingStaffSize;
 
-        params.m_enclosedRend.clear();
+        TextDrawingParams params;
+        params.m_x = fing->GetStart()->GetDrawingX() + fing->GetStart()->GetDrawingRadius(m_doc);
         params.m_y = fing->GetDrawingY();
         params.m_pointSize = m_doc->GetFingeringFont(staffSize)->GetPointSize();
 
@@ -2136,11 +2136,6 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
         harmTxt.SetFaceName(m_options->m_textFont.GetValue());
     }
 
-    TextDrawingParams params;
-
-    // If we have not timestamp
-    params.m_x = harm->GetStart()->GetDrawingX() + harm->GetStart()->GetDrawingRadius(m_doc);
-
     data_HORIZONTALALIGNMENT alignment = harm->GetChildRendAlignment();
     // harm are centered aligned by default;
     if (alignment == 0) {
@@ -2155,7 +2150,9 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
         }
         const int staffSize = staff->m_drawingStaffSize;
 
-        params.m_enclosedRend.clear();
+        TextDrawingParams params;
+        // If we have not timestamp
+        params.m_x = harm->GetStart()->GetDrawingX() + harm->GetStart()->GetDrawingRadius(m_doc);
         params.m_y = harm->GetDrawingY();
 
         if (harm->GetFirst() && harm->GetFirst()->Is(FB)) {
@@ -2478,6 +2475,66 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
     dc->EndGraphic(reh, this);
 }
 
+void View::DrawRepeatMark(DeviceContext *dc, RepeatMark *repeatMark, Measure *measure, System *system)
+{
+    assert(dc);
+    assert(system);
+    assert(measure);
+    assert(repeatMark);
+
+    // Cannot draw a mark that has no start position
+    if (!repeatMark->GetStart()) return;
+
+    if (repeatMark->GetChildCount() > 0) {
+        this->DrawControlElementText(dc, repeatMark, measure, system);
+        return;
+    }
+
+    dc->StartGraphic(repeatMark, "", repeatMark->GetID());
+
+    SymbolDef *symbolDef = NULL;
+    if (repeatMark->HasAltsym() && repeatMark->HasAltSymbolDef()) {
+        symbolDef = repeatMark->GetAltSymbolDef();
+    }
+
+    const int x = repeatMark->GetStart()->GetDrawingX() + repeatMark->GetStart()->GetDrawingRadius(m_doc);
+
+    // set norm as default
+    const int code = repeatMark->GetMarkGlyph();
+
+    data_HORIZONTALALIGNMENT alignment = HORIZONTALALIGNMENT_center;
+    // center the mark only with @startid
+    if (repeatMark->GetStart()->Is(TIMESTAMP_ATTR)) {
+        alignment = HORIZONTALALIGNMENT_left;
+    }
+
+    std::u32string str;
+    str.push_back(code);
+
+    std::vector<Staff *> staffList = repeatMark->GetTstampStaves(measure, repeatMark);
+    for (Staff *staff : staffList) {
+        if (!system->SetCurrentFloatingPositioner(staff->GetN(), repeatMark, repeatMark->GetStart(), staff)) {
+            continue;
+        }
+        const int staffSize = staff->m_drawingStaffSize;
+
+        const int y = repeatMark->GetDrawingY();
+
+        dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, false));
+
+        if (symbolDef) {
+            this->DrawSymbolDef(dc, repeatMark, symbolDef, x, y, staffSize, false, alignment);
+        }
+        else {
+            this->DrawSmuflString(dc, x, y, str, alignment, staffSize);
+        }
+
+        dc->ResetFont();
+    }
+
+    dc->EndGraphic(repeatMark, this);
+}
+
 void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *system)
 {
     assert(dc);
@@ -2498,7 +2555,6 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
 
     int lineCount = tempo->GetNumberOfLines(tempo);
 
-    TextDrawingParams params;
     data_HORIZONTALALIGNMENT alignment = tempo->GetChildRendAlignment();
     // Tempo are left aligned by default;
     if (alignment == 0) alignment = HORIZONTALALIGNMENT_left;
@@ -2510,8 +2566,8 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
         }
         const int staffSize = staff->m_drawingStaffSize;
 
+        TextDrawingParams params;
         params.m_x = tempo->GetDrawingXRelativeToStaff(staff->GetN());
-        params.m_enclosedRend.clear();
         params.m_y = tempo->GetDrawingY();
         params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
@@ -2885,11 +2941,12 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
         dc->GetTextExtent("M", &extend, false);
 
         const int unit = m_doc->GetDrawingUnit(staffSize);
-        if (ending->HasN()) {
+        if (ending->HasN() || ending->HasLabel()) {
+            const std::string endingText = (ending->HasN()) ? ending->GetN() : ending->GetLabel();
             std::stringstream strStream;
             // Maybe we want to add ( ) after system breaks? Or . as a styling options?
             if ((spanningType == SPANNING_END) || (spanningType == SPANNING_MIDDLE)) strStream << "(";
-            strStream << ending->GetN(); // << ".";
+            strStream << endingText; // << ".";
             if ((spanningType == SPANNING_END) || (spanningType == SPANNING_MIDDLE)) strStream << ")";
 
             Text text;
@@ -2931,21 +2988,29 @@ void View::DrawEnding(DeviceContext *dc, Ending *ending, System *system)
             endX -= std::max(lineWidth + unit / 2 - rightBarLineWidth, 0);
         }
 
-        dc->SetPen(m_currentColor, lineWidth, AxSOLID, 0, 0, AxCAP_SQUARE, AxJOIN_MITER);
-        Point p[4];
-        p[0] = { ToDeviceContextX(startX), ToDeviceContextY(y1) };
-        p[1] = { ToDeviceContextX(startX), ToDeviceContextY(y2) };
-        p[2] = { ToDeviceContextX(endX), ToDeviceContextY(y2) };
-        p[3] = { ToDeviceContextX(endX), ToDeviceContextY(y1) };
-        if ((spanningType == SPANNING_END) || (spanningType == SPANNING_MIDDLE)
-            || (ending->GetLstartsym() == LINESTARTENDSYMBOL_none)) {
-            p[0] = p[1];
+        int penStyle = AxSOLID;
+        int capStyle = AxCAP_SQUARE;
+        switch (ending->GetLform()) {
+            case (LINEFORM_dashed): penStyle = AxLONG_DASH; break;
+            case (LINEFORM_dotted):
+                penStyle = AxDOT;
+                capStyle = AxCAP_ROUND;
+                break;
+            default: penStyle = AxSOLID;
         }
-        if ((spanningType == SPANNING_START) || (spanningType == SPANNING_MIDDLE)
-            || (ending->GetLendsym() == LINESTARTENDSYMBOL_none)) {
-            p[3] = p[2];
+
+        dc->SetPen(m_currentColor, lineWidth, penStyle, 0, 0, capStyle);
+        dc->DrawLine(ToDeviceContextX(startX), ToDeviceContextY(y2), ToDeviceContextX(endX), ToDeviceContextY(y2));
+        if ((spanningType != SPANNING_END) && (spanningType != SPANNING_MIDDLE)
+            && (ending->GetLstartsym() != LINESTARTENDSYMBOL_none)) {
+            dc->DrawLine(
+                ToDeviceContextX(startX), ToDeviceContextY(y2), ToDeviceContextX(startX), ToDeviceContextY(y1));
         }
-        dc->DrawPolyline(4, p);
+        if ((spanningType != SPANNING_START) && (spanningType != SPANNING_MIDDLE)
+            && (ending->GetLendsym() != LINESTARTENDSYMBOL_none)) {
+            dc->DrawLine(ToDeviceContextX(endX), ToDeviceContextY(y2), ToDeviceContextX(endX), ToDeviceContextY(y1));
+        }
+
         dc->ResetPen();
 
         dc->EndCustomGraphic();
@@ -2983,13 +3048,15 @@ void View::DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params,
             this->DrawDiamond(dc, x1 - width / 2, yCenter, height * sqrt(2), width * 2, false, lineThickness);
         }
         else if (params.m_enclose == TEXTRENDITION_circle) {
-            if (width > height) {
-                y1 -= (width - height) / 2;
-                y2 += (width - height) / 2;
+            if (height > width) {
+                // in this case draw a perfect circle
+                const int cx = x1 + (x2 - x1) / 2;
+                x1 = cx - height / 2;
+                x2 = cx + height / 2;
             }
-            else if (height > width) {
-                x1 -= (height - width) / 2;
-                x2 += (height - width) / 2;
+            else if (height < width) {
+                x1 -= width / 8;
+                x2 += width / 8;
             }
             this->DrawNotFilledEllipse(dc, x1, y1, x2, y2, lineThickness);
         }

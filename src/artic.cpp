@@ -48,7 +48,8 @@ Artic::Artic()
     , AttArticulationGes()
     , AttColor()
     , AttEnclosingChars()
-    , AttExtSym()
+    , AttExtSymAuth()
+    , AttExtSymNames()
     , AttPlacementRelEvent()
 {
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
@@ -56,7 +57,8 @@ Artic::Artic()
     this->RegisterAttClass(ATT_ARTICULATIONGES);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
-    this->RegisterAttClass(ATT_EXTSYM);
+    this->RegisterAttClass(ATT_EXTSYMAUTH);
+    this->RegisterAttClass(ATT_EXTSYMNAMES);
     this->RegisterAttClass(ATT_PLACEMENTRELEVENT);
 
     this->Reset();
@@ -72,7 +74,8 @@ void Artic::Reset()
     this->ResetArticulationGes();
     this->ResetColor();
     this->ResetEnclosingChars();
-    this->ResetExtSym();
+    this->ResetExtSymAuth();
+    this->ResetExtSymNames();
     this->ResetPlacementRelEvent();
 
     m_drawingPlace = STAFFREL_NONE;

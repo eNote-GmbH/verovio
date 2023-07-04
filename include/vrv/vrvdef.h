@@ -39,7 +39,7 @@ namespace vrv {
 //----------------------------------------------------------------------------
 
 #define VERSION_MAJOR 3
-#define VERSION_MINOR 16
+#define VERSION_MINOR 17
 #define VERSION_REVISION 0
 // Adds "-dev" in the version number - should be set to false for releases
 #define VERSION_DEV true
@@ -152,13 +152,15 @@ enum ClassId : uint16_t {
     SUPPLIED,
     UNCLEAR,
     EDITORIAL_ELEMENT_max,
+    // Ids for TextLayoutElement child classes
+    TEXT_LAYOUT_ELEMENT,
+    DIV,
     // Ids for RunningElement child classes
     RUNNING_ELEMENT,
     PGFOOT,
-    PGFOOT2,
     PGHEAD,
-    PGHEAD2,
     RUNNING_ELEMENT_max,
+    TEXT_LAYOUT_ELEMENT_max,
     // Ids for PageElement child classes
     PAGE_ELEMENT,
     PAGE_MILESTONE_END,
@@ -198,6 +200,7 @@ enum ClassId : uint16_t {
     PHRASE,
     PITCHINFLECTION,
     REH,
+    REPEATMARK,
     SLUR,
     TEMPO,
     TIE,
@@ -224,6 +227,7 @@ enum ClassId : uint16_t {
     KEYSIG,
     KEYACCID,
     LIGATURE,
+    LIQUESCENT,
     MENSUR,
     METERSIG,
     METERSIGGRP,
@@ -349,7 +353,7 @@ typedef std::multimap<std::string, LinkingInterface *> MapOfLinkingInterfaceIDPa
 
 typedef std::map<std::string, Note *> MapOfNoteIDPairs;
 
-typedef std::vector<std::tuple<PlistInterface *, std::string, Object *>> ArrayOfPlistInterfaceIDTuples;
+typedef std::vector<std::pair<PlistInterface *, std::string>> ArrayOfPlistInterfaceIDPairs;
 
 typedef std::vector<CurveSpannedElement *> ArrayOfCurveSpannedElements;
 

@@ -46,6 +46,7 @@ public:
     FunctorCode VisitChord(Chord *chord) override;
     FunctorCode VisitControlElement(ControlElement *controlElement) override;
     FunctorCode VisitCustos(Custos *custos) override;
+    FunctorCode VisitDiv(Div *div) override;
     FunctorCode VisitDot(Dot *dot) override;
     FunctorCode VisitDots(Dots *dots) override;
     FunctorCode VisitEditorialElement(EditorialElement *editorialElement) override;
@@ -61,6 +62,7 @@ public:
     FunctorCode VisitMeasure(Measure *measure) override;
     FunctorCode VisitMRest(MRest *mRest) override;
     FunctorCode VisitNote(Note *note) override;
+    FunctorCode VisitRepeatMark(RepeatMark *repeatMark) override;
     FunctorCode VisitRest(Rest *rest) override;
     FunctorCode VisitSection(Section *section) override;
     FunctorCode VisitSlur(Slur *slur) override;
@@ -115,6 +117,7 @@ public:
     FunctorCode VisitBeam(Beam *beam) override;
     FunctorCode VisitBeamSpan(BeamSpan *beamSpan) override;
     FunctorCode VisitCustos(Custos *custos) override;
+    FunctorCode VisitDiv(Div *div) override;
     FunctorCode VisitDot(Dot *dot) override;
     FunctorCode VisitDots(Dots *dots) override;
     FunctorCode VisitFloatingObject(FloatingObject *floatingObject) override;

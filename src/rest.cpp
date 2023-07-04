@@ -158,7 +158,8 @@ Rest::Rest()
     , VisualOffsetInterface()
     , AttColor()
     , AttCue()
-    , AttExtSym()
+    , AttExtSymAuth()
+    , AttExtSymNames()
     , AttRestVisMensural()
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
@@ -166,7 +167,8 @@ Rest::Rest()
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
-    this->RegisterAttClass(ATT_EXTSYM);
+    this->RegisterAttClass(ATT_EXTSYMAUTH);
+    this->RegisterAttClass(ATT_EXTSYMNAMES);
     this->RegisterAttClass(ATT_RESTVISMENSURAL);
     this->Reset();
 }
@@ -181,7 +183,8 @@ void Rest::Reset()
     VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCue();
-    this->ResetExtSym();
+    this->ResetExtSymAuth();
+    this->ResetExtSymNames();
     this->ResetRestVisMensural();
 }
 

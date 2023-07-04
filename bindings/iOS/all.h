@@ -74,6 +74,7 @@
 #import <VerovioFramework/devicecontext.h>
 #import <VerovioFramework/devicecontextbase.h>
 #import <VerovioFramework/dir.h>
+#import <VerovioFramework/div.h>
 #import <VerovioFramework/doc.h>
 #import <VerovioFramework/docselection.h>
 #import <VerovioFramework/dot.h>
@@ -171,7 +172,6 @@
 #import <VerovioFramework/pb.h>
 #import <VerovioFramework/pedal.h>
 #import <VerovioFramework/pgfoot.h>
-#import <VerovioFramework/pgfoot2.h>
 #import <VerovioFramework/pghead.h>
 #import <VerovioFramework/pghead2.h>
 #import <VerovioFramework/phrase.h>
@@ -187,6 +187,7 @@
 #import <VerovioFramework/reg.h>
 #import <VerovioFramework/reh.h>
 #import <VerovioFramework/rend.h>
+#import <VerovioFramework/repeatmark.h>
 #import <VerovioFramework/resetfunctor.h>
 #import <VerovioFramework/resources.h>
 #import <VerovioFramework/rest.h>
@@ -227,6 +228,7 @@
 #import <VerovioFramework/text.h>
 #import <VerovioFramework/textdirinterface.h>
 #import <VerovioFramework/textelement.h>
+#import <VerovioFramework/textlayoutelement.h>
 #import <VerovioFramework/tie.h>
 #import <VerovioFramework/timeinterface.h>
 #import <VerovioFramework/timemap.h>
