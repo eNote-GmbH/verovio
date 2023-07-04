@@ -140,6 +140,7 @@
 #import <VerovioFramework/libmei.h>
 #import <VerovioFramework/ligature.h>
 #import <VerovioFramework/linkinginterface.h>
+#import <VerovioFramework/liquescent.h>
 #import <VerovioFramework/lv.h>
 #import <VerovioFramework/mdiv.h>
 #import <VerovioFramework/measure.h>
@@ -173,7 +174,6 @@
 #import <VerovioFramework/pedal.h>
 #import <VerovioFramework/pgfoot.h>
 #import <VerovioFramework/pghead.h>
-#import <VerovioFramework/pghead2.h>
 #import <VerovioFramework/phrase.h>
 #import <VerovioFramework/pitchinflection.h>
 #import <VerovioFramework/pitchinterface.h>
