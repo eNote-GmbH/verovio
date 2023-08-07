@@ -775,7 +775,7 @@ void Page::AdjustSylSpacingByVerse(const IntTree &verseTree, Doc *doc)
                 filters = { &matchStaff, &matchLayer, &matchVerse };
 
                 AdjustSylSpacingFunctor adjustSylSpacing(doc);
-                adjustSylSpacing.PushFilters(&filters);
+                adjustSylSpacing.SetFilters(&filters);
                 this->Process(adjustSylSpacing);
             }
         }

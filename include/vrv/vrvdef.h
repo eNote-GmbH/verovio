@@ -218,6 +218,7 @@ enum ClassId : uint16_t {
     CHORD,
     CLEF,
     CUSTOS,
+    DIVLINE,
     DOT,
     DOTS,
     FLAG,
@@ -312,6 +313,7 @@ class BeamElementCoord;
 class BoundingBox;
 class Comparison;
 class CurveSpannedElement;
+class DivLine;
 class FloatingPositioner;
 class FloatingCurvePositioner;
 class GraceAligner;
@@ -319,6 +321,7 @@ class InterfaceComparison;
 class LayerElement;
 class LedgerLine;
 class LinkingInterface;
+class Liquescent;
 class Nc;
 class Note;
 class Neume;
@@ -681,6 +684,13 @@ enum GraphicID { PRIMARY = 0, SPANNING, SYMBOLREF };
 #define SUPER_SCRIPT_FACTOR 0.58
 #define SUPER_SCRIPT_POSITION -0.20 // lowered down from the midline
 #define SUB_SCRIPT_POSITION -0.17 // lowered down from the baseline
+
+//----------------------------------------------------------------------------
+// Neume notation note size to staff size ratio defines
+//----------------------------------------------------------------------------
+
+#define NOTE_HEIGHT_TO_STAFF_SIZE_RATIO 2
+#define NOTE_WIDTH_TO_STAFF_SIZE_RATIO 1.4
 
 } // namespace vrv
 

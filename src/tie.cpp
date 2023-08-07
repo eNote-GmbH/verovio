@@ -40,13 +40,13 @@ Tie::Tie()
     , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
-    , AttCurveRend()
+    , AttLineRendBase()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
-    this->RegisterAttClass(ATT_CURVEREND);
+    this->RegisterAttClass(ATT_LINERENDBASE);
 
     this->Reset();
 }
@@ -57,13 +57,13 @@ Tie::Tie(ClassId classId)
     , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
-    , AttCurveRend()
+    , AttLineRendBase()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
-    this->RegisterAttClass(ATT_CURVEREND);
+    this->RegisterAttClass(ATT_LINERENDBASE);
 
     this->Reset();
 }
@@ -74,13 +74,13 @@ Tie::Tie(ClassId classId, const std::string &classIdStr)
     , VisualOffsetInterface()
     , AttColor()
     , AttCurvature()
-    , AttCurveRend()
+    , AttLineRendBase()
 {
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
     this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
-    this->RegisterAttClass(ATT_CURVEREND);
+    this->RegisterAttClass(ATT_LINERENDBASE);
 
     this->Reset();
 }
@@ -94,7 +94,7 @@ void Tie::Reset()
     VisualOffsetInterface::Reset();
     this->ResetColor();
     this->ResetCurvature();
-    this->ResetCurveRend();
+    this->ResetLineRendBase();
 }
 
 bool Tie::AdjustEnharmonicTies(const Doc *doc, const FloatingCurvePositioner *curve, Point bezier[4],

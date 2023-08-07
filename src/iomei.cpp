@@ -41,6 +41,7 @@
 #include "del.h"
 #include "dir.h"
 #include "div.h"
+#include "divline.h"
 #include "dot.h"
 #include "dynam.h"
 #include "editorial.h"
@@ -616,6 +617,10 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
         else if (object->Is(CUSTOS)) {
             m_currentNode = m_currentNode.append_child("custos");
             this->WriteCustos(m_currentNode, vrv_cast<Custos *>(object));
+        }
+        else if (object->Is(DIVLINE)) {
+            m_currentNode = m_currentNode.append_child("divLine");
+            this->WriteDivLine(m_currentNode, vrv_cast<DivLine *>(object));
         }
         else if (object->Is(DOT)) {
             m_currentNode = m_currentNode.append_child("dot");
@@ -1410,7 +1415,7 @@ bool MEIOutput::AdjustLabel(Label *label)
     if (abbr && (label->GetChildCount(TEXT) == 1)) {
         Text *text = vrv_cast<Text *>(label->GetChild(0, TEXT));
         if (text) {
-            text->SetText(abbr->GetText(abbr));
+            text->SetText(abbr->GetText());
             return true;
         }
     }
@@ -2084,7 +2089,7 @@ void MEIOutput::WriteLv(pugi::xml_node currentNode, Lv *lv)
     this->WriteTimeSpanningInterface(currentNode, lv);
     lv->WriteColor(currentNode);
     lv->WriteCurvature(currentNode);
-    lv->WriteCurveRend(currentNode);
+    lv->WriteLineRendBase(currentNode);
 }
 
 void MEIOutput::WriteMNum(pugi::xml_node currentNode, MNum *mNum)
@@ -2205,8 +2210,8 @@ void MEIOutput::WriteSlur(pugi::xml_node currentNode, Slur *slur)
     this->WriteVisualOffsetInterface(currentNode, slur);
     slur->WriteColor(currentNode);
     slur->WriteCurvature(currentNode);
-    slur->WriteCurveRend(currentNode);
     slur->WriteLayerIdent(currentNode);
+    slur->WriteLineRendBase(currentNode);
 }
 
 void MEIOutput::WriteStaff(pugi::xml_node currentNode, Staff *staff)
@@ -2248,7 +2253,7 @@ void MEIOutput::WriteTie(pugi::xml_node currentNode, Tie *tie)
     this->WriteVisualOffsetInterface(currentNode, tie);
     tie->WriteColor(currentNode);
     tie->WriteCurvature(currentNode);
-    tie->WriteCurveRend(currentNode);
+    tie->WriteLineRendBase(currentNode);
 }
 
 void MEIOutput::WriteTrill(pugi::xml_node currentNode, Trill *trill)
@@ -2318,9 +2323,10 @@ void MEIOutput::WriteAccid(pugi::xml_node currentNode, Accid *accid)
         return;
     }
 
-    this->WriteLayerElement(currentNode, accid);
-    this->WritePositionInterface(currentNode, accid);
-    this->WriteVisualOffsetInterface(currentNode, accid);
+    WriteLayerElement(currentNode, accid);
+    WriteFacsimileInterface(currentNode, accid);
+    WritePositionInterface(currentNode, accid);
+    WriteVisualOffsetInterface(currentNode, accid);
     accid->WriteAccidental(currentNode);
     accid->WriteAccidentalGes(currentNode);
     accid->WriteAccidLog(currentNode);
@@ -2391,9 +2397,9 @@ void MEIOutput::WriteBTrem(pugi::xml_node currentNode, BTrem *bTrem)
     assert(bTrem);
 
     this->WriteLayerElement(currentNode, bTrem);
-    bTrem->WriteBTremLog(currentNode);
     bTrem->WriteNumbered(currentNode);
     bTrem->WriteNumberPlacement(currentNode);
+    bTrem->WriteTremForm(currentNode);
     bTrem->WriteTremMeasured(currentNode);
 }
 
@@ -2460,6 +2466,19 @@ void MEIOutput::WriteCustos(pugi::xml_node currentNode, Custos *custos)
     custos->WriteColor(currentNode);
     custos->WriteExtSymAuth(currentNode);
     custos->WriteExtSymNames(currentNode);
+}
+
+void MEIOutput::WriteDivLine(pugi::xml_node currentNode, DivLine *divLine)
+{
+    assert(divLine);
+
+    this->WriteLayerElement(currentNode, divLine);
+    this->WriteFacsimileInterface(currentNode, divLine);
+    divLine->WriteDivLineLog(currentNode);
+    divLine->WriteColor(currentNode);
+    divLine->WriteVisibility(currentNode);
+    divLine->WriteExtSymAuth(currentNode);
+    divLine->WriteExtSymNames(currentNode);
 }
 
 void MEIOutput::WriteDot(pugi::xml_node currentNode, Dot *dot)
@@ -2539,11 +2558,11 @@ void MEIOutput::WriteKeySig(pugi::xml_node currentNode, KeySig *keySig)
 
     this->WriteLayerElement(currentNode, keySig);
     keySig->WriteAccidental(currentNode);
-    keySig->WritePitch(currentNode);
-    keySig->WriteKeySigAnl(currentNode);
     keySig->WriteColor(currentNode);
+    keySig->WriteKeyMode(currentNode);
     keySig->WriteKeySigLog(currentNode);
     keySig->WriteKeySigVis(currentNode);
+    keySig->WritePitch(currentNode);
     keySig->WriteVisibility(currentNode);
 }
 
@@ -3047,6 +3066,7 @@ void MEIOutput::WritePitchInterface(pugi::xml_node element, PitchInterface *inte
     interface->WriteNoteGes(element);
     interface->WriteOctave(element);
     interface->WritePitch(element);
+    interface->WritePitchGes(element);
 }
 
 void MEIOutput::WritePlistInterface(pugi::xml_node element, PlistInterface *interface)
@@ -3726,7 +3746,16 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
     }
     // filter for syllable
     else if (filterParent->Is(SYLLABLE)) {
-        if (element == "neume") {
+        if (element == "accid") {
+            return true;
+        }
+        else if (element == "clef") {
+            return true;
+        }
+        else if (element == "divLine") {
+            return true;
+        }
+        else if (element == "neume") {
             return true;
         }
         else if (element == "syl") {
@@ -5742,7 +5771,7 @@ bool MEIInput::ReadLv(Object *parent, pugi::xml_node lv)
     this->ReadTimeSpanningInterface(lv, vrvLv);
     vrvLv->ReadColor(lv);
     vrvLv->ReadCurvature(lv);
-    vrvLv->ReadCurveRend(lv);
+    vrvLv->ReadLineRendBase(lv);
 
     parent->AddChild(vrvLv);
     this->ReadUnsupportedAttr(lv, vrvLv);
@@ -5849,8 +5878,8 @@ bool MEIInput::ReadPhrase(Object *parent, pugi::xml_node phrase)
     this->ReadTimeSpanningInterface(phrase, vrvPhrase);
     vrvPhrase->ReadColor(phrase);
     vrvPhrase->ReadCurvature(phrase);
-    vrvPhrase->ReadCurveRend(phrase);
     vrvPhrase->ReadLayerIdent(phrase);
+    vrvPhrase->ReadLineRendBase(phrase);
 
     parent->AddChild(vrvPhrase);
     this->ReadUnsupportedAttr(phrase, vrvPhrase);
@@ -5911,8 +5940,8 @@ bool MEIInput::ReadSlur(Object *parent, pugi::xml_node slur)
     this->ReadVisualOffsetInterface(slur, vrvSlur);
     vrvSlur->ReadColor(slur);
     vrvSlur->ReadCurvature(slur);
-    vrvSlur->ReadCurveRend(slur);
     vrvSlur->ReadLayerIdent(slur);
+    vrvSlur->ReadLineRendBase(slur);
 
     parent->AddChild(vrvSlur);
     this->ReadUnsupportedAttr(slur, vrvSlur);
@@ -5945,7 +5974,7 @@ bool MEIInput::ReadTie(Object *parent, pugi::xml_node tie)
     this->ReadVisualOffsetInterface(tie, vrvTie);
     vrvTie->ReadColor(tie);
     vrvTie->ReadCurvature(tie);
-    vrvTie->ReadCurveRend(tie);
+    vrvTie->ReadLineRendBase(tie);
 
     parent->AddChild(vrvTie);
     this->ReadUnsupportedAttr(tie, vrvTie);
@@ -6160,6 +6189,9 @@ bool MEIInput::ReadLayerChildren(Object *parent, pugi::xml_node parentNode, Obje
         else if (elementName == "custos") {
             success = this->ReadCustos(parent, xmlElement);
         }
+        else if (elementName == "divLine") {
+            success = this->ReadDivLine(parent, xmlElement);
+        }
         else if (elementName == "dot") {
             success = this->ReadDot(parent, xmlElement);
         }
@@ -6295,8 +6327,9 @@ bool MEIInput::ReadAccid(Object *parent, pugi::xml_node accid)
     Accid *vrvAccid = new Accid();
     this->ReadLayerElement(accid, vrvAccid);
 
-    this->ReadPositionInterface(accid, vrvAccid);
-    this->ReadVisualOffsetInterface(accid, vrvAccid);
+    ReadPositionInterface(accid, vrvAccid);
+    ReadFacsimileInterface(accid, vrvAccid);
+    ReadVisualOffsetInterface(accid, vrvAccid);
     vrvAccid->ReadAccidental(accid);
     vrvAccid->ReadAccidentalGes(accid);
     vrvAccid->ReadAccidLog(accid);
@@ -6388,7 +6421,7 @@ bool MEIInput::ReadBTrem(Object *parent, pugi::xml_node bTrem)
     BTrem *vrvBTrem = new BTrem();
     this->ReadLayerElement(bTrem, vrvBTrem);
 
-    vrvBTrem->ReadBTremLog(bTrem);
+    vrvBTrem->ReadTremForm(bTrem);
     vrvBTrem->ReadNumbered(bTrem);
     vrvBTrem->ReadNumberPlacement(bTrem);
     vrvBTrem->ReadTremMeasured(bTrem);
@@ -6497,6 +6530,23 @@ bool MEIInput::ReadCustos(Object *parent, pugi::xml_node custos)
     return this->ReadLayerChildren(vrvCustos, custos, vrvCustos);
 }
 
+bool MEIInput::ReadDivLine(Object *parent, pugi::xml_node divLine)
+{
+    DivLine *vrvDivLine = new DivLine();
+    this->ReadLayerElement(divLine, vrvDivLine);
+
+    this->ReadFacsimileInterface(divLine, vrvDivLine);
+    vrvDivLine->ReadDivLineLog(divLine);
+    vrvDivLine->ReadColor(divLine);
+    vrvDivLine->ReadVisibility(divLine);
+    vrvDivLine->ReadExtSymAuth(divLine);
+    vrvDivLine->ReadExtSymNames(divLine);
+
+    parent->AddChild(vrvDivLine);
+    this->ReadUnsupportedAttr(divLine, vrvDivLine);
+    return true;
+}
+
 bool MEIInput::ReadDot(Object *parent, pugi::xml_node dot)
 {
     Dot *vrvDot = new Dot();
@@ -6582,11 +6632,11 @@ bool MEIInput::ReadKeySig(Object *parent, pugi::xml_node keySig)
     }
 
     vrvKeySig->ReadAccidental(keySig);
-    vrvKeySig->ReadPitch(keySig);
-    vrvKeySig->ReadKeySigAnl(keySig);
     vrvKeySig->ReadColor(keySig);
+    vrvKeySig->ReadKeyMode(keySig);
     vrvKeySig->ReadKeySigLog(keySig);
     vrvKeySig->ReadKeySigVis(keySig);
+    vrvKeySig->ReadPitch(keySig);
     vrvKeySig->ReadVisibility(keySig);
 
     parent->AddChild(vrvKeySig);
@@ -6924,6 +6974,10 @@ bool MEIInput::ReadStem(Object *parent, pugi::xml_node stem)
 
 bool MEIInput::ReadSyl(Object *parent, pugi::xml_node syl)
 {
+    // Add empty text node for empty syl element for invisible bbox in neume notation
+    if (!syl.first_child() && (m_doc->GetType() == Facs) && (m_doc->m_notationType == NOTATIONTYPE_neume)) {
+        syl.text().set("");
+    }
     Syl *vrvSyl = new Syl();
     this->ReadLayerElement(syl, vrvSyl);
 
@@ -7313,6 +7367,7 @@ bool MEIInput::ReadPitchInterface(pugi::xml_node element, PitchInterface *interf
     interface->ReadNoteGes(element);
     interface->ReadOctave(element);
     interface->ReadPitch(element);
+    interface->ReadPitchGes(element);
     return true;
 }
 
