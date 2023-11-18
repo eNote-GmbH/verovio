@@ -259,8 +259,8 @@ public:
      * For example, the method can be used for grouping shapes in <g></g> in SVG
      */
     ///@{
-    virtual void StartGraphic(
-        Object *object, std::string gClass, std::string gId, GraphicID graphicID = PRIMARY, bool preprend = false)
+    virtual void StartGraphic(Object *object, const std::string &gClass, const std::string &gId,
+        GraphicID graphicID = PRIMARY, bool preprend = false)
         = 0;
     virtual void EndGraphic(Object *object, View *view) = 0;
     ///@}
@@ -270,9 +270,14 @@ public:
      * For example, the method can be used for grouping shapes in <g></g> in SVG
      */
     ///@{
-    virtual void StartCustomGraphic(std::string name, std::string gClass = "", std::string gId = ""){};
+    virtual void StartCustomGraphic(const std::string &name, std::string gClass = "", std::string gId = ""){};
     virtual void EndCustomGraphic(){};
     ///@}
+
+    /**
+     * Method for changing the color of a custom graphic
+     */
+    virtual void SetCustomGraphicColor(const std::string &color){};
 
     /**
      * @name Methods for re-starting and ending a graphic for objects drawn in separate steps
@@ -288,7 +293,7 @@ public:
      * For example, in SVG, a text graphic is a <tspan> (and not a <g>)
      */
     ///@{
-    virtual void StartTextGraphic(Object *object, std::string gClass, std::string gId)
+    virtual void StartTextGraphic(Object *object, const std::string &gClass, const std::string &gId)
     {
         StartGraphic(object, gClass, gId);
     }
