@@ -2124,8 +2124,10 @@ int Doc::GetAdjustedDrawingPageHeight() const
 {
     assert(m_drawingPage);
 
+    // Take into account the PPU when getting the page height in facsimile
     if (this->IsTranscription() || this->IsFacs()) {
-        return m_drawingPage->m_pageHeight / DEFINITION_FACTOR;
+        const int factor = DEFINITION_FACTOR / m_drawingPage->GetPPUFactor();
+        return m_drawingPage->m_pageHeight / factor;
     }
 
     int contentHeight = m_drawingPage->GetContentHeight();
@@ -2136,8 +2138,10 @@ int Doc::GetAdjustedDrawingPageWidth() const
 {
     assert(m_drawingPage);
 
+    // Take into account the PPU when getting the page width in facsimile
     if (this->IsTranscription() || this->IsFacs()) {
-        return m_drawingPage->m_pageWidth / DEFINITION_FACTOR;
+        const int factor = DEFINITION_FACTOR / m_drawingPage->GetPPUFactor();
+        return m_drawingPage->m_pageWidth / factor;
     }
 
     int contentWidth = m_drawingPage->GetContentWidth();
