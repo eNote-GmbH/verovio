@@ -118,7 +118,7 @@ Object::Object(const Object &object) : BoundingBox(object)
     // New id
     this->GenerateID();
     // For now do not copy them
-    // m_unsupported = object.m_unsupported;
+    m_unsupported = object.m_unsupported;
 
     if (!object.CopyChildren()) {
         return;
@@ -164,7 +164,7 @@ Object &Object::operator=(const Object &object)
         // New id
         this->GenerateID();
         // For now do now copy them
-        // m_unsupported = object.m_unsupported;
+        m_unsupported = object.m_unsupported;
         LinkingInterface *link = this->GetLinkingInterface();
         if (link) link->AddBackLink(&object);
 
@@ -1272,7 +1272,12 @@ bool Object::sortByUlx(Object *a, Object *b)
     if (a->Is(NC) && b->Is(NC)) {
         Nc *nca = dynamic_cast<Nc *>(a);
         Nc *ncb = dynamic_cast<Nc *>(b);
-        if (nca->HasLigated() && ncb->HasLigated() && (a->GetParent() == b->GetParent())) {
+        Zone *zonea = dynamic_cast<Zone *>(nca->GetFacsimileInterface()->GetZone());
+        assert(zonea);
+        Zone *zoneb = dynamic_cast<Zone *>(ncb->GetFacsimileInterface()->GetZone());
+        assert(zoneb);
+        if (nca->HasLigated() && ncb->HasLigated() && (a->GetParent() == b->GetParent())
+            && (zonea->GetUlx() == zoneb->GetUlx())) {
             Object *parent = a->GetParent();
             assert(parent);
             if (abs(parent->GetChildIndex(a) - parent->GetChildIndex(b)) == 1) {

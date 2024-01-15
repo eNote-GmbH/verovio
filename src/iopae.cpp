@@ -2303,7 +2303,7 @@ const std::map<int, std::string> PAEInput::s_errCodes{
     { ERR_026_GRACE_NESTED, "The appoggiatura must be closed with 'r' before starting a new one." },
     { ERR_027_GRACE_CLOSING, "An extra 'r' is present to close an appoggiatura" },
     { ERR_028_GRACE_OPEN, "The appoggiatura must be closed with 'r' before the end of the measure." },
-    { ERR_029_GRACE_UNRESOLVED, "An appoggiatura cannot be started using 'q' before completing the previous one." },
+    { ERR_029_GRACE_UNRESOLVED, "A grace note cannot be started with 'g' or 'q' before completing the previous one." },
     { ERR_030_GRACE_DURATION, "No rhythmic value can be entered when using an acciaccatura with 'g'." },
     { ERR_031_GRACE_NO_NOTE, "A grace note using 'g' or 'q' must be followed by a note." },
     { ERR_032_TUPLET_NESTED, "A special rhythm group cannot be started with '(' before closing the previous one." },
@@ -3438,6 +3438,13 @@ bool PAEInput::ConvertRepeatedFigure()
                 figure.push_back(*token);
             }
         }
+        // We are starting a new figure to be repeated
+        else if (token->m_char == '!') {
+            token->m_char = 0;
+            figureToken = &(*token);
+            figure.clear();
+            status = pae::FIGURE_START;
+        }
         // We have completed a figure and will be repeating it
         else if (status == pae::FIGURE_END || status == pae::FIGURE_REPEAT) {
             // Repeat the figure. That is simply add it to the map
@@ -3452,8 +3459,8 @@ bool PAEInput::ConvertRepeatedFigure()
                 --token;
                 status = pae::FIGURE_REPEAT;
             }
-            // End of repetitions - this includes the end of a measure
-            else {
+            // End of repetitions - this does not include the end of a measure
+            else if (!this->Was(*token, pae::MEASURE)) {
                 // Make sure we repeated the figure at least once (is this too pedantic?)
                 if (status == pae::FIGURE_END) {
                     LogPAE(ERR_010_REP_UNUSED, *figureToken);
@@ -3463,13 +3470,6 @@ bool PAEInput::ConvertRepeatedFigure()
                 figureToken = NULL;
                 figure.clear();
             }
-        }
-        // We are starting a new figure to be repeated
-        else if (token->m_char == '!') {
-            token->m_char = 0;
-            figureToken = &(*token);
-            figure.clear();
-            status = pae::FIGURE_START;
         }
         // We should not have a repeat sign not after a figure end
         else if (token->m_char == 'f') {

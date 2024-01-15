@@ -303,12 +303,12 @@ void View::DrawAccid(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
 
     if (notationType == NOTATIONTYPE_neume) {
         int rotateOffset = 0;
-        if ((m_doc->GetType() == Facs) && (staff->GetDrawingRotate() != 0)) {
+        if (m_doc->IsFacs() && (staff->GetDrawingRotate() != 0)) {
             double deg = staff->GetDrawingRotate();
             int xDiff = x - staff->GetDrawingX();
             rotateOffset = int(xDiff * tan(deg * M_PI / 180.0));
         }
-        if (accid->HasFacs() && (m_doc->GetType() == Facs)) {
+        if (accid->HasFacs() && m_doc->IsFacs()) {
             y = ToLogicalY(y);
         }
         y -= rotateOffset;
@@ -655,7 +655,7 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     }
 
     int x, y;
-    if (m_doc->GetType() == Facs && clef->HasFacs()) {
+    if (m_doc->IsFacs() && clef->HasFacs()) {
         y = ToLogicalY(staff->GetDrawingY());
         x = clef->GetDrawingX();
     }
@@ -673,7 +673,7 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
 
     if (clef->HasLine()) {
         y -= m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - clef->GetLine());
-        if ((m_doc->GetType() == Facs) && (staff->GetDrawingRotate() != 0)) {
+        if (m_doc->IsFacs() && (staff->GetDrawingRotate() != 0)) {
             double deg = staff->GetDrawingRotate();
             int xDiff = x - staff->GetDrawingX();
             y -= int(xDiff * tan(deg * M_PI / 180.0));
@@ -691,7 +691,7 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
 
     this->DrawSmuflCode(dc, x, y, sym, staff->m_drawingStaffSize, false);
 
-    if ((m_doc->GetType() == Facs) && element->HasFacs()) {
+    if (m_doc->IsFacs() && element->HasFacs()) {
         const int noteHeight
             = (int)(m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) / NOTE_HEIGHT_TO_STAFF_SIZE_RATIO);
         const int noteWidth
@@ -750,7 +750,7 @@ void View::DrawCustos(DeviceContext *dc, LayerElement *element, Layer *layer, St
     const int sym = custos->GetCustosGlyph(staff->m_drawingNotationType);
 
     int x, y;
-    if (custos->HasFacs() && m_doc->GetType() == Facs) {
+    if (custos->HasFacs() && m_doc->IsFacs()) {
         x = custos->GetDrawingX();
         // Recalculate y from pitch to prevent visual/meaning mismatch
         Clef *clef = layer->GetClef(element);
@@ -779,7 +779,7 @@ void View::DrawCustos(DeviceContext *dc, LayerElement *element, Layer *layer, St
         y -= m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
     }
 
-    if ((m_doc->GetType() == Facs) && (staff->GetDrawingRotate() != 0)) {
+    if (m_doc->IsFacs() && (staff->GetDrawingRotate() != 0)) {
         double deg = staff->GetDrawingRotate();
         int xDiff = x - staff->GetDrawingX();
         y -= int(xDiff * tan(deg * M_PI / 180.0));
@@ -787,7 +787,7 @@ void View::DrawCustos(DeviceContext *dc, LayerElement *element, Layer *layer, St
 
     this->DrawSmuflCode(dc, x, y, sym, staff->m_drawingStaffSize, false, true);
 
-    if ((m_doc->GetType() == Facs) && element->HasFacs()) {
+    if (m_doc->IsFacs() && element->HasFacs()) {
         const int noteHeight = (int)(m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) / 2);
         const int noteWidth = (int)(m_doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) / 1.4);
 
@@ -1764,12 +1764,15 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     if (syl->GetStart() && syl->GetStart()->GetDrawingCueSize()) {
         currentFont.SetPointSize(m_doc->GetCueSize(currentFont.GetPointSize()));
     }
+    if (syl->HasLetterspacing()) {
+        currentFont.SetLetterSpacing(syl->GetLetterspacing() * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
+    }
     dc->SetFont(&currentFont);
 
     TextDrawingParams params;
     params.m_x = syl->GetDrawingX();
     params.m_y = syl->GetDrawingY();
-    if (m_doc->GetType() == Facs) {
+    if (m_doc->IsFacs()) {
         params.m_width = syl->GetDrawingWidth();
         params.m_height = syl->GetDrawingHeight();
     }

@@ -954,7 +954,7 @@ Options::Options()
     m_baseOptions.AddOption(&m_scale);
 
     m_outputTo.SetInfo("Output to",
-        "Select output format to: \"mei\", \"mei-pb\", \"mei-basic\", \"svg\", \"midi\", \"timemap\", "
+        "Select output format to: \"mei\", \"mei-pb\", \"mei-facs\", \"mei-basic\", \"svg\", \"midi\", \"timemap\", "
         "\"expansionmap\", \"humdrum\" or "
         "\"pae\"");
     m_outputTo.Init("svg");
@@ -1372,7 +1372,7 @@ Options::Options()
     this->Register(&m_lyricTopMinMargin, "lyricTopMinMargin", &m_generalLayout);
 
     m_lyricWordSpace.SetInfo("Lyric word space", "The lyric word space length");
-    m_lyricWordSpace.Init(1.20, 0.50, 10.00);
+    m_lyricWordSpace.Init(1.20, 0.00, 10.00);
     this->Register(&m_lyricWordSpace, "lyricWordSpace", &m_generalLayout);
 
     m_lyricVerseCollapse.SetInfo("Lyric verse collapse", "Collapse empty verse lines in lyrics");
