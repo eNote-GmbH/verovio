@@ -91,6 +91,11 @@ public:
      */
     bool WriteObjectEnd(Object *object) override;
 
+    /**
+     * Helper method to return a string representation of the PAE duration.
+     */
+    static std::string GetPaeDur(data_DURATION dur, int ndots);
+
 private:
     /**
      * @name Methods for writing containers (measures, staff, etc) scoreDef and related.
@@ -166,6 +171,7 @@ private:
     ///@{
     void WriteDur(DurationInterface *interface);
     void WriteGrace(AttGraced *attGraced);
+    bool HasFermata(Object *object);
     ///@}
 
 public:

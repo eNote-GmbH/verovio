@@ -37,6 +37,7 @@ class Clef : public LayerElement,
              public AttOctave,
              public AttOctaveDisplacement,
              public AttStaffIdent,
+             public AttTypography,
              public AttVisibility {
 public:
     /**

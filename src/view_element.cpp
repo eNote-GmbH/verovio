@@ -689,6 +689,13 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
 
     dc->StartGraphic(element, "", element->GetID());
 
+    std::string previousFont = "";
+    if (clef->HasFontname()) {
+        Resources &resources = m_doc->GetResourcesForModification();
+        previousFont = resources.GetCurrentFont();
+        resources.SetCurrentFont(clef->GetFontname());
+    }
+
     this->DrawSmuflCode(dc, x, y, sym, staff->m_drawingStaffSize, false);
 
     if (m_doc->IsFacs() && element->HasFacs()) {
@@ -706,6 +713,11 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
 
     // Possibly draw enclosing brackets
     this->DrawClefEnclosing(dc, clef, staff, sym, x, y);
+
+    if (!previousFont.empty()) {
+        Resources &resources = m_doc->GetResourcesForModification();
+        resources.SetCurrentFont(previousFont);
+    }
 
     dc->EndGraphic(element, this);
 }
@@ -1125,6 +1137,13 @@ void View::DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int
 
     dc->StartGraphic(meterSig, "", meterSig->GetID());
 
+    std::string previousFont;
+    if (meterSig->HasFontname()) {
+        Resources &resources = m_doc->GetResourcesForModification();
+        previousFont = resources.GetCurrentFont();
+        resources.SetCurrentFont(meterSig->GetFontname());
+    }
+
     int y = staff->GetDrawingY() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - 1);
     int x = meterSig->GetDrawingX() + horizOffset;
 
@@ -1135,7 +1154,7 @@ void View::DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int
         x += m_doc->GetGlyphWidth(enclosingFront, glyphSize, false);
     }
 
-    if (meterSig->HasSym()) {
+    if (meterSig->HasSym() || meterSig->HasGlyphNum() || meterSig->HasGlyphName()) {
         const char32_t code = meterSig->GetSymbolGlyph();
         this->DrawSmuflCode(dc, x, y, code, glyphSize, false);
         x += m_doc->GetGlyphWidth(code, glyphSize, false);
@@ -1149,6 +1168,11 @@ void View::DrawMeterSig(DeviceContext *dc, MeterSig *meterSig, Staff *staff, int
 
     if (enclosingBack) {
         this->DrawSmuflCode(dc, x, y, enclosingBack, glyphSize, false);
+    }
+
+    if (!previousFont.empty()) {
+        Resources &resources = m_doc->GetResourcesForModification();
+        resources.SetCurrentFont(previousFont);
     }
 
     dc->EndGraphic(meterSig, this);
@@ -1466,8 +1490,6 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
             }
             drawingDur = DUR_4;
         }
-        drawingDur = ((note->GetColored() == BOOLEAN_true) && drawingDur > DUR_1) ? (drawingDur + 1) : drawingDur;
-
         if (drawingDur < DUR_BR) {
             this->DrawMaximaToBrevis(dc, noteY, element, layer, staff);
         }
@@ -1475,7 +1497,15 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
             // Whole notes
             char32_t fontNo;
             if (note->GetColored() == BOOLEAN_true) {
-                fontNo = (drawingDur == DUR_1) ? SMUFL_E0FA_noteheadWholeFilled : SMUFL_E0A3_noteheadHalf;
+                if (DUR_1 == drawingDur) {
+                    fontNo = SMUFL_E0FA_noteheadWholeFilled;
+                }
+                else if (DUR_2 == drawingDur) {
+                    fontNo = SMUFL_E0FB_noteheadHalfFilled;
+                }
+                else {
+                    fontNo = SMUFL_E0A3_noteheadHalf;
+                }
             }
             else {
                 fontNo = note->GetNoteheadGlyph(drawingDur);
@@ -1794,7 +1824,7 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
             FontInfo vrvTxt;
             assert(dc->HasFont());
             vrvTxt.SetPointSize(dc->GetFont()->GetPointSize() * m_doc->GetMusicToLyricFontSizeRatio());
-            vrvTxt.SetFaceName(m_doc->GetOptions()->m_font.GetValue());
+            vrvTxt.SetFaceName(m_doc->GetResources().GetCurrentFont());
             std::u32string str;
             str.push_back(m_doc->GetOptions()->m_lyricElision.GetValue());
             bool isFallbackNeeded = (m_doc->GetResources()).IsSmuflFallbackNeeded(str);

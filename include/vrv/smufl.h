@@ -106,6 +106,7 @@ enum {
     SMUFL_E0F5_noteheadParenthesisLeft = 0xE0F5,
     SMUFL_E0F6_noteheadParenthesisRight = 0xE0F6,
     SMUFL_E0FA_noteheadWholeFilled = 0xE0FA,
+    SMUFL_E0FB_noteheadHalfFilled = 0xE0FB,
     SMUFL_E101_noteheadSlashHorizontalEnds = 0xE101,
     SMUFL_E102_noteheadSlashWhiteWhole = 0xE102,
     SMUFL_E103_noteheadSlashWhiteHalf = 0xE103,
