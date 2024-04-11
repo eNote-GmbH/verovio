@@ -70,6 +70,10 @@ bool Resources::InitFonts(const std::string &musicFont, const std::string &textF
     m_currentFontName = m_defaultFontName;
     m_fallbackFontName = m_defaultFontName;
 
+    if (!SetCurrentFont(musicFont, true)) {
+        LogError("Font '%s' could not be loaded.", musicFont.c_str());
+        return false;
+    }
     if (!SetTextFont(textFont)) {
         LogError("Font '%s' could not be loaded.", textFont.c_str());
         return false;

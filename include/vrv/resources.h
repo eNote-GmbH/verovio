@@ -57,7 +57,7 @@ public:
      */
     ///@{
     /** Init the SMufL music and text fonts */
-    bool InitFonts();
+    bool InitFonts(const std::string &musicFont, const std::string &textFont);
     /**  Set the font to be used and loads it if necessary */
     bool SetFont(const std::string &fontName);
     /** Add custom (external) fonts */

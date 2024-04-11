@@ -121,7 +121,7 @@ bool Toolkit::SetResourcePath(const std::string &path)
         success = success && resources.AddCustom(m_options->m_fontAddCustom.GetValue());
     }
     if (m_options->m_font.IsSet()) {
-        success = success && this->SetFont(m_options->m_font.GetValue());
+        success = success && this->SetMusicFont(m_options->m_font.GetValue());
     }
     if (m_options->m_fontFallback.IsSet()) {
         success = success && resources.SetFallback(m_options->m_fontFallback.GetStrValue());
@@ -1154,7 +1154,7 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
         resources.AddCustom(m_options->m_fontAddCustom.GetValue());
     }
     if (json.has<jsonxx::String>("font")) {
-        this->SetFont(m_options->m_font.GetValue());
+        this->SetMusicFont(m_options->m_font.GetValue());
     }
     if (json.has<jsonxx::String>("fontFallback")) {
         Resources &resources = m_doc.GetResourcesForModification();
