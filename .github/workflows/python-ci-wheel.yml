@@ -42,6 +42,10 @@ jobs:
         exclude:
           - os: macos-latest
             architecture: x86
+          - os: macos-13
+            architecture: x86
+          - os: macos-14
+            architecture: x86
           - os: ubuntu-latest
             architecture: x86
 
