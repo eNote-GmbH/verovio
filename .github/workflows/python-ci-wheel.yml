@@ -53,11 +53,12 @@ jobs:
           fetch-depth: 0
 
       - uses: nuget/setup-nuget@v1
+        if: always() && runner.os == 'Windows'
         with:
           nuget-version: "latest"
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
@@ -90,7 +91,7 @@ jobs:
           CIBW_BUILD: ${{ env.CIBW_BUILD_IDENTIFIER }}
           CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_ENVIRONMENT_MACOS:
-            MACOSX_DEPLOYMENT_TARGET=11
+            MACOSX_DEPLOYMENT_TARGET=14
           CIBW_TEST_SKIP: cp*-macosx_arm64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_I686_IMAGE: manylinux2014
@@ -154,9 +155,9 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.1.0
         with:
-          python-version: "3.9"
+          python-version: "3.12"
 
       #===============================================#
       # Swig
@@ -231,7 +232,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
           architecture: "x64"
 
       #===============================================#
