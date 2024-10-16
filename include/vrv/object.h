@@ -815,8 +815,8 @@ private:
 class ObjectListInterface {
 public:
     // constructors and destructors
-    ObjectListInterface(){};
-    virtual ~ObjectListInterface(){};
+    ObjectListInterface() {};
+    virtual ~ObjectListInterface() {};
     ObjectListInterface(const ObjectListInterface &listInterface); // copy constructor;
     ObjectListInterface &operator=(const ObjectListInterface &listInterface); // copy assignment;
 
@@ -914,8 +914,8 @@ private:
 class TextListInterface : public ObjectListInterface {
 public:
     // constructors and destructors
-    TextListInterface(){};
-    virtual ~TextListInterface(){};
+    TextListInterface() {};
+    virtual ~TextListInterface() {};
 
     /**
      * Returns a contatenated version of all the text children

@@ -157,9 +157,9 @@ public:
      * @name Method for starting, ending and applying visual offsets
      */
     ///@{
-    void StartVisualOffset(const Object *object, int drawingUnit) override{ /*Do nothing*/ };
-    void EndVisualOffset(const Object *object) override{ /*Do nothing*/ };
-    void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) override{ /*Do nothing*/ };
+    void StartVisualOffset(const Object *object, int drawingUnit) override { /*Do nothing*/ };
+    void EndVisualOffset(const Object *object) override { /*Do nothing*/ };
+    void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points) override { /*Do nothing*/ };
     ///@}
 
 private:

@@ -101,7 +101,7 @@ public:
         m_baseHeight = 0;
         m_pushBack = false;
     }
-    virtual ~DeviceContext(){};
+    virtual ~DeviceContext() {};
     ClassId GetClassId() const { return m_classId; }
     bool Is(ClassId classId) const { return (m_classId == classId); }
     ///@}
