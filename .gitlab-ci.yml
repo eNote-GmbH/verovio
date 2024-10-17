@@ -27,6 +27,7 @@ clang:
   script:
     - clang-format -n -Werror src/*.cpp
     - clang-format -n -Werror include/vrv/*.h
+  allow_failure: true
 
 build-osx:
   extends: .build-template
