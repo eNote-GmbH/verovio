@@ -77,6 +77,7 @@ ArrayOfObjects PlistInterface::GetRefs()
 
 void PlistInterface::SetIDStrs()
 {
+    if (!m_ids.empty()) { return; }
     assert(m_ids.empty() && m_references.empty());
 
     xsdAnyURI_List list = this->GetPlist();
