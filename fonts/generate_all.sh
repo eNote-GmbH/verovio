@@ -17,13 +17,9 @@ $PYTHON generate.py check Leipzig
 $PYTHON generate.py extract Leipzig
 $PYTHON generate.py css Leipzig $@
 
-echo "Generating Gootville files ..."
-$PYTHON generate.py extract Gootville
-$PYTHON generate.py css Gootville $@
-
-echo "Generating Petaluma files ..."
-$PYTHON generate.py extract Petaluma
-$PYTHON generate.py css Petaluma $@
+echo "Generating Cantata files ..."
+$PYTHON generate.py extract Cantata
+$PYTHON generate.py css Cantata $@
 
 echo "Generating Leland files ..."
 $PYTHON generate.py extract Leland
