@@ -75,7 +75,7 @@ if (font.fontlog):
     fontlog.close()
 
 # Cantata's engraving defaults:
-engravingDefaults = {
+metadata["engravingDefaults"] = {
     'arrowShaftThickness': 0.16,
     'barlineSeparation': 0.4,
     'beamSpacing': 0.25,
@@ -105,8 +105,6 @@ engravingDefaults = {
     'tupletBracketThickness': 0.16,
     'hBarThickness': 1.0
 }
-
-metadata["engravingDefaults"] = engravingDefaults
 
 with open('glyphnames.json') as smuflGlyphnamesFile:
     smuflGlyphnames = json.load(smuflGlyphnamesFile)
