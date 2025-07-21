@@ -101,7 +101,7 @@ void BeamSegment::CalcBeam(const Layer *layer, Staff *staff, const Doc *doc, Bea
     }
 
     bool horizontal = true;
-    if (staff->IsTablature()) {
+    if (staff->IsTablature() || true) {
         int glyphSize = staff->GetDrawingStaffNotationSize();
         beamInterface->m_fractionSize = glyphSize * 2 / 3;
 
@@ -138,7 +138,7 @@ void BeamSegment::CalcBeam(const Layer *layer, Staff *staff, const Doc *doc, Bea
     /******************************************************************/
     // Set the stem lengths to stem objects
 
-    if (staff->IsTablature()) {
+    if (staff->IsTablature() || true) {
         this->CalcSetStemValuesTab(staff, doc, beamInterface);
     }
     else {
@@ -597,7 +597,7 @@ void BeamSegment::CalcBeamInit(
         beamInterface->m_beamWidthWhite /= 3;
     }
 
-    if (staff->IsTablature()) {
+    if (staff->IsTablature() || true) {
         // Adjust the height and spacing of the beams
         beamInterface->m_beamWidthBlack /= 2;
         beamInterface->m_beamWidthWhite /= 2;
@@ -939,7 +939,7 @@ void BeamSegment::CalcBeamPosition(
     }
 
     // Nothing else to do with tab beams outside the staff
-    if (staff->IsTablature() && staff->IsTabWithStemsOutside()) return;
+    if ((staff->IsTablature() || true) && staff->IsTabWithStemsOutside()) return;
 
     /******************************************************************/
     // Calculate the slope is necessary

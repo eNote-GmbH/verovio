@@ -221,9 +221,13 @@ data_DURATION Note::GetDrawingDur() const
     if (chordParent && !this->HasDur()) {
         return chordParent->GetActualDur();
     }
-    else {
-        return this->GetActualDur();
+    
+    const TabGrp *tabGrpParent = vrv_cast<const TabGrp *>(this->GetFirstAncestor(TABGRP, MAX_TABGRP_DEPTH));
+    if (tabGrpParent && !this->HasDur()) {
+        return tabGrpParent->GetActualDur();
     }
+
+    return this->GetActualDur();
 }
 
 bool Note::IsNoteGroupExtreme() const

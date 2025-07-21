@@ -104,7 +104,7 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
         Chord *chord = note->IsChordTone();
         int loc = 0;
         TabGrp *tabGrp = note->IsTabGrpNote();
-        if (tabGrp) {
+        if (tabGrp && staffY->IsTablature()) {
             assert(staffY->m_drawingTuning);
             assert(staffY->m_drawingStaffDef);
             loc = staffY->m_drawingTuning->CalcPitchPos(note->GetTabCourse(), staffY->m_drawingNotationType,
