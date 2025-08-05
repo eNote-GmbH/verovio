@@ -57,11 +57,11 @@ public:
     bool Ok() const { return (m_loadedFonts.size() > 1); }
 
     /**
-     * Return the name of the text font (Times or Liberation)
+     * Return the name of the text font (NotoSerif or Liberation)
      */
     void UseLiberationTextFont(bool useLiberation) { m_useLiberation = useLiberation; }
     bool UseLiberationTextFont() const { return m_useLiberation; }
-    std::string GetTextFont() const { return ((m_useLiberation) ? "Liberation" : "Times"); }
+    std::string GetTextFont() const { return ((m_useLiberation) ? "Liberation" : "NotoSerif"); }
 
     /**
      * Font initialization
