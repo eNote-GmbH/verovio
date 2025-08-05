@@ -79,9 +79,9 @@ bool Resources::InitFonts()
     };
 
     static const TextFontInfo_type textFontInfos[]
-        = { { k_defaultStyle, "Times", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "Times-bold", false },
-              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "Times-bold-italic", false },
-              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "Times-italic", false } };
+        = { { k_defaultStyle, "NotoSerif-regular", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "NotoSerif-bold", false },
+              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "NotoSerif-bolditalic", false },
+              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "NotoSerif-italic", false } };
 
     for (const auto &textFontInfo : textFontInfos) {
         if (!InitTextFont(textFontInfo.m_fileName, textFontInfo.m_style) && textFontInfo.m_isMandatory) {
@@ -425,8 +425,6 @@ bool Resources::InitTextFont(const std::string &fontName, const StyleAttributes 
 {
     // For the text font, we load the bounding boxes only
     pugi::xml_document doc;
-    // For now, we have only Times bounding boxes for ASCII chars
-    // For any other char, we currently use 'o' bounding box
     std::string filename = GetPath() + "/text/" + fontName + ".xml";
     pugi::xml_parse_result result = doc.load_file(filename.c_str());
     if (!result) {
