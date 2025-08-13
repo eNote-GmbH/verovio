@@ -78,10 +78,10 @@ bool Resources::InitFonts()
         bool m_isMandatory;
     };
 
-    static const TextFontInfo_type textFontInfos[]
-        = { { k_defaultStyle, "NotoSerif-regular", true }, { { FONTWEIGHT_bold, FONTSTYLE_normal }, "NotoSerif-bold", false },
-              { { FONTWEIGHT_bold, FONTSTYLE_italic }, "NotoSerif-bolditalic", false },
-              { { FONTWEIGHT_normal, FONTSTYLE_italic }, "NotoSerif-italic", false } };
+    static const TextFontInfo_type textFontInfos[] = { { k_defaultStyle, "NotoSerif-regular", true },
+        { { FONTWEIGHT_bold, FONTSTYLE_normal }, "NotoSerif-bold", false },
+        { { FONTWEIGHT_bold, FONTSTYLE_italic }, "NotoSerif-bolditalic", false },
+        { { FONTWEIGHT_normal, FONTSTYLE_italic }, "NotoSerif-italic", false } };
 
     for (const auto &textFontInfo : textFontInfos) {
         if (!InitTextFont(textFontInfo.m_fileName, textFontInfo.m_style) && textFontInfo.m_isMandatory) {
