@@ -1678,6 +1678,7 @@ bool MusicXmlInput::ReadMusicXmlMeasure(
             Layer *layer = SelectLayer(1, measure);
             this->AddLayerElement(layer, multiRest);
             m_multiRests[index] = index + multiRestLength - 1;
+            this->ReadMusicXmlAttributes(child, section, measure, measureNum);
             break;
         }
         else if (isMRestInOtherSystem) {
@@ -1722,7 +1723,7 @@ bool MusicXmlInput::ReadMusicXmlMeasure(
     // set metcon to false for pickup measures
     int endDuration = m_ppq;
     for (const int &num : m_meterCount) endDuration *= num;
-    if (m_durTotal != endDuration) {
+    if (m_durTotal && m_durTotal != endDuration) {
         measure->SetMetcon(BOOLEAN_false);
     }
 
