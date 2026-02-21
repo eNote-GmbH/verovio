@@ -227,7 +227,7 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
 
     // adjust vertical position for tabDurSym@tab.line, tabDurSym@vo and tablature type
     // tabDurSym@tab.line takes priority over tabDurSym@vo
-    if (!tabGrp->IsInBeam() && !staff->IsTabGuitar()) {
+    if (!staff->IsTabGuitar()) {
         if (tabDurSym->HasTabLine()) {
             const int yAdjust = (tabDurSym->GetTabLine() - staff->m_drawingLines) * 2;
             tabDurSym->SetDrawingYRel(yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
@@ -241,6 +241,20 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
             }
             else if (staff->IsTabLuteItalian() && staff->m_drawingLines >= 6) {
                 yAdjust = 3; //  allow for >= 7 course Italian tablature
+            }
+            else if (staff->IsTabStaffLike()) {
+                yAdjust = 4; // clear A5 on treble clef
+
+                // raise rhythm sign above ledger lines for B5 and above on treble clef
+                if (!tabGrp->HasEmptyList()) {
+                    const Note *topNote = tabGrp->GetTopNote();
+                    assert(topNote);
+                    int linesAbove = 0;
+                    int linesBelow = 0;
+                    if (topNote->HasLedgerLines(linesAbove, linesBelow, staff) && linesAbove > 0) {
+                        yAdjust += topNote->GetDrawingYRel() / m_doc->GetDrawingUnit(staff->m_drawingStaffSize) - 2;
+                    }
+                }
             }
 
             // adjust for tabDurSym@vo

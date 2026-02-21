@@ -1590,7 +1590,7 @@ void View::DrawRest(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     const int staffSize = staff->GetDrawingStaffNotationSize();
     data_DURATION drawingDur = rest->GetActualDur();
     // in tablature the @dur is in the parent TabGrp - try to get if from there
-    if ((drawingDur == DURATION_NONE)) {
+    if ((drawingDur == DURATION_NONE) && (staff->IsTablature() || staff->IsTabStaffLike())) {
         TabGrp *tabGrp = vrv_cast<TabGrp *>(rest->GetFirstAncestor(TABGRP));
         if (tabGrp != NULL) drawingDur = tabGrp->GetActualDur();
     }
