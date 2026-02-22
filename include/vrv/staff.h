@@ -224,7 +224,7 @@ public:
     bool IsMensural() const;
     bool IsNeume() const;
     bool IsTablature() const;
-    bool IsTabStaffLike() const { return m_drawingNotationType == NOTATIONTYPE_tab_staff_like; };
+    bool IsTabStaffLike() const { return m_drawingNotationType == NOTATIONTYPE_tab_staff_like; }
     bool IsTabGuitar() const { return m_drawingNotationType == NOTATIONTYPE_tab_guitar; }
     bool IsTabLuteFrench() const { return m_drawingNotationType == NOTATIONTYPE_tab_lute_french; }
     bool IsTabLuteGerman() const { return m_drawingNotationType == NOTATIONTYPE_tab_lute_german; }
