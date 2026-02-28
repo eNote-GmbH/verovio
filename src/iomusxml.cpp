@@ -2384,8 +2384,10 @@ void MusicXmlInput::ReadMusicXmlDirection(
             }
 
             this->TextRendition(words, dir);
-            defaultY = (defaultY < 0) ? std::abs(defaultY) : defaultY + 2000;
-            dir->SetVgrp(defaultY);
+            if (defaultY) {
+                defaultY = (defaultY < 0) ? std::abs(defaultY) : defaultY + 2000;
+                dir->SetVgrp(defaultY);
+            }
             m_controlElements.push_back({ measureNum, dir });
             m_dirStack.push_back(dir);
 
