@@ -280,6 +280,7 @@ void Toolkit::SetMidiDoc()
         MEIInput midiInput(m_midiDoc);
         midiInput.Import(this->GetMEI());
         m_midiDoc->PrepareData();
+        CustomTuning::CopyCustomTunings(&m_doc, m_midiDoc);
     }
 }
 
