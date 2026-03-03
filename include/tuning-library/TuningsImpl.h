@@ -1004,7 +1004,7 @@ inline int Tuning::midiNoteForNoteName(std::string noteName, int octave) const
         std::string s = "Invalid note name '" + noteName + "'";
         throw TuningError(s);
     }
-    int scalePosition = positive_mod(it - notationMapping.names.begin() + 1, notationMapping.count);
+    int scalePosition = positive_mod(static_cast<int>(it - notationMapping.names.begin() + 1), notationMapping.count);
     return std::min(
         std::max(0, scalePosition + keyboardMapping.middleNote +
                         keyboardMapping.octaveDegrees * (octave - keyboardMapping.tuningOctave)),
@@ -1140,7 +1140,7 @@ inline AbletonScale readASCLStream(std::istream &inf)
             std::rotate(as.notationMapping.names.begin(), as.notationMapping.names.begin() + 1,
                         as.notationMapping.names.end());
 
-            as.notationMapping.count = as.notationMapping.names.size();
+            as.notationMapping.count = static_cast<int>(as.notationMapping.names.size());
             if (as.notationMapping.count != as.scale.count)
             {
                 std::string s = "Invalid NOTE_NAMES entry '" + rawText + "': Expecting " +
@@ -1243,7 +1243,7 @@ inline double AbletonScale::frequencyForScalePosition(int scalePosition)
 
 inline double AbletonScale::centsForScalePosition(int scalePosition)
 {
-    auto n = scale.tones.size();
+    int n = static_cast<int>(scale.tones.size());
     auto t = scale.tones[positive_mod(scalePosition, n)];
     return t.cents + floor(1.0 * scalePosition / n) * scale.tones.back().cents;
 }
