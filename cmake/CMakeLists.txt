@@ -42,11 +42,11 @@ include_directories(
     ../include/hum
     ../include/json
     ../include/pugi
+    ../include/tuning-library
     ../include/zip
     ../include/vrv
     ../libmei/dist
     ../libmei/addons
-    ../tuning-library/include
 )
 
 if(WIN32)
