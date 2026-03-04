@@ -2225,6 +2225,8 @@ enum meiVersion_MEIVERSION : int8_t {
     meiVersion_MEIVERSION_5_1plusCMN,
     meiVersion_MEIVERSION_5_1plusMensural,
     meiVersion_MEIVERSION_5_1plusNeumes,
+    meiVersion_MEIVERSION_6_0_dev,
+    meiVersion_MEIVERSION_6_0_devplusbasic,
     meiVersion_MEIVERSION_MAX
 };
 
