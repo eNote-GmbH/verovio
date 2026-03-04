@@ -2702,9 +2702,8 @@ void MEIOutput::WriteKeySig(pugi::xml_node currentNode, KeySig *keySig)
     }
 
     this->WriteLayerElement(currentNode, keySig);
-    keySig->WriteAccidental(currentNode);
     keySig->WriteColor(currentNode);
-    keySig->WriteKeyMode(currentNode);
+    keySig->WriteKeySigAnl(currentNode);
     keySig->WriteKeySigLog(currentNode);
     keySig->WriteKeySigVis(currentNode);
     keySig->WritePitch(currentNode);
@@ -7035,9 +7034,8 @@ bool MEIInput::ReadKeySig(Object *parent, pugi::xml_node keySig)
         UpgradeKeySigTo_5_0(keySig);
     }
 
-    vrvKeySig->ReadAccidental(keySig);
     vrvKeySig->ReadColor(keySig);
-    vrvKeySig->ReadKeyMode(keySig);
+    vrvKeySig->ReadKeySigAnl(keySig);
     vrvKeySig->ReadKeySigLog(keySig);
     vrvKeySig->ReadKeySigVis(keySig);
     vrvKeySig->ReadPitch(keySig);

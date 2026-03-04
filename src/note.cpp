@@ -874,10 +874,10 @@ void Note::UpdateFromTransPitch(const TransPitch &tp, bool hasKeySig)
     }
 
     if (transposeGesturalAccid) {
-        accid->SetAccidGes(tp.GetAccidG());
+        accid->SetAccidGes(tp.GetAccidGes());
     }
     if (transposeWrittenAccid) {
-        accid->SetAccid(tp.GetAccidW());
+        accid->SetAccid(tp.GetAccidWritten());
     }
 
     if (this->GetOct() != tp.m_oct) {

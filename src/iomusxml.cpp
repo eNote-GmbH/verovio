@@ -4393,7 +4393,7 @@ KeySig *MusicXmlInput::ConvertKey(const pugi::xml_node &key)
         if (key.child("mode")) {
             const std::string xmlMode = key.child("mode").text().as_string();
             if (std::strncmp(xmlMode.c_str(), "none", 4)) {
-                keySig->SetMode(keySig->AttKeyMode::StrToMode(xmlMode));
+                keySig->SetMode(keySig->AttKeySigAnl::StrToMode(xmlMode));
             }
         }
     }
