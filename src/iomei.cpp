@@ -162,11 +162,11 @@
 #include "zone.h"
 
 #define VEROVIO_SERIALIZATION "verovio.serialization"
-#define MEI_ALL_SCHEMA "https://music-encoding.org/schema/5.1/mei-all.rng"
-#define MEI_BASIC_SCHEMA "https://music-encoding.org/schema/5.1/mei-basic.rng"
-#define MEI_PAGE_BASED_SCHEMA "https://www.verovio.org/schema/5.1/mei-verovio.rng"
-#define MEI_CURRENT_VERSION meiVersion_MEIVERSION_5_1
-#define MEI_CURRENT_BASIC_VERSION meiVersion_MEIVERSION_5_1plusbasic
+#define MEI_ALL_SCHEMA "https://music-encoding.org/schema/dev/mei-all.rng"
+#define MEI_BASIC_SCHEMA "https://music-encoding.org/schema/dev/mei-basic.rng"
+#define MEI_PAGE_BASED_SCHEMA "https://www.verovio.org/schema/dev/mei-verovio.rng"
+#define MEI_CURRENT_VERSION meiVersion_MEIVERSION_6_0_dev
+#define MEI_CURRENT_BASIC_VERSION meiVersion_MEIVERSION_6_0_devplusbasic
 
 namespace vrv {
 
@@ -4089,10 +4089,10 @@ bool MEIInput::ReadDoc(pugi::xml_node root)
         AttConverter converter;
         m_meiversion = converter.StrToMeiVersionMeiversion(version);
     }
-    // Default to MEI 5.1
+    // Default to MEI 6.0-dev
     if (m_meiversion == meiVersion_MEIVERSION_NONE) {
-        LogWarning("MEI version found or not known, falling back to MEI 5.1");
-        m_meiversion = meiVersion_MEIVERSION_5_1;
+        LogWarning("MEI version found or not known, falling back to MEI 6.0-dev");
+        m_meiversion = meiVersion_MEIVERSION_6_0_dev;
     }
 
     // only try to handle meiHead if we have a full MEI document
