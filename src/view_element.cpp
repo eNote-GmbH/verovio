@@ -1482,9 +1482,16 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         }
         return;
     }
-    if (note->IsTabGrpNote() && staff->IsTablature()) {
+
+    if (staff->IsTablature()) {
         this->DrawTabNote(dc, element, layer, staff, measure);
         return;
+    }
+
+    if (staff->IsTabStaffLike()) {
+        // move note left half a note width to be central under the tablature rhythm sign or beam stem etc
+        note->SetDrawingXRel(
+            -m_doc->GetGlyphWidth(SMUFL_E0A4_noteheadBlack, staff->GetDrawingStaffNotationSize(), false) / 2);
     }
 
     if (note->m_crossStaff) staff = note->m_crossStaff;
