@@ -1685,7 +1685,6 @@ void Doc::ExpandExpansions()
     else {
         startExpansion = dynamic_cast<Expansion *>(this->FindDescendantByType(EXPANSION));
         if (startExpansion == NULL) {
-            LogWarning("No expansion found. Nothing expanded.");
             return;
         }
     }
