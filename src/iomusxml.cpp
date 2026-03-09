@@ -691,12 +691,6 @@ std::string MusicXmlInput::GetWordsOrDynamicsText(const pugi::xml_node node) con
         }
         return dynamStr;
     }
-    if (IsElement(node, "coda")) {
-        return "\xF0\x9D\x84\x8C";
-    }
-    if (IsElement(node, "segno")) {
-        return "\xF0\x9D\x84\x8B";
-    }
     return std::string();
 }
 
@@ -708,12 +702,29 @@ void MusicXmlInput::TextRendition(const pugi::xpath_node_set words, ControlEleme
         std::string textStr = GetWordsOrDynamicsText(textNode);
         std::string textColor = textNode.attribute("color").as_string();
         Object *textParent = element;
-        if (textNode.attribute("xml:lang") || textNode.attribute("xml:space") || textNode.attribute("color")
+        if (!std::strncmp(textNode.name(), "symbol", 6)) {
+            Symbol *symbol = new Symbol();
+            symbol->SetGlyphAuth("smufl");
+            symbol->SetColor(textColor);
+            symbol->SetGlyphName(textNode.text().as_string());
+            element->AddChild(symbol);
+            continue;
+        }
+        else if (!std::strncmp(textNode.name(), "coda", 4) || !std::strncmp(textNode.name(), "segno", 5)) {
+            // for cases we have coda/segno and text in one direction
+            Symbol *symbol = new Symbol();
+            symbol->SetGlyphAuth("smufl");
+            symbol->SetColor(textColor);
+            symbol->SetGlyphName(textNode.name());
+            element->AddChild(symbol);
+            continue;
+        }
+        else if (textNode.attribute("xml:lang") || textNode.attribute("xml:space") || textNode.attribute("color")
             || textNode.attribute("halign") || textNode.attribute("font-family") || textNode.attribute("font-style")
             || textNode.attribute("font-weight") || textNode.attribute("enclosure")) {
             Rend *rend = new Rend();
             rend->SetLang(textNode.attribute("xml:lang").as_string());
-            rend->SetColor(textNode.attribute("color").as_string());
+            rend->SetColor(textColor);
             rend->SetHalign(
                 rend->AttHorizontalAlign::StrToHorizontalalignment(textNode.attribute("halign").as_string()));
             rend->SetSpace(textNode.attribute("xml:space").as_string());
@@ -2362,7 +2373,8 @@ void MusicXmlInput::ReadMusicXmlDirection(
     // Directive
     int defaultY = 0; // y position attribute, only for directives and dynamics
     if (containsWords && !containsTempo && !containsDynamics) {
-        pugi::xpath_node_set words = node.select_nodes("direction-type/*[self::words or self::coda or self::segno]");
+        pugi::xpath_node_set words
+            = node.select_nodes("direction-type/*[self::words or self::symbol or self::coda or self::segno]");
         defaultY = words.first().node().attribute("default-y").as_int();
         defaultY = (defaultY * 10) + words.first().node().attribute("relative-y").as_int();
         std::string wordStr = words.first().node().text().as_string();
