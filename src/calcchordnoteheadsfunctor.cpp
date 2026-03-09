@@ -108,7 +108,7 @@ FunctorCode CalcChordNoteHeadsFunctor::VisitNote(Note *note)
 FunctorCode CalcChordNoteHeadsFunctor::VisitTabGrp(TabGrp *tabGrp)
 {
     Staff *staff = tabGrp->GetAncestorStaff(RESOLVE_CROSS_STAFF);
-    const int staffSize = staff->m_drawingStaffSize;
+    const int staffSize = staff->GetDrawingStaffNotationSize();
     const int width = m_doc->GetGlyphWidth(SMUFL_E0A4_noteheadBlack, staffSize, false) / 2;
 
     tabGrp->SetDrawingXRel(width);
