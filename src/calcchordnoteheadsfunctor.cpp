@@ -11,6 +11,7 @@
 
 #include "doc.h"
 #include "staff.h"
+#include "tabgrp.h"
 
 //----------------------------------------------------------------------------
 
@@ -102,6 +103,17 @@ FunctorCode CalcChordNoteHeadsFunctor::VisitNote(Note *note)
     note->SetFlippedNotehead(flippedNotehead);
 
     return FUNCTOR_SIBLINGS;
+}
+
+FunctorCode CalcChordNoteHeadsFunctor::VisitTabGrp(TabGrp *tabGrp)
+{
+    Staff *staff = tabGrp->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+    const int staffSize = staff->m_drawingStaffSize;
+    const int width = m_doc->GetGlyphWidth(SMUFL_E0A4_noteheadBlack, staffSize, false) / 2;
+
+    tabGrp->SetDrawingXRel(width);
+
+    return FUNCTOR_CONTINUE;
 }
 
 } // namespace vrv
