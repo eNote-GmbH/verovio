@@ -1482,9 +1482,16 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
         }
         return;
     }
-    if (note->IsTabGrpNote()) {
+
+    if (staff->IsTablature()) {
         this->DrawTabNote(dc, element, layer, staff, measure);
         return;
+    }
+
+    if (staff->IsTabStaffLike()) {
+        // move note left half a note width to be central under the tablature rhythm sign or beam stem etc
+        note->SetDrawingXRel(
+            -m_doc->GetGlyphWidth(SMUFL_E0A4_noteheadBlack, staff->GetDrawingStaffNotationSize(), false) / 2);
     }
 
     if (note->m_crossStaff) staff = note->m_crossStaff;
@@ -1590,7 +1597,7 @@ void View::DrawRest(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     const int staffSize = staff->GetDrawingStaffNotationSize();
     data_DURATION drawingDur = rest->GetActualDur();
     // in tablature the @dur is in the parent TabGrp - try to get if from there
-    if ((drawingDur == DURATION_NONE) && staff->IsTablature()) {
+    if ((drawingDur == DURATION_NONE) && (staff->IsTablature() || staff->IsTabStaffLike())) {
         TabGrp *tabGrp = vrv_cast<TabGrp *>(rest->GetFirstAncestor(TABGRP));
         if (tabGrp != NULL) drawingDur = tabGrp->GetActualDur();
     }
