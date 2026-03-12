@@ -39,8 +39,8 @@ namespace vrv {
 //----------------------------------------------------------------------------
 
 #define VERSION_MAJOR 6
-#define VERSION_MINOR 0
-#define VERSION_REVISION 1
+#define VERSION_MINOR 1
+#define VERSION_REVISION 0
 // Adds "-dev" in the version number - should be set to false for releases
 #define VERSION_DEV false
 
@@ -282,6 +282,7 @@ enum ClassId : uint16_t {
     SVG_DEVICE_CONTEXT,
     CUSTOM_DEVICE_CONTEXT,
     // Pseudo ids for custom factory functions
+    FACTORY_STAGEDIR,
     FACTORY_OSTAFF,
     //
     UNSPECIFIED
