@@ -392,8 +392,8 @@ bool BeamSegment::NeedToResetPosition(Staff *staff, const Doc *doc, BeamDrawingI
     const int staffTop = staff->GetDrawingY();
     const int staffBottom
         = staffTop - doc->GetDrawingDoubleUnit(staff->m_drawingStaffSize) * (staff->m_drawingLines - 1);
-    const int topBorder = staffTop - topOffset - unit;
-    const int bottomBorder = staffBottom + bottomOffset + unit;
+    const int topBorder = staffTop + topOffset + unit;
+    const int bottomBorder = staffBottom - bottomOffset - unit;
 
     // Check if the beam is admissible
     if (!this->DoesBeamOverlap(beamInterface, topBorder, bottomBorder, minStemLength)) {
