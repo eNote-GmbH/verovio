@@ -11,6 +11,7 @@
 
 #include "doc.h"
 #include "staff.h"
+#include "tabdursym.h"
 #include "tabgrp.h"
 
 //----------------------------------------------------------------------------
@@ -111,6 +112,56 @@ FunctorCode CalcChordNoteHeadsFunctor::VisitNote(Note *note)
     note->SetFlippedNotehead(flippedNotehead);
 
     return FUNCTOR_SIBLINGS;
+}
+
+FunctorCode CalcChordNoteHeadsFunctor::VisitTabDurSym(TabDurSym *tabDurSym)
+{
+    Staff *staff = tabDurSym->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+    TabGrp *tabGrp = vrv_cast<TabGrp *>(tabDurSym->GetFirstAncestor(TABGRP));
+    assert(tabGrp);
+
+    // adjust vertical position for tabDurSym@tab.line, tabDurSym@vo and tablature type
+    // tabDurSym@tab.line takes priority over tabDurSym@vo
+    if (!staff->IsTabGuitar()) {
+        if (tabDurSym->HasTabLine()) {
+            const int yAdjust = (tabDurSym->GetTabLine() - staff->m_drawingLines) * 2;
+            tabDurSym->SetDrawingYRel(yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
+        }
+        else {
+            int yAdjust = 1; // margin between staff line and rhythm sign, in half lines
+
+            // position rhythm sign according to tablature type
+            if (staff->IsTabLuteFrench() || staff->IsTabLuteGerman()) {
+                yAdjust = 2;
+            }
+            else if (staff->IsTabLuteItalian() && staff->m_drawingLines >= 6) {
+                yAdjust = 3; //  allow for >= 7 course Italian tablature
+            }
+            else if (staff->IsTabStaffLike()) {
+                yAdjust = 4; // clear A5 on treble clef
+
+                // raise rhythm sign above ledger lines for B5 and above on treble clef
+                if (!tabGrp->HasEmptyList()) {
+                    const Note *topNote = tabGrp->GetTopNote();
+                    assert(topNote);
+                    int linesAbove = 0;
+                    int linesBelow = 0;
+                    if (topNote->HasLedgerLines(linesAbove, linesBelow, staff) && linesAbove > 0) {
+                        yAdjust += topNote->GetDrawingYRel() / m_doc->GetDrawingUnit(staff->m_drawingStaffSize) - 2;
+                    }
+                }
+            }
+
+            // adjust for tabDurSym@vo
+            if (tabDurSym->HasVo() && tabDurSym->GetVo().GetType() == MEASUREMENTTYPE_vu) {
+                yAdjust += std::round(tabDurSym->GetVo().GetVu());
+            }
+
+            tabDurSym->SetDrawingYRel(yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
+        }
+    }
+
+    return FUNCTOR_CONTINUE;
 }
 
 FunctorCode CalcChordNoteHeadsFunctor::VisitTabGrp(TabGrp *tabGrp)
