@@ -224,7 +224,7 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
     assert(tabGrp);
 
     dc->StartGraphic(tabDurSym, "", tabDurSym->GetID());
-    
+
     int x = element->GetDrawingX();
     int y = element->GetDrawingY();
 
