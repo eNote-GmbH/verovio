@@ -6,6 +6,7 @@
 * Support for ASCL custom tuning (MusicXML import and MIDI output)
 * Improved key signature changes in sections with restart
 * Improved MusicXML importer (`@vgrp`, `fingering`, `symbol`)
+* Improve mixed beams with stems up and down
 * Option `--mensural-responsive-view` multi-valued ("auto|none|selection")
 * Fix bugs in the CMME importer
 * Fix `--remove-ids` option invaliding expansions
