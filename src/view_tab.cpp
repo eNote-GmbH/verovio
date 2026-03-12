@@ -228,46 +228,6 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
     int x = element->GetDrawingX();
     int y = element->GetDrawingY();
 
-    // adjust vertical position for tabDurSym@tab.line, tabDurSym@vo and tablature type
-    // tabDurSym@tab.line takes priority over tabDurSym@vo
-    if (!staff->IsTabGuitar()) {
-        if (tabDurSym->HasTabLine()) {
-            y += (tabDurSym->GetTabLine() - staff->m_drawingLines) * 2;
-        }
-        else {
-            int yAdjust = 1; // margin between staff line and rhythm sign, in half lines
-
-            // position rhythm sign according to tablature type
-            if (staff->IsTabLuteFrench() || staff->IsTabLuteGerman()) {
-                yAdjust = 2;
-            }
-            else if (staff->IsTabLuteItalian() && staff->m_drawingLines >= 6) {
-                yAdjust = 3; //  allow for >= 7 course Italian tablature
-            }
-            else if (staff->IsTabStaffLike()) {
-                yAdjust = 4; // clear A5 on treble clef
-
-                // raise rhythm sign above ledger lines for B5 and above on treble clef
-                if (!tabGrp->HasEmptyList()) {
-                    const Note *topNote = tabGrp->GetTopNote();
-                    assert(topNote);
-                    int linesAbove = 0;
-                    int linesBelow = 0;
-                    if (topNote->HasLedgerLines(linesAbove, linesBelow, staff) && linesAbove > 0) {
-                        yAdjust += topNote->GetDrawingYRel() / m_doc->GetDrawingUnit(staff->m_drawingStaffSize) - 2;
-                    }
-                }
-            }
-
-            // adjust for tabDurSym@vo
-            if (tabDurSym->HasVo() && tabDurSym->GetVo().GetType() == MEASUREMENTTYPE_vu) {
-                yAdjust += std::round(tabDurSym->GetVo().GetVu());
-            }
-
-            y += yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-        }
-    }
-
     const int glyphSize = staff->GetDrawingStaffNotationSize();
 
     const int drawingDur = (tabGrp->GetDurGes() != DURATION_NONE) ? tabGrp->GetActualDurGes() : tabGrp->GetActualDur();
