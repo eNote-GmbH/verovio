@@ -4,6 +4,7 @@
 * Update MEI schema to 6.0-dev (6da4dd5071303ac53d73d7b5ea0399f9cfe7bdba)
 * Support for `stageDir`
 * Support for ASCL custom tuning (MusicXML import and MIDI output)
+* Support (initial) for `notationtype@tab.staff-like`
 * Improved key signature changes in sections with restart
 * Improved MusicXML importer (`@vgrp`, `fingering`, `symbol`)
 * Improve mixed beams with stems up and down
