@@ -8,6 +8,7 @@
 * Improved MusicXML importer (`@vgrp`, `fingering`, `symbol`)
 * Option `--mensural-responsive-view` multi-valued ("auto|none|selection")
 * Fix bugs in the CMME importer
+* Fix `--remove-ids` option invaliding expansions
 
 ## [6.0.1] – 2026-01-29
 * Fix ossia staff size option values
