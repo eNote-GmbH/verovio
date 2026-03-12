@@ -224,13 +224,15 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
     assert(tabGrp);
 
     dc->StartGraphic(tabDurSym, "", tabDurSym->GetID());
+    
+    int x = element->GetDrawingX();
+    int y = element->GetDrawingY();
 
     // adjust vertical position for tabDurSym@tab.line, tabDurSym@vo and tablature type
     // tabDurSym@tab.line takes priority over tabDurSym@vo
     if (!staff->IsTabGuitar()) {
         if (tabDurSym->HasTabLine()) {
-            const int yAdjust = (tabDurSym->GetTabLine() - staff->m_drawingLines) * 2;
-            tabDurSym->SetDrawingYRel(yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
+            y += (tabDurSym->GetTabLine() - staff->m_drawingLines) * 2;
         }
         else {
             int yAdjust = 1; // margin between staff line and rhythm sign, in half lines
@@ -262,12 +264,9 @@ void View::DrawTabDurSym(DeviceContext *dc, LayerElement *element, Layer *layer,
                 yAdjust += std::round(tabDurSym->GetVo().GetVu());
             }
 
-            tabDurSym->SetDrawingYRel(yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize));
+            y += yAdjust * m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
         }
     }
-
-    int x = element->GetDrawingX();
-    int y = element->GetDrawingY();
 
     const int glyphSize = staff->GetDrawingStaffNotationSize();
 
