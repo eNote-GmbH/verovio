@@ -1,0 +1,1 @@
+../vrv/calcspanningbeamspansfunctor.h

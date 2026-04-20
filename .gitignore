@@ -13,8 +13,7 @@ build-tools-*
 # doc generated file
 doc/pae-tests.html
 
-# include file generated at compilation
-include/vrv/git_commit.h
+# include file generated at compilation (tracked on spm/package-swift so swift build works standalone)
 bindings/iOS/all.h
 
 # cmake build
@@ -95,6 +94,11 @@ Release/
 
 # IntelliJ files
 .idea
+
+# Swift Package Manager build artifacts
+.build/
+.swiftpm/
+Package.resolved
 
 # Intermediate font files
 fonts/**/tmp

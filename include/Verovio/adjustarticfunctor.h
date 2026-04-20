@@ -1,0 +1,1 @@
+../vrv/adjustarticfunctor.h

@@ -1,0 +1,1 @@
+../../libmei/dist/attmodule.h

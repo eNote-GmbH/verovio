@@ -1,0 +1,1 @@
+../../libmei/addons/attdef.h
