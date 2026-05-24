@@ -7912,6 +7912,246 @@
                 -0.736
             ]
         },
+        "metAugmentationDot": {
+            "bBoxNE": [
+                0.504,
+                0.244
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.244
+            ]
+        },
+        "metNote1024thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -7.968
+            ]
+        },
+        "metNote1024thUp": {
+            "bBoxNE": [
+                2.268,
+                8.08
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNote128thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -6.148
+            ]
+        },
+        "metNote128thUp": {
+            "bBoxNE": [
+                2.232,
+                5.548
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNote16thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -3.76
+            ]
+        },
+        "metNote16thUp": {
+            "bBoxNE": [
+                2.232,
+                3.064
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNote256thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -6.852
+            ]
+        },
+        "metNote256thUp": {
+            "bBoxNE": [
+                2.264,
+                6.82
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.552
+            ]
+        },
+        "metNote32ndDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -4.512
+            ]
+        },
+        "metNote32ndUp": {
+            "bBoxNE": [
+                2.232,
+                3.644
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNote512thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -7.596
+            ]
+        },
+        "metNote512thUp": {
+            "bBoxNE": [
+                2.272,
+                7.532
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.552
+            ]
+        },
+        "metNote64thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -5.32
+            ]
+        },
+        "metNote64thUp": {
+            "bBoxNE": [
+                2.232,
+                4.968
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNote8thDown": {
+            "bBoxNE": [
+                1.328,
+                0.564
+            ],
+            "bBoxSW": [
+                0.0,
+                -3.536
+            ]
+        },
+        "metNote8thUp": {
+            "bBoxNE": [
+                2.184,
+                2.8
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNoteDoubleWhole": {
+            "bBoxNE": [
+                2.456,
+                0.664
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.664
+            ]
+        },
+        "metNoteDoubleWholeSquare": {
+            "bBoxNE": [
+                2.0,
+                0.996
+            ],
+            "bBoxSW": [
+                0.0,
+                -1.004
+            ]
+        },
+        "metNoteHalfDown": {
+            "bBoxNE": [
+                1.2,
+                0.536
+            ],
+            "bBoxSW": [
+                0.0,
+                -2.8
+            ]
+        },
+        "metNoteHalfUp": {
+            "bBoxNE": [
+                1.2,
+                2.8
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.496
+            ]
+        },
+        "metNoteQuarterDown": {
+            "bBoxNE": [
+                1.2,
+                0.5
+            ],
+            "bBoxSW": [
+                0.0,
+                -2.8
+            ]
+        },
+        "metNoteQuarterUp": {
+            "bBoxNE": [
+                1.2,
+                2.8
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "metNoteWhole": {
+            "bBoxNE": [
+                1.648,
+                0.504
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.504
+            ]
+        },
         "metricModulationArrowLeft": {
             "bBoxNE": [
                 3.308,
