@@ -20,6 +20,7 @@ class AnnotScore;
 class Arpeg;
 class Artic;
 class BarLine;
+class Barre;
 class Beam;
 class BeamSpan;
 class BeatRpt;
@@ -28,6 +29,9 @@ class Breath;
 class BTrem;
 class Caesura;
 class Chord;
+class ChordDef;
+class ChordMember;
+class ChordTable;
 class Clef;
 class ControlElement;
 class Course;
@@ -182,6 +186,14 @@ public:
      * @name Visit container elements
      */
     ///@{
+    virtual FunctorCode VisitBarre(Barre *barre);
+    virtual FunctorCode VisitBarreEnd(Barre *barre);
+    virtual FunctorCode VisitChordDef(ChordDef *chordDef);
+    virtual FunctorCode VisitChordDefEnd(ChordDef *chordDef);
+    virtual FunctorCode VisitChordMember(ChordMember *chordMember);
+    virtual FunctorCode VisitChordMemberEnd(ChordMember *chordMember);
+    virtual FunctorCode VisitChordTable(ChordTable *chordTable);
+    virtual FunctorCode VisitChordTableEnd(ChordTable *chordTable);
     virtual FunctorCode VisitCourse(Course *course);
     virtual FunctorCode VisitCourseEnd(Course *course);
     virtual FunctorCode VisitGrpSym(GrpSym *grpSym);
@@ -561,6 +573,14 @@ public:
      * @name Visit container elements
      */
     ///@{
+    virtual FunctorCode VisitBarre(const Barre *barre);
+    virtual FunctorCode VisitBarreEnd(const Barre *barre);
+    virtual FunctorCode VisitChordDef(const ChordDef *chordDef);
+    virtual FunctorCode VisitChordDefEnd(const ChordDef *chordDef);
+    virtual FunctorCode VisitChordMember(const ChordMember *chordMember);
+    virtual FunctorCode VisitChordMemberEnd(const ChordMember *chordMember);
+    virtual FunctorCode VisitChordTable(const ChordTable *chordTable);
+    virtual FunctorCode VisitChordTableEnd(const ChordTable *chordTable);
     virtual FunctorCode VisitCourse(const Course *course);
     virtual FunctorCode VisitCourseEnd(const Course *course);
     virtual FunctorCode VisitGrpSym(const GrpSym *grpSym);

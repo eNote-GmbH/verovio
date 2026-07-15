@@ -25,6 +25,7 @@
 #include "app.h"
 #include "arpeg.h"
 #include "artic.h"
+#include "barre.h"
 #include "beam.h"
 #include "beamspan.h"
 #include "beatrpt.h"
@@ -34,6 +35,9 @@
 #include "caesura.h"
 #include "choice.h"
 #include "chord.h"
+#include "chorddef.h"
+#include "chordmember.h"
+#include "chordtable.h"
 #include "clef.h"
 #include "comparison.h"
 #include "corr.h"
@@ -489,6 +493,22 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
     else if (object->Is(COURSE)) {
         m_currentNode = m_currentNode.append_child("course");
         this->WriteCourse(m_currentNode, vrv_cast<Course *>(object));
+    }
+    else if (object->Is(CHORDTABLE)) {
+        m_currentNode = m_currentNode.append_child("chordTable");
+        this->WriteChordTable(m_currentNode, vrv_cast<ChordTable *>(object));
+    }
+    else if (object->Is(CHORDDEF)) {
+        m_currentNode = m_currentNode.append_child("chordDef");
+        this->WriteChordDef(m_currentNode, vrv_cast<ChordDef *>(object));
+    }
+    else if (object->Is(CHORDMEMBER)) {
+        m_currentNode = m_currentNode.append_child("chordMember");
+        this->WriteChordMember(m_currentNode, vrv_cast<ChordMember *>(object));
+    }
+    else if (object->Is(BARRE)) {
+        m_currentNode = m_currentNode.append_child("barre");
+        this->WriteBarre(m_currentNode, vrv_cast<Barre *>(object));
     }
     else if (object->Is(SYMBOLTABLE)) {
         m_currentNode = m_currentNode.append_child("symbolTable");
@@ -1978,6 +1998,47 @@ void MEIOutput::WriteCourse(pugi::xml_node currentNode, Course *course)
     course->WritePitch(currentNode);
 }
 
+void MEIOutput::WriteChordTable(pugi::xml_node currentNode, ChordTable *chordTable)
+{
+    assert(chordTable);
+    this->WriteXmlId(currentNode, chordTable);
+    chordTable->WriteLabelled(currentNode);
+    chordTable->WriteTyped(currentNode);
+}
+
+void MEIOutput::WriteChordDef(pugi::xml_node currentNode, ChordDef *chordDef)
+{
+    assert(chordDef);
+    this->WriteXmlId(currentNode, chordDef);
+    chordDef->WriteLabelled(currentNode);
+    chordDef->WriteStringtabPosition(currentNode);
+    chordDef->WriteStringtabTuning(currentNode);
+    chordDef->WriteTyped(currentNode);
+}
+
+void MEIOutput::WriteChordMember(pugi::xml_node currentNode, ChordMember *chordMember)
+{
+    assert(chordMember);
+    this->WriteXmlId(currentNode, chordMember);
+    chordMember->WriteAccidentalGes(currentNode);
+    chordMember->WriteLabelled(currentNode);
+    chordMember->WriteOctave(currentNode);
+    chordMember->WritePitch(currentNode);
+    chordMember->WriteStringtab(currentNode);
+    chordMember->WriteTyped(currentNode);
+}
+
+void MEIOutput::WriteBarre(pugi::xml_node currentNode, Barre *barre)
+{
+    assert(barre);
+    this->WriteXmlId(currentNode, barre);
+    barre->WriteLabelled(currentNode);
+    barre->WriteStartEndId(currentNode);
+    barre->WriteStartId(currentNode);
+    barre->WriteTyped(currentNode);
+    if (barre->HasFret()) currentNode.append_attribute("fret") = barre->GetFret();
+}
+
 void MEIOutput::WriteSymbolTable(pugi::xml_node currentNode, SymbolTable *symbolTable)
 {
     assert(symbolTable);
@@ -2210,6 +2271,8 @@ void MEIOutput::WriteHarm(pugi::xml_node currentNode, Harm *harm)
     this->WriteControlElement(currentNode, harm);
     this->WriteTextDirInterface(currentNode, harm);
     this->WriteTimeSpanningInterface(currentNode, harm);
+    harm->WriteHarmLog(currentNode);
+    harm->WriteHarmVis(currentNode);
     harm->WriteLang(currentNode);
     harm->WriteNNumberLike(currentNode);
 }
@@ -5296,7 +5359,10 @@ bool MEIInput::ReadScoreDefChildren(Object *parent, pugi::xml_node parentNode)
             }
             success = this->ReadPgHead(parent, current);
         }
-        // symbolTable
+        // chordTable and symbolTable
+        else if (std::string(current.name()) == "chordTable") {
+            success = this->ReadChordTable(parent, current);
+        }
         else if (std::string(current.name()) == "symbolTable") {
             success = this->ReadSymbolTable(parent, current);
         }
@@ -5651,6 +5717,93 @@ bool MEIInput::ReadCourse(Object *parent, pugi::xml_node course)
 
     this->ReadUnsupportedAttr(course, vrvCourse);
 
+    return true;
+}
+
+bool MEIInput::ReadChordTable(Object *parent, pugi::xml_node chordTable)
+{
+    ChordTable *vrvChordTable = new ChordTable();
+    this->SetMeiID(chordTable, vrvChordTable);
+    vrvChordTable->ReadLabelled(chordTable);
+    vrvChordTable->ReadTyped(chordTable);
+    parent->AddChild(vrvChordTable);
+
+    bool success = true;
+    for (pugi::xml_node current = chordTable.first_child(); current; current = current.next_sibling()) {
+        if (!success) break;
+        if (std::string(current.name()) == "chordDef") {
+            success = this->ReadChordDef(vrvChordTable, current);
+        }
+        else if (std::string(current.name()) == "") {
+            success = this->ReadXMLComment(vrvChordTable, current);
+        }
+        else {
+            LogWarning("Unsupported '<%s>' within <chordTable>", current.name());
+        }
+    }
+    this->ReadUnsupportedAttr(chordTable, vrvChordTable);
+    return success;
+}
+
+bool MEIInput::ReadChordDef(Object *parent, pugi::xml_node chordDef)
+{
+    ChordDef *vrvChordDef = new ChordDef();
+    this->SetMeiID(chordDef, vrvChordDef);
+    vrvChordDef->ReadLabelled(chordDef);
+    vrvChordDef->ReadStringtabPosition(chordDef);
+    vrvChordDef->ReadStringtabTuning(chordDef);
+    vrvChordDef->ReadTyped(chordDef);
+    parent->AddChild(vrvChordDef);
+
+    bool success = true;
+    for (pugi::xml_node current = chordDef.first_child(); current; current = current.next_sibling()) {
+        if (!success) break;
+        if (std::string(current.name()) == "chordMember") {
+            success = this->ReadChordMember(vrvChordDef, current);
+        }
+        else if (std::string(current.name()) == "barre") {
+            success = this->ReadBarre(vrvChordDef, current);
+        }
+        else if (std::string(current.name()) == "") {
+            success = this->ReadXMLComment(vrvChordDef, current);
+        }
+        else {
+            LogWarning("Unsupported '<%s>' within <chordDef>", current.name());
+        }
+    }
+    this->ReadUnsupportedAttr(chordDef, vrvChordDef);
+    return success;
+}
+
+bool MEIInput::ReadChordMember(Object *parent, pugi::xml_node chordMember)
+{
+    ChordMember *vrvChordMember = new ChordMember();
+    this->SetMeiID(chordMember, vrvChordMember);
+    vrvChordMember->ReadAccidentalGes(chordMember);
+    vrvChordMember->ReadLabelled(chordMember);
+    vrvChordMember->ReadOctave(chordMember);
+    vrvChordMember->ReadPitch(chordMember);
+    vrvChordMember->ReadStringtab(chordMember);
+    vrvChordMember->ReadTyped(chordMember);
+    parent->AddChild(vrvChordMember);
+    this->ReadUnsupportedAttr(chordMember, vrvChordMember);
+    return true;
+}
+
+bool MEIInput::ReadBarre(Object *parent, pugi::xml_node barre)
+{
+    Barre *vrvBarre = new Barre();
+    this->SetMeiID(barre, vrvBarre);
+    vrvBarre->ReadLabelled(barre);
+    vrvBarre->ReadStartEndId(barre);
+    vrvBarre->ReadStartId(barre);
+    vrvBarre->ReadTyped(barre);
+    if (pugi::xml_attribute fret = barre.attribute("fret")) {
+        vrvBarre->SetFret(fret.as_int(MEI_UNSET));
+        barre.remove_attribute(fret);
+    }
+    parent->AddChild(vrvBarre);
+    this->ReadUnsupportedAttr(barre, vrvBarre);
     return true;
 }
 
@@ -6231,6 +6384,8 @@ bool MEIInput::ReadHarm(Object *parent, pugi::xml_node harm)
 
     this->ReadTextDirInterface(harm, vrvHarm);
     this->ReadTimeSpanningInterface(harm, vrvHarm);
+    vrvHarm->ReadHarmLog(harm);
+    vrvHarm->ReadHarmVis(harm);
     vrvHarm->ReadLang(harm);
     vrvHarm->ReadNNumberLike(harm);
 

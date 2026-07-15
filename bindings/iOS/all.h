@@ -44,6 +44,7 @@
 #import <VerovioFramework/arpeg.h>
 #import <VerovioFramework/artic.h>
 #import <VerovioFramework/barline.h>
+#import <VerovioFramework/barre.h>
 #import <VerovioFramework/bboxdevicecontext.h>
 #import <VerovioFramework/beam.h>
 #import <VerovioFramework/beamspan.h>
@@ -68,6 +69,9 @@
 #import <VerovioFramework/castofffunctor.h>
 #import <VerovioFramework/choice.h>
 #import <VerovioFramework/chord.h>
+#import <VerovioFramework/chorddef.h>
+#import <VerovioFramework/chordmember.h>
+#import <VerovioFramework/chordtable.h>
 #import <VerovioFramework/clef.h>
 #import <VerovioFramework/comparison.h>
 #import <VerovioFramework/controlelement.h>
