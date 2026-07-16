@@ -20,6 +20,7 @@
 #include "f.h"
 #include "ftrem.h"
 #include "hairpin.h"
+#include "harm.h"
 #include "layer.h"
 #include "ligature.h"
 #include "mrest.h"
@@ -253,6 +254,13 @@ FunctorCode ResetDataFunctor::VisitHairpin(Hairpin *hairpin)
     hairpin->SetRightLink(NULL);
     hairpin->SetDrawingLength(0);
 
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode ResetDataFunctor::VisitHarm(Harm *harm)
+{
+    this->VisitControlElement(harm);
+    harm->ResetChordDef();
     return FUNCTOR_CONTINUE;
 }
 

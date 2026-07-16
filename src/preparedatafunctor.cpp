@@ -12,6 +12,9 @@
 #include "altsyminterface.h"
 #include "areaposinterface.h"
 #include "beamspan.h"
+#include "chorddef.h"
+#include "chorddiagram.h"
+#include "chordtable.h"
 #include "dir.h"
 #include "div.h"
 #include "doc.h"
@@ -393,6 +396,56 @@ FunctorCode PrepareAltSymFunctor::VisitObject(Object *object)
         AltSymInterface *interface = object->GetAltSymInterface();
         assert(interface);
         interface->InterfacePrepareAltSym(*this, object);
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+//----------------------------------------------------------------------------
+// PrepareChordRefsFunctor
+//----------------------------------------------------------------------------
+
+PrepareChordRefsFunctor::PrepareChordRefsFunctor() : Functor(), m_chordTable(NULL) {}
+
+FunctorCode PrepareChordRefsFunctor::VisitScore(Score *score)
+{
+    assert(score);
+    assert(score->GetScoreDef());
+    m_chordTable = vrv_cast<ChordTable *>(score->GetScoreDef()->FindDescendantByType(CHORDTABLE));
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode PrepareChordRefsFunctor::VisitHarm(Harm *harm)
+{
+    harm->ResetChordDef();
+    if (harm->HasChordref()) {
+        const std::string &reference = harm->GetChordref();
+        if ((reference.size() < 2) || (reference.front() != '#') || (reference.find('#', 1) != std::string::npos)) {
+            LogWarning("Only local chordDef references are supported; cannot resolve `%s`", reference.c_str());
+        }
+        else {
+            Object *target = m_chordTable ? m_chordTable->FindDescendantByID(reference.substr(1)) : NULL;
+            if (!target || !target->Is(CHORDDEF)) {
+                LogWarning("Reference to the chordDef `%s` could not be resolved", reference.c_str());
+            }
+            else {
+                harm->SetChordDef(vrv_cast<ChordDef *>(target));
+            }
+        }
+    }
+
+    const HarmDrawingMode mode = GetHarmDrawingMode(*harm);
+    if (mode.m_drawGrid && harm->GetFirst() && harm->GetFirst()->Is(FB)) {
+        LogWarning("Chord diagrams combined with figured bass are not supported; drawing figured bass");
+    }
+    if (mode.m_drawGrid && harm->HasChordDef()) {
+        const ChordDiagramLayoutResult result = BuildChordDiagramLayout(*harm->GetChordDef());
+        for (const ChordDiagramDiagnostic &diagnostic : result.m_diagnostics) {
+            LogWarning("Chord diagram `%s`: %s", harm->GetChordref().c_str(), diagnostic.m_message.c_str());
+        }
+    }
+    else if (mode.m_drawGrid && !harm->HasChordref()) {
+        LogWarning("Chord diagram requested by harm `%s`, but no chordDef was resolved", harm->GetID().c_str());
     }
 
     return FUNCTOR_CONTINUE;
