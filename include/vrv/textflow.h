@@ -7,8 +7,8 @@
 #ifndef __VRV_TEXT_FLOW_H__
 #define __VRV_TEXT_FLOW_H__
 
-#include "atts_shared.h"
 #include "atts_figtable.h"
+#include "atts_shared.h"
 #include "facsimileinterface.h"
 #include "linkinginterface.h"
 #include "syl.h"

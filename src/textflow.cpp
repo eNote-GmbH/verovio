@@ -228,16 +228,40 @@ bool TextFlowTableElement::IsSupportedChild(ClassId classId)
     return Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
 }
 
-FunctorCode TextFlowTableElement::Accept(Functor &functor) { return functor.VisitObject(this); }
-FunctorCode TextFlowTableElement::Accept(ConstFunctor &functor) const { return functor.VisitObject(this); }
-FunctorCode TextFlowTableElement::AcceptEnd(Functor &functor) { return functor.VisitObjectEnd(this); }
-FunctorCode TextFlowTableElement::AcceptEnd(ConstFunctor &functor) const { return functor.VisitObjectEnd(this); }
+FunctorCode TextFlowTableElement::Accept(Functor &functor)
+{
+    return functor.VisitObject(this);
+}
+FunctorCode TextFlowTableElement::Accept(ConstFunctor &functor) const
+{
+    return functor.VisitObject(this);
+}
+FunctorCode TextFlowTableElement::AcceptEnd(Functor &functor)
+{
+    return functor.VisitObjectEnd(this);
+}
+FunctorCode TextFlowTableElement::AcceptEnd(ConstFunctor &functor) const
+{
+    return functor.VisitObjectEnd(this);
+}
 
-#define VRV_TEXT_FLOW_ACCEPT(CLASS, NAME) \
-    FunctorCode CLASS::Accept(Functor &functor) { return functor.Visit##NAME(this); } \
-    FunctorCode CLASS::Accept(ConstFunctor &functor) const { return functor.Visit##NAME(this); } \
-    FunctorCode CLASS::AcceptEnd(Functor &functor) { return functor.Visit##NAME##End(this); } \
-    FunctorCode CLASS::AcceptEnd(ConstFunctor &functor) const { return functor.Visit##NAME##End(this); }
+#define VRV_TEXT_FLOW_ACCEPT(CLASS, NAME)                                                                              \
+    FunctorCode CLASS::Accept(Functor &functor)                                                                        \
+    {                                                                                                                  \
+        return functor.Visit##NAME(this);                                                                              \
+    }                                                                                                                  \
+    FunctorCode CLASS::Accept(ConstFunctor &functor) const                                                             \
+    {                                                                                                                  \
+        return functor.Visit##NAME(this);                                                                              \
+    }                                                                                                                  \
+    FunctorCode CLASS::AcceptEnd(Functor &functor)                                                                     \
+    {                                                                                                                  \
+        return functor.Visit##NAME##End(this);                                                                         \
+    }                                                                                                                  \
+    FunctorCode CLASS::AcceptEnd(ConstFunctor &functor) const                                                          \
+    {                                                                                                                  \
+        return functor.Visit##NAME##End(this);                                                                         \
+    }
 
 VRV_TEXT_FLOW_ACCEPT(Table, Table)
 VRV_TEXT_FLOW_ACCEPT(TableCaption, TableCaption)

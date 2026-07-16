@@ -5741,9 +5741,8 @@ bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
     for (pugi::xml_node current = parentNode.first_child(); current; current = current.next_sibling()) {
         if ((current.type() == pugi::node_pcdata) || (current.type() == pugi::node_cdata)) {
             const std::string value = current.value();
-            const bool whitespaceOnly = std::all_of(value.begin(), value.end(), [](unsigned char c) {
-                return std::isspace(c);
-            });
+            const bool whitespaceOnly
+                = std::all_of(value.begin(), value.end(), [](unsigned char c) { return std::isspace(c); });
             if (!whitespaceOnly || preserveWhitespace) this->ReadText(parent, current, false, false);
             continue;
         }
@@ -5754,26 +5753,45 @@ bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
         if (this->IsEditorialElementName(current.name())) {
             success = this->ReadEditorialElement(parent, current, EDITORIAL_TEXT);
         }
-        else if (name == "div") success = this->ReadDiv(parent, current);
-        else if (name == "head") success = this->ReadTextFlowElement(parent, current, HEAD);
-        else if (name == "p") success = this->ReadTextFlowElement(parent, current, P);
-        else if (name == "lg") success = this->ReadTextFlowElement(parent, current, LG);
-        else if (name == "l") success = this->ReadTextFlowElement(parent, current, L);
-        else if (name == "table") success = this->ReadTextFlowTableElement(parent, current, TABLE);
-        else if (name == "caption") success = this->ReadTextFlowTableElement(parent, current, CAPTION);
-        else if (name == "tr") success = this->ReadTextFlowTableElement(parent, current, TR);
-        else if (name == "td") success = this->ReadTextFlowTableElement(parent, current, TD);
-        else if (name == "th") success = this->ReadTextFlowTableElement(parent, current, TH);
-        else if (name == "stack") success = this->ReadStack(parent, current);
-        else if (name == "syl") success = this->ReadTextFlowSyl(parent, current);
-        else if (name == "fig") success = this->ReadFig(parent, current);
-        else if (name == "lb") success = this->ReadLb(parent, current);
-        else if (name == "num") success = this->ReadNum(parent, current);
-        else if (name == "rend") success = this->ReadRend(parent, current);
-        else if (name == "symbol") success = this->ReadSymbol(parent, current);
-        else if (name.empty()) success = this->ReadXMLComment(parent, current);
-        else LogWarning("Element <%s> within <%s> is not supported and will be ignored", current.name(),
-            parent->GetClassName().c_str());
+        else if (name == "div")
+            success = this->ReadDiv(parent, current);
+        else if (name == "head")
+            success = this->ReadTextFlowElement(parent, current, HEAD);
+        else if (name == "p")
+            success = this->ReadTextFlowElement(parent, current, P);
+        else if (name == "lg")
+            success = this->ReadTextFlowElement(parent, current, LG);
+        else if (name == "l")
+            success = this->ReadTextFlowElement(parent, current, L);
+        else if (name == "table")
+            success = this->ReadTextFlowTableElement(parent, current, TABLE);
+        else if (name == "caption")
+            success = this->ReadTextFlowTableElement(parent, current, CAPTION);
+        else if (name == "tr")
+            success = this->ReadTextFlowTableElement(parent, current, TR);
+        else if (name == "td")
+            success = this->ReadTextFlowTableElement(parent, current, TD);
+        else if (name == "th")
+            success = this->ReadTextFlowTableElement(parent, current, TH);
+        else if (name == "stack")
+            success = this->ReadStack(parent, current);
+        else if (name == "syl")
+            success = this->ReadTextFlowSyl(parent, current);
+        else if (name == "fig")
+            success = this->ReadFig(parent, current);
+        else if (name == "lb")
+            success = this->ReadLb(parent, current);
+        else if (name == "num")
+            success = this->ReadNum(parent, current);
+        else if (name == "rend")
+            success = this->ReadRend(parent, current);
+        else if (name == "symbol")
+            success = this->ReadSymbol(parent, current);
+        else if (name.empty())
+            success = this->ReadXMLComment(parent, current);
+        else
+            LogWarning("Element <%s> within <%s> is not supported and will be ignored", current.name(),
+                parent->GetClassName().c_str());
         if (!success) return false;
     }
     return true;

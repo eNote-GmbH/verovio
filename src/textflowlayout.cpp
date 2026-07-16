@@ -256,8 +256,8 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
             for (const TextFlowStackRow &row : unit.stackRows) {
                 int segmentX = row.x;
                 for (const TextFlowSegment &segment : row.segments) {
-                    if (unit.syl && ((segment.object == unit.syl)
-                            || (segment.object->FindDescendantByType(SYL) == unit.syl))) {
+                    if (unit.syl
+                        && ((segment.object == unit.syl) || (segment.object->FindDescendantByType(SYL) == unit.syl))) {
                         unit.lyricX = segmentX;
                         unit.lyricWidth
                             = this->MeasureObject(unit.syl, m_effectiveFont, m_effectiveFont.GetPointSize());
@@ -426,8 +426,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
         std::vector<TextFlowLayoutNode> cellContents;
         cellContents.reserve(tableLayout.cells.size());
         for (TextFlowTableCellLayout &cell : tableLayout.cells) {
-            TextFlowLayoutNode content
-                = nestedLayout.LayoutFlowNode(cell.cell, cell.width, bold || cell.cell->Is(TH));
+            TextFlowLayoutNode content = nestedLayout.LayoutFlowNode(cell.cell, cell.width, bold || cell.cell->Is(TH));
             cell.preferredHeight = content.height;
             cellContents.push_back(std::move(content));
         }
@@ -585,8 +584,7 @@ TextFlowTableLayoutResult TextFlowLayout::LayoutTable(Table *table) const
             const auto rangeIsFree = [&](int start) {
                 for (int offset = 0; offset < colspan; ++offset) {
                     const int candidate = start + offset;
-                    if ((candidate < static_cast<int>(occupied[rowIndex].size()))
-                        && occupied[rowIndex][candidate]) {
+                    if ((candidate < static_cast<int>(occupied[rowIndex].size())) && occupied[rowIndex][candidate]) {
                         return false;
                     }
                 }
@@ -604,8 +602,7 @@ TextFlowTableLayoutResult TextFlowLayout::LayoutTable(Table *table) const
                 }
                 std::fill(occupied[r].begin() + column, occupied[r].begin() + column + colspan, true);
             }
-            result.cells.push_back(
-                { cell, static_cast<int>(rowIndex), column, colspan, rowspan, 0, 0, 0, 0, 0 });
+            result.cells.push_back({ cell, static_cast<int>(rowIndex), column, colspan, rowspan, 0, 0, 0, 0, 0 });
             column += colspan;
         }
         result.columns = std::max(result.columns, static_cast<int>(occupied[rowIndex].size()));
@@ -692,8 +689,7 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
             if (!row.items.empty()) finishRow();
             for (size_t i = index; i < end; ++i) {
                 const int trailingConnector = (i + 1 < end) ? m_hyphenWidth : 0;
-                if (!row.items.empty()
-                    && (row.width + units[i].metrics.width + trailingConnector > m_availableWidth)) {
+                if (!row.items.empty() && (row.width + units[i].metrics.width + trailingConnector > m_availableWidth)) {
                     row.width += std::min(m_hyphenWidth, std::max(0, m_availableWidth - row.width));
                     finishRow();
                 }
@@ -727,14 +723,12 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
         const Location &previous = locations[i - 1];
         const Location &current = locations[i];
         if (previous.row != current.row) {
-            const int previousRight
-                = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
+            const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
             const int connectorX = rows[previous.row].width - m_hyphenWidth;
             if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, connectorX });
             continue;
         }
-        const int previousRight
-            = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
+        const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
         const int currentLeft = current.x + units[i].lyricX;
         const int gap = currentLeft - previousRight;
         if (gap >= m_hyphenWidth) {

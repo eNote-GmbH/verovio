@@ -163,12 +163,11 @@ int main(int argc, char **argv)
         "direct legacy fig content disappeared from a text-flow div");
     ok &= Expect(coreSvg.find("id=\"nested-legacy-rend\"") != std::string::npos,
         "nested legacy div content disappeared from a text-flow div");
-    ok &= Expect((FirstTranslateYAfter(coreSvg, "nested-paragraph")
-                     < FirstTranslateYAfter(coreSvg, "mixed-legacy-rend"))
+    ok &= Expect(
+        (FirstTranslateYAfter(coreSvg, "nested-paragraph") < FirstTranslateYAfter(coreSvg, "mixed-legacy-rend"))
             && (FirstTranslateYAfter(coreSvg, "mixed-legacy-rend")
                 < FirstTranslateYAfter(coreSvg, "nested-legacy-rend"))
-            && (FirstTranslateYAfter(coreSvg, "nested-legacy-rend")
-                < FirstTranslateYAfter(coreSvg, "stanza-head")),
+            && (FirstTranslateYAfter(coreSvg, "nested-legacy-rend") < FirstTranslateYAfter(coreSvg, "stanza-head")),
         "mixed inline and block children were not laid out in document order");
     ok &= Expect(
         coreSvg.find("id=\"chord-extension\"") != std::string::npos, "superscript chord extension was not rendered");
@@ -208,19 +207,18 @@ int main(int argc, char **argv)
         "table linking attributes did not survive import/export");
 
     const std::string tableSvg = RenderAllPages(tableToolkit);
-    for (const std::string &id : { "two-column-table", "table-caption", "parallel-row", "left-cell",
-             "right-cell", "heading-cell", "rowspan-cell", "nested-table", "nested-table-cell", "empty-row",
-             "invalid-span", "overwide-word-cell", "inline-table", "inline-cell", "collision-table",
-             "collision-colspan" }) {
-        ok &= Expect(tableSvg.find("id=\"" + id + "\"") != std::string::npos,
-            "table semantic object was not rendered: " + id);
+    for (const std::string &id : { "two-column-table", "table-caption", "parallel-row", "left-cell", "right-cell",
+             "heading-cell", "rowspan-cell", "nested-table", "nested-table-cell", "empty-row", "invalid-span",
+             "overwide-word-cell", "inline-table", "inline-cell", "collision-table", "collision-colspan" }) {
+        ok &= Expect(
+            tableSvg.find("id=\"" + id + "\"") != std::string::npos, "table semantic object was not rendered: " + id);
     }
     const double leftX = FirstTranslateXAfter(tableSvg, "left-cell");
     const double rightX = FirstTranslateXAfter(tableSvg, "right-cell");
-    ok &= Expect((leftX >= 0.0) && (rightX - leftX > 1500.0),
-        "two text cells were not placed in separate equal-width columns");
-    ok &= Expect(std::abs(FirstTranslateYAfter(tableSvg, "left-cell") - FirstTranslateYAfter(tableSvg, "right-cell"))
-            < 1.0,
+    ok &= Expect(
+        (leftX >= 0.0) && (rightX - leftX > 1500.0), "two text cells were not placed in separate equal-width columns");
+    ok &= Expect(
+        std::abs(FirstTranslateYAfter(tableSvg, "left-cell") - FirstTranslateYAfter(tableSvg, "right-cell")) < 1.0,
         "parallel table cells were not top-aligned");
     ok &= Expect(FirstTranslateYAfter(tableSvg, "table-caption") < FirstTranslateYAfter(tableSvg, "left-cell"),
         "table caption did not render above the grid");
@@ -235,8 +233,8 @@ int main(int argc, char **argv)
     ok &= Expect((splitConnectorY >= 0.0) && (std::abs(splitConnectorY - splitFirstY) < 1.0)
             && (std::abs(splitConnectorY - splitMiddleY) > 1.0),
         "an overwide semantic word did not reserve a trailing connector on the preceding row");
-    ok &= Expect(FirstTranslateXAfter(tableSvg, "collision-colspan")
-            > FirstTranslateXAfter(tableSvg, "collision-rowspan"),
+    ok &= Expect(
+        FirstTranslateXAfter(tableSvg, "collision-colspan") > FirstTranslateXAfter(tableSvg, "collision-rowspan"),
         "a colspan overlapped a column occupied by a rowspan");
     const std::string cellAttributes = tableToolkit.GetElementAttr("heading-cell");
     ok &= Expect(cellAttributes.find("colspan") != std::string::npos,

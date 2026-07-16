@@ -38,12 +38,12 @@
 #include "smufl.h"
 #include "staff.h"
 #include "svg.h"
+#include "syl.h"
 #include "symbol.h"
 #include "system.h"
 #include "text.h"
 #include "textflow.h"
 #include "textflowlayout.h"
-#include "syl.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -722,8 +722,7 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     assert(dc);
     assert(div);
 
-    FontInfo textFlowFont
-        = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
+    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
     dc->SetFont(&textFlowFont);
 
     const int lineHeight = m_doc->GetTextLineHeight(dc->GetFont(), false);
@@ -747,8 +746,8 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
         }
     };
 
-    const auto drawStack = [&](Stack *stack, const TextFlowUnit &unit, int x, int y, int containingRows,
-                               int pointSize, int stackLineHeight) {
+    const auto drawStack = [&](Stack *stack, const TextFlowUnit &unit, int x, int y, int containingRows, int pointSize,
+                               int stackLineHeight) {
         stack->SetTextFlowDrawingX(x);
         stack->SetTextFlowDrawingY(y);
         dc->StartGraphic(stack, "", stack->GetID());
@@ -756,8 +755,7 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             const TextFlowStackRow &row = unit.stackRows[rowIndex];
             const int rowX = x + row.x;
 
-            const int rowY
-                = y + (containingRows - unit.metrics.rowCount) * stackLineHeight
+            const int rowY = y + (containingRows - unit.metrics.rowCount) * stackLineHeight
                 - static_cast<int>(rowIndex) * stackLineHeight;
             dc->StartText(this->ToDeviceContextX(rowX), this->ToDeviceContextY(rowY), HORIZONTALALIGNMENT_left);
             TextDrawingParams params;
@@ -767,8 +765,10 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             params.m_pointSize = pointSize;
             params.m_laidOut = false;
             for (const TextFlowSegment &segment : row.segments) {
-                if (segment.textOverride) this->DrawTextString(dc, segment.text, params);
-                else drawInlineObject(segment.object, params);
+                if (segment.textOverride)
+                    this->DrawTextString(dc, segment.text, params);
+                else
+                    drawInlineObject(segment.object, params);
             }
             dc->EndText();
         }
@@ -807,8 +807,10 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                 params.m_width = unit.metrics.width;
                 params.m_pointSize = phraseFont.GetPointSize();
                 params.m_laidOut = false;
-                if (unit.textOverride) this->DrawTextString(dc, unit.text, params);
-                else if (unit.object) drawInlineObject(unit.object, params);
+                if (unit.textOverride)
+                    this->DrawTextString(dc, unit.text, params);
+                else if (unit.object)
+                    drawInlineObject(unit.object, params);
                 dc->EndText();
             }
             const size_t rowIndex = static_cast<size_t>(&row - result.rows.data());
