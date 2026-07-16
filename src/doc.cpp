@@ -1976,7 +1976,7 @@ int Doc::GetTextGlyphHeight(char32_t code, const FontInfo *font, bool graceSize)
 
     int x, y, w, h;
     const Resources &resources = this->GetResources();
-    const Glyph *glyph = resources.GetTextGlyph(code);
+    const Glyph *glyph = resources.GetTextGlyph(code, *font);
     assert(glyph);
     glyph->GetBoundingBox(x, y, w, h);
     h = h * font->GetPointSize() / glyph->GetUnitsPerEm();
@@ -1990,7 +1990,7 @@ int Doc::GetTextGlyphWidth(char32_t code, const FontInfo *font, bool graceSize) 
 
     int x, y, w, h;
     const Resources &resources = this->GetResources();
-    const Glyph *glyph = resources.GetTextGlyph(code);
+    const Glyph *glyph = resources.GetTextGlyph(code, *font);
     assert(glyph);
     glyph->GetBoundingBox(x, y, w, h);
     w = w * font->GetPointSize() / glyph->GetUnitsPerEm();
@@ -2003,7 +2003,7 @@ int Doc::GetTextGlyphAdvX(char32_t code, const FontInfo *font, bool graceSize) c
     assert(font);
 
     const Resources &resources = this->GetResources();
-    const Glyph *glyph = resources.GetTextGlyph(code);
+    const Glyph *glyph = resources.GetTextGlyph(code, *font);
     assert(glyph);
     int advX = glyph->GetHorizAdvX();
     advX = advX * font->GetPointSize() / glyph->GetUnitsPerEm();
@@ -2017,7 +2017,7 @@ int Doc::GetTextGlyphDescender(char32_t code, const FontInfo *font, bool graceSi
 
     int x, y, w, h;
     const Resources &resources = this->GetResources();
-    const Glyph *glyph = resources.GetTextGlyph(code);
+    const Glyph *glyph = resources.GetTextGlyph(code, *font);
     assert(glyph);
     glyph->GetBoundingBox(x, y, w, h);
     y = y * font->GetPointSize() / glyph->GetUnitsPerEm();
@@ -2148,6 +2148,35 @@ FontInfo *Doc::GetDrawingLyricFont(int staffSize)
 {
     m_drawingLyricFont.SetPointSize(m_drawingLyricFontSize * staffSize / 100);
     return &m_drawingLyricFont;
+}
+
+FontInfo Doc::GetDrawingTextFont(int staffSize, const ScoreDefInterface *style, bool lyric)
+{
+    FontInfo font = *this->GetDrawingLyricFont(staffSize);
+    font.SetFaceName(this->GetResources().GetTextFont());
+    if (!style) return font;
+
+    if (lyric) {
+        if (style->HasLyricName()) {
+            font.SetFaceName(style->GetLyricName());
+        }
+        else if (style->HasLyricFam()) {
+            font.SetFaceName(style->GetLyricFam());
+        }
+        if (style->HasLyricStyle()) font.SetStyle(style->GetLyricStyle());
+        if (style->HasLyricWeight()) font.SetWeight(style->GetLyricWeight());
+    }
+    else {
+        if (style->HasTextName()) {
+            font.SetFaceName(style->GetTextName());
+        }
+        else if (style->HasTextFam()) {
+            font.SetFaceName(style->GetTextFam());
+        }
+        if (style->HasTextStyle()) font.SetStyle(style->GetTextStyle());
+        if (style->HasTextWeight()) font.SetWeight(style->GetTextWeight());
+    }
+    return font;
 }
 
 FontInfo *Doc::GetFingeringFont(int staffSize)
