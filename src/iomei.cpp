@@ -9,7 +9,9 @@
 
 //----------------------------------------------------------------------------
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <iostream>
 #include <regex>
 
@@ -156,6 +158,7 @@
 #include "tabgrp.h"
 #include "tempo.h"
 #include "text.h"
+#include "textflow.h"
 #include "textlayoutelement.h"
 #include "tie.h"
 #include "trill.h"
@@ -469,6 +472,11 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
     else if (object->Is(DIV)) {
         m_currentNode = m_currentNode.append_child("div");
         this->WriteDiv(m_currentNode, vrv_cast<Div *>(object));
+    }
+    else if (object->IsTextFlowElement()) {
+        TextFlowElement *textFlowElement = vrv_cast<TextFlowElement *>(object);
+        m_currentNode = m_currentNode.append_child(textFlowElement->GetClassName().c_str());
+        this->WriteTextFlowElement(m_currentNode, textFlowElement);
     }
     else if (object->Is(PGFOOT)) {
         m_currentNode = m_currentNode.append_child("pgFoot");
@@ -899,6 +907,10 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
     else if (object->Is(REND)) {
         m_currentNode = m_currentNode.append_child("rend");
         this->WriteRend(m_currentNode, vrv_cast<Rend *>(object));
+    }
+    else if (object->Is(STACK)) {
+        m_currentNode = m_currentNode.append_child("stack");
+        this->WriteStack(m_currentNode, vrv_cast<Stack *>(object));
     }
     else if (object->Is(SVG)) {
         m_currentNode = m_currentNode.append_child("svg");
@@ -1895,6 +1907,45 @@ void MEIOutput::WriteDiv(pugi::xml_node currentNode, Div *div)
     assert(div);
 
     this->WriteTextLayoutElement(currentNode, div);
+    this->WriteLinkingInterface(currentNode, div);
+    div->WriteLabelled(currentNode);
+    div->WriteLang(currentNode);
+    div->WriteNNumberLike(currentNode);
+    div->WriteWhitespace(currentNode);
+}
+
+void MEIOutput::WriteTextFlowElement(pugi::xml_node currentNode, TextFlowElement *element)
+{
+    assert(element);
+
+    this->WriteXmlId(currentNode, element);
+    this->WriteLinkingInterface(currentNode, element);
+    element->WriteLabelled(currentNode);
+    element->WriteLang(currentNode);
+    element->WriteLayerIdent(currentNode);
+    element->WriteNNumberLike(currentNode);
+    element->WritePlacementRelStaff(currentNode);
+    element->WriteStaffIdent(currentNode);
+    element->WriteTyped(currentNode);
+    element->WriteTypography(currentNode);
+    element->WriteWhitespace(currentNode);
+    element->WriteXy(currentNode);
+    if (element->Is(L) && element->HasRhythm()) {
+        currentNode.append_attribute("rhythm") = element->GetRhythm().c_str();
+    }
+}
+
+void MEIOutput::WriteStack(pugi::xml_node currentNode, Stack *stack)
+{
+    assert(stack);
+
+    this->WriteTextElement(currentNode, stack);
+    this->WriteLinkingInterface(currentNode, stack);
+    stack->WriteLang(currentNode);
+    stack->WriteNNumberLike(currentNode);
+    stack->WriteWhitespace(currentNode);
+    if (stack->HasDelimiter()) currentNode.append_attribute("delim") = stack->GetDelimiter().c_str();
+    if (stack->HasAlignment()) currentNode.append_attribute("align") = stack->GetAlignment().c_str();
 }
 
 void MEIOutput::WritePgFoot(pugi::xml_node currentNode, PgFoot *pgFoot)
@@ -5538,10 +5589,141 @@ bool MEIInput::ReadDiv(Object *parent, pugi::xml_node div)
 {
     Div *vrvDiv = new Div();
     this->ReadTextLayoutElement(div, vrvDiv);
+    this->ReadLinkingInterface(div, vrvDiv);
+    vrvDiv->ReadLabelled(div);
+    vrvDiv->ReadLang(div);
+    vrvDiv->ReadNNumberLike(div);
+    vrvDiv->ReadWhitespace(div);
 
     parent->AddChild(vrvDiv);
     this->ReadUnsupportedAttr(div, vrvDiv);
-    return this->ReadRunningChildren(vrvDiv, div, vrvDiv);
+    return this->ReadTextFlowChildren(vrvDiv, div);
+}
+
+bool MEIInput::ReadTextFlowElement(Object *parent, pugi::xml_node element, ClassId classId)
+{
+    Object *object = ObjectFactory::GetInstance()->Create(classId);
+    TextFlowElement *vrvElement = dynamic_cast<TextFlowElement *>(object);
+    if (!vrvElement) {
+        delete object;
+        return false;
+    }
+    this->SetMeiID(element, vrvElement);
+    this->ReadLinkingInterface(element, vrvElement);
+    vrvElement->ReadLabelled(element);
+    vrvElement->ReadLang(element);
+    vrvElement->ReadLayerIdent(element);
+    vrvElement->ReadNNumberLike(element);
+    vrvElement->ReadPlacementRelStaff(element);
+    vrvElement->ReadStaffIdent(element);
+    vrvElement->ReadTyped(element);
+    vrvElement->ReadTypography(element);
+    vrvElement->ReadWhitespace(element);
+    vrvElement->ReadXy(element);
+    if ((classId == L) && element.attribute("rhythm")) {
+        vrvElement->SetRhythm(element.attribute("rhythm").value());
+        element.remove_attribute("rhythm");
+    }
+
+    parent->AddChild(vrvElement);
+    this->ReadUnsupportedAttr(element, vrvElement);
+    return this->ReadTextFlowChildren(vrvElement, element);
+}
+
+bool MEIInput::ReadTextFlowSyl(Object *parent, pugi::xml_node syl)
+{
+    TextFlowSyl *vrvSyl = new TextFlowSyl();
+    this->ReadLayerElement(syl, vrvSyl);
+    this->ReadFacsimileInterface(syl, vrvSyl);
+    this->ReadOffsetInterface(syl, vrvSyl);
+    vrvSyl->ReadLang(syl);
+    vrvSyl->ReadTypography(syl);
+    vrvSyl->ReadSylLog(syl);
+
+    parent->AddChild(vrvSyl);
+    this->ReadUnsupportedAttr(syl, vrvSyl);
+    return this->ReadTextChildren(vrvSyl, syl, vrvSyl);
+}
+
+bool MEIInput::ReadStack(Object *parent, pugi::xml_node stack)
+{
+    Stack *vrvStack = new Stack();
+    this->ReadTextElement(stack, vrvStack);
+    this->ReadLinkingInterface(stack, vrvStack);
+    vrvStack->ReadLang(stack);
+    vrvStack->ReadNNumberLike(stack);
+    vrvStack->ReadWhitespace(stack);
+    if (stack.attribute("delim")) {
+        vrvStack->SetDelimiter(stack.attribute("delim").value());
+        stack.remove_attribute("delim");
+    }
+    if (stack.attribute("align")) {
+        if (!vrvStack->SetAlignment(stack.attribute("align").value())) {
+            LogWarning("Unsupported stack alignment '%s'; using left", stack.attribute("align").value());
+        }
+        stack.remove_attribute("align");
+    }
+
+    parent->AddChild(vrvStack);
+    this->ReadUnsupportedAttr(stack, vrvStack);
+    return this->ReadTextFlowChildren(vrvStack, stack);
+}
+
+bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
+{
+    bool preserveWhitespace = false;
+    bool whitespaceSpecified = false;
+    for (const Object *current = parent; current; current = current->GetParent()) {
+        const AttWhitespace *whitespace = dynamic_cast<const AttWhitespace *>(current);
+        if (whitespace && whitespace->HasSpace()) {
+            preserveWhitespace = whitespace->GetSpace() == "preserve";
+            whitespaceSpecified = true;
+            break;
+        }
+    }
+    if (!whitespaceSpecified) {
+        for (pugi::xml_node current = parentNode; current; current = current.parent()) {
+            if (current.attribute("xml:space")) {
+                preserveWhitespace = (std::string(current.attribute("xml:space").value()) == "preserve");
+                break;
+            }
+        }
+    }
+
+    for (pugi::xml_node current = parentNode.first_child(); current; current = current.next_sibling()) {
+        if ((current.type() == pugi::node_pcdata) || (current.type() == pugi::node_cdata)) {
+            const std::string value = current.value();
+            const bool whitespaceOnly = std::all_of(value.begin(), value.end(), [](unsigned char c) {
+                return std::isspace(c);
+            });
+            if (!whitespaceOnly || preserveWhitespace) this->ReadText(parent, current, false, false);
+            continue;
+        }
+
+        this->NormalizeAttributes(current);
+        const std::string name = current.name();
+        bool success = true;
+        if (this->IsEditorialElementName(current.name())) {
+            success = this->ReadEditorialElement(parent, current, EDITORIAL_TEXT);
+        }
+        else if (name == "div") success = this->ReadDiv(parent, current);
+        else if (name == "head") success = this->ReadTextFlowElement(parent, current, HEAD);
+        else if (name == "p") success = this->ReadTextFlowElement(parent, current, P);
+        else if (name == "lg") success = this->ReadTextFlowElement(parent, current, LG);
+        else if (name == "l") success = this->ReadTextFlowElement(parent, current, L);
+        else if (name == "stack") success = this->ReadStack(parent, current);
+        else if (name == "syl") success = this->ReadTextFlowSyl(parent, current);
+        else if (name == "fig") success = this->ReadFig(parent, current);
+        else if (name == "lb") success = this->ReadLb(parent, current);
+        else if (name == "num") success = this->ReadNum(parent, current);
+        else if (name == "rend") success = this->ReadRend(parent, current);
+        else if (name == "symbol") success = this->ReadSymbol(parent, current);
+        else if (name.empty()) success = this->ReadXMLComment(parent, current);
+        else LogWarning("Element <%s> within <%s> is not supported and will be ignored", current.name(),
+            parent->GetClassName().c_str());
+        if (!success) return false;
+    }
+    return true;
 }
 
 bool MEIInput::ReadRunningChildren(Object *parent, pugi::xml_node parentNode, Object *filter)

@@ -257,6 +257,8 @@
 #import <VerovioFramework/text.h>
 #import <VerovioFramework/textdirinterface.h>
 #import <VerovioFramework/textelement.h>
+#import <VerovioFramework/textflow.h>
+#import <VerovioFramework/textflowlayout.h>
 #import <VerovioFramework/textlayoutelement.h>
 #import <VerovioFramework/tie.h>
 #import <VerovioFramework/timeinterface.h>

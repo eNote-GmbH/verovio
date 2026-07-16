@@ -110,6 +110,7 @@ public:
     bool IsScoreDefElement() const { return Object::IsScoreDefElement(m_classId); }
     bool IsSystemElement() const { return Object::IsSystemElement(m_classId); }
     bool IsTextElement() const { return Object::IsTextElement(m_classId); }
+    bool IsTextFlowElement() const { return Object::IsTextFlowElement(m_classId); }
     ///@}
 
     /**
@@ -141,6 +142,10 @@ public:
         return ((classId > SYSTEM_ELEMENT) && (classId < SYSTEM_ELEMENT_max));
     }
     static bool IsTextElement(ClassId classId) { return ((classId > TEXT_ELEMENT) && (classId < TEXT_ELEMENT_max)); }
+    static bool IsTextFlowElement(ClassId classId)
+    {
+        return ((classId > TEXT_FLOW_ELEMENT) && (classId < TEXT_FLOW_ELEMENT_max));
+    }
     ///@}
 
     /**

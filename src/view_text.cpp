@@ -10,6 +10,8 @@
 //----------------------------------------------------------------------------
 
 #include <cassert>
+#include <cctype>
+#include <functional>
 #include <iostream>
 #include <math.h>
 #include <sstream>
@@ -38,6 +40,9 @@
 #include "symbol.h"
 #include "system.h"
 #include "text.h"
+#include "textflow.h"
+#include "textflowlayout.h"
+#include "syl.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -704,7 +709,182 @@ void View::DrawTextLayoutElement(
 
 void View::DrawDiv(DeviceContext *dc, Div *div, System *system)
 {
+    if (div->HasTextFlow()) {
+        this->DrawTextFlow(dc, div, system);
+        return;
+    }
     this->DrawTextLayoutElement(dc, div, system ? system->GetDrawingScoreDef() : nullptr);
+}
+
+void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
+{
+    assert(dc);
+    assert(div);
+
+    FontInfo textFlowFont
+        = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
+    dc->SetFont(&textFlowFont);
+
+    const int lineHeight = m_doc->GetTextLineHeight(dc->GetFont(), false);
+    const int availableWidth = m_doc->m_drawingPageContentWidth;
+    const int originX = div->GetDrawingX();
+    const int originY = div->GetDrawingY();
+    int cursorY = originY;
+    int maximumWidth = 0;
+
+    const auto drawInlineObject = [&](Object *object, TextDrawingParams &params) {
+        if (object->Is(SYL)) {
+            Syl *syl = vrv_cast<Syl *>(object);
+            if (TextFlowSyl *textFlowSyl = dynamic_cast<TextFlowSyl *>(syl)) {
+                textFlowSyl->SetTextFlowDrawingX(params.m_x);
+                textFlowSyl->SetTextFlowDrawingY(params.m_y);
+            }
+            dc->StartTextGraphic(syl, "", syl->GetID());
+            this->DrawTextChildren(dc, syl, params);
+            dc->EndTextGraphic(syl, this);
+        }
+        else if (object->IsTextElement()) {
+            this->DrawTextElement(dc, vrv_cast<TextElement *>(object), params);
+        }
+    };
+
+    const auto drawStack = [&](Stack *stack, const TextFlowUnit &unit, int x, int y, int containingRows,
+                               int pointSize, int stackLineHeight) {
+        stack->SetTextFlowDrawingX(x);
+        stack->SetTextFlowDrawingY(y);
+        dc->StartGraphic(stack, "", stack->GetID());
+        for (size_t rowIndex = 0; rowIndex < unit.stackRows.size(); ++rowIndex) {
+            const TextFlowStackRow &row = unit.stackRows[rowIndex];
+            const int rowX = x + row.x;
+
+            const int rowY
+                = y + (containingRows - unit.metrics.rowCount) * stackLineHeight
+                - static_cast<int>(rowIndex) * stackLineHeight;
+            dc->StartText(this->ToDeviceContextX(rowX), this->ToDeviceContextY(rowY), HORIZONTALALIGNMENT_left);
+            TextDrawingParams params;
+            params.m_x = rowX;
+            params.m_y = rowY;
+            params.m_width = unit.metrics.width;
+            params.m_pointSize = pointSize;
+            params.m_laidOut = false;
+            for (const TextFlowSegment &segment : row.segments) {
+                if (segment.textOverride) this->DrawTextString(dc, segment.text, params);
+                else drawInlineObject(segment.object, params);
+            }
+            dc->EndText();
+        }
+        dc->EndGraphic(stack, this);
+    };
+
+    const auto drawPhrase = [&](Object *block) {
+        const TextFlowLayoutResult *cachedResult = div->GetTextFlowLayout(block);
+        if (!cachedResult) {
+            TextFlowLayout layout(m_doc, dc, textFlowFont, availableWidth, lineHeight);
+            cachedResult = &div->CacheTextFlowLayout(layout.Layout(block));
+        }
+        const TextFlowLayoutResult &result = *cachedResult;
+        FontInfo phraseFont = result.font;
+        const int phraseLineHeight = result.lineHeight;
+        dc->SetFont(&phraseFont);
+
+        for (const TextFlowUnit &unit : result.units) {
+            if (unit.metrics.hardBreak && unit.object) {
+                dc->StartGraphic(unit.object, "", unit.object->GetID());
+                dc->EndGraphic(unit.object, this);
+            }
+        }
+
+        for (const TextFlowRow &row : result.rows) {
+            maximumWidth = std::max(maximumWidth, row.width);
+            for (const TextFlowPlacedItem &placement : row.items) {
+                const TextFlowUnit &unit = result.units.at(placement.item);
+                int itemX = originX + placement.x;
+                const int baselineY = cursorY - (row.rowCount - 1) * phraseLineHeight;
+                if (unit.prefixHyphen) {
+                    const int hyphenX = (placement.x > 0) ? itemX - unit.metrics.gapBefore : itemX;
+                    dc->StartCustomGraphic("sylConnector");
+                    dc->StartText(this->ToDeviceContextX(hyphenX),
+                        this->ToDeviceContextY(baselineY), HORIZONTALALIGNMENT_left);
+                    TextDrawingParams hyphenParams;
+                    this->DrawTextString(dc, U"-", hyphenParams);
+                    dc->EndText();
+                    dc->EndCustomGraphic();
+                    if (placement.x == 0) itemX += unit.metrics.gapBefore;
+                }
+                if (unit.object && unit.object->Is(STACK)) {
+                    drawStack(vrv_cast<Stack *>(unit.object), unit, itemX, cursorY, row.rowCount,
+                        phraseFont.GetPointSize(), phraseLineHeight);
+                    continue;
+                }
+
+                dc->StartText(
+                    this->ToDeviceContextX(itemX), this->ToDeviceContextY(baselineY), HORIZONTALALIGNMENT_left);
+                TextDrawingParams params;
+                params.m_x = itemX;
+                params.m_y = baselineY;
+                params.m_width = unit.metrics.width;
+                params.m_pointSize = phraseFont.GetPointSize();
+                params.m_laidOut = false;
+                if (unit.textOverride) this->DrawTextString(dc, unit.text, params);
+                else if (unit.object) drawInlineObject(unit.object, params);
+                dc->EndText();
+            }
+            cursorY -= std::max(1, row.rowCount) * phraseLineHeight;
+        }
+        dc->ResetFont();
+    };
+
+    std::function<void(Object *)> drawBlock;
+    drawBlock = [&](Object *block) {
+        if (block->Is(FIG)) {
+            Fig *fig = vrv_cast<Fig *>(block);
+            fig->SetDrawingXRel(originX - fig->GetParent()->GetDrawingX());
+            fig->SetDrawingYRel(cursorY - fig->GetParent()->GetDrawingY());
+            TextDrawingParams params;
+            this->DrawFig(dc, fig, params);
+            if (Svg *svg = vrv_cast<Svg *>(fig->FindDescendantByType(SVG))) {
+                maximumWidth = std::max(maximumWidth, svg->GetWidth());
+                cursorY -= svg->GetHeight();
+            }
+            return;
+        }
+        if (block->Is(DIV) && (block != div)) {
+            Div *nestedDiv = vrv_cast<Div *>(block);
+            if (!nestedDiv->HasTextFlow()) {
+                nestedDiv->SetDrawingInline(true);
+                nestedDiv->SetDrawingXRel(originX - nestedDiv->GetParent()->GetDrawingX());
+                nestedDiv->SetDrawingYRel(cursorY - nestedDiv->GetParent()->GetDrawingY());
+                this->DrawTextLayoutElement(dc, nestedDiv, system ? system->GetDrawingScoreDef() : nullptr);
+                cursorY -= nestedDiv->GetTotalHeight(m_doc);
+                maximumWidth = std::max(maximumWidth, nestedDiv->GetTotalWidth(m_doc));
+                return;
+            }
+        }
+        const bool grouped = (block != div);
+        if (TextFlowElement *textFlowElement = dynamic_cast<TextFlowElement *>(block)) {
+            textFlowElement->SetTextFlowDrawingX(originX);
+            textFlowElement->SetTextFlowDrawingY(cursorY);
+        }
+        if (grouped) dc->StartGraphic(block, "", block->GetID());
+        if (block->Is(DIV) || block->Is(LG)) {
+            for (Object *child : block->GetChildren()) {
+                if (child->Is(DIV) || child->IsTextFlowElement() || child->Is(REND) || child->Is(FIG)) {
+                    drawBlock(child);
+                }
+            }
+        }
+        else if (block->IsAnyOf(std::array{ HEAD, P, L, REND })) {
+            drawPhrase(block);
+        }
+        if (grouped) dc->EndGraphic(block, this);
+    };
+
+    dc->StartGraphic(div, "", div->GetID());
+    drawBlock(div);
+    dc->EndGraphic(div, this);
+    div->SetTextFlowSize(maximumWidth, originY - cursorY);
+
+    dc->ResetFont();
 }
 
 } // namespace vrv

@@ -77,6 +77,7 @@ FunctorCode PrepareDataInitializationFunctor::VisitDiv(Div *div)
 {
     // Call parent one too
     this->VisitTextLayoutElement(div);
+    div->ResetTextFlowLayout();
 
     if (m_doc->GetOptions()->m_breaks.GetValue() == BREAKS_none) {
         div->SetDrawingInline(true);
@@ -1132,6 +1133,15 @@ FunctorCode PrepareLyricsFunctor::VisitNote(Note *note)
 
 FunctorCode PrepareLyricsFunctor::VisitSyl(Syl *syl)
 {
+    // A <syl> in a text-flow division carries semantic word-boundary
+    // information, but it is not anchored to a note and must not participate
+    // in score-lyric connector preparation.
+    for (const Object *ancestor = syl->GetParent(); ancestor; ancestor = ancestor->GetParent()) {
+        if (ancestor->IsTextFlowElement() || (ancestor->GetClassId() == STACK)) {
+            return FUNCTOR_CONTINUE;
+        }
+    }
+
     Verse *verse = vrv_cast<Verse *>(syl->GetFirstAncestor(VERSE, MAX_NOTE_DEPTH));
     if (verse) {
         syl->m_drawingVerseN = std::max(verse->GetN(), 1);

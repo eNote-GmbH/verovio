@@ -1,0 +1,1118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" xmlns:ext="http://tusk.example.org/ns/ext" meiversion="6.0-dev">
+  <meiHead xml:id="tusk-meihead-1">
+    <fileDesc>
+      <titleStmt>
+        <title>In dir ist Freude</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application xml:id="tusk">
+          <name>Tusk MusicXML-MEI Converter</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef lyric.fam="Quicksand" lyric.size="10.3243pt" music.name="Opus Std" music.size="17.8583pt" page.height="1885" page.width="1333" page.topmar="95" page.botmar="95" page.leftmar="95" page.rightmar="95" spacing.system="120" system.leftmar="22" system.rightmar="0" text.fam="Quicksand" text.size="10.7429pt" vu.height="0.3151mm">
+            <chordTable>
+              <chordDef xml:id="tusk-chorddef-1">
+                <chordMember xml:id="tusk-chordmember-1" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-2" tab.fing="x" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-3" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-4" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-5" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-6" tab.fret="5" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-2">
+                <chordMember xml:id="tusk-chordmember-7" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-8" tab.fing="x" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-9" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-10" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-11" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-12" tab.fret="3" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-3">
+                <chordMember xml:id="tusk-chordmember-13" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-14" tab.fing="x" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-15" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-16" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-17" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-18" tab.fret="2" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-4">
+                <chordMember xml:id="tusk-chordmember-19" tab.fret="2" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-20" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-21" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-22" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-23" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-24" tab.fing="x" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-5">
+                <chordMember xml:id="tusk-chordmember-25" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-26" tab.fret="2" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-27" tab.fing="x" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-28" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-29" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-30" tab.fing="x" tab.string="1"/>
+                <barre startid="#tusk-chordmember-26" endid="#tusk-chordmember-28" fret="2"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-6">
+                <chordMember xml:id="tusk-chordmember-31" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-32" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-33" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-34" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-35" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-36" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-7">
+                <chordMember xml:id="tusk-chordmember-37" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-38" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-39" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-40" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-41" tab.fret="2" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-42" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-8">
+                <chordMember xml:id="tusk-chordmember-43" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-44" tab.fret="3" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-45" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-46" tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-47" tab.fret="1" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-48" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-9">
+                <chordMember xml:id="tusk-chordmember-49" tab.fret="2" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-50" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-51" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-52" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-53" tab.fret="1" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-54" tab.fing="x" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-10">
+                <chordMember xml:id="tusk-chordmember-55" tab.fret="3" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-56" tab.fret="2" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-57" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-58" tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-59" tab.fing="o" tab.fret="0" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-60" tab.fret="3" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-11">
+                <chordMember xml:id="tusk-chordmember-61" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-62" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-63" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-64" tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-65" tab.fret="1" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-66" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-12">
+                <chordMember xml:id="tusk-chordmember-67" tab.fing="o" tab.fret="0" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-68" tab.fret="2" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-69" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-70" tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-71" tab.fing="o" tab.fret="0" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-72" tab.fret="3" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-13">
+                <chordMember xml:id="tusk-chordmember-73" tab.fing="x" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-74" tab.fing="o" tab.fret="0" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-75" tab.fret="2" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-76" tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-77" tab.fret="2" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-78" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+              <chordDef xml:id="tusk-chorddef-14">
+                <chordMember xml:id="tusk-chordmember-79" tab.fret="3" tab.string="6"/>
+                <chordMember xml:id="tusk-chordmember-80" tab.fing="x" tab.string="5"/>
+                <chordMember xml:id="tusk-chordmember-81" tab.fing="o" tab.fret="0" tab.string="4"/>
+                <chordMember xml:id="tusk-chordmember-82" tab.fret="2" tab.string="3"/>
+                <chordMember xml:id="tusk-chordmember-83" tab.fret="3" tab.string="2"/>
+                <chordMember xml:id="tusk-chordmember-84" tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+            </chordTable>
+            <pgHead>
+              <rend>In dir ist Freude</rend>
+              <rend>Text: Cyriakus Schneegass 1598, Musik: Giovanni Giacomo Gastoldi 1591; geistlich Erfurt 1598; Arrangement: Hartmut Naumann</rend>
+              <rend>1</rend>
+            </pgHead>
+            <staffGrp>
+              <staffDef xml:id="P1" n="1" ppq="256" clef.shape="G" clef.line="2" keysig="1f" meter.count="3" meter.unit="4" lines="5">
+                <instrDef xml:id="P1-I1" label=""/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <section>
+              <measure n="1" width="355vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-1" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-2" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-3" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <pb xml:id="tusk-pb-1"/>
+                <harm xml:id="tusk-harm-1" n="1" staff="1" startid="#tusk-note-1">F</harm>
+                <harm xml:id="tusk-harm-2" n="2" staff="1" startid="#tusk-note-1" chordref="#tusk-chorddef-1" rendgrid="gridtext">D</harm>
+                <dir xml:id="tusk-dir-3" staff="1" tstamp="1" place="above" vgrp="2290">
+                  <rend halign="left" rend="box" fontfam="Quicksand" fontname="Quicksand" fontsize="9.2082pt" fontstyle="normal" fontweight="normal" valign="middle">Intro</rend>
+                </dir>
+                <dir xml:id="tusk-dir-2" staff="1" tstamp="1" place="above" vgrp="2760" ho="0.4vu">
+                  <rend halign="left" fontfam="Arial Narrow" fontname="Arial Narrow" fontsize="10.7429pt" fontstyle="normal" fontweight="bold" valign="middle">Capo III:</rend>
+                </dir>
+                <tempo xml:id="tusk-tempo-1" staff="1" tstamp="1" mm="176" mm.unit="4" func="instantaneous">♩ = 176</tempo>
+                <dir xml:id="tusk-dir-1" staff="1" tstamp="1" place="above" vgrp="3830">
+                  <rend halign="left" fontfam="Quicksand" fontname="Quicksand" fontsize="9.7662pt" fontstyle="italic" fontweight="normal" valign="middle">tänzerisch</rend>
+                </dir>
+                <harm xml:id="tusk-harm-3" n="1" staff="1" startid="#tusk-note-3">Fsus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-4" n="2" staff="1" startid="#tusk-note-3" chordref="#tusk-chorddef-2" rendgrid="gridtext">Dsus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="2" width="262vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-4" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-5" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-6" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-5" n="1" staff="1" startid="#tusk-note-4">F</harm>
+                <harm xml:id="tusk-harm-6" n="2" staff="1" startid="#tusk-note-4" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="3" width="263vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-7" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-8" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-9" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-7" n="1" staff="1" startid="#tusk-note-7">F</harm>
+                <harm xml:id="tusk-harm-8" n="2" staff="1" startid="#tusk-note-7" chordref="#tusk-chorddef-1" rendgrid="gridtext">D</harm>
+                <harm xml:id="tusk-harm-9" n="1" staff="1" startid="#tusk-note-9">Fsus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-10" n="2" staff="1" startid="#tusk-note-9" chordref="#tusk-chorddef-2" rendgrid="gridtext">Dsus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="4" width="263vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-10" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-11" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-12" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-11" n="1" staff="1" startid="#tusk-note-10">F</harm>
+                <harm xml:id="tusk-harm-12" n="2" staff="1" startid="#tusk-note-10" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="5" width="349vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-13" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-14" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-15" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-1"/>
+                <harm xml:id="tusk-harm-13" n="1" staff="1" startid="#tusk-note-13">F/A</harm>
+                <harm xml:id="tusk-harm-14" n="2" staff="1" startid="#tusk-note-13" chordref="#tusk-chorddef-4" rendgrid="gridtext">D/F♯</harm>
+              </measure>
+              <measure n="6" width="290vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-16" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-17" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-18" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-15" n="1" staff="1" startid="#tusk-note-16">Dm<rend rend="sup">7</rend>
+                </harm>
+                <harm xml:id="tusk-harm-16" n="2" staff="1" startid="#tusk-note-16" chordref="#tusk-chorddef-5" rendgrid="gridtext">Bm<rend rend="sup">7</rend>
+                </harm>
+              </measure>
+              <measure n="7" width="290vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-19" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-20" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                    <note xml:id="tusk-note-21" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-17" n="1" staff="1" startid="#tusk-note-19">Csus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-18" n="2" staff="1" startid="#tusk-note-19" chordref="#tusk-chorddef-6" rendgrid="gridtext">Asus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="8" right="dbl" width="212vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-22" dur.ppq="768" dots="1" dur="2" pname="a" oct="4" color="#000000" head.shape="slash" stem.dir="up"/>
+                  </layer>
+                </staff>
+              </measure>
+              <measure n="9" left="rptstart" width="392vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-23" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <label>1.</label>
+                        <syl>In</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>Durch</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-24" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>dir</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>dich</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-25" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>ist</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>wir</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-2"/>
+                <harm xml:id="tusk-harm-19" n="1" staff="1" startid="#tusk-note-23">F</harm>
+                <harm xml:id="tusk-harm-20" n="2" staff="1" startid="#tusk-note-23" chordref="#tusk-chorddef-1" rendgrid="gridtext">D</harm>
+                <repeatMark xml:id="tusk-repeatmark-1" staff="1" tstamp="1" func="segno" glyph.name="segno"/>
+                <dir xml:id="tusk-dir-4" staff="1" tstamp="1" place="above" vgrp="2810">
+                  <rend halign="left" rend="box" fontfam="Quicksand" fontname="Quicksand" fontsize="9.2082pt" fontstyle="normal" fontweight="normal" valign="middle">Strophen</rend>
+                </dir>
+                <harm xml:id="tusk-harm-21" n="1" staff="1" startid="#tusk-note-25">Fsus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-22" n="2" staff="1" startid="#tusk-note-25" chordref="#tusk-chorddef-2" rendgrid="gridtext">Dsus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="10" width="241vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-26" dur.ppq="512" dur="2" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">Freu</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">ha</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-27" dur.ppq="256" dur="4" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl wordpos="t">de</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ben</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-23" n="1" staff="1" startid="#tusk-note-26">F</harm>
+                <harm xml:id="tusk-harm-24" n="2" staff="1" startid="#tusk-note-26" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="11" width="267vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-28" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>in</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="i">him</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-29" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">al</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">mli</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-30" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">lem</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>sche</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-25" n="1" staff="1" startid="#tusk-note-28">F</harm>
+                <harm xml:id="tusk-harm-26" n="2" staff="1" startid="#tusk-note-28" chordref="#tusk-chorddef-1" rendgrid="gridtext">D</harm>
+                <harm xml:id="tusk-harm-27" n="1" staff="1" startid="#tusk-note-30">Fsus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-28" n="2" staff="1" startid="#tusk-note-30" chordref="#tusk-chorddef-2" rendgrid="gridtext">Dsus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="12" width="241vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-31" dur.ppq="512" dur="2" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">Lei</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">Ga</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-32" dur.ppq="256" dur="4" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl wordpos="t">de,</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ben,</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-29" n="1" staff="1" startid="#tusk-note-31">F</harm>
+                <harm xml:id="tusk-harm-30" n="2" staff="1" startid="#tusk-note-31" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="13" width="315vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-33" dur.ppq="512" dur="2" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>o</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>du</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-34" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>du</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>der</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-3"/>
+                <harm xml:id="tusk-harm-31" n="1" staff="1" startid="#tusk-note-33">F/A</harm>
+                <harm xml:id="tusk-harm-32" n="2" staff="1" startid="#tusk-note-33" chordref="#tusk-chorddef-4" rendgrid="gridtext">D/F♯</harm>
+              </measure>
+              <measure n="14" width="290vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-35" dur.ppq="384" dots="1" dur="4" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">sü</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">wah</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-36" dur.ppq="128" dur="8" pname="g" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-37" dur.ppq="256" dur="4" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl wordpos="t">ßer</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>re</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-33" n="1" staff="1" startid="#tusk-note-35">Dm<rend rend="sup">7</rend>
+                </harm>
+                <harm xml:id="tusk-harm-34" n="2" staff="1" startid="#tusk-note-35" chordref="#tusk-chorddef-5" rendgrid="gridtext">Bm<rend rend="sup">7</rend>
+                </harm>
+              </measure>
+              <measure n="15" width="256vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-38" dur.ppq="512" dur="2" pname="g" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">Je</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">Hei</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-39" dur.ppq="256" dur="4" pname="g" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl>su</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>land</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-35" n="1" staff="1" startid="#tusk-note-38">C</harm>
+                <harm xml:id="tusk-harm-36" n="2" staff="1" startid="#tusk-note-38" chordref="#tusk-chorddef-7" rendgrid="gridtext">A</harm>
+              </measure>
+              <measure n="16" right="rptend" width="279vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-40" dur.ppq="512" dur="2" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl>Christ.</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>bist.</syl>
+                      </verse>
+                    </note>
+                    <rest xml:id="tusk-rest-1" dur.ppq="256" dur="4"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-37" n="1" staff="1" startid="#tusk-note-40">F</harm>
+                <harm xml:id="tusk-harm-38" n="2" staff="1" startid="#tusk-note-40" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="17" left="rptstart" width="356vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-41" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <label>1.</label>
+                        <syl con="d" wordpos="i">Hilf</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">Zu</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-42" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>est</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="i">dei</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-43" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">von</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ner</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-4"/>
+                <harm xml:id="tusk-harm-39" n="1" staff="1" startid="#tusk-note-41">F</harm>
+                <harm xml:id="tusk-harm-40" n="2" staff="1" startid="#tusk-note-41" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+                <harm xml:id="tusk-harm-41" n="1" staff="1" startid="#tusk-note-42">E♭</harm>
+                <harm xml:id="tusk-harm-42" n="2" staff="1" startid="#tusk-note-42" chordref="#tusk-chorddef-8" rendgrid="gridtext">C</harm>
+                <harm xml:id="tusk-harm-43" n="1" staff="1" startid="#tusk-note-43">F<rend rend="sup">7</rend>/A</harm>
+                <harm xml:id="tusk-harm-44" n="2" staff="1" startid="#tusk-note-43" chordref="#tusk-chorddef-9" rendgrid="gridtext">D<rend rend="sup">7</rend>/F♯</harm>
+              </measure>
+              <measure n="18" width="253vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-44" dur.ppq="512" dur="2" pname="d" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="m">Schan</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">Gü</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-45" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">den,</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>te</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-45" n="1" staff="1" startid="#tusk-note-44">B♭</harm>
+                <harm xml:id="tusk-harm-46" n="2" staff="1" startid="#tusk-note-44" chordref="#tusk-chorddef-10" rendgrid="gridtext">G</harm>
+              </measure>
+              <measure n="19" width="280vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-46" dur.ppq="256" dur="4" pname="d" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">ret</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">steht</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-47" accid.ges="f" dur.ppq="256" dur="4" pname="e" oct="5" color="#000000" stem.dir="down">
+                      <accid xml:id="tusk-accid-1" accid="f"/>
+                      <verse n="1">
+                        <syl>test</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="i">un</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-48" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">von</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ser</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-47" n="1" staff="1" startid="#tusk-note-46">B♭</harm>
+                <harm xml:id="tusk-harm-48" n="2" staff="1" startid="#tusk-note-46" chordref="#tusk-chorddef-10" rendgrid="gridtext">G</harm>
+                <harm xml:id="tusk-harm-49" n="1" staff="1" startid="#tusk-note-47">E♭</harm>
+                <harm xml:id="tusk-harm-50" n="2" staff="1" startid="#tusk-note-47" chordref="#tusk-chorddef-8" rendgrid="gridtext">C</harm>
+                <harm xml:id="tusk-harm-51" n="1" staff="1" startid="#tusk-note-48">F<rend rend="sup">7</rend>/A</harm>
+                <harm xml:id="tusk-harm-52" n="2" staff="1" startid="#tusk-note-48" chordref="#tusk-chorddef-9" rendgrid="gridtext">D<rend rend="sup">7</rend>/F♯</harm>
+              </measure>
+              <measure n="20" width="253vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-49" dur.ppq="512" dur="2" pname="d" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="m">Ban</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">G´mü</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-50" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">den.</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>te,</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-53" n="1" staff="1" startid="#tusk-note-49">B♭</harm>
+                <harm xml:id="tusk-harm-54" n="2" staff="1" startid="#tusk-note-49" chordref="#tusk-chorddef-10" rendgrid="gridtext">G</harm>
+              </measure>
+              <measure n="21" width="343vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-51" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>Wer</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>an</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-52" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl wordpos="t">dir</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>dir</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-53" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">ver</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">wir</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-5"/>
+                <harm xml:id="tusk-harm-55" n="1" staff="1" startid="#tusk-note-51">F</harm>
+                <harm xml:id="tusk-harm-56" n="2" staff="1" startid="#tusk-note-51" chordref="#tusk-chorddef-1" rendgrid="gridtext">D</harm>
+              </measure>
+              <measure n="22" width="257vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-54" dur.ppq="512" dur="2" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">trau</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">kle</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-55" dur.ppq="256" dur="4" pname="c" oct="5" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">et,</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ben</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+              </measure>
+              <measure n="23" width="284vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-56" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>hat</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>im</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-57" dur.ppq="256" dur="4" pname="g" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">wohl</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">Tod</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-58" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">ge</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">und</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-57" n="1" staff="1" startid="#tusk-note-56">Cm<rend rend="sup">7</rend>
+                </harm>
+                <harm xml:id="tusk-harm-58" n="2" staff="1" startid="#tusk-note-56" chordref="#tusk-chorddef-11" rendgrid="gridtext">Am<rend rend="sup">7</rend>
+                </harm>
+                <harm xml:id="tusk-harm-59" n="1" staff="1" startid="#tusk-note-58">F<rend rend="sup">7</rend>/A</harm>
+                <harm xml:id="tusk-harm-60" n="2" staff="1" startid="#tusk-note-58" chordref="#tusk-chorddef-9" rendgrid="gridtext">D<rend rend="sup">7</rend>/F♯</harm>
+              </measure>
+              <measure n="24" width="257vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-59" accid.ges="f" dur.ppq="512" dur="2" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">bau</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">Le</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-60" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl wordpos="t">et,</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>ben;</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-61" n="1" staff="1" startid="#tusk-note-59">B♭</harm>
+                <harm xml:id="tusk-harm-62" n="2" staff="1" startid="#tusk-note-59" chordref="#tusk-chorddef-10" rendgrid="gridtext">G</harm>
+              </measure>
+              <measure n="25" width="344vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-61" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl>wird</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>nichts</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-62" accid.ges="f" dur.ppq="256" dur="4" pname="b" oct="4" color="#000000" stem.dir="down">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">e</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl wordpos="t">kann</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-63" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl>wig</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>uns</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <pb xml:id="tusk-pb-2"/>
+                <harm xml:id="tusk-harm-63" n="1" staff="1" startid="#tusk-note-61">Gm</harm>
+                <harm xml:id="tusk-harm-64" n="2" staff="1" startid="#tusk-note-61" chordref="#tusk-chorddef-12" rendgrid="gridtext">Em</harm>
+              </measure>
+              <measure n="26" width="292vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-64" dur.ppq="384" dots="1" dur="4" pname="g" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">blei</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">schei</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-65" dur.ppq="128" dur="8" pname="f" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-66" dur.ppq="256" dur="4" pname="e" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl wordpos="t">ben,</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl>den.</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-65" n="1" staff="1" startid="#tusk-note-64">C<rend rend="sup">7</rend>
+                </harm>
+                <harm xml:id="tusk-harm-66" n="2" staff="1" startid="#tusk-note-64" chordref="#tusk-chorddef-13" rendgrid="gridtext">A<rend rend="sup">7</rend>
+                </harm>
+              </measure>
+              <measure n="27" width="285vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-67" dur.ppq="256" dur="4" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="i">Hal</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">Hal</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-68" dur.ppq="256" dur="4" pname="f" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="m">le</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">le</syl>
+                      </verse>
+                    </note>
+                    <note xml:id="tusk-note-69" dur.ppq="256" dur="4" pname="e" oct="4" color="#000000" stem.dir="up">
+                      <verse n="1">
+                        <syl con="d" wordpos="m">lu</syl>
+                      </verse>
+                      <verse n="2">
+                        <syl con="d" wordpos="m">lu</syl>
+                      </verse>
+                    </note>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-67" n="1" staff="1" startid="#tusk-note-67">B♭</harm>
+                <harm xml:id="tusk-harm-68" n="2" staff="1" startid="#tusk-note-67" chordref="#tusk-chorddef-10" rendgrid="gridtext">G</harm>
+                <harm xml:id="tusk-harm-69" n="1" staff="1" startid="#tusk-note-69">C</harm>
+                <harm xml:id="tusk-harm-70" n="2" staff="1" startid="#tusk-note-69" chordref="#tusk-chorddef-7" rendgrid="gridtext">A</harm>
+              </measure>
+              <ending n="1" type="stop" lendsym="angledown">
+                <measure n="28" left="single" right="rptend" width="220vu">
+                  <staff n="1">
+                    <layer n="1">
+                      <note xml:id="tusk-note-70" dur.ppq="768" dots="1" dur="2" pname="f" oct="4" color="#000000" stem.dir="up">
+                        <verse n="1">
+                          <syl wordpos="t">ja.</syl>
+                        </verse>
+                      </note>
+                    </layer>
+                  </staff>
+                  <harm xml:id="tusk-harm-71" n="1" staff="1" startid="#tusk-note-70">F</harm>
+                  <harm xml:id="tusk-harm-72" n="2" staff="1" startid="#tusk-note-70" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+                </measure>
+              </ending>
+              <ending n="2" type="discontinue" lendsym="none">
+                <measure n="29" left="single" width="335vu">
+                  <staff n="1">
+                    <layer n="1">
+                      <note xml:id="tusk-note-71" dur.ppq="768" dots="1" dur="2" pname="f" oct="4" color="#000000" stem.dir="up">
+                        <verse n="2">
+                          <syl wordpos="t">ja.</syl>
+                        </verse>
+                      </note>
+                    </layer>
+                  </staff>
+                  <sb xml:id="tusk-sb-6"/>
+                  <harm xml:id="tusk-harm-73" n="1" staff="1" startid="#tusk-note-71">F/A</harm>
+                  <harm xml:id="tusk-harm-74" n="2" staff="1" startid="#tusk-note-71" chordref="#tusk-chorddef-4" rendgrid="gridtext">D/F♯</harm>
+                  <dir xml:id="tusk-dir-5" staff="1" tstamp="1" place="above" vgrp="2670">
+                    <rend halign="left" rend="box" fontfam="Quicksand" fontname="Quicksand" fontsize="9.2082pt" fontstyle="normal" fontweight="normal" valign="middle">Interlude</rend>
+                  </dir>
+                </measure>
+                <measure n="30" width="269vu">
+                  <staff n="1">
+                    <layer n="1">
+                      <note xml:id="tusk-note-72" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                      <note xml:id="tusk-note-73" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                      <note xml:id="tusk-note-74" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    </layer>
+                  </staff>
+                  <harm xml:id="tusk-harm-75" n="1" staff="1" startid="#tusk-note-72">B♭<rend rend="sup">6add9</rend>
+                  </harm>
+                  <harm xml:id="tusk-harm-76" n="2" staff="1" startid="#tusk-note-72" chordref="#tusk-chorddef-14" rendgrid="gridtext">G<rend rend="sup">6add9</rend>
+                  </harm>
+                </measure>
+                <measure n="31" right="single" width="269vu">
+                  <staff n="1">
+                    <layer n="1">
+                      <note xml:id="tusk-note-75" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                      <note xml:id="tusk-note-76" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                      <note xml:id="tusk-note-77" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    </layer>
+                  </staff>
+                  <harm xml:id="tusk-harm-77" n="1" staff="1" startid="#tusk-note-75">Csus<rend rend="sup">4</rend>
+                  </harm>
+                  <harm xml:id="tusk-harm-78" n="2" staff="1" startid="#tusk-note-75" chordref="#tusk-chorddef-6" rendgrid="gridtext">Asus<rend rend="sup">4</rend>
+                  </harm>
+                </measure>
+              </ending>
+              <measure n="32" width="269vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-78" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-79" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-80" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+              </measure>
+              <measure n="33" width="208vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-81" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-82" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-83" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-7"/>
+                <harm xml:id="tusk-harm-79" n="1" staff="1" startid="#tusk-note-81">F/A</harm>
+                <harm xml:id="tusk-harm-80" n="2" staff="1" startid="#tusk-note-81" chordref="#tusk-chorddef-4" rendgrid="gridtext">D/F♯</harm>
+              </measure>
+              <measure n="34" width="151vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-84" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-85" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-86" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-81" n="1" staff="1" startid="#tusk-note-84">B♭<rend rend="sup">6add9</rend>
+                </harm>
+                <harm xml:id="tusk-harm-82" n="2" staff="1" startid="#tusk-note-84" chordref="#tusk-chorddef-14" rendgrid="gridtext">G<rend rend="sup">6add9</rend>
+                </harm>
+                <repeatMark xml:id="tusk-repeatmark-2" staff="1" tstamp="3" func="coda" glyph.name="coda"/>
+              </measure>
+              <measure n="35" width="180vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-87" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-88" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-89" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-83" n="1" staff="1" startid="#tusk-note-87">Csus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-84" n="2" staff="1" startid="#tusk-note-87" chordref="#tusk-chorddef-6" rendgrid="gridtext">Asus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="36" right="dbl" width="104vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-90" dur.ppq="768" dots="1" dur="2" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <dir xml:id="tusk-dir-6" staff="1" tstamp="2.44140625"/>
+                <dir xml:id="tusk-dir-7" staff="1" tstamp="3.22265625"/>
+                <dir xml:id="tusk-dir-8" staff="1" tstamp="3.99609375" place="below" vgrp="710">
+                  <rend halign="right" fontfam="Quicksand" fontname="Quicksand" fontsize="11.7195pt" fontstyle="normal" fontweight="bold" valign="middle">D.S. al</rend>
+                </dir>
+              </measure>
+            </section>
+            <section restart="true">
+              <measure n="37" width="229vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-91" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-92" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                    <note xml:id="tusk-note-93" dur.ppq="256" dur="4" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <sb xml:id="tusk-sb-8"/>
+                <harm xml:id="tusk-harm-85" n="2" staff="1" startid="#tusk-note-92" chordref="#tusk-chorddef-6" rendgrid="gridtext">Asus<rend rend="sup">4</rend>
+                </harm>
+                <harm xml:id="tusk-harm-86" n="1" staff="1" startid="#tusk-note-92">Csus<rend rend="sup">4</rend>
+                </harm>
+              </measure>
+              <measure n="38" right="end" width="162vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="tusk-note-94" dur.ppq="768" dots="1" dur="2" pname="a" oct="4" color="#000000" stem.dir="up"/>
+                  </layer>
+                </staff>
+                <harm xml:id="tusk-harm-87" n="1" staff="1" tstamp="2">F</harm>
+                <harm xml:id="tusk-harm-88" n="2" staff="1" tstamp="2" chordref="#tusk-chorddef-3" rendgrid="gridtext">D</harm>
+                <fermata xml:id="tusk-fermata-1" staff="1" startid="#tusk-note-94"/>
+              </measure>
+            </section>
+            <!-- Stanza 2 extracted from original lyric lanes 3 and 4; stack labels reference harm@n=2. -->
+            <div type="later-verses" xml:id="tusk-div-later-verse-2">
+              <lg n="2" type="later-verse" staff="1" layer="1" place="below" xml:id="tusk-lg-verse-2">
+                <head>2.</head>
+                <l n="1" type="verse-line" xml:id="tusk-l-verse-2-line-1">
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-20" synch="#tusk-note-23" xml:id="tusk-stack-verse-2-line-1-001">D|<syl xml:id="tusk-syl-verse-2-line-1-001" synch="#tusk-note-23 #tusk-harm-19 #tusk-harm-20" corresp="#tusk-harm-19 #tusk-harm-20">Wenn</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-002" synch="#tusk-note-24">wir</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-22" synch="#tusk-note-25" xml:id="tusk-stack-verse-2-line-1-003">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-1-003" synch="#tusk-note-25 #tusk-harm-21 #tusk-harm-22" corresp="#tusk-harm-21 #tusk-harm-22">dich</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-24" synch="#tusk-note-26" xml:id="tusk-stack-verse-2-line-1-004">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-004" synch="#tusk-note-26 #tusk-harm-23 #tusk-harm-24" corresp="#tusk-harm-23 #tusk-harm-24">ha</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-005" synch="#tusk-note-27">ben,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-26" synch="#tusk-note-28" xml:id="tusk-stack-verse-2-line-1-006">D|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-006" synch="#tusk-note-28 #tusk-harm-25 #tusk-harm-26" corresp="#tusk-harm-25 #tusk-harm-26">kann</syl>
+                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-007" synch="#tusk-note-29">uns</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-28" synch="#tusk-note-30" xml:id="tusk-stack-verse-2-line-1-008">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-1-008" synch="#tusk-note-30 #tusk-harm-27 #tusk-harm-28" corresp="#tusk-harm-27 #tusk-harm-28">nicht</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-30" synch="#tusk-note-31" xml:id="tusk-stack-verse-2-line-1-009">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-009" synch="#tusk-note-31 #tusk-harm-29 #tusk-harm-30" corresp="#tusk-harm-29 #tusk-harm-30">scha</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-010" synch="#tusk-note-32">den</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-32" synch="#tusk-note-33" xml:id="tusk-stack-verse-2-line-1-011">D/F♯|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-011" synch="#tusk-note-33 #tusk-harm-31 #tusk-harm-32" corresp="#tusk-harm-31 #tusk-harm-32">Teu</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-012" synch="#tusk-note-34">fel,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-34" synch="#tusk-note-35" xml:id="tusk-stack-verse-2-line-1-013">Bm<rend rend="sup">7</rend>|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-013" synch="#tusk-note-35 #tusk-harm-33 #tusk-harm-34" corresp="#tusk-harm-33 #tusk-harm-34">Welt,</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-014" synch="#tusk-note-37">Sünd</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-36" synch="#tusk-note-38" xml:id="tusk-stack-verse-2-line-1-015">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-015" synch="#tusk-note-38 #tusk-harm-35 #tusk-harm-36" corresp="#tusk-harm-35 #tusk-harm-36">o</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-016" synch="#tusk-note-39">der</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-38" synch="#tusk-note-40" xml:id="tusk-stack-verse-2-line-1-017">D|<syl xml:id="tusk-syl-verse-2-line-1-017" synch="#tusk-note-40 #tusk-harm-37 #tusk-harm-38" corresp="#tusk-harm-37 #tusk-harm-38">Tod.</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-40" synch="#tusk-note-41" xml:id="tusk-stack-verse-2-line-1-018">D|<syl xml:id="tusk-syl-verse-2-line-1-018" synch="#tusk-note-41 #tusk-harm-39 #tusk-harm-40" corresp="#tusk-harm-39 #tusk-harm-40">Drum</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-42" synch="#tusk-note-42" xml:id="tusk-stack-verse-2-line-1-019">C|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-019" synch="#tusk-note-42 #tusk-harm-41 #tusk-harm-42" corresp="#tusk-harm-41 #tusk-harm-42">wir</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-44" synch="#tusk-note-43" xml:id="tusk-stack-verse-2-line-1-020">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-1-020" synch="#tusk-note-43 #tusk-harm-43 #tusk-harm-44" corresp="#tusk-harm-43 #tusk-harm-44">dich</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-46" synch="#tusk-note-44" xml:id="tusk-stack-verse-2-line-1-021">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-021" synch="#tusk-note-44 #tusk-harm-45 #tusk-harm-46" corresp="#tusk-harm-45 #tusk-harm-46">eh</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-022" synch="#tusk-note-45">ren,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-48" synch="#tusk-note-46" xml:id="tusk-stack-verse-2-line-1-023">G|<syl xml:id="tusk-syl-verse-2-line-1-023" synch="#tusk-note-46 #tusk-harm-47 #tusk-harm-48" corresp="#tusk-harm-47 #tusk-harm-48">dein</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-50" synch="#tusk-note-47" xml:id="tusk-stack-verse-2-line-1-024">C|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-024" synch="#tusk-note-47 #tusk-harm-49 #tusk-harm-50" corresp="#tusk-harm-49 #tusk-harm-50">Lob</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-52" synch="#tusk-note-48" xml:id="tusk-stack-verse-2-line-1-025">D<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-025" synch="#tusk-note-48 #tusk-harm-51 #tusk-harm-52" corresp="#tusk-harm-51 #tusk-harm-52">ver</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-54" synch="#tusk-note-49" xml:id="tusk-stack-verse-2-line-1-026">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-026" synch="#tusk-note-49 #tusk-harm-53 #tusk-harm-54" corresp="#tusk-harm-53 #tusk-harm-54">meh</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-027" synch="#tusk-note-50">ren</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-56" synch="#tusk-note-51" xml:id="tusk-stack-verse-2-line-1-028">D|<syl xml:id="tusk-syl-verse-2-line-1-028" synch="#tusk-note-51 #tusk-harm-55 #tusk-harm-56" corresp="#tusk-harm-55 #tusk-harm-56">mit</syl>
+                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-029" synch="#tusk-note-52">hel</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-1-030" synch="#tusk-note-53">lem</syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-031" synch="#tusk-note-54">Schal</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-1-032" synch="#tusk-note-55">le,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-58" synch="#tusk-note-56" xml:id="tusk-stack-verse-2-line-1-033">Am<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-033" synch="#tusk-note-56 #tusk-harm-57 #tusk-harm-58" corresp="#tusk-harm-57 #tusk-harm-58">freu</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-034" synch="#tusk-note-57">en</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-60" synch="#tusk-note-58" xml:id="tusk-stack-verse-2-line-1-035">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-1-035" synch="#tusk-note-58 #tusk-harm-59 #tusk-harm-60" corresp="#tusk-harm-59 #tusk-harm-60">uns</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-62" synch="#tusk-note-59" xml:id="tusk-stack-verse-2-line-1-036">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-036" synch="#tusk-note-59 #tusk-harm-61 #tusk-harm-62" corresp="#tusk-harm-61 #tusk-harm-62">a</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-037" synch="#tusk-note-60">le</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-64" synch="#tusk-note-61" xml:id="tusk-stack-verse-2-line-1-038">Em|<syl xml:id="tusk-syl-verse-2-line-1-038" synch="#tusk-note-61 #tusk-harm-63 #tusk-harm-64" corresp="#tusk-harm-63 #tusk-harm-64">zu</syl>
+                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-039" synch="#tusk-note-62">die</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-1-040" synch="#tusk-note-63">ser</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-66" synch="#tusk-note-64" xml:id="tusk-stack-verse-2-line-1-041">A<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-041" synch="#tusk-note-64 #tusk-harm-65 #tusk-harm-66" corresp="#tusk-harm-65 #tusk-harm-66">Stun</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-042" synch="#tusk-note-66">de.</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-68" synch="#tusk-note-67" xml:id="tusk-stack-verse-2-line-1-043">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-043" synch="#tusk-note-67 #tusk-harm-67 #tusk-harm-68" corresp="#tusk-harm-67 #tusk-harm-68">Hal</syl>
+                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-044" synch="#tusk-note-68">le</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-70" synch="#tusk-note-69" xml:id="tusk-stack-verse-2-line-1-045">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-045" synch="#tusk-note-69 #tusk-harm-69 #tusk-harm-70" corresp="#tusk-harm-69 #tusk-harm-70">lu</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-72" synch="#tusk-note-70" xml:id="tusk-stack-verse-2-line-1-046">D|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-046" synch="#tusk-note-70 #tusk-harm-71 #tusk-harm-72" corresp="#tusk-harm-71 #tusk-harm-72">ja.</syl>
+                  </stack>
+                </l>
+                <l n="2" type="verse-line" xml:id="tusk-l-verse-2-line-2">
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-20" synch="#tusk-note-23" xml:id="tusk-stack-verse-2-line-2-001">D|<syl xml:id="tusk-syl-verse-2-line-2-001" synch="#tusk-note-23 #tusk-harm-19 #tusk-harm-20" corresp="#tusk-harm-19 #tusk-harm-20">Du</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-002" synch="#tusk-note-24">hast's</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-22" synch="#tusk-note-25" xml:id="tusk-stack-verse-2-line-2-003">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-2-003" synch="#tusk-note-25 #tusk-harm-21 #tusk-harm-22" corresp="#tusk-harm-21 #tusk-harm-22">in</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-24" synch="#tusk-note-26" xml:id="tusk-stack-verse-2-line-2-004">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-004" synch="#tusk-note-26 #tusk-harm-23 #tusk-harm-24" corresp="#tusk-harm-23 #tusk-harm-24">Hän</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-005" synch="#tusk-note-27">den,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-26" synch="#tusk-note-28" xml:id="tusk-stack-verse-2-line-2-006">D|<syl xml:id="tusk-syl-verse-2-line-2-006" synch="#tusk-note-28 #tusk-harm-25 #tusk-harm-26" corresp="#tusk-harm-25 #tusk-harm-26">kannst</syl>
+                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-007" synch="#tusk-note-29">al</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-28" synch="#tusk-note-30" xml:id="tusk-stack-verse-2-line-2-008">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-2-008" synch="#tusk-note-30 #tusk-harm-27 #tusk-harm-28" corresp="#tusk-harm-27 #tusk-harm-28">les</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-30" synch="#tusk-note-31" xml:id="tusk-stack-verse-2-line-2-009">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-009" synch="#tusk-note-31 #tusk-harm-29 #tusk-harm-30" corresp="#tusk-harm-29 #tusk-harm-30">wen</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-010" synch="#tusk-note-32">den,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-32" synch="#tusk-note-33" xml:id="tusk-stack-verse-2-line-2-011">D/F♯|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-011" synch="#tusk-note-33 #tusk-harm-31 #tusk-harm-32" corresp="#tusk-harm-31 #tusk-harm-32">wie</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-012" synch="#tusk-note-34">nur</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-34" synch="#tusk-note-35" xml:id="tusk-stack-verse-2-line-2-013">Bm<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-013" synch="#tusk-note-35 #tusk-harm-33 #tusk-harm-34" corresp="#tusk-harm-33 #tusk-harm-34">hei</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-014" synch="#tusk-note-37">ßen</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-36" synch="#tusk-note-38" xml:id="tusk-stack-verse-2-line-2-015">A|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-015" synch="#tusk-note-38 #tusk-harm-35 #tusk-harm-36" corresp="#tusk-harm-35 #tusk-harm-36">mag</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-016" synch="#tusk-note-39">die</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-38" synch="#tusk-note-40" xml:id="tusk-stack-verse-2-line-2-017">D|<syl xml:id="tusk-syl-verse-2-line-2-017" synch="#tusk-note-40 #tusk-harm-37 #tusk-harm-38" corresp="#tusk-harm-37 #tusk-harm-38">Not.</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-40" synch="#tusk-note-41" xml:id="tusk-stack-verse-2-line-2-018">D|<syl xml:id="tusk-syl-verse-2-line-2-018" synch="#tusk-note-41 #tusk-harm-39 #tusk-harm-40" corresp="#tusk-harm-39 #tusk-harm-40">Wir</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-42" synch="#tusk-note-42" xml:id="tusk-stack-verse-2-line-2-019">C|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-019" synch="#tusk-note-42 #tusk-harm-41 #tusk-harm-42" corresp="#tusk-harm-41 #tusk-harm-42">ju</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-44" synch="#tusk-note-43" xml:id="tusk-stack-verse-2-line-2-020">D<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-020" synch="#tusk-note-43 #tusk-harm-43 #tusk-harm-44" corresp="#tusk-harm-43 #tusk-harm-44">bi</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-46" synch="#tusk-note-44" xml:id="tusk-stack-verse-2-line-2-021">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-021" synch="#tusk-note-44 #tusk-harm-45 #tusk-harm-46" corresp="#tusk-harm-45 #tusk-harm-46">lie</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-022" synch="#tusk-note-45">ren</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-48" synch="#tusk-note-46" xml:id="tusk-stack-verse-2-line-2-023">G|<syl xml:id="tusk-syl-verse-2-line-2-023" synch="#tusk-note-46 #tusk-harm-47 #tusk-harm-48" corresp="#tusk-harm-47 #tusk-harm-48">und</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-50" synch="#tusk-note-47" xml:id="tusk-stack-verse-2-line-2-024">C|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-024" synch="#tusk-note-47 #tusk-harm-49 #tusk-harm-50" corresp="#tusk-harm-49 #tusk-harm-50">tri</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-52" synch="#tusk-note-48" xml:id="tusk-stack-verse-2-line-2-025">D<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-025" synch="#tusk-note-48 #tusk-harm-51 #tusk-harm-52" corresp="#tusk-harm-51 #tusk-harm-52">um</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-54" synch="#tusk-note-49" xml:id="tusk-stack-verse-2-line-2-026">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-026" synch="#tusk-note-49 #tusk-harm-53 #tusk-harm-54" corresp="#tusk-harm-53 #tusk-harm-54">phie</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-027" synch="#tusk-note-50">ren,</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-56" synch="#tusk-note-51" xml:id="tusk-stack-verse-2-line-2-028">D|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-028" synch="#tusk-note-51 #tusk-harm-55 #tusk-harm-56" corresp="#tusk-harm-55 #tusk-harm-56">lie</syl>
+                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-029" synch="#tusk-note-52">ben</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-2-030" synch="#tusk-note-53">und</syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-031" synch="#tusk-note-54">lo</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-2-032" synch="#tusk-note-55">ben</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-58" synch="#tusk-note-56" xml:id="tusk-stack-verse-2-line-2-033">Am<rend rend="sup">7</rend>|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-033" synch="#tusk-note-56 #tusk-harm-57 #tusk-harm-58" corresp="#tusk-harm-57 #tusk-harm-58">dein</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-034" synch="#tusk-note-57">Macht</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-60" synch="#tusk-note-58" xml:id="tusk-stack-verse-2-line-2-035">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-2-035" synch="#tusk-note-58 #tusk-harm-59 #tusk-harm-60" corresp="#tusk-harm-59 #tusk-harm-60">dort</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-62" synch="#tusk-note-59" xml:id="tusk-stack-verse-2-line-2-036">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-036" synch="#tusk-note-59 #tusk-harm-61 #tusk-harm-62" corresp="#tusk-harm-61 #tusk-harm-62">dro</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-037" synch="#tusk-note-60">ben</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-64" synch="#tusk-note-61" xml:id="tusk-stack-verse-2-line-2-038">Em|<syl xml:id="tusk-syl-verse-2-line-2-038" synch="#tusk-note-61 #tusk-harm-63 #tusk-harm-64" corresp="#tusk-harm-63 #tusk-harm-64">mit</syl>
+                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-039" synch="#tusk-note-62">Herz</syl>
+                  <syl xml:id="tusk-syl-verse-2-line-2-040" synch="#tusk-note-63">und</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-66" synch="#tusk-note-64" xml:id="tusk-stack-verse-2-line-2-041">A<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-041" synch="#tusk-note-64 #tusk-harm-65 #tusk-harm-66" corresp="#tusk-harm-65 #tusk-harm-66">Mun</syl>
+                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-042" synch="#tusk-note-66">de.</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-68" synch="#tusk-note-67" xml:id="tusk-stack-verse-2-line-2-043">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-043" synch="#tusk-note-67 #tusk-harm-67 #tusk-harm-68" corresp="#tusk-harm-67 #tusk-harm-68">Hal</syl>
+                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-044" synch="#tusk-note-68">le</syl>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-70" synch="#tusk-note-69" xml:id="tusk-stack-verse-2-line-2-045">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-045" synch="#tusk-note-69 #tusk-harm-69 #tusk-harm-70" corresp="#tusk-harm-69 #tusk-harm-70">lu</syl>
+                  </stack>
+                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-74" synch="#tusk-note-71" xml:id="tusk-stack-verse-2-line-2-046">D/F♯|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-046" synch="#tusk-note-71 #tusk-harm-73 #tusk-harm-74" corresp="#tusk-harm-73 #tusk-harm-74">ja.</syl>
+                  </stack>
+                </l>
+              </lg>
+            </div>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

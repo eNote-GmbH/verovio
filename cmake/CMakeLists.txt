@@ -41,6 +41,7 @@ option(BUILD_AS_ANDROID_LIBRARY "Build Verovio as library for Android"         O
 option(USE_PAE_OLD_PARSER       "Use old PAE parser"                           OFF)
 option(BUILD_FONT_BENCHMARKS    "Build runtime font benchmark harness"          OFF)
 option(BUILD_FONT_TESTS         "Build runtime font API tests"                   OFF)
+option(BUILD_TEXT_BLOCK_TESTS   "Build MEI text block tests"                     OFF)
 
 if (NO_HUMDRUM_SUPPORT AND MUSICXML_DEFAULT_HUMDRUM)
     message(FATAL_ERROR "Default MusicXML to Humdrum cannot be enabled by default without Humdrum support")
@@ -289,6 +290,16 @@ if(BUILD_FONT_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/../tests/font-runtime/cli_alias.cmake)
 endif()
 
+if(BUILD_TEXT_BLOCK_TESTS)
+    enable_testing()
+    add_executable(text-block-test ../tests/text-blocks/text_blocks.cpp ${all_SRC})
+    add_test(NAME text-blocks
+        COMMAND text-block-test
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/in-dir-ist-freude.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/text-flow-core.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei)
+endif()
+
 ##################
 # Shared library #
 ##################
@@ -386,6 +397,17 @@ else()
     message(STATUS "***** Building Verovio as command-line tool *****")
     add_executable(verovio ../tools/main.cpp ${all_SRC})
 
+endif()
+
+if(BUILD_TEXT_BLOCK_TESTS AND TARGET verovio AND NOT BUILD_AS_LIBRARY AND NOT BUILD_AS_ANDROID_LIBRARY
+        AND NOT BUILD_AS_PYTHON)
+    add_test(NAME text-blocks-cli
+        COMMAND ${CMAKE_COMMAND}
+            -DVEROVIO=$<TARGET_FILE:verovio>
+            -DRESOURCES=${CMAKE_CURRENT_SOURCE_DIR}/../data
+            -DFIXTURE=${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/in-dir-ist-freude.mei
+            -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/cli.cmake)
 endif()
 
 if (BUILD_AS_ANDROID_LIBRARY)

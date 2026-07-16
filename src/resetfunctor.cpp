@@ -156,6 +156,7 @@ FunctorCode ResetDataFunctor::VisitDiv(Div *div)
     this->VisitObject(div);
 
     div->SetDrawingInline(false);
+    div->ResetTextFlowLayout();
 
     return FUNCTOR_CONTINUE;
 }
