@@ -392,7 +392,7 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
     if (rend->HasFontsize()) {
         data_FONTSIZE *fs = rend->GetFontsizeAlternate();
         if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            rendFont.SetPointSize(fs->GetFontSizeNumeric());
+            rendFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
         }
         else if (fs->GetType() == FONTSIZE_term) {
             const int percent = fs->GetPercentForTerm();
@@ -605,7 +605,7 @@ void View::DrawSymbol(DeviceContext *dc, Symbol *symbol, TextDrawingParams &para
     if (symbol->HasFontsize()) {
         data_FONTSIZE *fs = symbol->GetFontsizeAlternate();
         if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            symbolFont.SetPointSize(fs->GetFontSizeNumeric());
+            symbolFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
         }
         else if (fs->GetType() == FONTSIZE_term) {
             const int percent = fs->GetPercentForTerm();
