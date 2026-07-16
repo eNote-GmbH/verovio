@@ -85,8 +85,10 @@ namespace {
             labelBottom = (labelBottom == VRV_UNSET) ? child->GetContentBottom()
                                                      : std::min(labelBottom, child->GetContentBottom());
         }
-        for (const TextElement *rend : params.m_enclosedRend) {
-            const int enclosureBottom = rend->GetContentBottom() - enclosureMargin / 2;
+        for (const TextEnclosure &enclosure : params.m_enclosedRend) {
+            assert(enclosure.element);
+            const int enclosureBottom
+                = std::min(enclosure.element->GetContentBottom(), enclosure.fontBottom) - enclosureMargin / 2;
             labelBottom = (labelBottom == VRV_UNSET) ? enclosureBottom : std::min(labelBottom, enclosureBottom);
         }
         return (labelBottom == VRV_UNSET) ? fallbackBottom : labelBottom;
@@ -3419,11 +3421,13 @@ void View::DrawTextEnclosure(DeviceContext *dc, const TextDrawingParams &params,
 
     dc->SetPushBack();
 
-    for (const auto rend : params.m_enclosedRend) {
+    for (const TextEnclosure &enclosure : params.m_enclosedRend) {
+        const TextElement *rend = enclosure.element;
+        assert(rend);
         int x1 = rend->GetContentLeft() - margin;
         int x2 = rend->GetContentRight() + margin;
-        int y1 = rend->GetContentBottom() - margin / 2;
-        int y2 = rend->GetContentTop() + margin;
+        int y1 = std::min(rend->GetContentBottom(), enclosure.fontBottom) - margin / 2;
+        int y2 = std::max(rend->GetContentTop(), enclosure.fontTop) + margin;
         const int width = std::abs(x2 - x1);
         const int height = std::abs(y2 - y1);
 
