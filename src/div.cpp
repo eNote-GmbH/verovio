@@ -72,6 +72,7 @@ void Div::ResetTextFlowLayout()
     m_textFlowHeight = 0;
     m_textFlowWidth = 0;
     m_textFlowLayouts.clear();
+    m_textFlowDocumentLayouts.clear();
 }
 
 void Div::SetTextFlowSize(int width, int height)
@@ -92,6 +93,20 @@ const TextFlowLayoutResult &Div::CacheTextFlowLayout(TextFlowLayoutResult result
 {
     m_textFlowLayouts.push_back(std::move(result));
     return m_textFlowLayouts.back();
+}
+
+const TextFlowDocumentLayoutResult *Div::GetTextFlowDocumentLayout(int availableWidth) const
+{
+    for (const TextFlowDocumentLayoutResult &result : m_textFlowDocumentLayouts) {
+        if (result.availableWidth == availableWidth) return &result;
+    }
+    return nullptr;
+}
+
+const TextFlowDocumentLayoutResult &Div::CacheTextFlowDocumentLayout(TextFlowDocumentLayoutResult result)
+{
+    m_textFlowDocumentLayouts.push_back(std::move(result));
+    return m_textFlowDocumentLayouts.back();
 }
 
 int Div::GetDrawingX() const

@@ -171,6 +171,11 @@ enum ClassId : uint16_t {
     P,
     LG,
     L,
+    TABLE,
+    CAPTION,
+    TR,
+    TD,
+    TH,
     TEXT_FLOW_ELEMENT_max,
     // Ids for PageElement child classes
     PAGE_ELEMENT,
@@ -344,10 +349,17 @@ class InterfaceComparison;
 class LayerElement;
 class LedgerLine;
 class TextFlowElement;
+class TextFlowTableElement;
+class TableCell;
 class Head;
 class Paragraph;
 class LineGroup;
 class Line;
+class Table;
+class TableCaption;
+class TableRow;
+class Td;
+class Th;
 class LinkingInterface;
 class Liquescent;
 class Nc;

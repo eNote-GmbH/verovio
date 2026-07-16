@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Text-flow table regression</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef page.width="600" page.height="900" page.leftmar="50" page.rightmar="50"
+              page.topmar="50" page.botmar="50" text.fam="Times" text.size="12pt">
+            <staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1"><staff n="1"><layer n="1"><note xml:id="table-note" pname="c" oct="4" dur="1"/></layer></staff></measure>
+            <div xml:id="table-div" type="parallel-texts">
+              <table xml:id="two-column-table" n="1" type="later-verses" label="Parallel verses" corresp="#table-note">
+                <caption xml:id="table-caption">Two later verses</caption>
+                <tr xml:id="parallel-row">
+                  <td xml:id="left-cell" n="1">
+                    <lg xml:id="left-lg"><l xml:id="left-line"><stack xml:id="left-stack" delim="|">C<rend rend="sup">7</rend>|Left</stack> column text wraps independently within its equal-width cell.</l></lg>
+                  </td>
+                  <td xml:id="right-cell" n="2">
+                    <lg xml:id="right-lg"><l xml:id="right-line"><stack xml:id="right-stack" delim="|">G|Right</stack> column text also wraps independently inside the second cell.</l></lg>
+                  </td>
+                </tr>
+                <tr xml:id="heading-row"><th xml:id="heading-cell" colspan="2">Spanning heading</th></tr>
+                <tr xml:id="span-row">
+                  <td xml:id="rowspan-cell" rowspan="2">Spanning cell</td>
+                  <td xml:id="ordinary-cell">Ordinary cell</td>
+                </tr>
+                <tr xml:id="nested-row">
+                  <td xml:id="nested-cell">
+                    <table xml:id="nested-table"><tr xml:id="nested-table-row"><td xml:id="nested-table-cell">Nested table</td></tr></table>
+                  </td>
+                </tr>
+                <tr xml:id="empty-row"><td xml:id="empty-left"/><td xml:id="empty-right"/></tr>
+                <tr xml:id="invalid-span-row"><td xml:id="invalid-span" colspan="0">Invalid span fallback</td><td>Still visible</td></tr>
+                <tr xml:id="overwide-word-row">
+                  <td xml:id="overwide-word-cell"><syl xml:id="overwide-first" con="d" wordpos="i">Supercalifragilisticexpialidocious</syl><syl xml:id="overwide-middle" con="d" wordpos="m">antidisestablishmentarianism</syl><syl xml:id="overwide-last" wordpos="t">counterrevolutionaries</syl></td><td/>
+                </tr>
+              </table>
+              <p xml:id="interrupted-paragraph"><rend xml:id="before-inline-table">Before table</rend><table xml:id="inline-table"><tr><td xml:id="inline-cell">Inside table</td></tr></table><rend xml:id="after-inline-table">After table</rend></p>
+              <table xml:id="collision-table">
+                <tr xml:id="collision-row-one"><td xml:id="collision-leading">Leading</td><td xml:id="collision-rowspan" rowspan="2">Occupied</td></tr>
+                <tr xml:id="collision-row-two"><td xml:id="collision-colspan" colspan="2">Must follow the occupied column</td></tr>
+              </table>
+            </div>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

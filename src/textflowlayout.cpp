@@ -14,7 +14,9 @@
 #include "div.h"
 #include "doc.h"
 #include "editorial.h"
+#include "fig.h"
 #include "rend.h"
+#include "svg.h"
 #include "syl.h"
 #include "text.h"
 #include "textflow.h"
@@ -234,6 +236,11 @@ int TextFlowLayout::PositionStackRows(Object *object, std::vector<TextFlowStackR
 
 std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block) const
 {
+    return this->MakeUnits(block, block->GetChildren());
+}
+
+std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::vector<Object *> &rootChildren) const
+{
     std::vector<TextFlowUnit> units;
     Syl *previousSyl = nullptr;
     bool pendingSpace = false;
@@ -246,16 +253,28 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block) const
             unit.stackRows = this->BuildStackRows(object);
             unit.metrics.width = this->PositionStackRows(object, unit.stackRows);
             unit.metrics.rowCount = std::max(1, static_cast<int>(unit.stackRows.size()));
+            for (const TextFlowStackRow &row : unit.stackRows) {
+                int segmentX = row.x;
+                for (const TextFlowSegment &segment : row.segments) {
+                    if (unit.syl && ((segment.object == unit.syl)
+                            || (segment.object->FindDescendantByType(SYL) == unit.syl))) {
+                        unit.lyricX = segmentX;
+                        unit.lyricWidth
+                            = this->MeasureObject(unit.syl, m_effectiveFont, m_effectiveFont.GetPointSize());
+                    }
+                    segmentX += segment.width;
+                }
+            }
         }
         else {
             unit.metrics.width = this->MeasureObject(object, m_effectiveFont, m_effectiveFont.GetPointSize());
+            if (unit.syl) unit.lyricWidth = unit.metrics.width;
         }
 
         if (previousSyl && unit.syl) {
-            const bool hyphen = (previousSyl->GetCon() == sylLog_CON_d)
+            unit.joinsPrevious = (previousSyl->GetCon() == sylLog_CON_d)
                 || (previousSyl->GetWordpos() == sylLog_WORDPOS_i) || (previousSyl->GetWordpos() == sylLog_WORDPOS_m);
-            unit.metrics.gapBefore = hyphen ? m_hyphenWidth : m_spaceWidth;
-            unit.prefixHyphen = hyphen;
+            unit.metrics.gapBefore = unit.joinsPrevious ? 0 : m_spaceWidth;
         }
         else if (pendingSpace) {
             unit.metrics.gapBefore = m_spaceWidth;
@@ -277,7 +296,8 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block) const
 
     std::function<void(Object *)> addChildren;
     addChildren = [&](Object *parent) {
-        for (Object *child : parent->GetChildren()) {
+        const std::vector<Object *> &children = (parent == block) ? rootChildren : parent->GetChildren();
+        for (Object *child : children) {
             if (child->Is(LB)) {
                 TextFlowUnit unit;
                 unit.object = child;
@@ -353,15 +373,375 @@ TextFlowLayoutResult TextFlowLayout::Layout(Object *block) const
     result.lineHeight = (styledLineHeight > 0) ? styledLineHeight : std::max(1, m_lineHeight);
     result.units = this->MakeUnits(block);
 
-    std::vector<TextFlowItemMetrics> metrics;
-    metrics.reserve(result.units.size());
-    for (const TextFlowUnit &unit : result.units) metrics.push_back(unit.metrics);
-    result.rows = TextFlowLayout::Wrap(metrics, m_availableWidth);
+    result.rows = this->WrapUnits(result.units);
+    result.connectors = this->PositionConnectors(result.units, result.rows);
     for (const TextFlowRow &row : result.rows) {
         result.width = std::max(result.width, row.width);
         result.height += std::max(1, row.rowCount) * result.lineHeight;
     }
     return result;
+}
+
+TextFlowLayoutResult TextFlowLayout::LayoutInline(Object *block, const std::vector<Object *> &children) const
+{
+    TextFlowLayoutResult result;
+    result.block = block;
+    m_effectiveFont = this->GetBlockFont(block);
+    m_spaceWidth = std::max(1, this->MeasureText(U" ", m_effectiveFont));
+    m_hyphenWidth = std::max(1, this->MeasureText(U"-", m_effectiveFont));
+    result.font = m_effectiveFont;
+    const int styledLineHeight = m_doc->GetTextLineHeight(&m_effectiveFont, false);
+    result.lineHeight = (styledLineHeight > 0) ? styledLineHeight : std::max(1, m_lineHeight);
+    result.units = this->MakeUnits(block, children);
+    result.rows = this->WrapUnits(result.units);
+    result.connectors = this->PositionConnectors(result.units, result.rows);
+    for (const TextFlowRow &row : result.rows) {
+        result.width = std::max(result.width, row.width);
+        result.height += std::max(1, row.rowCount) * result.lineHeight;
+    }
+    return result;
+}
+
+TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, bool bold) const
+{
+    TextFlowLayoutNode node;
+    node.object = object;
+    node.width = width;
+    node.bold = bold;
+
+    FontInfo baseFont = m_baseFont;
+    if (bold) baseFont.SetWeight(FONTWEIGHT_bold);
+    TextFlowLayout nestedLayout(m_doc, m_deviceContext, baseFont, width, m_lineHeight, m_staffSize);
+
+    if (object->Is(TABLE)) {
+        node.kind = TextFlowLayoutNodeKind::Table;
+        Table *table = vrv_cast<Table *>(object);
+        TextFlowTableLayoutResult tableLayout = nestedLayout.LayoutTable(table);
+        if (tableLayout.caption) {
+            TextFlowLayoutNode caption = nestedLayout.LayoutFlowNode(tableLayout.caption, width, bold);
+            tableLayout.captionHeight = caption.height;
+            node.children.push_back(std::move(caption));
+        }
+
+        std::vector<TextFlowLayoutNode> cellContents;
+        cellContents.reserve(tableLayout.cells.size());
+        for (TextFlowTableCellLayout &cell : tableLayout.cells) {
+            TextFlowLayoutNode content
+                = nestedLayout.LayoutFlowNode(cell.cell, cell.width, bold || cell.cell->Is(TH));
+            cell.preferredHeight = content.height;
+            cellContents.push_back(std::move(content));
+        }
+        nestedLayout.ResolveTableHeights(tableLayout);
+
+        std::vector<TableRow *> rows;
+        for (Object *child : table->GetChildren()) {
+            if (!child) continue;
+            if (child->Is(TR)) rows.push_back(vrv_cast<TableRow *>(child));
+        }
+        int rowY = tableLayout.gridY;
+        for (size_t rowIndex = 0; rowIndex < rows.size(); ++rowIndex) {
+            TextFlowLayoutNode rowNode;
+            rowNode.object = rows[rowIndex];
+            rowNode.kind = TextFlowLayoutNodeKind::Row;
+            rowNode.y = rowY;
+            rowNode.width = width;
+            rowNode.height = tableLayout.rowHeights[rowIndex];
+            for (size_t cellIndex = 0; cellIndex < tableLayout.cells.size(); ++cellIndex) {
+                const TextFlowTableCellLayout &cell = tableLayout.cells[cellIndex];
+                if (cell.row != static_cast<int>(rowIndex)) continue;
+                TextFlowLayoutNode cellNode = std::move(cellContents[cellIndex]);
+                cellNode.kind = TextFlowLayoutNodeKind::Cell;
+                cellNode.x = cell.x;
+                cellNode.y = cell.y - rowY;
+                cellNode.width = cell.width;
+                cellNode.height = cell.height;
+                rowNode.children.push_back(std::move(cellNode));
+            }
+            node.children.push_back(std::move(rowNode));
+            rowY += tableLayout.rowHeights[rowIndex] + tableLayout.gutter;
+        }
+        node.height = tableLayout.height;
+        return node;
+    }
+
+    if (object->Is(FIG)) {
+        node.kind = TextFlowLayoutNodeKind::Figure;
+        if (Svg *svg = vrv_cast<Svg *>(object->FindDescendantByType(SVG))) {
+            node.width = svg->GetWidth();
+            node.height = svg->GetHeight();
+        }
+        return node;
+    }
+    const bool phrase = object->IsAnyOf(std::array{ HEAD, P, L, REND, CAPTION });
+    if (phrase) {
+        std::vector<Object *> inlineChildren;
+        int cursorY = 0;
+        bool interrupted = false;
+        const auto flush = [&]() {
+            if (inlineChildren.empty()) return;
+            TextFlowLayoutNode fragment;
+            fragment.kind = TextFlowLayoutNodeKind::Phrase;
+            fragment.phrase = nestedLayout.LayoutInline(object, inlineChildren);
+            fragment.y = cursorY;
+            fragment.width = fragment.phrase.width;
+            fragment.height = fragment.phrase.height;
+            cursorY += fragment.height;
+            node.children.push_back(std::move(fragment));
+            inlineChildren.clear();
+        };
+        for (Object *child : object->GetChildren()) {
+            if (!child) continue;
+            if (child->Is(TABLE)) {
+                interrupted = true;
+                flush();
+                TextFlowLayoutNode tableNode = nestedLayout.LayoutFlowNode(child, width, bold);
+                tableNode.y = cursorY;
+                cursorY += tableNode.height;
+                node.children.push_back(std::move(tableNode));
+            }
+            else {
+                inlineChildren.push_back(child);
+            }
+        }
+        flush();
+        if (!interrupted) {
+            node.kind = TextFlowLayoutNodeKind::Phrase;
+            node.phrase = nestedLayout.Layout(object);
+            node.children.clear();
+            node.width = node.phrase.width;
+            node.height = node.phrase.height;
+        }
+        else {
+            node.kind = TextFlowLayoutNodeKind::Flow;
+            node.height = std::max(m_lineHeight, cursorY);
+        }
+        return node;
+    }
+
+    node.kind = TextFlowLayoutNodeKind::Flow;
+    int cursorY = 0;
+    std::vector<Object *> inlineChildren;
+    const auto flush = [&]() {
+        if (!inlineChildren.empty()) {
+            TextFlowLayoutNode fragment;
+            fragment.kind = TextFlowLayoutNodeKind::Phrase;
+            fragment.phrase = nestedLayout.LayoutInline(object, inlineChildren);
+            fragment.y = cursorY;
+            fragment.width = fragment.phrase.width;
+            fragment.height = fragment.phrase.height;
+            cursorY += fragment.height;
+            node.children.push_back(std::move(fragment));
+            inlineChildren.clear();
+        }
+    };
+    for (Object *child : object->GetChildren()) {
+        if (!child) continue;
+        if (!child->IsAnyOf(std::array{ DIV, HEAD, P, LG, L, TABLE, FIG })) {
+            inlineChildren.push_back(child);
+            continue;
+        }
+        flush();
+        TextFlowLayoutNode childNode = nestedLayout.LayoutFlowNode(child, width, bold);
+        childNode.y = cursorY;
+        cursorY += childNode.height;
+        node.children.push_back(std::move(childNode));
+    }
+    flush();
+    node.height = std::max(m_lineHeight, cursorY);
+    for (const TextFlowLayoutNode &child : node.children) node.width = std::max(node.width, child.x + child.width);
+    return node;
+}
+
+TextFlowDocumentLayoutResult TextFlowLayout::LayoutFlow(Object *root) const
+{
+    TextFlowDocumentLayoutResult result;
+    result.root = root;
+    result.availableWidth = m_availableWidth;
+    result.layout = this->LayoutFlowNode(root, m_availableWidth, false);
+    result.width = result.layout.width;
+    result.height = result.layout.height;
+    return result;
+}
+
+TextFlowTableLayoutResult TextFlowLayout::LayoutTable(Table *table) const
+{
+    TextFlowTableLayoutResult result;
+    result.table = table;
+    result.width = std::max(0, m_availableWidth);
+    result.gutter = std::max(1, m_baseFont.GetPointSize());
+
+    std::vector<TableRow *> rows;
+    for (Object *child : table->GetChildren()) {
+        if (child->Is(CAPTION) && !result.caption) result.caption = vrv_cast<TableCaption *>(child);
+        if (child->Is(TR)) rows.push_back(vrv_cast<TableRow *>(child));
+    }
+    std::vector<std::vector<bool>> occupied(rows.size());
+    for (size_t rowIndex = 0; rowIndex < rows.size(); ++rowIndex) {
+        int column = 0;
+        for (Object *child : rows[rowIndex]->GetChildren()) {
+            TableCell *cell = dynamic_cast<TableCell *>(child);
+            if (!cell) continue;
+            const int colspan = std::max(1, cell->GetColspan());
+            const auto rangeIsFree = [&](int start) {
+                for (int offset = 0; offset < colspan; ++offset) {
+                    const int candidate = start + offset;
+                    if ((candidate < static_cast<int>(occupied[rowIndex].size()))
+                        && occupied[rowIndex][candidate]) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+            while (!rangeIsFree(column)) ++column;
+            int rowspan = std::max(1, cell->GetRowspan());
+            if (rowIndex + rowspan > rows.size()) {
+                LogWarning("Table cell '%s' rowspan exceeds the final row; clamping it", cell->GetID().c_str());
+                rowspan = std::max(1, static_cast<int>(rows.size() - rowIndex));
+            }
+            for (size_t r = rowIndex; r < rowIndex + rowspan; ++r) {
+                if (occupied[r].size() < static_cast<size_t>(column + colspan)) {
+                    occupied[r].resize(column + colspan, false);
+                }
+                std::fill(occupied[r].begin() + column, occupied[r].begin() + column + colspan, true);
+            }
+            result.cells.push_back(
+                { cell, static_cast<int>(rowIndex), column, colspan, rowspan, 0, 0, 0, 0, 0 });
+            column += colspan;
+        }
+        result.columns = std::max(result.columns, static_cast<int>(occupied[rowIndex].size()));
+    }
+    result.columns = std::max(1, result.columns);
+    const int totalGutters = (result.columns - 1) * result.gutter;
+    const int columnWidth = std::max(0, (result.width - totalGutters) / result.columns);
+    for (TextFlowTableCellLayout &cell : result.cells) {
+        cell.x = cell.column * (columnWidth + result.gutter);
+        cell.width = cell.colspan * columnWidth + (cell.colspan - 1) * result.gutter;
+    }
+    result.rowHeights.assign(rows.size(), std::max(1, m_lineHeight));
+    return result;
+}
+
+void TextFlowLayout::ResolveTableHeights(TextFlowTableLayoutResult &table) const
+{
+    for (const TextFlowTableCellLayout &cell : table.cells) {
+        if (cell.rowspan == 1) {
+            table.rowHeights[cell.row] = std::max(table.rowHeights[cell.row], cell.preferredHeight);
+        }
+    }
+    for (const TextFlowTableCellLayout &cell : table.cells) {
+        if (cell.rowspan <= 1) continue;
+        int available = (cell.rowspan - 1) * table.gutter;
+        for (int row = cell.row; row < cell.row + cell.rowspan; ++row) available += table.rowHeights[row];
+        int deficit = std::max(0, cell.preferredHeight - available);
+        for (int row = 0; row < cell.rowspan && deficit > 0; ++row) {
+            const int share = (deficit + cell.rowspan - row - 1) / (cell.rowspan - row);
+            table.rowHeights[cell.row + row] += share;
+            deficit -= share;
+        }
+    }
+
+    table.gridY = table.caption ? table.captionHeight + table.gutter : 0;
+    std::vector<int> rowY(table.rowHeights.size(), table.gridY);
+    for (size_t row = 1; row < rowY.size(); ++row) {
+        rowY[row] = rowY[row - 1] + table.rowHeights[row - 1] + table.gutter;
+    }
+    for (TextFlowTableCellLayout &cell : table.cells) {
+        cell.y = rowY[cell.row];
+        cell.height = (cell.rowspan - 1) * table.gutter;
+        for (int row = cell.row; row < cell.row + cell.rowspan; ++row) cell.height += table.rowHeights[row];
+    }
+    table.height = table.gridY;
+    for (int rowHeight : table.rowHeights) table.height += rowHeight;
+    if (!table.rowHeights.empty()) table.height += (static_cast<int>(table.rowHeights.size()) - 1) * table.gutter;
+}
+
+std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUnit> &units) const
+{
+    std::vector<TextFlowRow> rows;
+    TextFlowRow row;
+    const auto finishRow = [&]() {
+        if (!row.items.empty() || rows.empty()) rows.push_back(row);
+        row = TextFlowRow();
+    };
+    const auto place = [&](size_t index, int gap) {
+        const TextFlowUnit &unit = units[index];
+        row.items.push_back({ index, row.width + gap });
+        row.width += gap + unit.metrics.width;
+        row.rowCount = std::max(row.rowCount, std::max(1, unit.metrics.rowCount));
+    };
+
+    size_t index = 0;
+    while (index < units.size()) {
+        if (units[index].metrics.hardBreak) {
+            finishRow();
+            ++index;
+            continue;
+        }
+
+        size_t end = index + 1;
+        while ((end < units.size()) && !units[end].metrics.hardBreak && units[end].joinsPrevious) ++end;
+        int wordWidth = 0;
+        for (size_t i = index; i < end; ++i) wordWidth += units[i].metrics.width;
+        const int wordGap = row.items.empty() ? 0 : units[index].metrics.gapBefore;
+
+        if ((m_availableWidth <= 0) || (wordWidth <= m_availableWidth)) {
+            if (!row.items.empty() && (row.width + wordGap + wordWidth > m_availableWidth)) finishRow();
+            for (size_t i = index; i < end; ++i) place(i, (i == index && !row.items.empty()) ? wordGap : 0);
+        }
+        else {
+            if (!row.items.empty()) finishRow();
+            for (size_t i = index; i < end; ++i) {
+                const int trailingConnector = (i + 1 < end) ? m_hyphenWidth : 0;
+                if (!row.items.empty()
+                    && (row.width + units[i].metrics.width + trailingConnector > m_availableWidth)) {
+                    row.width += std::min(m_hyphenWidth, std::max(0, m_availableWidth - row.width));
+                    finishRow();
+                }
+                place(i, 0);
+            }
+        }
+        index = end;
+    }
+    if (!row.items.empty() || rows.empty()) finishRow();
+    return rows;
+}
+
+std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
+    const std::vector<TextFlowUnit> &units, std::vector<TextFlowRow> &rows) const
+{
+    struct Location {
+        size_t row = 0;
+        int x = 0;
+        bool found = false;
+    };
+    std::vector<Location> locations(units.size());
+    for (size_t rowIndex = 0; rowIndex < rows.size(); ++rowIndex) {
+        for (const TextFlowPlacedItem &placed : rows[rowIndex].items) {
+            locations[placed.item] = { rowIndex, placed.x, true };
+        }
+    }
+
+    std::vector<TextFlowConnector> connectors;
+    for (size_t i = 1; i < units.size(); ++i) {
+        if (!units[i].joinsPrevious || !units[i].syl || !locations[i - 1].found || !locations[i].found) continue;
+        const Location &previous = locations[i - 1];
+        const Location &current = locations[i];
+        if (previous.row != current.row) {
+            const int previousRight
+                = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
+            const int connectorX = rows[previous.row].width - m_hyphenWidth;
+            if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, connectorX });
+            continue;
+        }
+        const int previousRight
+            = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
+        const int currentLeft = current.x + units[i].lyricX;
+        const int gap = currentLeft - previousRight;
+        if (gap >= m_hyphenWidth) {
+            connectors.push_back({ units[i].syl, current.row, previousRight + (gap - m_hyphenWidth) / 2 });
+        }
+    }
+    return connectors;
 }
 
 std::vector<TextFlowRow> TextFlowLayout::Wrap(const std::vector<TextFlowItemMetrics> &items, int availableWidth)

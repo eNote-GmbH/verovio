@@ -380,6 +380,7 @@ private:
     void WritePgHead(pugi::xml_node currentNode, PgHead *pgHead);
     void WriteDiv(pugi::xml_node currentNode, Div *div);
     void WriteTextFlowElement(pugi::xml_node currentNode, TextFlowElement *element);
+    void WriteTextFlowTableElement(pugi::xml_node currentNode, TextFlowTableElement *element);
     void WriteStack(pugi::xml_node currentNode, Stack *stack);
     void WriteStaffGrp(pugi::xml_node currentNode, StaffGrp *staffGrp);
     void WriteStaffDef(pugi::xml_node currentNode, StaffDef *staffDef);
@@ -728,6 +729,7 @@ private:
     bool ReadPgHead(Object *parent, pugi::xml_node pgHead);
     bool ReadDiv(Object *parent, pugi::xml_node div);
     bool ReadTextFlowElement(Object *parent, pugi::xml_node element, ClassId classId);
+    bool ReadTextFlowTableElement(Object *parent, pugi::xml_node element, ClassId classId);
     bool ReadTextFlowSyl(Object *parent, pugi::xml_node syl);
     bool ReadStack(Object *parent, pugi::xml_node stack);
     bool ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode);

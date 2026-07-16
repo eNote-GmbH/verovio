@@ -8,6 +8,8 @@
 #define __VRV_TEXT_FLOW_H__
 
 #include "atts_shared.h"
+#include "atts_figtable.h"
+#include "facsimileinterface.h"
 #include "linkinginterface.h"
 #include "syl.h"
 #include "textelement.h"
@@ -102,6 +104,109 @@ public:
     Line() : TextFlowElement(L) {}
     Object *Clone() const override { return new Line(*this); }
     std::string GetClassName() const override { return "l"; }
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+};
+
+/** Shared MEI attributes and drawing state for table, caption, tr, td, and th. */
+class TextFlowTableElement : public Object,
+                             public LinkingInterface,
+                             public FacsimileInterface,
+                             public AttClassed,
+                             public AttLabelled,
+                             public AttLang,
+                             public AttNNumberLike,
+                             public AttResponsibility,
+                             public AttTyped,
+                             public AttXy {
+public:
+    explicit TextFlowTableElement(ClassId classId);
+    ~TextFlowTableElement() override = default;
+
+    Object *Clone() const override { return new TextFlowTableElement(*this); }
+    void Reset() override;
+    std::string GetClassName() const override { return "textFlowTableElement"; }
+    bool IsSupportedChild(ClassId classId) override;
+    int GetDrawingX() const override { return m_drawingX; }
+    int GetDrawingY() const override { return m_drawingY; }
+    void SetTextFlowDrawingX(int x) { m_drawingX = x; }
+    void SetTextFlowDrawingY(int y) { m_drawingY = y; }
+
+    LinkingInterface *GetLinkingInterface() override { return vrv_cast<LinkingInterface *>(this); }
+    const LinkingInterface *GetLinkingInterface() const override { return vrv_cast<const LinkingInterface *>(this); }
+    FacsimileInterface *GetFacsimileInterface() override { return vrv_cast<FacsimileInterface *>(this); }
+    const FacsimileInterface *GetFacsimileInterface() const override
+    {
+        return vrv_cast<const FacsimileInterface *>(this);
+    }
+
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+
+private:
+    int m_drawingX;
+    int m_drawingY;
+};
+
+class Table : public TextFlowTableElement {
+public:
+    Table() : TextFlowTableElement(TABLE) {}
+    Object *Clone() const override { return new Table(*this); }
+    std::string GetClassName() const override { return "table"; }
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+};
+
+class TableCaption : public TextFlowTableElement {
+public:
+    TableCaption() : TextFlowTableElement(CAPTION) {}
+    Object *Clone() const override { return new TableCaption(*this); }
+    std::string GetClassName() const override { return "caption"; }
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+};
+
+class TableRow : public TextFlowTableElement {
+public:
+    TableRow() : TextFlowTableElement(TR) {}
+    Object *Clone() const override { return new TableRow(*this); }
+    std::string GetClassName() const override { return "tr"; }
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+};
+
+class TableCell : public TextFlowTableElement, public AttTabular {
+public:
+    explicit TableCell(ClassId classId);
+    void Reset() override;
+};
+
+class Td : public TableCell {
+public:
+    Td() : TableCell(TD) {}
+    Object *Clone() const override { return new Td(*this); }
+    std::string GetClassName() const override { return "td"; }
+    FunctorCode Accept(Functor &functor) override;
+    FunctorCode Accept(ConstFunctor &functor) const override;
+    FunctorCode AcceptEnd(Functor &functor) override;
+    FunctorCode AcceptEnd(ConstFunctor &functor) const override;
+};
+
+class Th : public TableCell {
+public:
+    Th() : TableCell(TH) {}
+    Object *Clone() const override { return new Th(*this); }
+    std::string GetClassName() const override { return "th"; }
     FunctorCode Accept(Functor &functor) override;
     FunctorCode Accept(ConstFunctor &functor) const override;
     FunctorCode AcceptEnd(Functor &functor) override;

@@ -15,6 +15,11 @@ static const ClassRegistrar<Head> s_headFactory("head", HEAD);
 static const ClassRegistrar<Paragraph> s_pFactory("p", P);
 static const ClassRegistrar<LineGroup> s_lgFactory("lg", LG);
 static const ClassRegistrar<Line> s_lFactory("l", L);
+static const ClassRegistrar<Table> s_tableFactory("table", TABLE);
+static const ClassRegistrar<TableCaption> s_captionFactory("caption", CAPTION);
+static const ClassRegistrar<TableRow> s_trFactory("tr", TR);
+static const ClassRegistrar<Td> s_tdFactory("td", TD);
+static const ClassRegistrar<Th> s_thFactory("th", TH);
 static const ClassRegistrar<Stack> s_stackFactory("stack", STACK);
 
 TextFlowElement::TextFlowElement(ClassId classId)
@@ -74,7 +79,8 @@ bool TextFlowElement::IsSupportedChild(ClassId classId)
     if (this->Is(LG)) {
         return (classId == HEAD) || (classId == L) || (classId == LG) || Object::IsEditorialElement(classId);
     }
-    return Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
+    return (classId == TABLE) || Object::IsTextElement(classId) || (classId == SYL)
+        || Object::IsEditorialElement(classId);
 }
 
 FunctorCode TextFlowElement::Accept(Functor &functor)
@@ -163,6 +169,94 @@ FunctorCode Line::AcceptEnd(Functor &functor)
 FunctorCode Line::AcceptEnd(ConstFunctor &functor) const
 {
     return functor.VisitLineEnd(this);
+}
+
+TextFlowTableElement::TextFlowTableElement(ClassId classId)
+    : Object(classId)
+    , LinkingInterface()
+    , FacsimileInterface()
+    , AttClassed()
+    , AttLabelled()
+    , AttLang()
+    , AttNNumberLike()
+    , AttResponsibility()
+    , AttTyped()
+    , AttXy()
+{
+    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
+    this->RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
+    this->RegisterAttClass(ATT_CLASSED);
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_LANG);
+    this->RegisterAttClass(ATT_NNUMBERLIKE);
+    this->RegisterAttClass(ATT_RESPONSIBILITY);
+    this->RegisterAttClass(ATT_TYPED);
+    this->RegisterAttClass(ATT_XY);
+    this->Reset();
+}
+
+void TextFlowTableElement::Reset()
+{
+    Object::Reset();
+    LinkingInterface::Reset();
+    FacsimileInterface::Reset();
+    this->ResetClassed();
+    this->ResetLabelled();
+    this->ResetLang();
+    this->ResetNNumberLike();
+    this->ResetResponsibility();
+    this->ResetTyped();
+    this->ResetXy();
+    m_drawingX = 0;
+    m_drawingY = 0;
+}
+
+bool TextFlowTableElement::IsSupportedChild(ClassId classId)
+{
+    if (this->Is(TABLE)) {
+        if (classId == CAPTION) {
+            return (this->FindDescendantByType(CAPTION, 1) == nullptr)
+                && (this->FindDescendantByType(TR, 1) == nullptr);
+        }
+        return (classId == TR) || Object::IsEditorialElement(classId);
+    }
+    if (this->Is(TR)) return (classId == TD) || (classId == TH) || Object::IsEditorialElement(classId);
+    if (this->Is(TD) || this->Is(TH)) {
+        return (classId == TABLE) || (classId == P) || (classId == LG) || (classId == L)
+            || Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
+    }
+    return Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
+}
+
+FunctorCode TextFlowTableElement::Accept(Functor &functor) { return functor.VisitObject(this); }
+FunctorCode TextFlowTableElement::Accept(ConstFunctor &functor) const { return functor.VisitObject(this); }
+FunctorCode TextFlowTableElement::AcceptEnd(Functor &functor) { return functor.VisitObjectEnd(this); }
+FunctorCode TextFlowTableElement::AcceptEnd(ConstFunctor &functor) const { return functor.VisitObjectEnd(this); }
+
+#define VRV_TEXT_FLOW_ACCEPT(CLASS, NAME) \
+    FunctorCode CLASS::Accept(Functor &functor) { return functor.Visit##NAME(this); } \
+    FunctorCode CLASS::Accept(ConstFunctor &functor) const { return functor.Visit##NAME(this); } \
+    FunctorCode CLASS::AcceptEnd(Functor &functor) { return functor.Visit##NAME##End(this); } \
+    FunctorCode CLASS::AcceptEnd(ConstFunctor &functor) const { return functor.Visit##NAME##End(this); }
+
+VRV_TEXT_FLOW_ACCEPT(Table, Table)
+VRV_TEXT_FLOW_ACCEPT(TableCaption, TableCaption)
+VRV_TEXT_FLOW_ACCEPT(TableRow, TableRow)
+VRV_TEXT_FLOW_ACCEPT(Td, Td)
+VRV_TEXT_FLOW_ACCEPT(Th, Th)
+
+#undef VRV_TEXT_FLOW_ACCEPT
+
+TableCell::TableCell(ClassId classId) : TextFlowTableElement(classId), AttTabular()
+{
+    this->RegisterAttClass(ATT_TABULAR);
+    this->Reset();
+}
+
+void TableCell::Reset()
+{
+    TextFlowTableElement::Reset();
+    this->ResetTabular();
 }
 
 TextFlowSyl::TextFlowSyl() : Syl(), m_textFlowDrawingX(0), m_textFlowDrawingY(0) {}

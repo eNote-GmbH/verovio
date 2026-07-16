@@ -67,6 +67,8 @@ public:
     void SetTextFlowSize(int width, int height);
     const TextFlowLayoutResult *GetTextFlowLayout(const Object *block) const;
     const TextFlowLayoutResult &CacheTextFlowLayout(TextFlowLayoutResult result);
+    const TextFlowDocumentLayoutResult *GetTextFlowDocumentLayout(int availableWidth) const;
+    const TextFlowDocumentLayoutResult &CacheTextFlowDocumentLayout(TextFlowDocumentLayoutResult result);
     int GetTextFlowHeight() const { return m_textFlowHeight; }
     int GetTextFlowWidth() const { return m_textFlowWidth; }
 
@@ -128,6 +130,7 @@ private:
     int m_textFlowHeight;
     int m_textFlowWidth;
     std::vector<TextFlowLayoutResult> m_textFlowLayouts;
+    std::vector<TextFlowDocumentLayoutResult> m_textFlowDocumentLayouts;
 };
 
 } // namespace vrv

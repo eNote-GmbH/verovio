@@ -1,5 +1,6 @@
 #include "toolkit.h"
 
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <set>
@@ -56,6 +57,16 @@ double FirstTranslateYAfter(const std::string &svg, const std::string &id)
     return std::strtod(svg.c_str() + position + 1, nullptr);
 }
 
+double FirstTranslateXAfter(const std::string &svg, const std::string &id)
+{
+    size_t position = svg.find("id=\"" + id + "\"");
+    if (position == std::string::npos) return -1.0;
+    position = svg.find("translate(", position);
+    if (position == std::string::npos) return -1.0;
+    position += std::string("translate(").size();
+    return std::strtod(svg.c_str() + position, nullptr);
+}
+
 size_t CountTranslateRowsBetween(const std::string &svg, const std::string &firstId, const std::string &nextId)
 {
     const size_t begin = svg.find("id=\"" + firstId + "\"");
@@ -76,7 +87,7 @@ size_t CountTranslateRowsBetween(const std::string &svg, const std::string &firs
 
 int main(int argc, char **argv)
 {
-    if (argc != 4) return 2;
+    if (argc != 5) return 2;
 
     vrv::Toolkit toolkit(false);
     toolkit.SetResourcePath("../data");
@@ -135,7 +146,7 @@ int main(int argc, char **argv)
     ok &= Expect(coreMei.find("rhythm=\"8 8 4\"") != std::string::npos, "line @rhythm did not round-trip");
     ok &= Expect(coreMei.find("wordpos=\"i\"") != std::string::npos, "syllable @wordpos did not round-trip");
     ok &= Expect(coreMei.find("con=\"d\"") != std::string::npos, "syllable @con did not round-trip");
-    ok &= Expect(CountOccurrences(coreMei, "align=\"") == 4, "stack alignments did not round-trip");
+    ok &= Expect(CountOccurrences(coreMei, "align=\"") == 5, "stack alignments did not round-trip");
     ok &= Expect(coreMei.find("corresp=\"#harm-1\"") != std::string::npos, "linking @corresp did not round-trip");
     ok &= Expect(coreMei.find("synch=\"#note-1\"") != std::string::npos, "linking @synch did not round-trip");
     ok &= Expect(coreMei.find("staff=\"1\"") != std::string::npos, "line-group @staff did not round-trip");
@@ -152,10 +163,19 @@ int main(int argc, char **argv)
         "direct legacy fig content disappeared from a text-flow div");
     ok &= Expect(coreSvg.find("id=\"nested-legacy-rend\"") != std::string::npos,
         "nested legacy div content disappeared from a text-flow div");
+    ok &= Expect((FirstTranslateYAfter(coreSvg, "nested-paragraph")
+                     < FirstTranslateYAfter(coreSvg, "mixed-legacy-rend"))
+            && (FirstTranslateYAfter(coreSvg, "mixed-legacy-rend")
+                < FirstTranslateYAfter(coreSvg, "nested-legacy-rend"))
+            && (FirstTranslateYAfter(coreSvg, "nested-legacy-rend")
+                < FirstTranslateYAfter(coreSvg, "stanza-head")),
+        "mixed inline and block children were not laid out in document order");
     ok &= Expect(
         coreSvg.find("id=\"chord-extension\"") != std::string::npos, "superscript chord extension was not rendered");
-    ok &= Expect(
-        coreSvg.find("class=\"sylConnector\"") != std::string::npos, "semantic syllable hyphen was not rendered");
+    ok &= Expect(coreSvg.find("id=\"joined-last-connector\"") == std::string::npos,
+        "an ordinary intra-word syllable boundary rendered an unnecessary hyphen");
+    ok &= Expect(coreSvg.find("id=\"wide-last-connector\"") != std::string::npos,
+        "a harmony-created syllable gap did not render its semantic hyphen");
     ok &= Expect(CountTranslateRowsBetween(coreSvg, "flow-paragraph", "nested-div") >= 3,
         "paragraph did not wrap or honor its hard break");
     ok &= Expect(FirstTranslateYAfter(coreSvg, "stack-left") < FirstTranslateYAfter(coreSvg, "syl-when"),
@@ -169,6 +189,58 @@ int main(int argc, char **argv)
         legacyMei.find("<div xml:id=\"legacy-div\"") != std::string::npos, "legacy div did not survive import/export");
     const std::string legacySvg = RenderAllPages(legacyToolkit);
     ok &= Expect(legacySvg.find("id=\"legacy-rend\"") != std::string::npos, "legacy div/rend rendering regressed");
+
+    vrv::Toolkit tableToolkit(false);
+    tableToolkit.SetResourcePath("../data");
+    ok &= Expect(tableToolkit.LoadFile(argv[4]), "text-flow table fixture did not load");
+    const std::string tableMei = tableToolkit.GetMEI();
+    ok &= Expect(tableMei.find("<table xml:id=\"two-column-table\"") != std::string::npos,
+        "table did not survive import/export");
+    ok &= Expect(tableMei.find("<caption xml:id=\"table-caption\"") != std::string::npos,
+        "table caption did not survive import/export");
+    ok &= Expect(tableMei.find("<th xml:id=\"heading-cell\" colspan=\"2\"") != std::string::npos,
+        "table heading or colspan did not survive import/export");
+    ok &= Expect(tableMei.find("<td xml:id=\"rowspan-cell\" rowspan=\"2\"") != std::string::npos,
+        "table rowspan did not survive import/export");
+    ok &= Expect(tableMei.find("<td xml:id=\"invalid-span\" colspan=\"0\"") != std::string::npos,
+        "invalid encoded span was not preserved during round-trip");
+    ok &= Expect(tableMei.find("corresp=\"#table-note\"") != std::string::npos,
+        "table linking attributes did not survive import/export");
+
+    const std::string tableSvg = RenderAllPages(tableToolkit);
+    for (const std::string &id : { "two-column-table", "table-caption", "parallel-row", "left-cell",
+             "right-cell", "heading-cell", "rowspan-cell", "nested-table", "nested-table-cell", "empty-row",
+             "invalid-span", "overwide-word-cell", "inline-table", "inline-cell", "collision-table",
+             "collision-colspan" }) {
+        ok &= Expect(tableSvg.find("id=\"" + id + "\"") != std::string::npos,
+            "table semantic object was not rendered: " + id);
+    }
+    const double leftX = FirstTranslateXAfter(tableSvg, "left-cell");
+    const double rightX = FirstTranslateXAfter(tableSvg, "right-cell");
+    ok &= Expect((leftX >= 0.0) && (rightX - leftX > 1500.0),
+        "two text cells were not placed in separate equal-width columns");
+    ok &= Expect(std::abs(FirstTranslateYAfter(tableSvg, "left-cell") - FirstTranslateYAfter(tableSvg, "right-cell"))
+            < 1.0,
+        "parallel table cells were not top-aligned");
+    ok &= Expect(FirstTranslateYAfter(tableSvg, "table-caption") < FirstTranslateYAfter(tableSvg, "left-cell"),
+        "table caption did not render above the grid");
+    const double beforeTableY = FirstTranslateYAfter(tableSvg, "before-inline-table");
+    const double inlineTableY = FirstTranslateYAfter(tableSvg, "inline-table");
+    const double afterTableY = FirstTranslateYAfter(tableSvg, "after-inline-table");
+    ok &= Expect((beforeTableY >= 0.0) && (beforeTableY < inlineTableY) && (inlineTableY < afterTableY),
+        "a table inside a phrase did not flush and resume the inline text in document order");
+    const double splitConnectorY = FirstTranslateYAfter(tableSvg, "overwide-middle-connector");
+    const double splitFirstY = FirstTranslateYAfter(tableSvg, "overwide-first");
+    const double splitMiddleY = FirstTranslateYAfter(tableSvg, "overwide-middle");
+    ok &= Expect((splitConnectorY >= 0.0) && (std::abs(splitConnectorY - splitFirstY) < 1.0)
+            && (std::abs(splitConnectorY - splitMiddleY) > 1.0),
+        "an overwide semantic word did not reserve a trailing connector on the preceding row");
+    ok &= Expect(FirstTranslateXAfter(tableSvg, "collision-colspan")
+            > FirstTranslateXAfter(tableSvg, "collision-rowspan"),
+        "a colspan overlapped a column occupied by a rowspan");
+    const std::string cellAttributes = tableToolkit.GetElementAttr("heading-cell");
+    ok &= Expect(cellAttributes.find("colspan") != std::string::npos,
+        "GetElementAttr did not expose table-cell span attributes");
 
     return ok ? 0 : 1;
 }

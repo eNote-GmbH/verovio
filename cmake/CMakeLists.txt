@@ -297,7 +297,8 @@ if(BUILD_TEXT_BLOCK_TESTS)
         COMMAND text-block-test
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/in-dir-ist-freude.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/text-flow-core.mei
-            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei)
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei)
 endif()
 
 ##################
@@ -406,6 +407,7 @@ if(BUILD_TEXT_BLOCK_TESTS AND TARGET verovio AND NOT BUILD_AS_LIBRARY AND NOT BU
             -DVEROVIO=$<TARGET_FILE:verovio>
             -DRESOURCES=${CMAKE_CURRENT_SOURCE_DIR}/../data
             -DFIXTURE=${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/in-dir-ist-freude.mei
+            -DTABLE_FIXTURE=${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei
             -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/cli.cmake)
 endif()

@@ -46,6 +46,10 @@
                   <stack xml:id="stack-right" delim="|" align="right">Am|come</stack>
                   <stack xml:id="stack-rightdigit" delim="|" align="rightdigit">D7|home.</stack>
                 </l>
+                <l xml:id="connector-line" n="2">
+                  <syl xml:id="joined-first" con="d" wordpos="i">ha</syl><syl xml:id="joined-last" wordpos="t">ben</syl>
+                  <stack xml:id="wide-connector-stack" delim="|" align="left">ExtraordinarilyWideChord|<syl xml:id="wide-first" con="d" wordpos="i">Teu</syl></stack><syl xml:id="wide-last" wordpos="t">fel</syl>
+                </l>
               </lg>
             </div>
           </section>

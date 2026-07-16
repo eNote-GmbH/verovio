@@ -448,6 +448,56 @@ FunctorCode FunctorInterface::VisitLineEnd(Line *line)
     return this->VisitObjectEnd(line);
 }
 
+FunctorCode FunctorInterface::VisitTable(Table *table)
+{
+    return this->VisitObject(table);
+}
+
+FunctorCode FunctorInterface::VisitTableEnd(Table *table)
+{
+    return this->VisitObjectEnd(table);
+}
+
+FunctorCode FunctorInterface::VisitTableCaption(TableCaption *caption)
+{
+    return this->VisitObject(caption);
+}
+
+FunctorCode FunctorInterface::VisitTableCaptionEnd(TableCaption *caption)
+{
+    return this->VisitObjectEnd(caption);
+}
+
+FunctorCode FunctorInterface::VisitTableRow(TableRow *row)
+{
+    return this->VisitObject(row);
+}
+
+FunctorCode FunctorInterface::VisitTableRowEnd(TableRow *row)
+{
+    return this->VisitObjectEnd(row);
+}
+
+FunctorCode FunctorInterface::VisitTd(Td *td)
+{
+    return this->VisitObject(td);
+}
+
+FunctorCode FunctorInterface::VisitTdEnd(Td *td)
+{
+    return this->VisitObjectEnd(td);
+}
+
+FunctorCode FunctorInterface::VisitTh(Th *th)
+{
+    return this->VisitObject(th);
+}
+
+FunctorCode FunctorInterface::VisitThEnd(Th *th)
+{
+    return this->VisitObjectEnd(th);
+}
+
 FunctorCode FunctorInterface::VisitRunningElement(RunningElement *runningElement)
 {
     return this->VisitTextLayoutElement(runningElement);
@@ -1910,6 +1960,56 @@ FunctorCode ConstFunctorInterface::VisitLine(const Line *line)
 FunctorCode ConstFunctorInterface::VisitLineEnd(const Line *line)
 {
     return this->VisitObjectEnd(line);
+}
+
+FunctorCode ConstFunctorInterface::VisitTable(const Table *table)
+{
+    return this->VisitObject(table);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableEnd(const Table *table)
+{
+    return this->VisitObjectEnd(table);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableCaption(const TableCaption *caption)
+{
+    return this->VisitObject(caption);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableCaptionEnd(const TableCaption *caption)
+{
+    return this->VisitObjectEnd(caption);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableRow(const TableRow *row)
+{
+    return this->VisitObject(row);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableRowEnd(const TableRow *row)
+{
+    return this->VisitObjectEnd(row);
+}
+
+FunctorCode ConstFunctorInterface::VisitTd(const Td *td)
+{
+    return this->VisitObject(td);
+}
+
+FunctorCode ConstFunctorInterface::VisitTdEnd(const Td *td)
+{
+    return this->VisitObjectEnd(td);
+}
+
+FunctorCode ConstFunctorInterface::VisitTh(const Th *th)
+{
+    return this->VisitObject(th);
+}
+
+FunctorCode ConstFunctorInterface::VisitThEnd(const Th *th)
+{
+    return this->VisitObjectEnd(th);
 }
 
 FunctorCode ConstFunctorInterface::VisitRunningElement(const RunningElement *runningElement)

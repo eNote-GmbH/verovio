@@ -474,9 +474,15 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
         this->WriteDiv(m_currentNode, vrv_cast<Div *>(object));
     }
     else if (object->IsTextFlowElement()) {
-        TextFlowElement *textFlowElement = vrv_cast<TextFlowElement *>(object);
-        m_currentNode = m_currentNode.append_child(textFlowElement->GetClassName().c_str());
-        this->WriteTextFlowElement(m_currentNode, textFlowElement);
+        if (TextFlowTableElement *tableElement = dynamic_cast<TextFlowTableElement *>(object)) {
+            m_currentNode = m_currentNode.append_child(tableElement->GetClassName().c_str());
+            this->WriteTextFlowTableElement(m_currentNode, tableElement);
+        }
+        else {
+            TextFlowElement *textFlowElement = vrv_cast<TextFlowElement *>(object);
+            m_currentNode = m_currentNode.append_child(textFlowElement->GetClassName().c_str());
+            this->WriteTextFlowElement(m_currentNode, textFlowElement);
+        }
     }
     else if (object->Is(PGFOOT)) {
         m_currentNode = m_currentNode.append_child("pgFoot");
@@ -1933,6 +1939,23 @@ void MEIOutput::WriteTextFlowElement(pugi::xml_node currentNode, TextFlowElement
     if (element->Is(L) && element->HasRhythm()) {
         currentNode.append_attribute("rhythm") = element->GetRhythm().c_str();
     }
+}
+
+void MEIOutput::WriteTextFlowTableElement(pugi::xml_node currentNode, TextFlowTableElement *element)
+{
+    assert(element);
+
+    this->WriteXmlId(currentNode, element);
+    this->WriteLinkingInterface(currentNode, element);
+    this->WriteFacsimileInterface(currentNode, element);
+    element->WriteClassed(currentNode);
+    element->WriteLabelled(currentNode);
+    element->WriteLang(currentNode);
+    element->WriteNNumberLike(currentNode);
+    element->WriteResponsibility(currentNode);
+    element->WriteTyped(currentNode);
+    element->WriteXy(currentNode);
+    if (TableCell *cell = dynamic_cast<TableCell *>(element)) cell->WriteTabular(currentNode);
 }
 
 void MEIOutput::WriteStack(pugi::xml_node currentNode, Stack *stack)
@@ -5630,6 +5653,31 @@ bool MEIInput::ReadTextFlowElement(Object *parent, pugi::xml_node element, Class
     return this->ReadTextFlowChildren(vrvElement, element);
 }
 
+bool MEIInput::ReadTextFlowTableElement(Object *parent, pugi::xml_node element, ClassId classId)
+{
+    Object *object = ObjectFactory::GetInstance()->Create(classId);
+    TextFlowTableElement *vrvElement = dynamic_cast<TextFlowTableElement *>(object);
+    if (!vrvElement) {
+        delete object;
+        return false;
+    }
+    this->SetMeiID(element, vrvElement);
+    this->ReadLinkingInterface(element, vrvElement);
+    this->ReadFacsimileInterface(element, vrvElement);
+    vrvElement->ReadClassed(element);
+    vrvElement->ReadLabelled(element);
+    vrvElement->ReadLang(element);
+    vrvElement->ReadNNumberLike(element);
+    vrvElement->ReadResponsibility(element);
+    vrvElement->ReadTyped(element);
+    vrvElement->ReadXy(element);
+    if (TableCell *cell = dynamic_cast<TableCell *>(vrvElement)) cell->ReadTabular(element);
+
+    parent->AddChild(vrvElement);
+    this->ReadUnsupportedAttr(element, vrvElement);
+    return this->ReadTextFlowChildren(vrvElement, element);
+}
+
 bool MEIInput::ReadTextFlowSyl(Object *parent, pugi::xml_node syl)
 {
     TextFlowSyl *vrvSyl = new TextFlowSyl();
@@ -5711,6 +5759,11 @@ bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
         else if (name == "p") success = this->ReadTextFlowElement(parent, current, P);
         else if (name == "lg") success = this->ReadTextFlowElement(parent, current, LG);
         else if (name == "l") success = this->ReadTextFlowElement(parent, current, L);
+        else if (name == "table") success = this->ReadTextFlowTableElement(parent, current, TABLE);
+        else if (name == "caption") success = this->ReadTextFlowTableElement(parent, current, CAPTION);
+        else if (name == "tr") success = this->ReadTextFlowTableElement(parent, current, TR);
+        else if (name == "td") success = this->ReadTextFlowTableElement(parent, current, TD);
+        else if (name == "th") success = this->ReadTextFlowTableElement(parent, current, TH);
         else if (name == "stack") success = this->ReadStack(parent, current);
         else if (name == "syl") success = this->ReadTextFlowSyl(parent, current);
         else if (name == "fig") success = this->ReadFig(parent, current);
