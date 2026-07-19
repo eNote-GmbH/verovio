@@ -45,6 +45,8 @@
 #include "tuplet.h"
 #include "turn.h"
 #include "verse.h"
+#include "verselike.h"
+#include "volta.h"
 #include "vrv.h"
 
 //----------------------------------------------------------------------------
@@ -657,7 +659,9 @@ FunctorCode PrepareTimePointingFunctor::VisitLayerElement(LayerElement *layerEle
     if (layerElement->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
     // Do not look for tstamp pointing to these
-    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
+    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, REFRAIN, TUPLET, STEM, VERSE })) {
+        return FUNCTOR_CONTINUE;
+    }
 
     ListOfPointingInterClassIdPairs::iterator iter = m_timePointingInterfaces.begin();
     while (iter != m_timePointingInterfaces.end()) {
@@ -723,7 +727,9 @@ FunctorCode PrepareTimeSpanningFunctor::VisitLayerElement(LayerElement *layerEle
     if (layerElement->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
     // Do not look for tstamp pointing to these
-    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
+    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, REFRAIN, TUPLET, STEM, VERSE })) {
+        return FUNCTOR_CONTINUE;
+    }
 
     ListOfSpanningInterOwnerPairs::iterator iter = m_timeSpanningInterfaces.begin();
     while (iter != m_timeSpanningInterfaces.end()) {
@@ -1032,11 +1038,12 @@ FunctorCode PreparePointersByLayerFunctor::VisitMeasureEnd(Measure *measure)
 // PrepareLyricsFunctor
 //----------------------------------------------------------------------------
 
-PrepareLyricsFunctor::PrepareLyricsFunctor() : Functor()
+PrepareLyricsFunctor::PrepareLyricsFunctor(int voltaTrack) : Functor()
 {
     m_currentSyl = NULL;
     m_lastNoteOrChord = NULL;
     m_penultimateNoteOrChord = NULL;
+    m_voltaTrack = voltaTrack;
 }
 
 FunctorCode PrepareLyricsFunctor::VisitChord(Chord *chord)
@@ -1079,10 +1086,16 @@ FunctorCode PrepareLyricsFunctor::VisitNote(Note *note)
 
 FunctorCode PrepareLyricsFunctor::VisitSyl(Syl *syl)
 {
-    Verse *verse = vrv_cast<Verse *>(syl->GetFirstAncestor(VERSE, MAX_NOTE_DEPTH));
-    if (verse) {
-        syl->m_drawingVerseN = std::max(verse->GetN(), 1);
-        syl->m_drawingVersePlace = verse->GetPlace();
+    const Volta *volta = vrv_cast<const Volta *>(syl->GetFirstAncestor(VOLTA));
+    const int voltaTrack = volta ? volta->GetDrawingVoltaN() : 0;
+    if (voltaTrack != m_voltaTrack) return FUNCTOR_CONTINUE;
+
+    VerseLike *verseLike = VerseLike::GetAncestorVerseLike(syl, MAX_NOTE_DEPTH);
+    if (verseLike) {
+        const int lineN = volta ? verseLike->GetVoltaLineN(volta) : 1;
+        syl->m_drawingVerseN = verseLike->GetDrawingVerseN() + (verseLike->Is(REFRAIN) ? lineN - 1 : 0);
+        syl->m_drawingVersePlace = verseLike->GetPlace();
+        syl->m_drawingVoltaN = verseLike->Is(REFRAIN) ? 1 : lineN;
     }
 
     syl->SetStart(vrv_cast<LayerElement *>(syl->GetFirstAncestor(NOTE, MAX_NOTE_DEPTH)));

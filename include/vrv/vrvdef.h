@@ -250,6 +250,7 @@ enum ClassId : uint16_t {
     PROPORT,
     QUILISMA,
     STROPHICUS,
+    REFRAIN,
     REST,
     SPACE,
     STEM,
@@ -261,6 +262,7 @@ enum ClassId : uint16_t {
     TUPLET,
     TUPLET_BRACKET,
     TUPLET_NUM,
+    VOLTA,
     VERSE,
     LAYER_ELEMENT_max,
     // Ids for ScoreDefElement child classes
