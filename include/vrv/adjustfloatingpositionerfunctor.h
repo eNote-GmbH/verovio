@@ -12,6 +12,8 @@
 
 namespace vrv {
 
+class Measure;
+
 //----------------------------------------------------------------------------
 // AdjustFloatingPositionersFunctor
 //----------------------------------------------------------------------------
@@ -45,14 +47,27 @@ public:
 protected:
     //
 private:
-    //
+    FunctorCode AdjustCurrentPositioners(StaffAlignment *staffAlignment);
+    FunctorCode AdjustStaffItemOrder(StaffAlignment *staffAlignment);
+    void AdjustPositionerGroups(StaffAlignment *staffAlignment, data_STAFFREL place);
+    void ProcessClass(StaffAlignment *staffAlignment, ClassId classId, data_STAFFREL place,
+        data_STAFFITEM staffItem = STAFFITEM_NONE);
+
 public:
     //
 private:
     // The class ID
     ClassId m_classId;
+    // Restrict a shared Verovio class to the exact MEI staff-item category
+    data_STAFFITEM m_staffItem;
     // Indicates if we are processing floating objects to be put in between the staff
     bool m_inBetween;
+    // Restrict processing to one placement (NONE keeps the legacy behavior)
+    data_STAFFREL m_place;
+    // Restrict processing to the scoreDef state active for one measure
+    const Measure *m_measure;
+    // Process each staff using its effective scoreDef / staffDef order
+    bool m_useStaffItemOrder;
 };
 
 //----------------------------------------------------------------------------

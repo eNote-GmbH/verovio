@@ -1865,6 +1865,7 @@ void MEIOutput::WriteScoreDefElement(pugi::xml_node currentNode, ScoreDefElement
     assert(scoreDefElement);
 
     this->WriteXmlId(currentNode, scoreDefElement);
+    scoreDefElement->WriteStaffItems(currentNode);
     scoreDefElement->WriteTyped(currentNode);
 }
 
@@ -5308,6 +5309,7 @@ bool MEIInput::ReadSystemMilestoneEnd(Object *parent, pugi::xml_node milestoneEn
 bool MEIInput::ReadScoreDefElement(pugi::xml_node element, ScoreDefElement *object)
 {
     this->SetMeiID(element, object);
+    object->ReadStaffItems(element);
     object->ReadTyped(element);
 
     if (m_meiversion <= meiVersion_MEIVERSION_5_0) {
