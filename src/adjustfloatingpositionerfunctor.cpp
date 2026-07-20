@@ -9,13 +9,136 @@
 
 //----------------------------------------------------------------------------
 
+#include <set>
+
+//----------------------------------------------------------------------------
+
+#include "comparison.h"
 #include "doc.h"
+#include "measure.h"
+#include "scoredef.h"
 #include "staff.h"
+#include "staffdef.h"
 #include "system.h"
 
 //----------------------------------------------------------------------------
 
 namespace vrv {
+
+namespace {
+
+    struct StaffItemStep {
+        data_STAFFITEM item;
+        ClassId classId;
+        bool exactItem = false;
+    };
+
+    const std::vector<StaffItemStep> &GetDefaultStaffItemSteps()
+    {
+        static const std::vector<StaffItemStep> steps{
+            { STAFFITEM_lv, LV },
+            { STAFFITEM_tie, TIE },
+            { STAFFITEM_NONE, SLUR },
+            { STAFFITEM_NONE, PHRASE },
+            { STAFFITEM_accid, ACCID_FLOATING },
+            { STAFFITEM_mordent, MORDENT },
+            { STAFFITEM_turn, TURN },
+            { STAFFITEM_trill, TRILL },
+            { STAFFITEM_ornam, ORNAM },
+            { STAFFITEM_fing, FING },
+            { STAFFITEM_dynam, DYNAM },
+            { STAFFITEM_hairpin, HAIRPIN },
+            { STAFFITEM_bracketSpan, BRACKETSPAN },
+            { STAFFITEM_octave, OCTAVE },
+            { STAFFITEM_breath, BREATH },
+            { STAFFITEM_fermata, FERMATA },
+            { STAFFITEM_dir, DIR },
+            { STAFFITEM_cpMark, CPMARK },
+            { STAFFITEM_NONE, REPEATMARK },
+            { STAFFITEM_tempo, TEMPO },
+            { STAFFITEM_pedal, PEDAL },
+            { STAFFITEM_harm, HARM },
+            { STAFFITEM_NONE, ENDING },
+            { STAFFITEM_reh, REH },
+            { STAFFITEM_NONE, CAESURA },
+            { STAFFITEM_annot, ANNOTSCORE },
+        };
+        return steps;
+    }
+
+    std::vector<StaffItemStep> GetOrderedStaffItemSteps(const data_STAFFITEM_List &order)
+    {
+        const std::vector<StaffItemStep> &defaults = GetDefaultStaffItemSteps();
+        if (order.empty()) return defaults;
+
+        std::vector<StaffItemStep> steps;
+        std::set<data_STAFFITEM> used;
+        for (const data_STAFFITEM item : order) {
+            if (!used.insert(item).second) continue;
+            if (item == STAFFITEM_stageDir) {
+                steps.push_back({ STAFFITEM_stageDir, DIR, true });
+            }
+            else {
+                for (const StaffItemStep &step : defaults) {
+                    if (step.item == item) steps.push_back({ step.item, step.classId, true });
+                }
+            }
+        }
+        for (const StaffItemStep &step : defaults) {
+            if ((step.item == STAFFITEM_dir) && (used.contains(STAFFITEM_dir) || used.contains(STAFFITEM_stageDir))) {
+                if (!used.contains(STAFFITEM_dir)) steps.push_back({ STAFFITEM_dir, DIR, true });
+                if (!used.contains(STAFFITEM_stageDir)) steps.push_back({ STAFFITEM_stageDir, DIR, true });
+            }
+            else if ((step.item == STAFFITEM_NONE) || !used.contains(step.item)) {
+                steps.push_back(step);
+            }
+        }
+        return steps;
+    }
+
+    bool HasStaffItemOrder(const ScoreDef *scoreDef)
+    {
+        if (!scoreDef) return false;
+        if (scoreDef->HasAboveorder() || scoreDef->HasBeloworder() || scoreDef->HasBetweenorder()) return true;
+
+        for (const int staffN : scoreDef->GetStaffNs()) {
+            const StaffDef *staffDef = scoreDef->GetStaffDef(staffN);
+            if (staffDef && (staffDef->HasAboveorder() || staffDef->HasBeloworder() || staffDef->HasBetweenorder())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const ScoreDef *GetDrawingScoreDef(const Measure *measure, int staffN, const ScoreDef *fallback)
+    {
+        if (!measure) return fallback;
+
+        AttNIntegerComparison matchN(STAFF, staffN);
+        const Staff *staff = vrv_cast<const Staff *>(measure->FindDescendantByComparison(&matchN, 1));
+        if (!staff || !staff->m_drawingStaffDef) return fallback;
+
+        return vrv_cast<const ScoreDef *>(staff->m_drawingStaffDef->GetFirstAncestor(SCOREDEF));
+    }
+
+    bool HasStaffItemOrder(const System *system)
+    {
+        if (!system) return false;
+        if (HasStaffItemOrder(system->GetDrawingScoreDef())) return true;
+
+        const ListOfConstObjects staves = system->FindAllDescendantsByType(STAFF);
+        for (const Object *object : staves) {
+            const Staff *staff = vrv_cast<const Staff *>(object);
+            assert(staff);
+            if (HasStaffItemOrder(GetDrawingScoreDef(
+                    vrv_cast<const Measure *>(staff->GetFirstAncestor(MEASURE)), staff->GetN(), NULL))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+} // namespace
 
 //----------------------------------------------------------------------------
 // AdjustFloatingPositionersFunctor
@@ -24,10 +147,20 @@ namespace vrv {
 AdjustFloatingPositionersFunctor::AdjustFloatingPositionersFunctor(Doc *doc) : DocFunctor(doc)
 {
     m_classId = OBJECT;
+    m_staffItem = STAFFITEM_NONE;
     m_inBetween = false;
+    m_place = STAFFREL_NONE;
+    m_measure = NULL;
+    m_useStaffItemOrder = false;
 }
 
 FunctorCode AdjustFloatingPositionersFunctor::VisitStaffAlignment(StaffAlignment *staffAlignment)
+{
+    if (m_useStaffItemOrder) return this->AdjustStaffItemOrder(staffAlignment);
+    return this->AdjustCurrentPositioners(staffAlignment);
+}
+
+FunctorCode AdjustFloatingPositionersFunctor::AdjustCurrentPositioners(StaffAlignment *staffAlignment)
 {
     const int staffSize = staffAlignment->GetStaffSize();
     const int drawingUnit = m_doc->GetDrawingUnit(staffSize);
@@ -68,9 +201,15 @@ FunctorCode AdjustFloatingPositionersFunctor::VisitStaffAlignment(StaffAlignment
 
     for (FloatingPositioner *positioner : staffAlignment->GetFloatingPositioners()) {
         assert(positioner->GetObject());
-        if (!m_inBetween && !positioner->GetObject()->Is(m_classId)) continue;
+        if (m_measure && (positioner->GetObject()->GetFirstAncestor(MEASURE) != m_measure)) continue;
+        if ((m_classId != OBJECT) && !positioner->GetObject()->Is(m_classId)) continue;
+        if ((m_staffItem == STAFFITEM_stageDir) && (positioner->GetObject()->GetClassName() != "stageDir")) continue;
+        if ((m_staffItem == STAFFITEM_dir) && (positioner->GetObject()->GetClassName() == "stageDir")) continue;
 
-        if (m_inBetween) {
+        if (m_place != STAFFREL_NONE) {
+            if (positioner->GetDrawingPlace() != m_place) continue;
+        }
+        else if (m_inBetween) {
             if (positioner->GetDrawingPlace() != STAFFREL_between) continue;
         }
         else {
@@ -163,8 +302,101 @@ FunctorCode AdjustFloatingPositionersFunctor::VisitStaffAlignment(StaffAlignment
     return FUNCTOR_SIBLINGS;
 }
 
+void AdjustFloatingPositionersFunctor::ProcessClass(
+    StaffAlignment *staffAlignment, ClassId classId, data_STAFFREL place, data_STAFFITEM staffItem)
+{
+    m_classId = classId;
+    m_staffItem = staffItem;
+    m_inBetween = (place == STAFFREL_between);
+    m_place = place;
+    this->AdjustCurrentPositioners(staffAlignment);
+}
+
+void AdjustFloatingPositionersFunctor::AdjustPositionerGroups(StaffAlignment *staffAlignment, data_STAFFREL place)
+{
+    AdjustFloatingPositionerGrpsFunctor adjustGroups(m_doc);
+    adjustGroups.SetPlace(place);
+
+    if ((place == STAFFREL_above) || (place == STAFFREL_below)) {
+        adjustGroups.SetClassIDs({ DYNAM, HAIRPIN });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+        adjustGroups.SetClassIDs({ DIR });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+        adjustGroups.SetClassIDs({ PEDAL });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+        adjustGroups.SetClassIDs({ HARM });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+        adjustGroups.SetClassIDs({ ENDING });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+    }
+    else if (place == STAFFREL_between) {
+        adjustGroups.SetClassIDs({ DYNAM });
+        adjustGroups.VisitStaffAlignment(staffAlignment);
+    }
+}
+
+FunctorCode AdjustFloatingPositionersFunctor::AdjustStaffItemOrder(StaffAlignment *staffAlignment)
+{
+    const System *system = staffAlignment->GetParentSystem();
+    const Staff *staff = staffAlignment->GetStaff();
+    if (!system || !staff) return FUNCTOR_SIBLINGS;
+
+    staffAlignment->SortPositioners();
+    const ListOfConstObjects measures = system->FindAllDescendantsByType(MEASURE);
+    for (const Object *object : measures) {
+        m_measure = vrv_cast<const Measure *>(object);
+        assert(m_measure);
+        const ScoreDef *scoreDef = GetDrawingScoreDef(m_measure, staff->GetN(), system->GetDrawingScoreDef());
+        if (!scoreDef) continue;
+
+        for (const data_STAFFREL place : { STAFFREL_above, STAFFREL_below }) {
+            const data_STAFFITEM_List order = scoreDef->GetStaffItemOrder(staff->GetN(), place);
+            for (const StaffItemStep &step : GetOrderedStaffItemSteps(order)) {
+                this->ProcessClass(staffAlignment, step.classId, place, step.exactItem ? step.item : STAFFITEM_NONE);
+            }
+        }
+
+        // @aboveorder and @beloworder do not affect elements explicitly placed within the staff.
+        for (const StaffItemStep &step : GetDefaultStaffItemSteps()) {
+            this->ProcessClass(staffAlignment, step.classId, STAFFREL_within);
+        }
+
+        const data_STAFFITEM_List betweenOrder = scoreDef->GetStaffItemOrder(staff->GetN(), STAFFREL_between);
+        if (betweenOrder.empty()) {
+            // Preserve the legacy all-at-once order when @betweenorder is absent.
+            this->ProcessClass(staffAlignment, OBJECT, STAFFREL_between);
+        }
+        else {
+            for (const StaffItemStep &step : GetOrderedStaffItemSteps(betweenOrder)) {
+                this->ProcessClass(
+                    staffAlignment, step.classId, STAFFREL_between, step.exactItem ? step.item : STAFFITEM_NONE);
+            }
+        }
+    }
+
+    m_measure = NULL;
+    this->AdjustPositionerGroups(staffAlignment, STAFFREL_above);
+    this->AdjustPositionerGroups(staffAlignment, STAFFREL_below);
+    this->AdjustPositionerGroups(staffAlignment, STAFFREL_between);
+
+    m_place = STAFFREL_NONE;
+    m_inBetween = false;
+    m_classId = SYL;
+    m_staffItem = STAFFITEM_NONE;
+    return this->AdjustCurrentPositioners(staffAlignment);
+}
+
 FunctorCode AdjustFloatingPositionersFunctor::VisitSystem(System *system)
 {
+    if (HasStaffItemOrder(system)) {
+        m_useStaffItemOrder = true;
+        system->m_systemAligner.Process(*this);
+        m_useStaffItemOrder = false;
+        return FUNCTOR_SIBLINGS;
+    }
+
+    m_place = STAFFREL_NONE;
+    m_staffItem = STAFFITEM_NONE;
     m_inBetween = false;
 
     AdjustFloatingPositionerGrpsFunctor adjustFloatingPositionerGrps(m_doc);
