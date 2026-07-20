@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="6.0-dev">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Fixed capo transposition</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="fixed-capo-mdiv">
+        <score>
+          <scoreDef keysig="1f" meter.count="4" meter.unit="4">
+            <chordTable>
+              <chordDef xml:id="shape-d" type="capo-relative-shape">
+                <chordMember xml:id="shape-d-6" tab.course="6" tab.fing="x"/>
+                <chordMember xml:id="shape-d-5" tab.course="5" tab.fing="x"/>
+                <chordMember xml:id="shape-d-4" tab.course="4" tab.fret="0"/>
+                <chordMember xml:id="shape-d-3" tab.course="3" tab.fret="2"/>
+                <chordMember xml:id="shape-d-2" tab.course="2" tab.fret="3"/>
+                <chordMember xml:id="shape-d-1" tab.course="1" tab.fret="2"/>
+              </chordDef>
+            </chordTable>
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1">
+              <staff n="1"><layer n="1"><note xml:id="n1" pname="c" oct="4" dur="1"/></layer></staff>
+              <harm xml:id="sounding" type="sounding-chord" n="1" staff="1" startid="#n1">F</harm>
+              <harm xml:id="guitar" type="guitar-chord-shape" n="2" staff="1" startid="#n1"
+                    chordref="#shape-d" rendgrid="gridtext">D</harm>
+              <dir xml:id="capo" type="guitar-capo capo-3" staff="1" tstamp="1" place="above">Capo III</dir>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

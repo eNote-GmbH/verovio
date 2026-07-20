@@ -8,7 +8,11 @@
 #ifndef __VRV_TRANSPOSEFUNCTOR_H__
 #define __VRV_TRANSPOSEFUNCTOR_H__
 
+#include "capoarrangement.h"
 #include "functor.h"
+
+#include <map>
+#include <set>
 
 namespace vrv {
 
@@ -39,6 +43,19 @@ public:
      */
     void SetTransposition(const std::string &transposition) { m_transposition = transposition; }
 
+    /** Configure guitar capo-aware harmony transposition. */
+    void SetCapoOptions(const std::string &mode, int minimum, int maximum)
+    {
+        m_capoMode = mode;
+        m_capoMinimum = minimum;
+        m_capoMaximum = maximum;
+    }
+
+    /** Compute the complete guitar arrangement without modifying the document. */
+    void PrepareCapoArrangement();
+    /** Apply the previously prepared guitar arrangement. */
+    void ApplyCapoArrangement();
+
     /*
      * Functor interface
      */
@@ -59,6 +76,7 @@ protected:
     ///@{
     const KeySig *GetKeySigForStaffDef(const StaffDef *staffDef) const;
     int GetStaffNForKeySig(const KeySig *keySig) const;
+    void SetCapoMdivFilter(const std::string &id) { m_capoMdivFilter = id; }
     ///@}
 
 private:
@@ -74,6 +92,25 @@ protected:
 private:
     // The transposition to be applied
     std::string m_transposition;
+    // Guitar capo arrangement settings
+    std::string m_capoMode = "off";
+    int m_capoMinimum = 0;
+    int m_capoMaximum = 7;
+    // Guitar harmonies already updated by the capo arrangement pass
+    std::set<std::string> m_capoTransposedHarmIDs;
+    struct CapoHarmPlan {
+        Harm *harm = NULL;
+        int semitones = 0;
+        std::optional<CapoFingering> fingering;
+    };
+    struct CapoDocumentPlan {
+        Score *score = NULL;
+        int capo = 0;
+        Dir *directive = NULL;
+        std::vector<CapoHarmPlan> harmonies;
+    };
+    std::vector<CapoDocumentPlan> m_capoDocumentPlans;
+    std::string m_capoMdivFilter;
 };
 
 //----------------------------------------------------------------------------
@@ -101,7 +138,11 @@ public:
     /*
      * Setter for the selected Mdiv
      */
-    void SetSelectedMdivID(const std::string &selectedID) { m_selectedMdivID = selectedID; }
+    void SetSelectedMdivID(const std::string &selectedID)
+    {
+        m_selectedMdivID = selectedID;
+        this->SetCapoMdivFilter(selectedID);
+    }
 
     /*
      * Functor interface

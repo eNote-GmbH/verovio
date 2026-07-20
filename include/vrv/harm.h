@@ -89,6 +89,8 @@ public:
     void SetRootPitch(const TransPitch &pitch, unsigned int endPos);
     bool GetBassPitch(TransPitch &pitch) const;
     void SetBassPitch(const TransPitch &pitch);
+    /** Concatenate all text descendants while retaining their separate formatting containers. */
+    std::u32string GetTextContent() const;
 
     //----------//
     // Functors //

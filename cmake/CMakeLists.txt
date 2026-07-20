@@ -39,6 +39,7 @@ option(NO_RUNTIME               "Disable runtime clock support"                O
 option(BUILD_AS_LIBRARY         "Build Verovio as library"                     OFF)
 option(BUILD_AS_ANDROID_LIBRARY "Build Verovio as library for Android"         OFF)
 option(USE_PAE_OLD_PARSER       "Use old PAE parser"                           OFF)
+option(BUILD_TRANSPOSE_CAPO_TESTS "Build guitar capo transposition tests"       OFF)
 
 if (NO_HUMDRUM_SUPPORT AND MUSICXML_DEFAULT_HUMDRUM)
     message(FATAL_ERROR "Default MusicXML to Humdrum cannot be enabled by default without Humdrum support")
@@ -202,6 +203,16 @@ set(all_SRC
     ../src/json/jsonxx.cc
     ../src/pugi/pugixml.cpp
 )
+
+if(BUILD_TRANSPOSE_CAPO_TESTS)
+    enable_testing()
+    add_executable(transpose-capo-test ../tests/transpose-capo/transpose_capo.cpp ${all_SRC})
+    target_compile_definitions(transpose-capo-test PRIVATE VRV_TRANSPOSE_CAPO_TESTING)
+    add_test(NAME transpose-capo
+        COMMAND transpose-capo-test
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/transpose-capo/fixed-capo.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../data)
+endif()
 
 ##################
 # Shared library #
