@@ -15,6 +15,7 @@
 #include "arpeg.h"
 #include "artic.h"
 #include "barline.h"
+#include "barre.h"
 #include "beam.h"
 #include "beamspan.h"
 #include "beatrpt.h"
@@ -23,6 +24,9 @@
 #include "btrem.h"
 #include "caesura.h"
 #include "chord.h"
+#include "chorddef.h"
+#include "chordmember.h"
+#include "chordtable.h"
 #include "clef.h"
 #include "course.h"
 #include "cpmark.h"
@@ -141,6 +145,46 @@ FunctorCode FunctorInterface::VisitDoc(Doc *doc)
 FunctorCode FunctorInterface::VisitDocEnd(Doc *doc)
 {
     return this->VisitObjectEnd(doc);
+}
+
+FunctorCode FunctorInterface::VisitBarre(Barre *barre)
+{
+    return this->VisitObject(barre);
+}
+
+FunctorCode FunctorInterface::VisitBarreEnd(Barre *barre)
+{
+    return this->VisitObjectEnd(barre);
+}
+
+FunctorCode FunctorInterface::VisitChordDef(ChordDef *chordDef)
+{
+    return this->VisitObject(chordDef);
+}
+
+FunctorCode FunctorInterface::VisitChordDefEnd(ChordDef *chordDef)
+{
+    return this->VisitObjectEnd(chordDef);
+}
+
+FunctorCode FunctorInterface::VisitChordMember(ChordMember *chordMember)
+{
+    return this->VisitObject(chordMember);
+}
+
+FunctorCode FunctorInterface::VisitChordMemberEnd(ChordMember *chordMember)
+{
+    return this->VisitObjectEnd(chordMember);
+}
+
+FunctorCode FunctorInterface::VisitChordTable(ChordTable *chordTable)
+{
+    return this->VisitObject(chordTable);
+}
+
+FunctorCode FunctorInterface::VisitChordTableEnd(ChordTable *chordTable)
+{
+    return this->VisitObjectEnd(chordTable);
 }
 
 FunctorCode FunctorInterface::VisitCourse(Course *course)
@@ -1505,6 +1549,46 @@ FunctorCode ConstFunctorInterface::VisitDoc(const Doc *doc)
 FunctorCode ConstFunctorInterface::VisitDocEnd(const Doc *doc)
 {
     return this->VisitObjectEnd(doc);
+}
+
+FunctorCode ConstFunctorInterface::VisitBarre(const Barre *barre)
+{
+    return this->VisitObject(barre);
+}
+
+FunctorCode ConstFunctorInterface::VisitBarreEnd(const Barre *barre)
+{
+    return this->VisitObjectEnd(barre);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordDef(const ChordDef *chordDef)
+{
+    return this->VisitObject(chordDef);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordDefEnd(const ChordDef *chordDef)
+{
+    return this->VisitObjectEnd(chordDef);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordMember(const ChordMember *chordMember)
+{
+    return this->VisitObject(chordMember);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordMemberEnd(const ChordMember *chordMember)
+{
+    return this->VisitObjectEnd(chordMember);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordTable(const ChordTable *chordTable)
+{
+    return this->VisitObject(chordTable);
+}
+
+FunctorCode ConstFunctorInterface::VisitChordTableEnd(const ChordTable *chordTable)
+{
+    return this->VisitObjectEnd(chordTable);
 }
 
 FunctorCode ConstFunctorInterface::VisitCourse(const Course *course)

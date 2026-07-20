@@ -13,6 +13,34 @@
 		E70C7A3C2BC82B4700D96FFF /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E70C7A3A2BC82B4700D96FFF /* enotetoolkit.cpp */; };
 		E70C7A3D2BC82B4700D96FFF /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E70C7A3A2BC82B4700D96FFF /* enotetoolkit.cpp */; };
 		E70C7A3E2BC82B4700D96FFF /* enotetoolkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E70C7A3A2BC82B4700D96FFF /* enotetoolkit.cpp */; };
+		C0D100000000000000000101 /* barre.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000001 /* barre.h */; };
+		C0D100000000000000000102 /* chorddef.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000003 /* chorddef.h */; };
+		C0D100000000000000000103 /* chordmember.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000005 /* chordmember.h */; };
+		C0D100000000000000000104 /* chordtable.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000007 /* chordtable.h */; };
+		C0D100000000000000000111 /* barre.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000001 /* barre.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0D100000000000000000112 /* chorddef.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000003 /* chorddef.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0D100000000000000000113 /* chordmember.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000005 /* chordmember.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0D100000000000000000114 /* chordtable.h in Headers */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000007 /* chordtable.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0D100000000000000000201 /* barre.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000002 /* barre.cpp */; };
+		C0D100000000000000000202 /* chorddef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000004 /* chorddef.cpp */; };
+		C0D100000000000000000203 /* chordmember.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000006 /* chordmember.cpp */; };
+		C0D100000000000000000204 /* chordtable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000008 /* chordtable.cpp */; };
+		C0D100000000000000000205 /* chorddiagram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D10000000000000000000A /* chorddiagram.cpp */; };
+		C0D100000000000000000211 /* barre.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000002 /* barre.cpp */; };
+		C0D100000000000000000212 /* chorddef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000004 /* chorddef.cpp */; };
+		C0D100000000000000000213 /* chordmember.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000006 /* chordmember.cpp */; };
+		C0D100000000000000000214 /* chordtable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000008 /* chordtable.cpp */; };
+		C0D100000000000000000215 /* chorddiagram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D10000000000000000000A /* chorddiagram.cpp */; };
+		C0D100000000000000000221 /* barre.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000002 /* barre.cpp */; };
+		C0D100000000000000000222 /* chorddef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000004 /* chorddef.cpp */; };
+		C0D100000000000000000223 /* chordmember.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000006 /* chordmember.cpp */; };
+		C0D100000000000000000224 /* chordtable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000008 /* chordtable.cpp */; };
+		C0D100000000000000000225 /* chorddiagram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D10000000000000000000A /* chorddiagram.cpp */; };
+		C0D100000000000000000231 /* barre.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000002 /* barre.cpp */; };
+		C0D100000000000000000232 /* chorddef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000004 /* chorddef.cpp */; };
+		C0D100000000000000000233 /* chordmember.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000006 /* chordmember.cpp */; };
+		C0D100000000000000000234 /* chordtable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D100000000000000000008 /* chordtable.cpp */; };
+		C0D100000000000000000235 /* chorddiagram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0D10000000000000000000A /* chorddiagram.cpp */; };
 		152886C51C9CA86100B515BB /* ligature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 152886C41C9CA86100B515BB /* ligature.cpp */; };
 		1579B3431B15033100B16F5C /* proport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1579B3421B15033100B16F5C /* proport.cpp */; };
 		2D2A799A1A69812C000A441B /* chord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2D2A79991A69812C000A441B /* chord.cpp */; };
@@ -1845,6 +1873,16 @@
 /* Begin PBXFileReference section */
 		E70C7A372BC82B2900D96FFF /* enotetoolkit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = enotetoolkit.h; path = include/vrv/enotetoolkit.h; sourceTree = "<group>"; };
 		E70C7A3A2BC82B4700D96FFF /* enotetoolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = enotetoolkit.cpp; path = src/enotetoolkit.cpp; sourceTree = "<group>"; };
+		C0D100000000000000000001 /* barre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = barre.h; path = include/vrv/barre.h; sourceTree = "<group>"; };
+		C0D100000000000000000002 /* barre.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = barre.cpp; path = src/barre.cpp; sourceTree = "<group>"; };
+		C0D100000000000000000003 /* chorddef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chorddef.h; path = include/vrv/chorddef.h; sourceTree = "<group>"; };
+		C0D100000000000000000004 /* chorddef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chorddef.cpp; path = src/chorddef.cpp; sourceTree = "<group>"; };
+		C0D100000000000000000005 /* chordmember.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chordmember.h; path = include/vrv/chordmember.h; sourceTree = "<group>"; };
+		C0D100000000000000000006 /* chordmember.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chordmember.cpp; path = src/chordmember.cpp; sourceTree = "<group>"; };
+		C0D100000000000000000007 /* chordtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chordtable.h; path = include/vrv/chordtable.h; sourceTree = "<group>"; };
+		C0D100000000000000000008 /* chordtable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chordtable.cpp; path = src/chordtable.cpp; sourceTree = "<group>"; };
+		C0D100000000000000000009 /* chorddiagram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chorddiagram.h; path = src/chorddiagram.h; sourceTree = "<group>"; };
+		C0D10000000000000000000A /* chorddiagram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chorddiagram.cpp; path = src/chorddiagram.cpp; sourceTree = "<group>"; };
 		152886C11C9CA2E000B515BB /* ligature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ligature.h; path = include/vrv/ligature.h; sourceTree = "<group>"; };
 		152886C41C9CA86100B515BB /* ligature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ligature.cpp; path = src/ligature.cpp; sourceTree = "<group>"; };
 		1579B3411B15031D00B16F5C /* proport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = proport.h; path = include/vrv/proport.h; sourceTree = "<group>"; };
@@ -3068,6 +3106,16 @@
 		8F086F38188539F00037FD8E /* containers */ = {
 			isa = PBXGroup;
 			children = (
+				C0D100000000000000000002 /* barre.cpp */,
+				C0D100000000000000000001 /* barre.h */,
+				C0D100000000000000000004 /* chorddef.cpp */,
+				C0D100000000000000000003 /* chorddef.h */,
+				C0D10000000000000000000A /* chorddiagram.cpp */,
+				C0D100000000000000000009 /* chorddiagram.h */,
+				C0D100000000000000000006 /* chordmember.cpp */,
+				C0D100000000000000000005 /* chordmember.h */,
+				C0D100000000000000000008 /* chordtable.cpp */,
+				C0D100000000000000000007 /* chordtable.h */,
 				4D20740922A4FDFA00E0765F /* course.cpp */,
 				4D20740722A4FDE800E0765F /* course.h */,
 				BDC366C52576AF9300E4D826 /* grpsym.cpp */,
@@ -3380,6 +3428,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000101 /* barre.h in Headers */,
+				C0D100000000000000000102 /* chorddef.h in Headers */,
+				C0D100000000000000000103 /* chordmember.h in Headers */,
+				C0D100000000000000000104 /* chordtable.h in Headers */,
 				4DCB7AA326D3C9600047F01D /* crc.h in Headers */,
 				4DEC4DD421C8295700D1D273 /* expan.h in Headers */,
 				4DB3D8A51F828E9100B5FC2B /* areaposinterface.h in Headers */,
@@ -3694,6 +3746,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000111 /* barre.h in Headers */,
+				C0D100000000000000000112 /* chorddef.h in Headers */,
+				C0D100000000000000000113 /* chordmember.h in Headers */,
+				C0D100000000000000000114 /* chordtable.h in Headers */,
 				E79320652991452200D80975 /* calcstemfunctor.h in Headers */,
 				E7ED8A6629C1119900735875 /* cachehorizontallayoutfunctor.h in Headers */,
 				E7ADB3AC29D1921400825D5D /* adjustarticfunctor.h in Headers */,
@@ -4165,6 +4221,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000201 /* barre.cpp in Sources */,
+				C0D100000000000000000202 /* chorddef.cpp in Sources */,
+				C0D100000000000000000203 /* chordmember.cpp in Sources */,
+				C0D100000000000000000204 /* chordtable.cpp in Sources */,
+				C0D100000000000000000205 /* chorddiagram.cpp in Sources */,
 				4D1693F51E3A44F300569BF4 /* verticalaligner.cpp in Sources */,
 				4D7AFDC82A5554A100835ED1 /* divline.cpp in Sources */,
 				4D1693F61E3A44F300569BF4 /* barline.cpp in Sources */,
@@ -4470,6 +4531,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000211 /* barre.cpp in Sources */,
+				C0D100000000000000000212 /* chorddef.cpp in Sources */,
+				C0D100000000000000000213 /* chordmember.cpp in Sources */,
+				C0D100000000000000000214 /* chordtable.cpp in Sources */,
+				C0D100000000000000000215 /* chorddiagram.cpp in Sources */,
 				4DEF8A6421B7AAF90093A76B /* f.cpp in Sources */,
 				4DB3D89E1F7E7FAA00B5FC2B /* fig.cpp in Sources */,
 				4D1AC9772B6A9BB200434023 /* filereader.cpp in Sources */,
@@ -4775,6 +4841,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000221 /* barre.cpp in Sources */,
+				C0D100000000000000000222 /* chorddef.cpp in Sources */,
+				C0D100000000000000000223 /* chordmember.cpp in Sources */,
+				C0D100000000000000000224 /* chordtable.cpp in Sources */,
+				C0D100000000000000000225 /* chorddiagram.cpp in Sources */,
 				4DEF8A6621B7AAF90093A76B /* f.cpp in Sources */,
 				4D7AFDC92A5554A100835ED1 /* divline.cpp in Sources */,
 				4DB3D8F01F83D1A700B5FC2B /* fig.cpp in Sources */,
@@ -5081,6 +5152,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100000000000000000231 /* barre.cpp in Sources */,
+				C0D100000000000000000232 /* chorddef.cpp in Sources */,
+				C0D100000000000000000233 /* chordmember.cpp in Sources */,
+				C0D100000000000000000234 /* chordtable.cpp in Sources */,
+				C0D100000000000000000235 /* chorddiagram.cpp in Sources */,
 				BB4C4AF522A932BC001F6AF0 /* ref.cpp in Sources */,
 				4D7AFDCA2A5554A100835ED1 /* divline.cpp in Sources */,
 				BB4C4B9322A932E5001F6AF0 /* areaposinterface.cpp in Sources */,

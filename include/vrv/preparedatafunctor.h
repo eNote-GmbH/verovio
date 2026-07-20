@@ -12,6 +12,7 @@
 
 namespace vrv {
 
+class ChordTable;
 class Facsimile;
 class SystemMilestoneInterface;
 class SymbolTable;
@@ -190,6 +191,25 @@ public:
 private:
     // The SymbolTable in the current scoreDef
     SymbolTable *m_symbolTable;
+};
+
+//----------------------------------------------------------------------------
+// PrepareChordRefsFunctor
+//----------------------------------------------------------------------------
+
+/** Resolve harm@chordref against the chordTable in the current scoreDef. */
+class PrepareChordRefsFunctor : public Functor {
+public:
+    PrepareChordRefsFunctor();
+    virtual ~PrepareChordRefsFunctor() = default;
+
+    bool ImplementsEndInterface() const override { return false; }
+
+    FunctorCode VisitHarm(Harm *harm) override;
+    FunctorCode VisitScore(Score *score) override;
+
+private:
+    ChordTable *m_chordTable;
 };
 
 //----------------------------------------------------------------------------

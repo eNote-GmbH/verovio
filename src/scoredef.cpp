@@ -13,6 +13,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "chordtable.h"
 #include "clef.h"
 #include "comparison.h"
 #include "editorial.h"
@@ -249,8 +250,8 @@ void ScoreDef::Reset()
 
 bool ScoreDef::IsSupportedChild(ClassId classId)
 {
-    static const std::vector<ClassId> supported{ CLEF, GRPSYM, KEYSIG, MENSUR, METERSIG, METERSIGGRP, STAFFGRP,
-        SYMBOLTABLE };
+    static const std::vector<ClassId> supported{ CHORDTABLE, CLEF, GRPSYM, KEYSIG, MENSUR, METERSIG, METERSIGGRP,
+        STAFFGRP, SYMBOLTABLE };
 
     if (std::find(supported.begin(), supported.end(), classId) != supported.end()) {
         return true;
@@ -280,7 +281,7 @@ int ScoreDef::GetInsertOrderFor(ClassId classId) const
 {
 
     static const std::vector s_order(
-        { SYMBOLTABLE, CLEF, KEYSIG, METERSIGGRP, METERSIG, MENSUR, PGHEAD, PGFOOT, STAFFGRP, GRPSYM });
+        { CHORDTABLE, SYMBOLTABLE, CLEF, KEYSIG, METERSIGGRP, METERSIG, MENSUR, PGHEAD, PGFOOT, STAFFGRP, GRPSYM });
     return this->GetInsertOrderForIn(classId, s_order);
 }
 

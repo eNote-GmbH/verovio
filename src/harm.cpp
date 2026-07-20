@@ -37,11 +37,15 @@ Harm::Harm()
     , TextListInterface()
     , TextDirInterface()
     , TimeSpanningInterface()
+    , AttHarmLog()
+    , AttHarmVis()
     , AttLang()
     , AttNNumberLike()
 {
     this->RegisterInterface(TextDirInterface::GetAttClasses(), TextDirInterface::IsInterface());
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
+    this->RegisterAttClass(ATT_HARMLOG);
+    this->RegisterAttClass(ATT_HARMVIS);
     this->RegisterAttClass(ATT_LANG);
     this->RegisterAttClass(ATT_NNUMBERLIKE);
 
@@ -55,8 +59,11 @@ void Harm::Reset()
     ControlElement::Reset();
     TextDirInterface::Reset();
     TimeSpanningInterface::Reset();
+    this->ResetHarmLog();
+    this->ResetHarmVis();
     this->ResetLang();
     this->ResetNNumberLike();
+    this->ResetChordDef();
 }
 
 bool Harm::IsSupportedChild(ClassId classId)
@@ -72,6 +79,20 @@ bool Harm::IsSupportedChild(ClassId classId)
     else {
         return false;
     }
+}
+
+bool Harm::IsCloserToStaffThan(const FloatingObject *other, data_STAFFREL drawingPlace) const
+{
+    if (!other->Is(HARM)) return false;
+    if ((drawingPlace != STAFFREL_above) && (drawingPlace != STAFFREL_below)) return false;
+
+    return (this->GetDrawingGrpId() < other->GetDrawingGrpId());
+}
+
+void Harm::SetChordDef(ChordDef *chordDef)
+{
+    assert(!m_chordDef);
+    m_chordDef = chordDef;
 }
 
 bool Harm::GetRootPitch(TransPitch &pitch, unsigned int &pos) const

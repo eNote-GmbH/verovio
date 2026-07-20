@@ -10,6 +10,7 @@
 //----------------------------------------------------------------------------
 
 #include <cassert>
+#include <cmath>
 #include <sstream>
 
 //----------------------------------------------------------------------------
@@ -21,6 +22,7 @@
 #include "bracketspan.h"
 #include "breath.h"
 #include "caesura.h"
+#include "chorddiagram.h"
 #include "clef.h"
 #include "comparison.h"
 #include "cpmark.h"
@@ -64,6 +66,33 @@
 #include "vrv.h"
 
 namespace vrv {
+
+namespace {
+
+    int ScaleChordDiagramValue(int space, double value)
+    {
+        return static_cast<int>(std::lround(value * space));
+    }
+
+    // Measure the label ink rather than the Harm box, which may also contain diagram geometry.
+    // Enclosure extents are included explicitly because they are not text-child content bounds.
+    int GetHarmonyLabelBottom(
+        const Harm &harm, const TextDrawingParams &params, int fallbackBottom, int enclosureMargin)
+    {
+        int labelBottom = VRV_UNSET;
+        for (const Object *child : harm.GetChildren()) {
+            if (!child->HasContentBB()) continue;
+            labelBottom = (labelBottom == VRV_UNSET) ? child->GetContentBottom()
+                                                     : std::min(labelBottom, child->GetContentBottom());
+        }
+        for (const TextElement *rend : params.m_enclosedRend) {
+            const int enclosureBottom = rend->GetContentBottom() - enclosureMargin / 2;
+            labelBottom = (labelBottom == VRV_UNSET) ? enclosureBottom : std::min(labelBottom, enclosureBottom);
+        }
+        return (labelBottom == VRV_UNSET) ? fallbackBottom : labelBottom;
+    }
+
+} // namespace
 
 //----------------------------------------------------------------------------
 // View - FloatingObject - ControlElement
@@ -2312,6 +2341,26 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
         alignment = (harm->GetStart()->Is(TIMESTAMP_ATTR)) ? HORIZONTALALIGNMENT_left : HORIZONTALALIGNMENT_center;
     }
 
+    const bool hasFiguredBass = harm->GetFirst() && harm->GetFirst()->Is(FB);
+    HarmDrawingMode mode = GetHarmDrawingMode(*harm);
+
+    if (hasFiguredBass) {
+        mode.m_drawGrid = false;
+        mode.m_drawText = false;
+    }
+
+    ChordDiagramLayoutResult diagramResult;
+    if (mode.m_drawGrid) {
+        if (harm->HasChordDef()) {
+            diagramResult = BuildChordDiagramLayout(*harm->GetChordDef());
+        }
+
+        if (!diagramResult.m_valid) {
+            mode.m_drawGrid = false;
+            mode.m_drawText = mode.m_hasText;
+        }
+    }
+
     std::vector<Staff *> staffList = harm->GetTstampStaves(measure, harm);
     for (Staff *staff : staffList) {
         if (!system->SetCurrentFloatingPositioner(staff->GetN(), harm, harm->GetStart(), staff)) {
@@ -2329,7 +2378,7 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
         params.m_y = y;
         params.m_staffSize = staffSize;
 
-        if (harm->GetFirst() && harm->GetFirst()->Is(FB)) {
+        if (hasFiguredBass) {
             this->DrawFb(dc, staff, dynamic_cast<Fb *>(harm->GetFirst()), params);
         }
         else {
@@ -2337,19 +2386,124 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
 
             harmTxt.SetPointSize(params.m_pointSize);
 
-            dc->SetFont(&harmTxt);
+            if (mode.m_drawText) {
+                if (mode.m_drawGrid) params.m_lineStartX = params.m_x;
+                dc->SetFont(&harmTxt);
+                dc->StartText(this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), alignment);
+                this->DrawTextChildren(dc, harm, params);
+                dc->EndText();
+                dc->ResetFont();
+                this->DrawTextEnclosure(dc, params, staffSize);
+            }
 
-            dc->StartText(this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), alignment);
-            this->DrawTextChildren(dc, harm, params);
-            dc->EndText();
-
-            dc->ResetFont();
-
-            this->DrawTextEnclosure(dc, params, staffSize);
+            if (mode.m_drawGrid) {
+                const int space = m_doc->GetDrawingDoubleUnit(staffSize);
+                int gridTopY = y - ScaleChordDiagramValue(space, ChordDiagramLayout::s_indicatorOffset);
+                if (mode.m_drawText) {
+                    const int fallbackBottom = y - m_doc->GetTextLineHeight(&harmTxt, false);
+                    const int labelBottom
+                        = GetHarmonyLabelBottom(*harm, params, fallbackBottom, m_doc->GetDrawingUnit(staffSize));
+                    const double clearance = ChordDiagramLayout::s_labelGap + diagramResult.m_layout.m_topExtent;
+                    gridTopY = labelBottom - ScaleChordDiagramValue(space, clearance);
+                }
+                this->DrawChordDiagram(dc, diagramResult.m_layout, x, gridTopY, staffSize, alignment, harmTxt);
+            }
+            else if (!mode.m_drawText && harm->GetCurrentFloatingPositioner()) {
+                harm->GetCurrentFloatingPositioner()->SetEmptyBB();
+            }
         }
     }
 
     dc->EndGraphic(harm, this);
+}
+
+void View::DrawChordDiagram(DeviceContext *dc, const ChordDiagramLayout &layout, int x, int gridTopY, int staffSize,
+    data_HORIZONTALALIGNMENT alignment, const FontInfo &textFont)
+{
+    assert(dc);
+
+    const int space = m_doc->GetDrawingDoubleUnit(staffSize);
+    const int width = ScaleChordDiagramValue(space, layout.m_width);
+    const int height = ScaleChordDiagramValue(space, layout.m_height);
+    int left = x;
+    if (alignment == HORIZONTALALIGNMENT_center)
+        left -= width / 2;
+    else if (alignment == HORIZONTALALIGNMENT_right)
+        left -= width;
+
+    const int gridLineWidth = std::max(1, ScaleChordDiagramValue(space, ChordDiagramLayout::s_gridLineWidth));
+    dc->SetPen(gridLineWidth, PEN_SOLID);
+    for (int string = 0; string < layout.m_stringCount; ++string) {
+        const int stringX = left + ScaleChordDiagramValue(space, string * ChordDiagramLayout::s_stringSpacing);
+        dc->DrawLine(this->ToDeviceContextX(stringX), this->ToDeviceContextY(gridTopY), this->ToDeviceContextX(stringX),
+            this->ToDeviceContextY(gridTopY - height));
+    }
+    for (int fret = 0; fret <= layout.m_fretCount; ++fret) {
+        if ((fret == 0) && (layout.m_firstFret == 1)) continue;
+        const int fretY = gridTopY - ScaleChordDiagramValue(space, fret * ChordDiagramLayout::s_fretSpacing);
+        dc->DrawLine(this->ToDeviceContextX(left), this->ToDeviceContextY(fretY), this->ToDeviceContextX(left + width),
+            this->ToDeviceContextY(fretY));
+    }
+    dc->ResetPen();
+
+    dc->SetPen(
+        std::max(1,
+            ScaleChordDiagramValue(space,
+                layout.m_firstFret == 1 ? ChordDiagramLayout::s_nutLineWidth : ChordDiagramLayout::s_gridLineWidth)),
+        PEN_SOLID);
+    dc->DrawLine(this->ToDeviceContextX(left), this->ToDeviceContextY(gridTopY), this->ToDeviceContextX(left + width),
+        this->ToDeviceContextY(gridTopY));
+    dc->ResetPen();
+
+    const int markerRadius = std::max(1, ScaleChordDiagramValue(space, ChordDiagramLayout::s_markerDiameter / 2.0));
+    for (const ChordDiagramMarker &marker : layout.m_markers) {
+        const int markerX = left + ScaleChordDiagramValue(space, marker.m_x);
+        const int markerY = gridTopY - ScaleChordDiagramValue(space, marker.m_y);
+        if (marker.m_type == ChordDiagramMarkerType::Stopped) {
+            dc->SetPen(0, PEN_SOLID);
+            dc->SetBrush(1.0);
+            dc->DrawCircle(this->ToDeviceContextX(markerX), this->ToDeviceContextY(markerY), markerRadius);
+            dc->ResetBrush();
+            dc->ResetPen();
+        }
+        else if (marker.m_type == ChordDiagramMarkerType::Open) {
+            dc->SetPen(gridLineWidth, PEN_SOLID);
+            dc->SetBrush(0.0);
+            dc->DrawCircle(this->ToDeviceContextX(markerX), this->ToDeviceContextY(markerY), markerRadius);
+            dc->ResetBrush();
+            dc->ResetPen();
+        }
+        else {
+            dc->SetPen(gridLineWidth, PEN_SOLID);
+            dc->DrawLine(this->ToDeviceContextX(markerX - markerRadius), this->ToDeviceContextY(markerY - markerRadius),
+                this->ToDeviceContextX(markerX + markerRadius), this->ToDeviceContextY(markerY + markerRadius));
+            dc->DrawLine(this->ToDeviceContextX(markerX - markerRadius), this->ToDeviceContextY(markerY + markerRadius),
+                this->ToDeviceContextX(markerX + markerRadius), this->ToDeviceContextY(markerY - markerRadius));
+            dc->ResetPen();
+        }
+    }
+
+    dc->SetPen(std::max(1, ScaleChordDiagramValue(space, ChordDiagramLayout::s_barreLineWidth)), PEN_SOLID, 0, 0,
+        LINECAP_ROUND);
+    for (const ChordDiagramBarre &barre : layout.m_barres) {
+        const int barreY = gridTopY - ScaleChordDiagramValue(space, barre.m_y);
+        dc->DrawLine(this->ToDeviceContextX(left + ScaleChordDiagramValue(space, barre.m_x1)),
+            this->ToDeviceContextY(barreY), this->ToDeviceContextX(left + ScaleChordDiagramValue(space, barre.m_x2)),
+            this->ToDeviceContextY(barreY));
+    }
+    dc->ResetPen();
+
+    if (layout.m_firstFret > 1) {
+        FontInfo fretFont = textFont;
+        fretFont.SetPointSize(std::max(1, textFont.GetPointSize() * 3 / 4));
+        dc->SetFont(&fretFont);
+        const int labelX = left - ScaleChordDiagramValue(space, 0.35);
+        const int labelY = gridTopY - ScaleChordDiagramValue(space, ChordDiagramLayout::s_fretSpacing * 0.65);
+        dc->StartText(this->ToDeviceContextX(labelX), this->ToDeviceContextY(labelY), HORIZONTALALIGNMENT_right);
+        dc->DrawText(StringFormat("%d", layout.m_firstFret));
+        dc->EndText();
+        dc->ResetFont();
+    }
 }
 
 void View::DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, System *system)

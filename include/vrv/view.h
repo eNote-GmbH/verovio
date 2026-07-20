@@ -28,6 +28,7 @@ class BracketSpan;
 class Breath;
 class Caesura;
 class Chord;
+struct ChordDiagramLayout;
 class ControlElement;
 class DeviceContext;
 class Dir;
@@ -436,6 +437,8 @@ protected:
     void DrawFermata(DeviceContext *dc, Fermata *fermata, Measure *measure, System *system);
     void DrawFing(DeviceContext *dc, Fing *fing, Measure *measure, System *system);
     void DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *system);
+    void DrawChordDiagram(DeviceContext *dc, const ChordDiagramLayout &layout, int x, int gridTopY, int staffSize,
+        data_HORIZONTALALIGNMENT alignment, const FontInfo &textFont);
     void DrawMordent(DeviceContext *dc, Mordent *mordent, Measure *measure, System *system);
     void DrawPedal(DeviceContext *dc, Pedal *pedal, Measure *measure, System *system);
     void DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system);

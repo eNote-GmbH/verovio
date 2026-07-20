@@ -961,6 +961,11 @@ void Doc::PrepareData()
     PrepareAltSymFunctor prepareAltSym;
     root->Process(prepareAltSym);
 
+    /************ Resolve @chordref ************/
+
+    PrepareChordRefsFunctor prepareChordRefs;
+    root->Process(prepareChordRefs);
+
     /************ Instantiate LayerElement parts (stem, flag, dots, etc) ************/
 
     PrepareLayerElementPartsFunctor prepareLayerElementParts;

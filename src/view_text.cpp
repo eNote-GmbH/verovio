@@ -316,6 +316,7 @@ void View::DrawLb(DeviceContext *dc, Lb *lb, TextDrawingParams &params)
     FontInfo *currentFont = dc->GetFont();
 
     params.m_y -= m_doc->GetTextLineHeight(currentFont, false);
+    if (params.m_lineStartX != VRV_UNSET) params.m_x = params.m_lineStartX;
     params.m_explicitPosition = true;
 
     dc->EndTextGraphic(lb, this);

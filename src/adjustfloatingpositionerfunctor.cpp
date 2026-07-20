@@ -9,7 +9,9 @@
 
 //----------------------------------------------------------------------------
 
+#include "chorddiagram.h"
 #include "doc.h"
+#include "harm.h"
 #include "staff.h"
 #include "system.h"
 
@@ -137,6 +139,12 @@ FunctorCode AdjustFloatingPositionersFunctor::VisitStaffAlignment(StaffAlignment
         // Find all the overflowing elements from the staff that overlap horizontally
         for (BoundingBox *bbox : overflowBoxes) {
             if (positioner->HasHorizontalOverlapWith(bbox, drawingUnit)) {
+                // Harmony groups are aligned and separated together after their individual positioning.
+                if (m_classId == HARM) {
+                    const FloatingPositioner *bboxPositioner = dynamic_cast<const FloatingPositioner *>(bbox);
+                    if (bboxPositioner && bboxPositioner->GetObject()->Is(HARM)) continue;
+                }
+
                 // update the yRel accordingly
                 positioner->CalcDrawingYRel(m_doc, staffAlignment, bbox);
             }
@@ -262,7 +270,7 @@ FunctorCode AdjustFloatingPositionersFunctor::VisitSystem(System *system)
     m_classId = ENDING;
     system->m_systemAligner.Process(*this);
 
-    adjustFloatingPositionerGrps.SetClassIDs({ ENDING });
+    adjustFloatingPositionerGrps.SetClassIDs({ HARM, ENDING });
     adjustFloatingPositionerGrps.SetPlace(STAFFREL_above);
     system->m_systemAligner.Process(adjustFloatingPositionerGrps);
     adjustFloatingPositionerGrps.SetPlace(STAFFREL_below);
@@ -388,20 +396,68 @@ void AdjustFloatingPositionerGrpsFunctor::AdjustGroupsMonotone(const StaffAlignm
 
     std::sort(grpIdYRel.begin(), grpIdYRel.end());
 
-    int yRel;
+    bool firstGroup = true;
+    int previousMargin = 0;
     // The initial next position is the original position of the first group. Nothing will happen for it.
     int nextYRel = grpIdYRel.at(0).second;
 
     // For each grpId (sorted, see above), loop to find the highest / lowest position to put the next group
     // Then move the next group (if not already higher or lower)
     for (const auto &grp : grpIdYRel) {
+        bool hasPositioner = false;
+        int contentY1 = 0;
+        int contentY2 = 0;
+        int margin = 0;
+        bool hasChordDiagram = false;
+        for (const FloatingPositioner *positioner : positioners) {
+            if (positioner->GetObject()->GetDrawingGrpId() != grp.first) continue;
+
+            if (!hasPositioner) {
+                contentY1 = positioner->GetContentY1();
+                contentY2 = positioner->GetContentY2();
+                hasPositioner = true;
+            }
+            else {
+                contentY1 = std::min(contentY1, positioner->GetContentY1());
+                contentY2 = std::max(contentY2, positioner->GetContentY2());
+            }
+            const ClassId classId = positioner->GetObject()->GetClassId();
+            const int classMargin
+                = (m_place == STAFFREL_above) ? m_doc->GetTopMargin(classId) : m_doc->GetBottomMargin(classId);
+            margin = std::max(margin, classMargin * m_doc->GetDrawingUnit(staffAlignment->GetStaffSize()));
+
+            if (!hasChordDiagram && positioner->GetObject()->Is(HARM)) {
+                const Harm *harm = vrv_cast<const Harm *>(positioner->GetObject());
+                assert(harm);
+                const HarmDrawingMode mode = GetHarmDrawingMode(*harm);
+                const bool hasFiguredBass = harm->GetFirst() && harm->GetFirst()->Is(FB);
+                if (mode.m_drawGrid && !hasFiguredBass && harm->HasChordDef()) {
+                    hasChordDiagram = BuildChordDiagramLayout(*harm->GetChordDef()).m_valid;
+                }
+            }
+        }
+
+        assert(hasPositioner);
+
+        int yRel = grp.second;
         // Check if the next group is not already higher or lower.
-        if (m_place == STAFFREL_above) {
-            yRel = (nextYRel < grp.second) ? nextYRel : grp.second;
+        if (!firstGroup) {
+            int diagramRowAdjustment = 0;
+            if (hasChordDiagram) {
+                const int diagramRowMargin = static_cast<int>(
+                    ChordDiagramLayout::s_rowGap * m_doc->GetDrawingDoubleUnit(staffAlignment->GetStaffSize()));
+                // The previous boundary already includes its class margin; add only what is needed
+                // to reach the requested total ink-to-ink gap before a row containing a chord diagram.
+                diagramRowAdjustment = std::max(0, diagramRowMargin - previousMargin);
+            }
+            if (m_place == STAFFREL_above) {
+                yRel = std::min(nextYRel + contentY1 - diagramRowAdjustment, grp.second);
+            }
+            else {
+                yRel = std::max(nextYRel + contentY2 + diagramRowAdjustment, grp.second);
+            }
         }
-        else {
-            yRel = (nextYRel > grp.second) ? nextYRel : grp.second;
-        }
+
         // Go through all the positioners, but filter by group
         for (FloatingPositioner *positioner : positioners) {
             int currentGrpId = positioner->GetObject()->GetDrawingGrpId();
@@ -409,24 +465,17 @@ void AdjustFloatingPositionerGrpsFunctor::AdjustGroupsMonotone(const StaffAlignm
             if (currentGrpId != grp.first) continue;
             // Set its position
             positioner->SetDrawingYRel(yRel);
-            // Then find the highest / lowest position for the next group
-            if (m_place == STAFFREL_above) {
-                int positionerY = yRel - positioner->GetContentY2()
-                    - (m_doc->GetTopMargin(positioner->GetObject()->GetClassId())
-                        * m_doc->GetDrawingUnit(staffAlignment->GetStaffSize()));
-                if (nextYRel > positionerY) {
-                    nextYRel = positionerY;
-                }
-            }
-            else {
-                int positionerY = yRel + positioner->GetContentY2()
-                    + (m_doc->GetBottomMargin(positioner->GetObject()->GetClassId())
-                        * m_doc->GetDrawingUnit(staffAlignment->GetStaffSize()));
-                if (nextYRel < positionerY) {
-                    nextYRel = positionerY;
-                }
-            }
         }
+
+        // Find the content boundary beyond which the next group can be positioned.
+        if (m_place == STAFFREL_above) {
+            nextYRel = yRel - contentY2 - margin;
+        }
+        else {
+            nextYRel = yRel - contentY1 + margin;
+        }
+        previousMargin = margin;
+        firstGroup = false;
     }
 }
 

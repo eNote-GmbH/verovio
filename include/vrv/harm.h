@@ -8,6 +8,8 @@
 #ifndef __VRV_HARM_H__
 #define __VRV_HARM_H__
 
+#include "atts_harmony.h"
+#include "atts_visual.h"
 #include "controlelement.h"
 #include "textdirinterface.h"
 #include "timeinterface.h"
@@ -15,6 +17,7 @@
 
 namespace vrv {
 
+class ChordDef;
 class TextElement;
 
 //----------------------------------------------------------------------------
@@ -28,6 +31,8 @@ class Harm : public ControlElement,
              public TextListInterface,
              public TextDirInterface,
              public TimeSpanningInterface,
+             public AttHarmLog,
+             public AttHarmVis,
              public AttLang,
              public AttNNumberLike {
 public:
@@ -67,6 +72,16 @@ public:
      */
     bool IsSupportedChild(ClassId classId) override;
 
+    /** Order harmony rows by drawing group, with lower group IDs closer to the staff. */
+    bool IsCloserToStaffThan(const FloatingObject *other, data_STAFFREL drawingPlace) const override;
+
+    /** Resolved target of @chordref. The ChordDef remains owned by the scoreDef. */
+    void SetChordDef(ChordDef *chordDef);
+    void ResetChordDef() { m_chordDef = NULL; }
+    ChordDef *GetChordDef() { return m_chordDef; }
+    const ChordDef *GetChordDef() const { return m_chordDef; }
+    bool HasChordDef() const { return m_chordDef != NULL; }
+
     /**
      * Transposition related. The int tracks where we have iterated through the string.
      */
@@ -96,7 +111,7 @@ private:
 public:
     //
 private:
-    //
+    ChordDef *m_chordDef;
 };
 
 } // namespace vrv

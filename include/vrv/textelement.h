@@ -92,6 +92,7 @@ public:
     TextDrawingParams()
     {
         m_x = 0;
+        m_lineStartX = VRV_UNSET;
         m_y = 0;
         m_width = 0;
         m_height = 0;
@@ -108,6 +109,8 @@ public:
     virtual ~TextDrawingParams() {}
 
     int m_x;
+    /** Optional x position to restore after a line break. */
+    int m_lineStartX;
     int m_y;
     int m_width;
     int m_height;
