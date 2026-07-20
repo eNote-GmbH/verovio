@@ -13,6 +13,12 @@
 #include "layer.h"
 #include "object.h"
 #include "plistinterface.h"
+#include "score.h"
+#include "scoredef.h"
+#include "surface.h"
+#include "symboldef.h"
+#include "system.h"
+#include "zone.h"
 
 namespace vrv {
 
@@ -252,49 +258,154 @@ FunctorCode FindExtremeByComparisonFunctor::VisitObject(const Object *object)
 // FindAllReferencedObjectsFunctor
 //----------------------------------------------------------------------------
 
-FindAllReferencedObjectsFunctor::FindAllReferencedObjectsFunctor(ListOfObjects *elements) : Functor()
+FindAllReferencedObjectsFunctor::FindAllReferencedObjectsFunctor(
+    SetOfConstObjects *elements, ListOfObjectAttNamePairs *listWithAttName)
+    : ConstFunctor()
 {
     m_elements = elements;
+    m_listWithAttName = listWithAttName;
+    // We need one of the two depending if we want the attribute name listed or not
+    assert(m_elements || m_listWithAttName);
     m_milestoneReferences = false;
 }
 
-FunctorCode FindAllReferencedObjectsFunctor::VisitObject(Object *object)
+FunctorCode FindAllReferencedObjectsFunctor::VisitObject(const Object *object)
 {
-    if (object->HasInterface(INTERFACE_LINKING)) {
-        LinkingInterface *interface = object->GetLinkingInterface();
+    if (object->HasInterface(INTERFACE_ALT_SYM)) {
+        const AltSymInterface *interface = object->GetAltSymInterface();
         assert(interface);
-        if (interface->GetNextLink()) m_elements->push_back(interface->GetNextLink());
-        if (interface->GetSameasLink()) m_elements->push_back(interface->GetSameasLink());
+        if (interface->GetAltSymbolDef()) this->AddObject(interface->GetAltSymbolDef(), "altsym");
+    }
+    if (object->HasInterface(INTERFACE_LINKING)) {
+        const LinkingInterface *interface = object->GetLinkingInterface();
+        assert(interface);
+        if (interface->GetNextLink()) this->AddObject(interface->GetNextLink(), "link");
+        if (interface->GetSameasLink()) this->AddObject(interface->GetSameasLink(), "sameas");
+    }
+    if (object->HasInterface(INTERFACE_FACSIMILE)) {
+        const FacsimileInterface *interface = object->GetFacsimileInterface();
+        assert(interface);
+        if (interface->GetSurface()) this->AddObject(interface->GetSurface(), "surface");
+        if (interface->GetZone()) this->AddObject(interface->GetZone(), "zone");
     }
     if (object->HasInterface(INTERFACE_PLIST)) {
-        PlistInterface *interface = object->GetPlistInterface();
+        const PlistInterface *interface = object->GetPlistInterface();
         assert(interface);
-        for (Object *object : interface->GetRefs()) {
-            m_elements->push_back(object);
+        for (const Object *object : interface->GetRefs()) {
+            this->AddObject(object, "plist");
         }
     }
     if (object->HasInterface(INTERFACE_TIME_POINT) || object->HasInterface(INTERFACE_TIME_SPANNING)) {
-        TimePointInterface *interface = object->GetTimePointInterface();
+        const TimePointInterface *interface = object->GetTimePointInterface();
         assert(interface);
-        if (interface->GetStart() && !interface->GetStart()->Is(TIMESTAMP_ATTR))
-            m_elements->push_back(interface->GetStart());
+        if (interface->GetStart() && !interface->GetStart()->Is(TIMESTAMP_ATTR)) {
+            this->AddObject(interface->GetStart(), "startid");
+        }
     }
     if (object->HasInterface(INTERFACE_TIME_SPANNING)) {
-        TimeSpanningInterface *interface = object->GetTimeSpanningInterface();
+        const TimeSpanningInterface *interface = object->GetTimeSpanningInterface();
         assert(interface);
-        if (interface->GetEnd() && !interface->GetEnd()->Is(TIMESTAMP_ATTR)) m_elements->push_back(interface->GetEnd());
+        if (interface->GetEnd() && !interface->GetEnd()->Is(TIMESTAMP_ATTR)) {
+            this->AddObject(interface->GetEnd(), "endid");
+        }
     }
     if (object->Is(NOTE)) {
-        Note *note = vrv_cast<Note *>(object);
+        const Note *note = vrv_cast<const Note *>(object);
         assert(note);
         // The note has a stem.sameas that was resolved the a note, then that one is referenced
         if (note->HasStemSameas() && note->HasStemSameasNote()) {
-            m_elements->push_back(note->GetStemSameasNote());
+            this->AddObject(note->GetStemSameasNote(), "stem.sameas");
         }
     }
     // These will also be referred to as milestones in page-based MEI
     if (m_milestoneReferences && object->IsMilestoneElement()) {
-        m_elements->push_back(object);
+        this->AddObject(object, "");
+    }
+
+    // continue until the end
+    return FUNCTOR_CONTINUE;
+}
+
+void FindAllReferencedObjectsFunctor::AddObject(const Object *object, const std::string &attribute)
+{
+    if (m_elements) {
+        m_elements->insert(object);
+    }
+    else {
+        m_listWithAttName->push_back(std::make_pair(object, attribute));
+    }
+}
+
+//----------------------------------------------------------------------------
+// FindAllReferringObjectsFunctor
+//----------------------------------------------------------------------------
+
+FindAllReferringObjectsFunctor::FindAllReferringObjectsFunctor(const Object *object, ListOfObjectAttNamePairs *elements)
+    : ConstFunctor()
+{
+    m_object = object;
+    m_elements = elements;
+}
+
+FunctorCode FindAllReferringObjectsFunctor::VisitObject(const Object *object)
+{
+    if (object->HasInterface(INTERFACE_ALT_SYM)) {
+        const AltSymInterface *interface = object->GetAltSymInterface();
+        assert(interface);
+        if (interface->GetAltSymbolDef() == m_object) {
+            m_elements->push_back(std::make_pair(object, "altsym"));
+        }
+    }
+    if (object->HasInterface(INTERFACE_LINKING)) {
+        const LinkingInterface *interface = object->GetLinkingInterface();
+        assert(interface);
+        if (interface->GetNextLink() == m_object) {
+            m_elements->push_back(std::make_pair(object, "next"));
+        }
+        if (interface->GetSameasLink() == m_object) {
+            m_elements->push_back(std::make_pair(object, "sameas"));
+        }
+    }
+    if (object->HasInterface(INTERFACE_FACSIMILE)) {
+        const FacsimileInterface *interface = object->GetFacsimileInterface();
+        assert(interface);
+        if (interface->GetSurface() == m_object) {
+            m_elements->push_back(std::make_pair(object, "surface"));
+        }
+        if (interface->GetZone() == m_object) {
+            m_elements->push_back(std::make_pair(object, "zone"));
+        }
+    }
+    if (object->HasInterface(INTERFACE_PLIST)) {
+        const PlistInterface *interface = object->GetPlistInterface();
+        assert(interface);
+        for (const Object *plistObject : interface->GetRefs()) {
+            if (m_object == plistObject) {
+                m_elements->push_back(std::make_pair(object, "plist"));
+            }
+        }
+    }
+    if (object->HasInterface(INTERFACE_TIME_POINT) || object->HasInterface(INTERFACE_TIME_SPANNING)) {
+        const TimePointInterface *interface = object->GetTimePointInterface();
+        assert(interface);
+        if (interface->GetStart() == m_object) {
+            m_elements->push_back(std::make_pair(object, "startid"));
+        }
+    }
+    if (object->HasInterface(INTERFACE_TIME_SPANNING)) {
+        const TimeSpanningInterface *interface = object->GetTimeSpanningInterface();
+        assert(interface);
+        if ((interface->GetEnd() == m_object)) {
+            m_elements->push_back(std::make_pair(object, "endid"));
+        }
+    }
+    if (object->Is(NOTE)) {
+        const Note *note = vrv_cast<const Note *>(object);
+        assert(note);
+        // The note has a stem.sameas that was resolved the a note, then that one is referenced
+        if (note->HasStemSameas() && (note->GetStemSameasNote() == m_object)) {
+            m_elements->push_back(std::make_pair(object, "stem.sameas"));
+        }
     }
 
     // continue until the end
@@ -330,8 +441,39 @@ FunctorCode FindElementInLayerStaffDefFunctor::VisitLayer(const Layer *layer)
     else if (layer->GetStaffDefMeterSigGrp() && (layer->GetStaffDefMeterSigGrp()->GetID() == m_id)) {
         m_element = layer->GetStaffDefMeterSigGrp();
     }
+    // The KeyAccid children are generated from the @sig attribute and are not matched above - look for them within
+    // the KeySig
+    if (!m_element && layer->GetStaffDefKeySig()) {
+        m_element = layer->GetStaffDefKeySig()->FindDescendantByID(m_id);
+    }
 
     return m_element ? FUNCTOR_STOP : FUNCTOR_SIBLINGS;
+}
+
+FunctorCode FindElementInLayerStaffDefFunctor::VisitScore(const Score *score)
+{
+    assert(score->GetScoreDef());
+
+    if (score->GetScoreDef()->GetID() == m_id) {
+        m_element = score->GetScoreDef();
+    }
+    else {
+        m_element = score->GetScoreDef()->FindDescendantByID(m_id);
+    }
+
+    return (m_element) ? FUNCTOR_STOP : FUNCTOR_CONTINUE;
+}
+
+FunctorCode FindElementInLayerStaffDefFunctor::VisitSystem(const System *system)
+{
+    // The GrpSym drawn at the beginning of a system (as well as the running Clef, KeySig, etc.) is a generated element
+    // living in the drawing ScoreDef of the system, which is not part of the main document tree
+    const ScoreDef *drawingScoreDef = system->GetDrawingScoreDef();
+    if (drawingScoreDef) {
+        m_element = drawingScoreDef->FindDescendantByID(m_id);
+    }
+
+    return (m_element) ? FUNCTOR_STOP : FUNCTOR_CONTINUE;
 }
 
 //----------------------------------------------------------------------------

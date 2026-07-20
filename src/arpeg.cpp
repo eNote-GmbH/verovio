@@ -29,14 +29,12 @@ namespace vrv {
 
 static const ClassRegistrar<Arpeg> s_factory("arpeg", ARPEG);
 
-Arpeg::Arpeg()
-    : ControlElement(ARPEG, "arpeg-"), PlistInterface(), TimePointInterface(), AttArpegLog(), AttArpegVis(), AttColor()
+Arpeg::Arpeg() : ControlElement(ARPEG), PlistInterface(), TimePointInterface(), AttArpegLog(), AttArpegVis()
 {
     this->RegisterInterface(PlistInterface::GetAttClasses(), PlistInterface::IsInterface());
     this->RegisterInterface(TimePointInterface::GetAttClasses(), TimePointInterface::IsInterface());
     this->RegisterAttClass(ATT_ARPEGLOG);
     this->RegisterAttClass(ATT_ARPEGVIS);
-    this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_ENCLOSINGCHARS);
 
     this->Reset();
@@ -51,7 +49,6 @@ void Arpeg::Reset()
     TimePointInterface::Reset();
     this->ResetArpegLog();
     this->ResetArpegVis();
-    this->ResetColor();
     this->ResetEnclosingChars();
 
     m_drawingXRel = 0;
@@ -72,13 +69,13 @@ int Arpeg::GetDrawingX() const
     const Object *measure = this->GetFirstAncestor(MEASURE);
     assert(measure);
 
-    // This will be very arbitrary positionned...
+    // This will be very arbitrary positioned...
     return measure->GetDrawingX() + this->GetDrawingXRel();
 }
 
 bool Arpeg::IsValidRef(const Object *ref) const
 {
-    if (!ref->Is({ CHORD, NOTE })) {
+    if (!ref->IsAnyOf(std::array{ CHORD, NOTE })) {
         LogWarning(
             "%s is not supported as @plist target for %s", ref->GetClassName().c_str(), this->GetClassName().c_str());
         return false;

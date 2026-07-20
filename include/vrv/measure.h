@@ -53,11 +53,11 @@ public:
      * Reset method resets all attribute classes
      */
     ///@{
-    Measure(bool measuredMusic = true, int logMeasureNb = -1);
+    Measure(MeasureType measuredMusic = MEASURED, int logMeasureNb = -1);
     virtual ~Measure();
     Object *Clone() const override { return new Measure(*this); };
     void Reset() override;
-    std::string GetClassName() const override { return "Measure"; }
+    std::string GetClassName() const override { return "measure"; }
     ///@}
 
     /**
@@ -79,7 +79,12 @@ public:
     /**
      * Return true if measured music (otherwise we have fake measures)
      */
-    bool IsMeasuredMusic() const { return m_measuredMusic; }
+    bool IsMeasuredMusic() const { return (m_measureType == MEASURED); }
+
+    /**
+     * Return true if the measure represents a neume (section) line
+     */
+    bool IsNeumeLine() const { return (m_measureType == NEUMELINE); }
 
     /**
      * Get and set the measure index
@@ -92,12 +97,17 @@ public:
     /**
      * Methods for adding allowed content
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
+
+    /**
+     * Additional check when adding a child.
+     */
+    bool AddChildAdditionalCheck(Object *child) override;
 
     /**
      * Specific method for measures
      */
-    void AddChildBack(Object *object);
+    bool AddChildBack(Object *object);
 
     /**
      * Return true if the Measure has cached values for the horizontal layout
@@ -285,15 +295,6 @@ public:
     std::vector<Staff *> GetFirstStaffGrpStaves(ScoreDef *scoreDef);
 
     /**
-     * Return the top (first) visible staff in the measure (if any).
-     * Takes into account system optimization
-     */
-    ///@{
-    Staff *GetTopVisibleStaff();
-    const Staff *GetTopVisibleStaff() const;
-    ///@}
-
-    /**
      * Return the bottom (last) visible staff in the measure (if any).
      * Takes into account system optimization
      */
@@ -303,32 +304,44 @@ public:
     ///@}
 
     /**
+     * Return the first or last staff taking into account ossias (or not).
+     */
+    ///@{
+    int GetStaffCount(bool excludeOStaves = true) const;
+    Staff *GetFirstStaff(bool excludeOStaves = true);
+    const Staff *GetFirstStaff(bool excludeOStaves = true) const;
+    Staff *GetLastStaff(bool excludeOStaves = true);
+    const Staff *GetLastStaff(bool excludeOStaves = true) const;
+    ///@}
+
+    /**
      * Check if the measure encloses the given time (in millisecond)
-     * Return the playing repeat time (1-based), 0 otherwise
+     * Return the playing repeat time (1-based), VRV_UNSET otherwise
      */
     int EnclosesTime(int time) const;
 
     /**
-     * Read only access to m_scoreTimeOffset
+     * Read-only access to onset and offset.
+     * Passing repeat unset return last one.
      */
-    double GetLastTimeOffset() const { return m_scoreTimeOffset.back(); }
-
-    /**
-     * Return the real time offset in milliseconds
-     */
-    ///@{
-    double GetLastRealTimeOffset() const { return m_realTimeOffsetMilliseconds.back(); }
-    double GetRealTimeOffsetMilliseconds(int repeat) const;
+    Fraction GetScoreTimeOnset(int repeat = VRV_UNSET) const;
+    double GetRealTimeOnsetMilliseconds(int repeat = VRV_UNSET) const;
+    Fraction GetScoreTimeOffset(int repeat = VRV_UNSET) const;
+    double GetRealTimeOffsetMilliseconds(int repeat = VRV_UNSET) const;
     ///@}
 
     /**
      * Setter for the time offset
      */
     ///@{
+    void ClearScoreTimeOnset() { m_scoreTimeOnset.clear(); }
+    void AddScoreTimeOnset(Fraction offset) { m_scoreTimeOnset.push_back(offset); }
+    void ClearRealTimeOnsetMilliseconds() { m_realTimeOnsetMilliseconds.clear(); }
+    void AddRealTimeOnsetMilliseconds(double milliseconds) { m_realTimeOnsetMilliseconds.push_back(milliseconds); }
     void ClearScoreTimeOffset() { m_scoreTimeOffset.clear(); }
-    void AddScoreTimeOffset(double offset) { m_scoreTimeOffset.push_back(offset); }
-    void ClearRealTimeOffset() { m_realTimeOffsetMilliseconds.clear(); }
-    void AddRealTimeOffset(double milliseconds) { m_realTimeOffsetMilliseconds.push_back(milliseconds); }
+    void AddScoreTimeOffset(Fraction offset) { m_scoreTimeOffset.push_back(offset); }
+    void ClearRealTimeOffsetMilliseconds() { m_realTimeOffsetMilliseconds.clear(); }
+    void AddRealTimeOffsetMilliseconds(double milliseconds) { m_realTimeOffsetMilliseconds.push_back(milliseconds); }
     ///@}
 
     /**
@@ -404,9 +417,10 @@ protected:
 
 private:
     /**
-     * Indicates measured music (otherwise we have fake measures)
+     * Indicate measured music (CMN), unmeasured (fake measures for mensural or neumes) or neume lines
+     * Neume line measure are created from <section type="neon-neume-line">
      */
-    bool m_measuredMusic;
+    MeasureType m_measureType;
 
     /**
      * The unique measure index
@@ -440,9 +454,12 @@ private:
     bool m_hasAlignmentRefWithMultipleLayers;
 
     /**
-     * Start time state variables.
+     * Start and end time state variables.
+     * Meant to deal with measure repetition but currently unused.
      */
-    std::vector<double> m_scoreTimeOffset;
+    std::vector<Fraction> m_scoreTimeOnset;
+    std::vector<double> m_realTimeOnsetMilliseconds;
+    std::vector<Fraction> m_scoreTimeOffset;
     std::vector<double> m_realTimeOffsetMilliseconds;
     double m_currentTempo;
 

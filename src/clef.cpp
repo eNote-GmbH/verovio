@@ -31,8 +31,8 @@ namespace vrv {
 static const ClassRegistrar<Clef> s_factory("clef", CLEF);
 
 Clef::Clef()
-    : LayerElement(CLEF, "clef-")
-    , VisualOffsetInterface()
+    : LayerElement(CLEF)
+    , OffsetInterface()
     , AttClefLog()
     , AttClefShape()
     , AttColor()
@@ -45,7 +45,7 @@ Clef::Clef()
     , AttTypography()
     , AttVisibility()
 {
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
+    this->RegisterInterface(OffsetInterface::GetAttClasses(), OffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_CLEFLOG);
     this->RegisterAttClass(ATT_CLEFSHAPE);
     this->RegisterAttClass(ATT_COLOR);
@@ -67,7 +67,7 @@ Clef::~Clef() {}
 void Clef::Reset()
 {
     LayerElement::Reset();
-    VisualOffsetInterface::Reset();
+    OffsetInterface::Reset();
     this->ResetClefLog();
     this->ResetClefShape();
     this->ResetColor();
@@ -151,8 +151,12 @@ char32_t Clef::GetClefGlyph(const data_NOTATIONTYPE notationtype) const
         case NOTATIONTYPE_tab_guitar: return SMUFL_E06D_6stringTabClef; break;
         case NOTATIONTYPE_neume:
             // neume clefs
-            return (this->GetShape() == CLEFSHAPE_F) ? SMUFL_E902_chantFclef : SMUFL_E906_chantCclef;
-            break;
+            switch (this->GetShape()) {
+                case CLEFSHAPE_F: return SMUFL_E902_chantFclef; break;
+                case CLEFSHAPE_C: return SMUFL_E906_chantCclef; break;
+                case CLEFSHAPE_G: return SMUFL_E900_mensuralGclef; break;
+                default: return SMUFL_E906_chantCclef; break;
+            }
         case NOTATIONTYPE_mensural:
         case NOTATIONTYPE_mensural_white:
             // mensural clefs

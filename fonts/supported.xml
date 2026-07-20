@@ -197,13 +197,13 @@
         <!--<glyph glyph-code="E0B0" smufl-name="noteheadCircleXDoubleWhole" />-->
         <!--<glyph glyph-code="E0B1" smufl-name="noteheadCircleXWhole" />-->
         <!--<glyph glyph-code="E0B2" smufl-name="noteheadCircleXHalf" />-->
-        <!--<glyph glyph-code="E0B3" smufl-name="noteheadCircleX" />-->
+        <glyph glyph-code="E0B3" smufl-name="noteheadCircleX" />
         <!--<glyph glyph-code="E0B4" smufl-name="noteheadDoubleWholeWithX" />-->
         <glyph glyph-code="E0B5" smufl-name="noteheadWholeWithX" />
         <glyph glyph-code="E0B6" smufl-name="noteheadHalfWithX" />
         <glyph glyph-code="E0B7" smufl-name="noteheadVoidWithX" />
-        <!--<glyph glyph-code="E0B8" smufl-name="noteheadSquareWhite" />-->
-        <!--<glyph glyph-code="E0B9" smufl-name="noteheadSquareBlack" />-->
+        <glyph glyph-code="E0B8" smufl-name="noteheadSquareWhite" />
+        <glyph glyph-code="E0B9" smufl-name="noteheadSquareBlack" />
         <!--<glyph glyph-code="E0BA" smufl-name="noteheadTriangleUpDoubleWhole" />-->
         <!--<glyph glyph-code="E0BB" smufl-name="noteheadTriangleUpWhole" />-->
         <!--<glyph glyph-code="E0BC" smufl-name="noteheadTriangleUpHalf" />-->
@@ -225,14 +225,14 @@
         <!--<glyph glyph-code="E0CC" smufl-name="noteheadTriangleRoundDownWhite" />-->
         <!--<glyph glyph-code="E0CD" smufl-name="noteheadTriangleRoundDownBlack" />-->
         <!--<glyph glyph-code="E0CE" smufl-name="noteheadParenthesis" />-->
-        <!--<glyph glyph-code="E0CF" smufl-name="noteheadSlashedBlack1" />-->
-        <!--<glyph glyph-code="E0D0" smufl-name="noteheadSlashedBlack2" />-->
-        <!--<glyph glyph-code="E0D1" smufl-name="noteheadSlashedHalf1" />-->
-        <!--<glyph glyph-code="E0D2" smufl-name="noteheadSlashedHalf2" />-->
-        <!--<glyph glyph-code="E0D3" smufl-name="noteheadSlashedWhole1" />-->
-        <!--<glyph glyph-code="E0D4" smufl-name="noteheadSlashedWhole2" />-->
-        <!--<glyph glyph-code="E0D5" smufl-name="noteheadSlashedDoubleWhole1" />-->
-        <!--<glyph glyph-code="E0D6" smufl-name="noteheadSlashedDoubleWhole2" />-->
+        <glyph glyph-code="E0CF" smufl-name="noteheadSlashedBlack1" />
+        <glyph glyph-code="E0D0" smufl-name="noteheadSlashedBlack2" />
+        <glyph glyph-code="E0D1" smufl-name="noteheadSlashedHalf1" />
+        <glyph glyph-code="E0D2" smufl-name="noteheadSlashedHalf2" />
+        <glyph glyph-code="E0D3" smufl-name="noteheadSlashedWhole1" />
+        <glyph glyph-code="E0D4" smufl-name="noteheadSlashedWhole2" />
+        <glyph glyph-code="E0D5" smufl-name="noteheadSlashedDoubleWhole1" />
+        <glyph glyph-code="E0D6" smufl-name="noteheadSlashedDoubleWhole2" />
         <!--<glyph glyph-code="E0D7" smufl-name="noteheadDiamondDoubleWhole" />-->
         <!--<glyph glyph-code="E0D8" smufl-name="noteheadDiamondWhole" />-->
         <glyph glyph-code="E0D9" smufl-name="noteheadDiamondHalf" />
@@ -1192,9 +1192,8 @@
         <glyph glyph-code="E4D3"
             smufl-name="caesuraShort" />
         <glyph glyph-code="E4D4" smufl-name="caesuraCurved" />
-        <!--<glyph glyph-code="E4D5" smufl-name="breathMarkSalzedo" />-->
+        <glyph glyph-code="E4D5" smufl-name="breathMarkSalzedo" />
         <!--<glyph glyph-code="E4D6" smufl-name="curlewSign" />-->
-        -
         <glyph
             glyph-code="E4D7" smufl-name="caesuraSingleStroke" />
         <range_end>U+E4DF</range_end>
@@ -1367,8 +1366,8 @@
         <!--<glyph glyph-code="E591" smufl-name="ornamentTopLeftConvexStroke" />-->
         <!--<glyph glyph-code="E592" smufl-name="ornamentHighLeftConcaveStroke" />-->
         <!--<glyph glyph-code="E593" smufl-name="ornamentHighLeftConvexStroke" />-->
-        <!--<glyph glyph-code="E594" smufl-name="ornamentLeftVerticalStroke" />-->
-        <!--<glyph glyph-code="E595" smufl-name="ornamentLeftVerticalStrokeWithCross" />-->
+        <glyph glyph-code="E594" smufl-name="ornamentLeftVerticalStroke" />
+        <glyph glyph-code="E595" smufl-name="ornamentLeftVerticalStrokeWithCross" />
         <!--<glyph glyph-code="E596" smufl-name="ornamentLeftShakeT" />-->
         <!--<glyph glyph-code="E597" smufl-name="ornamentLeftPlus" />-->
         <!--<glyph glyph-code="E598" smufl-name="ornamentLowLeftConcaveStroke" />-->
@@ -2199,7 +2198,7 @@
     </medievalAndRenaissanceStaves>
     <medievalAndRenaissanceClefs>
         <description>Medieval and Renaissance clefs</description>
-        <!--<glyph glyph-code="E900" smufl-name="mensuralGclef" />-->
+        <glyph glyph-code="E900" smufl-name="mensuralGclef" />
         <glyph glyph-code="E901" smufl-name="mensuralGclefPetrucci" />
         <glyph glyph-code="E902" smufl-name="chantFclef" />
         <glyph glyph-code="E903" smufl-name="mensuralFclef" />
@@ -2238,10 +2237,10 @@
         <glyph glyph-code="E923" smufl-name="mensuralProlationCombiningThreeDotsTri" />
         <glyph glyph-code="E924" smufl-name="mensuralProlationCombiningDotVoid" />
         <glyph glyph-code="E925" smufl-name="mensuralProlationCombiningStroke" />
-        <!--<glyph glyph-code="E926" smufl-name="mensuralProportion1" />-->
-        <!--<glyph glyph-code="E927" smufl-name="mensuralProportion2" />-->
-        <!--<glyph glyph-code="E928" smufl-name="mensuralProportion3" />-->
-        <!--<glyph glyph-code="E929" smufl-name="mensuralProportion4" />-->
+        <glyph glyph-code="E926" smufl-name="mensuralProportion1" />
+        <glyph glyph-code="E927" smufl-name="mensuralProportion2" />
+        <glyph glyph-code="E928" smufl-name="mensuralProportion3" />
+        <glyph glyph-code="E929" smufl-name="mensuralProportion4" />
         <!--<glyph glyph-code="E92A" smufl-name="mensuralProportionMinor" />-->
         <!--<glyph glyph-code="E92B" smufl-name="mensuralProportionMajor" />-->
         <!--<glyph glyph-code="E92C" smufl-name="mensuralModusPerfectumVert" />-->
@@ -2365,7 +2364,7 @@
         <glyph glyph-code="E99E" smufl-name="chantOriscusLiquescens" />
         <glyph glyph-code="E99F" smufl-name="chantStrophicus" />
         <!--<glyph glyph-code="E9A0" smufl-name="chantStrophicusAuctus" />-->
-        <!--<glyph glyph-code="E9A1" smufl-name="chantPunctumDeminutum" />-->
+        <glyph glyph-code="E9A1" smufl-name="chantPunctumDeminutum" />
         <range_end>U+E9AF</range_end>
         <range_start>U+E990</range_start>
     </medievalAndRenaissancePlainchantSingleNoteForms>
@@ -2398,15 +2397,15 @@
     </medievalAndRenaissancePlainchantMultipleNoteForms>
     <medievalAndRenaissancePlainchantArticulations>
         <description>Medieval and Renaissance plainchant articulations</description>
-        <!--<glyph glyph-code="E9D0" smufl-name="chantIctusAbove" />-->
-        <!--<glyph glyph-code="E9D1" smufl-name="chantIctusBelow" />-->
+        <glyph glyph-code="E9D0" smufl-name="chantIctusAbove" />
+        <glyph glyph-code="E9D1" smufl-name="chantIctusBelow" />
         <!--<glyph glyph-code="E9D2" smufl-name="chantCirculusAbove" />-->
         <!--<glyph glyph-code="E9D3" smufl-name="chantCirculusBelow" />-->
         <!--<glyph glyph-code="E9D4" smufl-name="chantSemicirculusAbove" />-->
         <!--<glyph glyph-code="E9D5" smufl-name="chantSemicirculusBelow" />-->
         <!--<glyph glyph-code="E9D6" smufl-name="chantAccentusAbove" />-->
         <!--<glyph glyph-code="E9D7" smufl-name="chantAccentusBelow" />-->
-        <!--<glyph glyph-code="E9D8" smufl-name="chantEpisema" />-->
+        <glyph glyph-code="E9D8" smufl-name="chantEpisema" />
         <!--<glyph glyph-code="E9D9" smufl-name="chantAugmentum" />-->
         <range_end>U+E9DF</range_end>
         <range_start>U+E9D0</range_start>
@@ -2469,8 +2468,8 @@
         <!--<glyph glyph-code="EA26" smufl-name="medRenLiquescentAscCMN" />-->
         <!--<glyph glyph-code="EA27" smufl-name="medRenLiquescentDescCMN" />-->
         <!--<glyph glyph-code="EA28" smufl-name="medRenQuilismaCMN" />-->
-        <!--<glyph glyph-code="EA29" smufl-name="medRenStrophicusCMN" />-->
-        <!--<glyph glyph-code="EA2A" smufl-name="medRenOriscusCMN" />-->
+        <glyph glyph-code="EA29" smufl-name="medRenStrophicusCMN" />
+        <glyph glyph-code="EA2A" smufl-name="medRenOriscusCMN" />
         <range_end>U+EA2F</range_end>
         <range_start>U+EA20</range_start>
     </medievalAndRenaissanceSymbolsInCmn>
@@ -3192,11 +3191,11 @@
     </fingeringSupplement>
     <medievalAndRenaissanceProlationsSupplement>
         <description>Medieval and Renaissance prolations supplement</description>
-        <!--<glyph glyph-code="EE90" smufl-name="mensuralProportion5" />-->
-        <!--<glyph glyph-code="EE91" smufl-name="mensuralProportion6" />-->
-        <!--<glyph glyph-code="EE92" smufl-name="mensuralProportion7" />-->
-        <!--<glyph glyph-code="EE93" smufl-name="mensuralProportion8" />-->
-        <!--<glyph glyph-code="EE94" smufl-name="mensuralProportion9" />-->
+        <glyph glyph-code="EE90" smufl-name="mensuralProportion5" />
+        <glyph glyph-code="EE91" smufl-name="mensuralProportion6" />
+        <glyph glyph-code="EE92" smufl-name="mensuralProportion7" />
+        <glyph glyph-code="EE93" smufl-name="mensuralProportion8" />
+        <glyph glyph-code="EE94" smufl-name="mensuralProportion9" />
         <range_end>U+EE9F</range_end>
         <range_start>U+EE90</range_start>
     </medievalAndRenaissanceProlationsSupplement>

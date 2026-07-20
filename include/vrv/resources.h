@@ -8,6 +8,7 @@
 #ifndef __VRV_RESOURCES_H__
 #define __VRV_RESOURCES_H__
 
+#include <optional>
 #include <unordered_map>
 
 //----------------------------------------------------------------------------
@@ -52,6 +53,16 @@ public:
     void SetPath(const std::string &path) { m_path = path; }
     ///@}
 
+    /** Status checker */
+    bool Ok() const { return (m_loadedFonts.size() > 1); }
+
+    /**
+     * Return the name of the text font (Times or Liberation)
+     */
+    void UseLiberationTextFont(bool useLiberation) { m_useLiberation = useLiberation; }
+    bool UseLiberationTextFont() const { return m_useLiberation; }
+    std::string GetTextFont() const { return ((m_useLiberation) ? "Liberation" : m_textFontName); }
+
     /**
      * Font initialization
      */
@@ -60,23 +71,21 @@ public:
     bool InitFonts(const std::string &musicFont, const std::string &textFont);
     /**  Set the font to be used and loads it if necessary */
     bool SetFont(const std::string &fontName);
+    /** Load and select a particular text font */
+    bool SetTextFont(const std::string &fontName, bool usePostfixes = true);
     /** Add custom (external) fonts */
     bool AddCustom(const std::vector<std::string> &extraFonts);
     /** Load all music fonts available in the resource directory */
     bool LoadAll();
     /** Set the fallback font (Leipzig or Bravura) when some glyphs are missing in the current font */
-    bool SetFallback(const std::string &fontName);
+    void SetFallbackFont(const std::string &fontName);
     /** Get the fallback font name */
-    std::string GetFallbackFont() const { return m_defaultFontName; }
+    std::string GetFallbackFont() const { return m_fallbackFontName; }
 
     /** Select a particular font */
     bool SetCurrentFont(const std::string &fontName, bool allowLoading = false);
     std::string GetCurrentFont() const { return m_currentFontName; }
     bool IsFontLoaded(const std::string &fontName) const { return m_loadedFonts.find(fontName) != m_loadedFonts.end(); }
-    /** Load the text font (bounding boxes and ASCII only) */
-    bool LoadTextFont(const std::string &fontName, const StyleAttributes &style);
-    /** Select a particular text font */
-    bool SetTextFont(const std::string &fontName, bool usePostfixes = true);
     ///@}
 
     /**
@@ -92,7 +101,7 @@ public:
     ///@}
 
     /**
-     * Check if the text has any charachter that needs the smufl fallback font
+     * Check if the text has any character that needs the smufl fallback font
      */
     bool IsSmuflFallbackNeeded(const std::u32string &text) const;
 
@@ -138,8 +147,8 @@ private:
     class LoadedFont {
 
     public:
-        LoadedFont(const std::string &name, bool isFallback) : m_name(name), m_isFallback(isFallback) {};
-        ~LoadedFont() {};
+        LoadedFont(const std::string &name, bool isFallback) : m_name(name), m_isFallback(isFallback) {}
+        ~LoadedFont() {}
         const std::string GetName() const { return m_name; };
         const GlyphTable &GetGlyphTable() const { return m_glyphTable; };
         GlyphTable &GetGlyphTableForModification() { return m_glyphTable; };
@@ -162,9 +171,14 @@ private:
 
     bool LoadFont(const std::string &fontName, ZipFileReader *zipFile = NULL);
 
+    /** Load the text font (bounding boxes and ASCII only) */
+    bool LoadTextFont(const std::string &fontName, const StyleAttributes &style);
+
     const GlyphTable &GetCurrentGlyphTable() const { return m_loadedFonts.at(m_currentFontName).GetGlyphTable(); };
     const GlyphTable &GetFallbackGlyphTable() const { return m_loadedFonts.at(m_fallbackFontName).GetGlyphTable(); };
 
+    bool m_useLiberation;
+    std::string m_textFontName;
     std::string m_path;
     std::string m_defaultFontName;
     std::string m_fallbackFontName;
@@ -178,6 +192,9 @@ private:
      * A map of glyph name / code
      */
     GlyphNameTable m_glyphNameTable;
+
+    /** Cache of the last glyph that was looked up in loaded fonts */
+    mutable std::optional<std::pair<char32_t, const Glyph *>> m_cachedGlyph;
 
     //----------------//
     // Static members //

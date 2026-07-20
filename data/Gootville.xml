@@ -73,10 +73,10 @@
   <g c="266D" x="-15.0" y="-165.0" w="200.0" h="625.0" h-a-x="185" n="musicFlatSign" />
   <g c="266E" x="0.0" y="-337.0" w="176.0" h="674.0" h-a-x="176" n="musicNaturalSign" />
   <g c="266F" x="0.0" y="-376.0" w="236.0" h="752.0" h-a-x="236" n="musicSharpSign" />
-  <g c="E003" x="0.0" y="-77.0" w="414.0" h="240.0" h-a-x="414" n="bracketTop" />
-  <g c="E004" x="0.0" y="-163.0" w="414.0" h="240.0" h-a-x="414" n="bracketBottom" />
+  <g c="E003" x="0.0" y="0.0" w="414.0" h="240.0" h-a-x="414" n="bracketTop" />
+  <g c="E004" x="0.0" y="-240.0" w="414.0" h="240.0" h-a-x="414" n="bracketBottom" />
   <g c="E043" x="0.0" y="320.0" w="100.0" h="350.0" h-a-x="100" n="repeatDots" />
-  <g c="E044" x="0.0" y="75.0" w="100.0" h="100.0" h-a-x="100" n="repeatDot" />
+  <g c="E044" x="0.0" y="-50.0" w="100.0" h="100.0" h-a-x="100" n="repeatDot" />
   <g c="E047" x="0.0" y="-348.0" w="486.0" h="696.0" h-a-x="486" n="segno" />
   <g c="E048" x="0.0" y="-316.0" w="464.0" h="632.0" h-a-x="464" n="coda" />
   <g c="E049" x="0.0" y="-316.0" w="464.0" h="632.0" h-a-x="464" n="codaSquare" />
@@ -96,6 +96,7 @@
   <g c="E069" x="0.0" y="-250.0" w="340.0" h="500.0" h-a-x="340" n="unpitchedPercussionClef1" />
   <g c="E06A" x="0.0" y="-420.0" w="270.0" h="840.0" h-a-x="270" n="unpitchedPercussionClef2" />
   <g c="E06D" x="0.0" y="-750.0" w="410.0" h="1500.0" h-a-x="410" n="6stringTabClef" />
+  <g c="E06E" x="0.0" y="-500.0" w="274.0" h="1000.0" h-a-x="274" n="4stringTabClef" />
   <g c="E080" x="0.0" y="-243.0" w="424.0" h="486.0" h-a-x="424" n="timeSig0" />
   <g c="E081" x="0.0" y="-243.0" w="284.0" h="486.0" h-a-x="284" n="timeSig1" />
   <g c="E082" x="0.0" y="-243.0" w="376.0" h="486.0" h-a-x="376" n="timeSig2" />
@@ -108,16 +109,23 @@
   <g c="E089" x="0.0" y="-243.0" w="390.0" h="486.0" h-a-x="390" n="timeSig9" />
   <g c="E08A" x="0.0" y="-243.0" w="426.0" h="486.0" h-a-x="426" n="timeSigCommon" />
   <g c="E08B" x="0.0" y="-412.0" w="426.0" h="824.0" h-a-x="426" n="timeSigCutCommon" />
+  <g c="E08C" x="0.0" y="-200.0" w="399.0" h="400.0" h-a-x="399" n="timeSigPlus" />
+  <g c="E08D" x="0.0" y="-132.0" w="263.0" h="264.0" h-a-x="263" n="timeSigPlusSmall" />
   <g c="E092" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="120" n="timeSigParensLeftSmall" />
   <g c="E093" x="16.0" y="-267.0" w="104.0" h="534.0" h-a-x="120" n="timeSigParensRightSmall" />
-  <g c="E094" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="104" n="timeSigParensLeft" />
-  <g c="E095" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="104" n="timeSigParensRight" />
+  <g c="E094" x="0.0" y="-534.0" w="208.0" h="1068.0" h-a-x="208" n="timeSigParensLeft" />
+  <g c="E095" x="0.0" y="-534.0" w="208.0" h="1068.0" h-a-x="208" n="timeSigParensRight" />
   <g c="E0A0" x="0.0" y="-177.0" w="666.0" h="354.0" h-a-x="666" n="noteheadDoubleWhole">
     <a n="noteheadOrigin" x="0.36" y="0.0" />
   </g>
   <g c="E0A1" x="0.0" y="-230.0" w="524.0" h="460.0" h-a-x="524" n="noteheadDoubleWholeSquare" />
-  <g c="E0A2" x="0.0" y="-135.0" w="454.0" h="270.0" h-a-x="454" n="noteheadWhole" />
+  <g c="E0A2" x="0.0" y="-135.0" w="454.0" h="270.0" h-a-x="454" n="noteheadWhole">
+    <a n="cutOutNW" x="0.17" y="0.33" />
+    <a n="cutOutSE" x="1.53" y="-0.36" />
+  </g>
   <g c="E0A3" x="0.0" y="-135.0" w="316.0" h="270.0" h-a-x="316" n="noteheadHalf">
+    <a n="cutOutNW" x="0.2" y="0.3" />
+    <a n="cutOutSE" x="0.98" y="-0.3" />
     <a n="splitStemDownNE" x="0.96" y="-0.3" />
     <a n="splitStemDownNW" x="0.13" y="-0.43" />
     <a n="splitStemUpSE" x="1.11" y="0.37" />
@@ -126,6 +134,8 @@
     <a n="stemUpSE" x="1.18" y="0.17" />
   </g>
   <g c="E0A4" x="0.0" y="-135.0" w="316.0" h="270.0" h-a-x="316" n="noteheadBlack">
+    <a n="cutOutNW" x="0.21" y="0.3" />
+    <a n="cutOutSE" x="0.94" y="-0.3" />
     <a n="splitStemDownNE" x="0.97" y="-0.25" />
     <a n="splitStemDownNW" x="0.12" y="-0.42" />
     <a n="splitStemUpSE" x="1.09" y="0.39" />
@@ -135,11 +145,15 @@
   </g>
   <g c="E0A9" x="0.0" y="-138.0" w="300.0" h="276.0" h-a-x="300" n="noteheadXBlack">
     <a n="stemDownNW" x="0.0" y="-0.44" />
-    <a n="stemUpSE" x="1.16" y="0.44" />
+    <a n="stemUpSE" x="1.2" y="0.44" />
+  </g>
+  <g c="E0B3" x="0.0" y="-180.0" w="360.0" h="360.0" h-a-x="360" n="noteheadCircleX">
+    <a n="stemDownNW" x="0.0" y="0.0" />
+    <a n="stemUpSE" x="1.44" y="0.0" />
   </g>
   <g c="E0D9" x="0.0" y="-139.0" w="322.0" h="278.0" h-a-x="322" n="noteheadDiamondHalf">
     <a n="stemDownNW" x="0.0" y="0.0" />
-    <a n="stemUpSE" x="1.0" y="0.0" />
+    <a n="stemUpSE" x="1.29" y="0.0" />
   </g>
   <g c="E0DA" x="0.0" y="-139.0" w="462.0" h="278.0" h-a-x="462" n="noteheadDiamondHalfWide">
     <a n="stemDownNW" x="0.0" y="0.0" />
@@ -147,7 +161,7 @@
   </g>
   <g c="E0DB" x="0.0" y="-139.0" w="322.0" h="278.0" h-a-x="322" n="noteheadDiamondBlack">
     <a n="stemDownNW" x="0.0" y="0.0" />
-    <a n="stemUpSE" x="1.0" y="0.0" />
+    <a n="stemUpSE" x="1.29" y="0.0" />
   </g>
   <g c="E0DC" x="0.0" y="-139.0" w="462.0" h="278.0" h-a-x="462" n="noteheadDiamondBlackWide">
     <a n="stemDownNW" x="0.0" y="0.0" />
@@ -165,12 +179,12 @@
   <g c="E0F6" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="104" n="noteheadParenthesisRight" />
   <g c="E101" x="0.0" y="-246.0" w="212.0" h="492.0" h-a-x="212" n="noteheadSlashHorizontalEnds">
     <a n="stemDownNW" x="0.0" y="-1.0" />
-    <a n="stemUpSE" x="2.12" y="1.0" />
+    <a n="stemUpSE" x="0.85" y="1.0" />
   </g>
   <g c="E102" x="0.0" y="-246.0" w="400.0" h="492.0" h-a-x="400" n="noteheadSlashWhiteWhole" />
   <g c="E103" x="0.0" y="-246.0" w="286.0" h="492.0" h-a-x="286" n="noteheadSlashWhiteHalf">
     <a n="stemDownNW" x="0.0" y="-1.0" />
-    <a n="stemUpSE" x="3.12" y="1.0" />
+    <a n="stemUpSE" x="1.14" y="1.0" />
   </g>
   <g c="E1E7" x="0.0" y="-60.0" w="120.0" h="120.0" h-a-x="140" n="augmentationDot" />
   <g c="E240" x="0.0" y="-756.0" w="284.0" h="770.0" h-a-x="284" n="flag8thUp">
@@ -350,7 +364,10 @@
   <g c="E4C9" x="0.0" y="-416.0" w="572.0" h="416.0" h-a-x="572" n="fermataVeryLongBelow" />
   <g c="E4CE" x="0.0" y="0.0" w="142.0" h="262.0" h-a-x="142" n="breathMarkComma" />
   <g c="E4D1" x="0.0" y="0.0" w="456.0" h="520.0" h-a-x="456" n="caesura" />
+  <g c="E4D2" x="0.0" y="-1.0" w="596.0" h="512.0" h-a-x="596" n="caesuraThick" />
+  <g c="E4D3" x="0.0" y="-0.04" w="160.0" h="603.08" h-a-x="160" n="caesuraShort" />
   <g c="E4D4" x="0.0" y="0.0" w="370.0" h="513.0" h-a-x="370" n="caesuraCurved" />
+  <g c="E4D5" x="0.0" y="0.0" w="650.0" h="444.0" h-a-x="650" n="breathMarkSalzedo" />
   <g c="E4E1" x="0.0" y="-250.0" w="284.0" h="500.0" h-a-x="284" n="restLonga" />
   <g c="E4E2" x="0.0" y="0.0" w="284.0" h="250.0" h-a-x="284" n="restDoubleWhole" />
   <g c="E4E3" x="0.0" y="-125.0" w="330.0" h="125.0" h-a-x="330" n="restWhole" />
@@ -365,8 +382,8 @@
   <g c="E510" x="0.0" y="0.0" w="414.0" h="486.0" h-a-x="414" n="ottava" />
   <g c="E514" x="0.0" y="0.0" w="661.0" h="486.0" h-a-x="661" n="quindicesima" />
   <g c="E517" x="0.0" y="0.0" w="792.0" h="486.0" h-a-x="792" n="ventiduesima" />
-  <g c="E51A" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="104" n="octaveParensLeft" />
-  <g c="E51B" x="0.0" y="-267.0" w="104.0" h="534.0" h-a-x="104" n="octaveParensRight" />
+  <g c="E51A" x="0.0" y="-9.0" w="104.0" h="534.0" h-a-x="104" n="octaveParensLeft" />
+  <g c="E51B" x="0.0" y="-9.0" w="104.0" h="534.0" h-a-x="104" n="octaveParensRight" />
   <g c="E520" x="-72.0" y="-180.0" w="418.0" h="452.0" h-a-x="346" n="dynamicPiano">
     <a n="opticalCenter" x="1.22" y="0.0" />
   </g>
@@ -395,7 +412,10 @@
   <g c="E56C" x="0.0" y="-128.0" w="606.0" h="256.0" h-a-x="606" n="ornamentShortTrill" />
   <g c="E56D" x="0.0" y="-200.0" w="606.0" h="400.0" h-a-x="606" n="ornamentMordent" />
   <g c="E56E" x="0.0" y="-128.0" w="852.0" h="256.0" h-a-x="852" n="ornamentTremblement" />
-  <g c="E59D" x="-77.0" y="-128.0" w="360.0" h="256.0" h-a-x="246" n="ornamentZigZagLineNoRightEnd">
+  <g c="E594" x="0.0" y="-64.0" w="30.0" h="324.0" h-a-x="77" n="ornamentLeftVerticalStroke">
+    <a n="repeatOffset" x="0.74" y="0.0" />
+  </g>
+  <g c="E59D" x="-77.0" y="-128.0" w="305.0" h="256.0" h-a-x="246" n="ornamentZigZagLineNoRightEnd">
     <a n="repeatOffset" x="1.05" y="0.0" />
   </g>
   <g c="E59E" x="-77.0" y="-128.0" w="360.0" h="256.0" h-a-x="246" n="ornamentZigZagLineWithRightEnd">
@@ -410,6 +430,7 @@
   <g c="E613" x="0.0" y="0.0" w="252.0" h="412.0" h-a-x="252" n="stringsUpBowTurned" />
   <g c="E630" x="0.0" y="0.0" w="220.0" h="313.0" h-a-x="220" n="pluckedSnapPizzicatoBelow" />
   <g c="E631" x="0.0" y="0.0" w="220.0" h="313.0" h-a-x="220" n="pluckedSnapPizzicatoAbove" />
+  <g c="E632" x="0.0" y="0.0" w="312.0" h="220.0" h-a-x="312" n="pluckedBuzzPizzicato" />
   <g c="E650" x="0.0" y="0.0" w="782.0" h="500.0" h-a-x="782" n="keyboardPedalPed" />
   <g c="E651" x="0.0" y="0.0" w="404.0" h="500.0" h-a-x="404" n="keyboardPedalP" />
   <g c="E655" x="0.0" y="66.0" w="430.0" h="434.0" h-a-x="430" n="keyboardPedalUp" />
@@ -429,6 +450,6 @@
     <a n="repeatOffset" x="2.06" y="0.0" />
   </g>
   <g c="EAAF" x="-12.0" y="0.0" w="270.0" h="120.0" h-a-x="246" n="wiggleGlissando">
-    <a n="repeatOffset" x="1.03" y="0.0" />
+    <a n="repeatOffset" x="0.96" y="0.0" />
   </g>
 </bounding-boxes>

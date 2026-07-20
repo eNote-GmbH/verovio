@@ -34,7 +34,6 @@ public:
     ///@{
     FloatingObject();
     FloatingObject(ClassId classId);
-    FloatingObject(ClassId classId, const std::string &classIdStr);
     virtual ~FloatingObject();
     void Reset() override;
     void ResetDrawing();
@@ -106,7 +105,7 @@ public:
     /**
      * Check whether the current object must be positioned closer to the staff than the other
      */
-    virtual bool IsCloserToStaffThan(const FloatingObject *other, data_STAFFREL drawingPlace) const { return false; }
+    virtual bool IsCloserToStaffThan(const FloatingObject *, data_STAFFREL) const { return false; }
 
     /**
      * Determine the vertical content boundary.
@@ -167,7 +166,7 @@ class FloatingPositioner : public BoundingBox {
 public:
     // constructors and destructors
     FloatingPositioner(FloatingObject *object, StaffAlignment *alignment, char spanningType);
-    virtual ~FloatingPositioner() {};
+    virtual ~FloatingPositioner() {}
     ClassId GetClassId() const override { return FLOATING_POSITIONER; }
 
     virtual void ResetPositioner();
@@ -485,7 +484,7 @@ public:
         m_discarded = false;
         m_isBelow = true;
     }
-    virtual ~CurveSpannedElement() {};
+    virtual ~CurveSpannedElement() {}
 
     Point m_rotatedPoints[4];
     const BoundingBox *m_boundingBox;

@@ -30,11 +30,20 @@ namespace vrv {
 static const ClassRegistrar<MRest> s_factory("mRest", MREST);
 
 MRest::MRest()
-    : LayerElement(MREST, "mrest-"), PositionInterface(), AttColor(), AttCue(), AttFermataPresent(), AttVisibility()
+    : LayerElement(MREST)
+    , OffsetInterface()
+    , PositionInterface()
+    , AttColor()
+    , AttCue()
+    , AttCutout()
+    , AttFermataPresent()
+    , AttVisibility()
 {
+    this->RegisterInterface(OffsetInterface::GetAttClasses(), OffsetInterface::IsInterface());
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
+    this->RegisterAttClass(ATT_CUTOUT);
     this->RegisterAttClass(ATT_FERMATAPRESENT);
     this->RegisterAttClass(ATT_VISIBILITY);
 
@@ -46,9 +55,11 @@ MRest::~MRest() {}
 void MRest::Reset()
 {
     LayerElement::Reset();
+    OffsetInterface::Reset();
     PositionInterface::Reset();
     this->ResetColor();
     this->ResetCue();
+    this->ResetCutout();
     this->ResetFermataPresent();
     this->ResetVisibility();
 }
@@ -95,7 +106,7 @@ int MRest::GetOptimalLayerLocation(const Layer *layer, int defaultLocation) cons
     // find all locations for other layer
     std::vector<int> locations;
     for (const Object *element : collidingElementsList) {
-        if (element->Is({ CHORD, NOTE })) {
+        if (element->IsAnyOf(std::array{ CHORD, NOTE })) {
             const LayerElement *layerElement = vrv_cast<const LayerElement *>(element);
             int loc = PitchInterface::CalcLoc(layerElement, layer, layerElement, isTopLayer);
             locations.push_back(loc);

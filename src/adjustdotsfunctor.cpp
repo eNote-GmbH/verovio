@@ -11,8 +11,8 @@
 
 #include "doc.h"
 #include "elementpart.h"
-#include "score.h"
 #include "staff.h"
+#include "system.h"
 
 //----------------------------------------------------------------------------
 
@@ -22,10 +22,7 @@ namespace vrv {
 // AdjustDotsFunctor
 //----------------------------------------------------------------------------
 
-AdjustDotsFunctor::AdjustDotsFunctor(Doc *doc, const std::vector<int> &staffNs) : DocFunctor(doc)
-{
-    m_staffNs = staffNs;
-}
+AdjustDotsFunctor::AdjustDotsFunctor(Doc *doc) : DocFunctor(doc) {}
 
 FunctorCode AdjustDotsFunctor::VisitAlignmentEnd(Alignment *alignment)
 {
@@ -46,7 +43,7 @@ FunctorCode AdjustDotsFunctor::VisitAlignmentEnd(Alignment *alignment)
             for (LayerElement *element : m_elements) {
                 if (dots->HorizontalSelfOverlap(element, thirdUnit)
                     && dots->VerticalSelfOverlap(element, 2 * thirdUnit)) {
-                    if (element->Is({ CHORD, NOTE })) {
+                    if (element->IsAnyOf(std::array{ CHORD, NOTE })) {
                         if (dynamic_cast<AttAugmentDots *>(element)->GetDots() < 1) continue;
                         overlapElements.emplace(dots, element);
                     }
@@ -104,14 +101,13 @@ FunctorCode AdjustDotsFunctor::VisitMeasure(Measure *measure)
     Filters filters;
     Filters *previousFilters = this->SetFilters(&filters);
 
-    std::vector<int>::iterator iter;
-    for (iter = m_staffNs.begin(); iter != m_staffNs.end(); ++iter) {
+    for (int &n : m_staffNs) {
         filters.Clear();
         // Create ad comparison object for each type / @n
         std::vector<int> ns;
         // -1 for barline attributes that need to be taken into account each time
         ns.push_back(BARLINE_REFERENCES);
-        ns.push_back(*iter);
+        ns.push_back(n);
         AttNIntegerAnyComparison matchStaff(ALIGNMENT_REFERENCE, ns);
         filters.Add(&matchStaff);
 
@@ -124,9 +120,9 @@ FunctorCode AdjustDotsFunctor::VisitMeasure(Measure *measure)
     return FUNCTOR_SIBLINGS;
 }
 
-FunctorCode AdjustDotsFunctor::VisitScore(Score *score)
+FunctorCode AdjustDotsFunctor::VisitSystem(System *system)
 {
-    m_staffNs = score->GetScoreDef()->GetStaffNs();
+    if (system->GetDrawingScoreDef()) m_staffNs = system->GetDrawingScoreDef()->GetStaffNs();
 
     return FUNCTOR_CONTINUE;
 }

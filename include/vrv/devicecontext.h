@@ -27,7 +27,6 @@ class Glyph;
 class Object;
 class View;
 class Zone;
-class VisualOffsetInterface;
 
 extern "C" {
 static inline double DegToRad(double deg)
@@ -39,16 +38,6 @@ static inline double RadToDeg(double deg)
     return (deg * 180.0) / M_PI;
 }
 }
-
-/**
- * Helper struct to store elements and their offsets in the VisualOffsetInterface
- */
-struct VisualOffsetData {
-    std::string id;
-    const VisualOffsetInterface *offsetInterface;
-    ClassId classId;
-    int drawingUnit;
-};
 
 // ---------------------------------------------------------------------------
 // DeviceContext
@@ -85,6 +74,9 @@ public:
         m_baseWidth = 0;
         m_baseHeight = 0;
         m_pushBack = false;
+        m_viewBoxFactor = (double)DEFINITION_FACTOR;
+        this->SetBrush(-1.0);
+        this->SetPen(1, PEN_SOLID);
     }
     DeviceContext(ClassId classId)
     {
@@ -100,8 +92,11 @@ public:
         m_baseWidth = 0;
         m_baseHeight = 0;
         m_pushBack = false;
+        m_viewBoxFactor = (double)DEFINITION_FACTOR;
+        this->SetBrush(-1.0);
+        this->SetPen(1, PEN_SOLID);
     }
-    virtual ~DeviceContext() {};
+    virtual ~DeviceContext();
     ClassId GetClassId() const { return m_classId; }
     bool Is(ClassId classId) const { return (m_classId == classId); }
     ///@}
@@ -135,13 +130,14 @@ public:
         m_baseWidth = width;
         m_baseHeight = height;
     }
-    void SetDefaultFontName(const std::string &defaultFontName) { m_defaultFontName = defaultFontName; }
+    void SetViewBoxFactor(double ppuFactor);
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
     int GetContentHeight() const { return m_contentHeight; }
     double GetUserScaleX() { return m_userScaleX; }
     double GetUserScaleY() { return m_userScaleY; }
     std::pair<int, int> GetBaseSize() const { return std::make_pair(m_baseWidth, m_baseHeight); }
+    double GetViewBoxFactor() const { return m_viewBoxFactor; }
     ///@}
 
     /**
@@ -149,16 +145,17 @@ public:
      * Non-virtual methods cannot be overridden and manage the Pen, Brush and FontInfo stacks
      */
     ///@{
-    void SetBrush(int color, int opacity);
-    void SetPen(
-        int color, int width, int style, int dashLength = 0, int gapLength = 0, int lineCap = 0, int lineJoin = 0);
+    void SetBrush(float opacity, int color = COLOR_NONE);
+    void SetPen(int width, PenStyle style, int dashLength = 0, int gapLength = 0,
+        LineCapStyle lineCap = LINECAP_DEFAULT, LineJoinStyle lineJoin = LINEJOIN_DEFAULT, float opacity = -1.0,
+        int color = COLOR_NONE);
     void SetFont(FontInfo *font);
     void SetPushBack() { m_pushBack = true; }
     void ResetBrush();
     void ResetPen();
     void ResetFont();
     void ResetPushBack() { m_pushBack = false; }
-    virtual void SetBackground(int color, int style = AxSOLID) = 0;
+    virtual void SetBackground(int color, int style = PEN_SOLID) = 0;
     virtual void SetBackgroundImage(void *image, double opacity = 1.0) = 0;
     virtual void SetBackgroundMode(int mode) = 0;
     virtual void SetTextForeground(int color) = 0;
@@ -196,18 +193,18 @@ public:
     virtual void DrawQuadBezierPath(Point bezier[3]) = 0;
     virtual void DrawCubicBezierPath(Point bezier[4]) = 0;
     virtual void DrawCubicBezierPathFilled(Point bezier1[4], Point bezier2[4]) = 0;
+    virtual void DrawBentParallelogramFilled(Point side[4], int height) = 0;
     virtual void DrawCircle(int x, int y, int radius) = 0;
     virtual void DrawEllipse(int x, int y, int width, int height) = 0;
     virtual void DrawEllipticArc(int x, int y, int width, int height, double start, double end) = 0;
     virtual void DrawLine(int x1, int y1, int x2, int y2) = 0;
-    virtual void DrawPolyline(int n, Point points[], int xOffset = 0, int yOffset = 0) = 0;
-    virtual void DrawPolygon(int n, Point points[], int xOffset = 0, int yOffset = 0) = 0;
+    virtual void DrawPolyline(int n, Point points[], bool close = false) = 0;
+    virtual void DrawPolygon(int n, Point points[]) = 0;
     virtual void DrawRectangle(int x, int y, int width, int height) = 0;
     virtual void DrawRotatedText(const std::string &text, int x, int y, double angle) = 0;
     virtual void DrawRoundedRectangle(int x, int y, int width, int height, int radius) = 0;
     virtual void DrawText(const std::string &text, const std::u32string &wtext = U"", int x = VRV_UNSET,
-        int y = VRV_UNSET, int width = VRV_UNSET, int height = VRV_UNSET)
-        = 0;
+        int y = VRV_UNSET, int width = VRV_UNSET, int height = VRV_UNSET) = 0;
     virtual void DrawMusicText(const std::u32string &text, int x, int y, bool setSmuflGlyph = false) = 0;
     virtual void DrawSpline(int n, Point points[]) = 0;
     virtual void DrawGraphicUri(int x, int y, int width, int height, const std::string &uri) = 0;
@@ -219,7 +216,7 @@ public:
      * Special method for forcing bounding boxes to be updated
      * Used for invisible elements (e.g., <space>) that needs to be take into account in spacing
      */
-    virtual void DrawPlaceholder(int x, int y) {};
+    virtual void DrawPlaceholder(int x, int y) {}
 
     /**
      * @name Method for starting and ending a text
@@ -255,13 +252,17 @@ public:
     ///@}
 
     /**
+     * Indicate if offset should be applied
+     */
+    virtual bool ApplyOffset() { return false; }
+
+    /**
      * @name Method for starting and ending a graphic
      * For example, the method can be used for grouping shapes in <g></g> in SVG
      */
     ///@{
     virtual void StartGraphic(Object *object, const std::string &gClass, const std::string &gId,
-        GraphicID graphicID = PRIMARY, bool preprend = false)
-        = 0;
+        GraphicID graphicID = PRIMARY, bool preprend = false) = 0;
     virtual void EndGraphic(Object *object, View *view) = 0;
     ///@}
 
@@ -270,14 +271,19 @@ public:
      * For example, the method can be used for grouping shapes in <g></g> in SVG
      */
     ///@{
-    virtual void StartCustomGraphic(const std::string &name, std::string gClass = "", std::string gId = "") {};
-    virtual void EndCustomGraphic() {};
+    virtual void StartCustomGraphic(const std::string &name, std::string gClass = "", std::string gId = "") {}
+    virtual void EndCustomGraphic() {}
     ///@}
 
     /**
      * Method for changing the color of a custom graphic
      */
-    virtual void SetCustomGraphicColor(const std::string &color) {};
+    virtual void SetCustomGraphicColor(const std::string &color) {}
+
+    /**
+     * Method for adding custom graphic data-* attributes
+     */
+    virtual void SetCustomGraphicAttributes(const std::string &data, const std::string &value) {}
 
     /**
      * @name Methods for re-starting and ending a graphic for objects drawn in separate steps
@@ -320,7 +326,7 @@ public:
      * @name Method for adding description element
      */
     ///@{
-    virtual void AddDescription(const std::string &text) {};
+    virtual void AddDescription(const std::string &text) {}
     ///@}
 
     /**
@@ -329,15 +335,6 @@ public:
      * Global styling is false by default.
      */
     virtual bool UseGlobalStyling() { return false; }
-
-    /**
-     * @name Method for starting, ending and applying visual offsets
-     */
-    ///@{
-    virtual void StartVisualOffset(const Object *object, int drawingUnit);
-    virtual void EndVisualOffset(const Object *object);
-    virtual void ApplyVisualOffset(std::vector<std::pair<int *, int *>> points);
-    ///@}
 
     //----------------//
     // Static methods //
@@ -365,9 +362,6 @@ protected:
 
     Zone *m_facsimile = NULL;
 
-    /** stores default font for global styling*/
-    std::string m_defaultFontName;
-
 private:
     /** The class id representing the actual (derived) class */
     ClassId m_classId;
@@ -390,7 +384,8 @@ private:
     double m_userScaleX;
     double m_userScaleY;
 
-    std::stack<VisualOffsetData> m_offsetList;
+    /** stores the viewbox factor taking into account the DEFINTION_FACTOR and the PPU */
+    double m_viewBoxFactor;
 };
 
 } // namespace vrv

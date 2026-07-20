@@ -12,7 +12,6 @@
 #include "drawinginterface.h"
 #include "durationinterface.h"
 #include "layerelement.h"
-#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -35,7 +34,6 @@ class Chord : public LayerElement,
               public DrawingListInterface,
               public StemmedDrawingInterface,
               public DurationInterface,
-              public VisualOffsetInterface,
               public AttChordVis,
               public AttColor,
               public AttCue,
@@ -54,7 +52,7 @@ public:
     virtual ~Chord();
     Object *Clone() const override { return new Chord(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Chord"; }
+    std::string GetClassName() const override { return "chord"; }
     ///@}
 
     /**
@@ -68,11 +66,6 @@ public:
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
     }
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
-    }
     ///@}
 
     /** Override the method since alignment is required */
@@ -81,12 +74,12 @@ public:
     /**
      * Add an element (only note supported) to a chord.
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * Overwritten method for chord
      */
-    void AddChild(Object *object) override;
+    bool AddChild(Object *object) override;
 
     /**
      * Return the maximum and minimum Y positions of the notes in the chord

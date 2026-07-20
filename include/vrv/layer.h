@@ -47,7 +47,7 @@ public:
     virtual ~Layer();
     Object *Clone() const override { return new Layer(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Layer"; }
+    std::string GetClassName() const override { return "layer"; }
     ///@}
 
     /**
@@ -59,7 +59,7 @@ public:
      * @name Methods for adding allowed content
      */
     ///@{
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
     ///@}
 
     /**
@@ -68,8 +68,10 @@ public:
      */
     int GetLayerIdx() const { return Object::GetIdx(); }
 
-    LayerElement *GetPrevious(const LayerElement *element);
-    const LayerElement *GetPrevious(const LayerElement *element) const;
+    LayerElement *GetPreviousInLayer(const LayerElement *element);
+    const LayerElement *GetPreviousInLayer(const LayerElement *element) const;
+    LayerElement *GetNextInLayer(const LayerElement *element);
+    const LayerElement *GetNextInLayer(const LayerElement *element) const;
     LayerElement *GetAtPos(int x);
     const LayerElement *GetAtPos(int x) const;
 
@@ -130,8 +132,10 @@ public:
      * Takes into account cross-staff situations: cross staff layers have negative N.
      */
     ///@{
-    std::set<int> GetLayersNInTimeSpan(double time, double duration, const Measure *measure, int staff) const;
-    int GetLayerCountInTimeSpan(double time, double duration, const Measure *measure, int staff) const;
+    std::set<int> GetLayersNInTimeSpan(
+        const Fraction &time, const Fraction &duration, const Measure *measure, int staff) const;
+    int GetLayerCountInTimeSpan(
+        const Fraction &time, const Fraction &duration, const Measure *measure, int staff) const;
     ///@}
 
     /**
@@ -150,9 +154,9 @@ public:
      */
     ///@{
     ListOfObjects GetLayerElementsInTimeSpan(
-        double time, double duration, const Measure *measure, int staff, bool excludeCurrent);
+        const Fraction &time, const Fraction &duration, const Measure *measure, int staff, bool excludeCurrent);
     ListOfConstObjects GetLayerElementsInTimeSpan(
-        double time, double duration, const Measure *measure, int staff, bool excludeCurrent) const;
+        const Fraction &time, const Fraction &duration, const Measure *measure, int staff, bool excludeCurrent) const;
     ///@}
 
     /**
@@ -167,6 +171,8 @@ public:
     const Mensur *GetCurrentMensur() const;
     MeterSig *GetCurrentMeterSig();
     const MeterSig *GetCurrentMeterSig() const;
+    Proport *GetCurrentProport();
+    const Proport *GetCurrentProport() const;
     ///@}
 
     void ResetStaffDefObjects();
@@ -176,6 +182,7 @@ public:
      */
     ///@{
     void SetDrawingStaffDefValues(StaffDef *currentStaffDef);
+    bool GetDrawingStaffDefValues(StaffDef *staffDef) const;
 
     bool DrawKeySigCancellation() const { return m_drawKeySigCancellation; }
     void SetDrawKeySigCancellation(bool drawKeySigCancellation) { m_drawKeySigCancellation = drawKeySigCancellation; }
@@ -195,6 +202,9 @@ public:
     {
         return (m_staffDefClef || m_staffDefKeySig || m_staffDefMensur || m_staffDefMeterSig || m_staffDefMeterSigGrp);
     }
+
+    bool DrawOssiaStaffDef() const { return m_drawOssiaStaffDef; }
+    void SetDrawOssiaStaffDef(bool drawOssiaStaffDef) { m_drawOssiaStaffDef = drawOssiaStaffDef; }
     ///@}
 
     /**
@@ -269,6 +279,7 @@ private:
     MeterSig *m_staffDefMeterSig;
     MeterSigGrp *m_staffDefMeterSigGrp;
     bool m_drawKeySigCancellation;
+    bool m_drawOssiaStaffDef;
 
     /** */
     Clef *m_cautionStaffDefClef;

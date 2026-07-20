@@ -19,7 +19,10 @@ enum FileFormat {
     HUMMIDI,
     PAE,
     ABC,
+    GABC,
+    CMME,
     DARMS,
+    VOLPIANO,
     MUSICXML,
     MUSICXMLHUM,
     MEIHUM,
@@ -27,7 +30,8 @@ enum FileFormat {
     ESAC,
     MIDI,
     TIMEMAP,
-    EXPANSIONMAP
+    EXPANSIONMAP,
+    SERIALIZATION
 };
 
 enum { LOG_OFF = 0, LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG };

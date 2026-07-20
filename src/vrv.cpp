@@ -11,7 +11,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <codecvt>
 #include <cstdlib>
 #include <iostream>
 #include <locale>
@@ -28,17 +27,18 @@
 
 //----------------------------------------------------------------------------
 
-// Windows has no Bourne shell (sh), therefore no "git_commit.h" is created.
-#ifndef _WIN32
+// Use the generated git commit header when it is available.
 #ifdef COCOAPODS
 #define GIT_COMMIT "[cocoapods]"
-#else
+#elif defined(SWIFT_PACKAGE)
+#define GIT_COMMIT "[swift-package]"
+#elif __has_include("git_commit.h")
 #include "git_commit.h"
-#endif
 #else
 #define GIT_COMMIT "[undefined]"
 #endif
 
+#include "object.h"
 #include "vrvdef.h"
 
 //----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ void LogElapsedTimeStart()
     gettimeofday(&start, NULL);
 }
 
-void LogElapsedTimeEnd(const char *msg)
+void LogElapsedTimeStop(const char *msg)
 {
     double elapsedTime;
     struct timeval end;
@@ -179,16 +179,7 @@ LogLevel StrToLogLevel(const std::string &level)
 
 bool LogBufferContains(const std::string &s)
 {
-    for (const std::string &logStr : logBuffer) {
-        if (logStr == s) return true;
-    }
-    return false;
-}
-
-bool Check(Object *object)
-{
-    assert(object);
-    return (object != NULL);
+    return (std::find(logBuffer.cbegin(), logBuffer.cend(), s) != logBuffer.cend());
 }
 
 //----------------------------------------------------------------------------
@@ -228,28 +219,28 @@ std::string StringFormatVariable(const char *format, va_list arg)
     return str;
 }
 
-bool AreEqual(double dFirstVal, double dSecondVal)
+bool ApproximatelyEqual(double firstVal, double secondVal)
 {
-    return std::fabs(dFirstVal - dSecondVal) < 1E-3;
+    return std::fabs(firstVal - secondVal) < 1E-3;
 }
 
 bool IsValidInteger(const std::string &value)
 {
     // Accept "1" " 1 " "+1" "-1" "1." "1.0"
-    std::regex re(R"(^\s*[+-]?\d+\.?\d*\s*$)");
+    static const std::regex re(R"(^\s*[+-]?\d+\.?\d*\s*$)");
     return std::regex_match(value, re);
 }
 
 bool IsValidDouble(const std::string &value)
 {
     // Accept "1.0" " 1.0 " ".0"  "1." "+1.0" "-1.0"
-    std::regex re(R"(^\s*[+-]?(?:\d+\.?\d*|\.\d+)\s*$)");
+    static const std::regex re(R"(^\s*[+-]?(?:\d+\.?\d*|\.\d+)\s*$)");
     return std::regex_match(value, re);
 }
 
 bool IsDigits(const std::string &value)
 {
-    std::regex re(R"(^\d+$)");
+    static const std::regex re(R"(^\d+$)");
     return std::regex_match(value, re);
 }
 
@@ -262,16 +253,142 @@ std::string ExtractIDFragment(std::string refID)
     return refID;
 }
 
+std::string ConcatenateIDs(const ListOfConstObjects &objects)
+{
+    // Get a list of strings
+    std::vector<std::string> ids;
+    for (const auto &object : objects) {
+        ids.push_back("#" + object->GetID() + " ");
+    }
+    // Concatenate IDs
+    std::stringstream sstream;
+    std::copy(ids.begin(), ids.end(), std::ostream_iterator<std::string>(sstream));
+    std::string uris = sstream.str();
+    if (!uris.empty()) uris.pop_back(); // Remove extra space added by the concatenation
+    return uris;
+}
+
 std::string UTF32to8(const std::u32string &in)
 {
+    std::string out;
+    for (auto cp : in) {
+        if (cp < 0x80) { // One byte
+            out.push_back(static_cast<char>(cp));
+        }
+        else if (cp < 0x800) { // Two bytes
+            out.push_back(static_cast<char>((cp >> 6) | 0xC0));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+        else if (cp < 0x10000) { // Three bytes
+            out.push_back(static_cast<char>((cp >> 12) | 0xE0));
+            out.push_back(static_cast<char>(((cp >> 6) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+        else { // Four bytes
+            out.push_back(static_cast<char>((cp >> 18) | 0xF0));
+            out.push_back(static_cast<char>(((cp >> 12) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>(((cp >> 6) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+    }
+    return out;
+
+    // deprecated code
+    /*
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> strCnv;
     return strCnv.to_bytes(in);
+    */
 }
 
 std::u32string UTF8to32(const std::string &in)
 {
+    std::u32string out;
+    for (size_t i = 0; i < in.size();) {
+        uint32_t cp = in[i] & 0xFF;
+        if (cp <= 0x7F) { // One byte
+            out.push_back(cp);
+            ++i;
+        }
+        else if (cp <= 0xDF) { // Two bytes
+            cp = ((cp & 0x1F) << 6) | (in[i + 1] & 0x3F);
+            out.push_back(cp);
+            i += 2;
+        }
+        else if (cp <= 0xEF) { // Three bytes
+            cp = ((cp & 0x0F) << 12) | ((in[i + 1] & 0x3F) << 6) | (in[i + 2] & 0x3F);
+            out.push_back(cp);
+            i += 3;
+        }
+        else { // Four bytes
+            cp = ((cp & 0x07) << 18) | ((in[i + 1] & 0x3F) << 12) | ((in[i + 2] & 0x3F) << 6) | (in[i + 3] & 0x3F);
+            out.push_back(cp);
+            i += 4;
+        }
+    }
+    return out;
+
+    // deprecated code
+    /*
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> strCnv;
     return strCnv.from_bytes(in);
+    */
+}
+
+std::string UTF16to8(const std::u16string &in)
+{
+    std::string out;
+    auto it = in.begin();
+
+    while (it != in.end()) {
+        uint32_t cp; // Code point
+
+        // Read the first UTF-16 unit
+        uint16_t lead = *it++;
+
+        // If it's a high surrogate, read the next unit to form a full code point
+        if (lead >= 0xD800 && lead <= 0xDBFF) {
+            // Make sure there's a trailing surrogate
+            if (it != in.end()) {
+                uint16_t trail = *it++;
+                if (trail >= 0xDC00 && trail <= 0xDFFF) {
+                    // Combine lead and trail to form a full code point
+                    cp = ((lead - 0xD800) << 10) + (trail - 0xDC00) + 0x10000;
+                }
+                else {
+                    throw std::runtime_error("Invalid UTF-16 sequence");
+                }
+            }
+            else {
+                throw std::runtime_error("Incomplete UTF-16 sequence");
+            }
+        }
+        else {
+            // It's a single UTF-16 unit, treat as a single code point
+            cp = lead;
+        }
+
+        // Convert code point to UTF-8
+        if (cp < 0x80) { // One byte
+            out.push_back(static_cast<char>(cp));
+        }
+        else if (cp < 0x800) { // Two bytes
+            out.push_back(static_cast<char>((cp >> 6) | 0xC0));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+        else if (cp < 0x10000) { // Three bytes
+            out.push_back(static_cast<char>((cp >> 12) | 0xE0));
+            out.push_back(static_cast<char>(((cp >> 6) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+        else { // Four bytes
+            out.push_back(static_cast<char>((cp >> 18) | 0xF0));
+            out.push_back(static_cast<char>(((cp >> 12) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>(((cp >> 6) & 0x3F) | 0x80));
+            out.push_back(static_cast<char>((cp & 0x3F) | 0x80));
+        }
+    }
+
+    return out;
 }
 
 std::string GetFileVersion(int vmaj, int vmin, int vrev)
@@ -285,7 +402,7 @@ std::string GetFilename(std::string &fullpath)
     std::string name = fullpath;
     size_t lastdot = name.find_last_of(".");
     if (lastdot != std::string::npos) {
-        name = name.substr(0, lastdot);
+        name.resize(lastdot);
     }
     size_t lastslash = name.find_last_of("/");
     if (lastslash != std::string::npos) {
@@ -322,8 +439,8 @@ std::string BaseEncodeInt(uint32_t value, uint8_t base)
 
 std::string FromCamelCase(const std::string &s)
 {
-    std::regex regExp1("(.)([A-Z][a-z]+)");
-    std::regex regExp2("([a-z0-9])([A-Z])");
+    static const std::regex regExp1("(.)([A-Z][a-z]+)");
+    static const std::regex regExp2("([a-z0-9])([A-Z])");
 
     std::string result = s;
     result = std::regex_replace(result, regExp1, "$1-$2");
@@ -408,7 +525,7 @@ static const std::string base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                        "abcdefghijklmnopqrstuvwxyz"
                                        "0123456789+/";
 
-static inline bool isBase64(unsigned char c)
+static inline bool IsBase64(unsigned char c)
 {
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
@@ -457,7 +574,7 @@ std::vector<unsigned char> Base64Decode(std::string const &encodedString)
     unsigned char charArray4[4], charArray3[3];
     std::vector<unsigned char> ret;
 
-    while (inLen-- && (encodedString[in_] != '=') && isBase64(encodedString[in_])) {
+    while (inLen-- && (encodedString[in_] != '=') && IsBase64(encodedString[in_])) {
         charArray4[i++] = encodedString[in_];
         in_++;
         if (i == 4) {

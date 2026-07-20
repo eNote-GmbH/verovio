@@ -9,7 +9,9 @@
 #define __VRV_HORIZONTAL_ALIGNER_H__
 
 #include "atts_shared.h"
+#include "fraction.h"
 #include "object.h"
+#include "vrv.h"
 
 namespace vrv {
 
@@ -27,6 +29,8 @@ class TimestampAttr;
  * For example, we align notes and rests (default) together, clefs separately, etc.
  */
 enum AlignmentType {
+    ALIGNMENT_SCOREDEF_OSSIA_CLEF = -2,
+    ALIGNMENT_SCOREDEF_OSSIA_KEYSIG,
     ALIGNMENT_MEASURE_START = 0,
     // Non-justifiable
     ALIGNMENT_SCOREDEF_CLEF,
@@ -41,7 +45,9 @@ enum AlignmentType {
     ALIGNMENT_KEYSIG,
     ALIGNMENT_MENSUR,
     ALIGNMENT_METERSIG,
+    ALIGNMENT_PROPORT,
     ALIGNMENT_DOT,
+    ALIGNMENT_CUSTOS,
     ALIGNMENT_ACCID,
     ALIGNMENT_GRACENOTE,
     ALIGNMENT_BARLINE,
@@ -74,7 +80,7 @@ public:
      */
     ///@{
     Alignment();
-    Alignment(double time, AlignmentType type = ALIGNMENT_DEFAULT);
+    Alignment(const Fraction &time, AlignmentType type = ALIGNMENT_DEFAULT);
     virtual ~Alignment();
     void Reset() override;
     ///@}
@@ -87,7 +93,7 @@ public:
     /**
      * Override the method of adding AlignmentReference children
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * @name Set and get the xRel value of the alignment
@@ -101,8 +107,16 @@ public:
      * @name Set and get the time value of the alignment
      */
     ///@{
-    void SetTime(double time) { m_time = time; }
-    double GetTime() const { return m_time; }
+    void SetTime(const Fraction &time) { m_time = time; }
+    Fraction GetTime() const { return m_time; }
+    ///@}
+
+    /**
+     * @name Weak ordering: for alignments in the same measure it is based on time, otherwise on the measure order
+     */
+    ///@{
+    bool operator==(const Alignment &other) const;
+    std::weak_ordering operator<=>(const Alignment &other) const;
     ///@}
 
     /**
@@ -184,6 +198,14 @@ public:
      */
     bool HasTimestampOnly() const;
 
+    /**
+     * Debug message
+     */
+    std::string LogDebugTreeMsg() override
+    {
+        return StringFormat("%d %f", this->GetXRel(), this->GetTime().ToDouble());
+    }
+
     //----------------//
     // Static methods //
     //----------------//
@@ -204,7 +226,7 @@ public:
      * formula with parameters can come close and has other advantages.
      */
     static int HorizontalSpaceForDuration(
-        double intervalTime, int maxActualDur, double spacingLinear, double spacingNonLinear);
+        const Fraction &intervalTime, data_DURATION maxActualDur, double spacingLinear, double spacingNonLinear);
 
     //----------//
     // Functors //
@@ -241,7 +263,7 @@ private:
      * Stores the time at which the alignment occur.
      * It is set by the AlignHorizontallyFunctor.
      */
-    double m_time;
+    Fraction m_time;
     /**
      * Defines the type of alignment (see the AlignmentType enum).
      * We have different types because we want some events occuring at the same
@@ -283,12 +305,12 @@ public:
     /**
      * Override the method of adding Alignment children
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * Overwritten method for AlignmentReference children
      */
-    void AddChild(Object *object) override;
+    bool AddChild(Object *object) override;
 
     /**
      * Return true if one of objects overlaps with accidentals from current reference (i.e. if there are accidentals)
@@ -378,8 +400,8 @@ protected:
      * If not, return in idx the position where it needs to be inserted (-1 if it is the end)
      */
     ///@{
-    Alignment *SearchAlignmentAtTime(double time, AlignmentType type, int &idx);
-    const Alignment *SearchAlignmentAtTime(double time, AlignmentType type, int &idx) const;
+    Alignment *SearchAlignmentAtTime(const Fraction &time, AlignmentType type, int &idx);
+    const Alignment *SearchAlignmentAtTime(const Fraction &time, AlignmentType type, int &idx) const;
     ///@}
 
     /**
@@ -417,26 +439,26 @@ public:
     /**
      * Override the method of adding AlignmentReference children
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * Retrieve the alignmnet of the type at that time.
      * The alignment object is added if not found.
      * The maximum time position is also adjusted accordingly for end barline positioning
      */
-    Alignment *GetAlignmentAtTime(double time, AlignmentType type);
+    Alignment *GetAlignmentAtTime(const Fraction &time, AlignmentType type);
 
     /**
      * Keep the maximum time of the measure.
      * This corresponds to the whole duration of the measure and
      * should be the same for all staves/layers.
      */
-    void SetMaxTime(double time);
+    void SetMaxTime(const Fraction &time);
 
     /**
      * Return the max time of the measure (i.e., the right measure alignment time)
      */
-    double GetMaxTime() const;
+    Fraction GetMaxTime() const;
 
     /**
      * @name Set and Get the non-justifiable margin (right and left scoreDefs)
@@ -450,14 +472,14 @@ public:
      * Setter takes a meter unit parameter.
      */
     ///@{
-    void SetInitialTstamp(int meterUnit);
-    double GetInitialTstampDur() const { return m_initialTstampDur; }
+    void SetInitialTstamp(data_DURATION meterUnit);
+    Fraction GetInitialTstampDur() const { return m_initialTstampDur; }
     ///@}
 
     /**
      * Get left Alignment for the measure and for the left BarLine.
      * For each MeasureAligner, we keep and Alignment for the left position.
-     * The Alignment time will be always -1.0 * DUR_MAX and will appear first in the list.
+     * The Alignment time will be always -1.0 and will appear first in the list.
      */
     ///@{
     Alignment *GetLeftAlignment() { return m_leftAlignment; }
@@ -536,7 +558,7 @@ private:
      * The time duration of the timestamp between 0.0 and 1.0.
      * This depends on the meter signature in the preceeding scoreDef
      */
-    double m_initialTstampDur;
+    Fraction m_initialTstampDur;
 };
 
 //----------------------------------------------------------------------------
@@ -563,7 +585,7 @@ public:
      * Retrieve the alignmnet of the type at that time.
      * The alignment object is added if not found.
      */
-    Alignment *GetAlignmentAtTime(double time, AlignmentType type);
+    Alignment *GetAlignmentAtTime(const Fraction &time, AlignmentType type);
 
     /**
      * Because the grace notes appear from left to right but need to be aligned
@@ -655,7 +677,7 @@ public:
     /**
      * Override the method of adding TimestampAttr children
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * Look for an existing TimestampAttr at a certain time.

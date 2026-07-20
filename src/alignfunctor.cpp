@@ -15,13 +15,18 @@
 #include "fig.h"
 #include "layer.h"
 #include "ligature.h"
+#include "nc.h"
+#include "neume.h"
+#include "ossia.h"
 #include "page.h"
+#include "proport.h"
 #include "rend.h"
 #include "rest.h"
 #include "runningelement.h"
 #include "section.h"
 #include "staff.h"
 #include "svg.h"
+#include "syllable.h"
 #include "system.h"
 #include "tabgrp.h"
 #include "verse.h"
@@ -36,26 +41,39 @@ namespace vrv {
 
 AlignHorizontallyFunctor::AlignHorizontallyFunctor(Doc *doc) : DocFunctor(doc)
 {
+    static const std::map<int, data_DURATION> durationEq{
+        { DURATION_EQ_brevis, DURATION_brevis }, //
+        { DURATION_EQ_semibrevis, DURATION_semibrevis }, //
+        { DURATION_EQ_minima, DURATION_minima }, //
+    };
+
     m_measureAligner = NULL;
-    m_time = 0.0;
-    m_currentMensur = NULL;
-    m_currentMeterSig = NULL;
+    m_time = 0;
     m_notationType = NOTATIONTYPE_cmn;
     m_scoreDefRole = SCOREDEF_NONE;
     m_isFirstMeasure = false;
     m_hasMultipleLayer = false;
+    m_currentParams.equivalence = durationEq.at(m_doc->GetOptions()->m_durationEquivalence.GetValue());
+    m_sectionRestart = false;
 }
 
 FunctorCode AlignHorizontallyFunctor::VisitLayer(Layer *layer)
 {
-    m_currentMensur = layer->GetCurrentMensur();
-    m_currentMeterSig = layer->GetCurrentMeterSig();
+    m_currentParams.mensur = layer->GetCurrentMensur();
+    m_currentParams.meterSig = layer->GetCurrentMeterSig();
+    m_currentParams.proport = layer->GetCurrentProport();
 
     // We are starting a new layer, reset the time;
     // We set it to -1.0 for the scoreDef attributes since they have to be aligned before any timestamp event (-1.0)
-    m_time = DUR_MAX * -1.0;
+    m_time = -1;
 
-    m_scoreDefRole = m_isFirstMeasure ? SCOREDEF_SYSTEM : SCOREDEF_INTERMEDIATE;
+    m_scoreDefRole = (m_isFirstMeasure || m_sectionRestart) ? SCOREDEF_SYSTEM : SCOREDEF_INTERMEDIATE;
+
+    // We know we need an ossia staffDef that has to be aligned before the measure start
+    // However only if we do not have a system start or a section restart
+    if (layer->DrawOssiaStaffDef() && (m_scoreDefRole != SCOREDEF_SYSTEM)) {
+        m_scoreDefRole = SCOREDEF_OSSIA;
+    }
 
     if (layer->GetStaffDefClef()) {
         if (layer->GetStaffDefClef()->GetVisible() != BOOLEAN_false) {
@@ -84,7 +102,7 @@ FunctorCode AlignHorizontallyFunctor::VisitLayer(Layer *layer)
     m_scoreDefRole = SCOREDEF_NONE;
 
     // Now we have to set it to 0.0 since we will start aligning musical content
-    m_time = 0.0;
+    m_time = 0;
 
     return FUNCTOR_CONTINUE;
 }
@@ -140,6 +158,7 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
     Rest *restParent = vrv_cast<Rest *>(layerElement->GetFirstAncestor(REST, MAX_NOTE_DEPTH));
     TabGrp *tabGrpParent = vrv_cast<TabGrp *>(layerElement->GetFirstAncestor(TABGRP, MAX_TABGRP_DEPTH));
     const bool ligatureAsBracket = m_doc->GetOptions()->m_ligatureAsBracket.GetValue();
+    const bool neumeAsNote = m_doc->GetOptions()->m_neumeAsNote.GetValue();
 
     if (chordParent) {
         layerElement->SetAlignment(chordParent->GetAlignment());
@@ -153,7 +172,7 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
     else if (tabGrpParent) {
         layerElement->SetAlignment(tabGrpParent->GetAlignment());
     }
-    else if (layerElement->Is({ DOTS, FLAG, STEM })) {
+    else if (layerElement->IsAnyOf(std::array{ DOTS, FLAG, STEM })) {
         assert(false);
     }
     else if (ligatureParent && layerElement->Is(NOTE) && !ligatureAsBracket) {
@@ -165,17 +184,19 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             Alignment *alignment = firstNote->GetAlignment();
             layerElement->SetAlignment(alignment);
             alignment->AddLayerElementRef(layerElement);
-            double duration
-                = layerElement->GetAlignmentDuration(m_currentMensur, m_currentMeterSig, true, m_notationType);
-            m_time += duration;
+            Fraction duration = layerElement->GetAlignmentDuration(m_currentParams, true, m_notationType);
+            m_time = m_time + duration;
             return FUNCTOR_CONTINUE;
         }
     }
+    // A ligature gets a default alignment in order to allow mensural cast-off
+    else if (layerElement->Is(LIGATURE)) {
+        // Nothing to do
+    }
     // We do not align these (container). Any other?
-    else if (layerElement->Is({ BEAM, LIGATURE, FTREM, TUPLET })) {
-        double duration
-            = layerElement->GetSameAsContentAlignmentDuration(m_currentMensur, m_currentMeterSig, true, m_notationType);
-        m_time += duration;
+    else if (layerElement->IsAnyOf(std::array{ BEAM, FTREM, TUPLET })) {
+        Fraction duration = layerElement->GetSameAsContentAlignmentDuration(m_currentParams, true, m_notationType);
+        m_time = m_time + duration;
         return FUNCTOR_CONTINUE;
     }
     else if (layerElement->Is(BARLINE)) {
@@ -187,6 +208,8 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             type = ALIGNMENT_SCOREDEF_CLEF;
         else if (layerElement->GetScoreDefRole() == SCOREDEF_CAUTIONARY)
             type = ALIGNMENT_SCOREDEF_CAUTION_CLEF;
+        else if (layerElement->GetScoreDefRole() == SCOREDEF_OSSIA)
+            type = ALIGNMENT_SCOREDEF_OSSIA_CLEF;
         else {
             type = ALIGNMENT_CLEF;
         }
@@ -197,11 +220,10 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             type = ALIGNMENT_SCOREDEF_KEYSIG;
         else if (layerElement->GetScoreDefRole() == SCOREDEF_CAUTIONARY)
             type = ALIGNMENT_SCOREDEF_CAUTION_KEYSIG;
+        else if (layerElement->GetScoreDefRole() == SCOREDEF_OSSIA)
+            type = ALIGNMENT_SCOREDEF_OSSIA_KEYSIG;
         else {
-            // type = ALIGNMENT_KEYSIG;
-            // We force this because they should appear only at the beginning of a measure and should be non-justifiable
-            // We also need it because the PAE importer creates keySig (and not staffDef @key.sig)
-            type = ALIGNMENT_SCOREDEF_KEYSIG;
+            type = ALIGNMENT_KEYSIG;
         }
     }
     else if (layerElement->Is(MENSUR)) {
@@ -212,8 +234,8 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             type = ALIGNMENT_SCOREDEF_CAUTION_MENSUR;
         else {
             // replace the current mensur
-            m_currentMensur = vrv_cast<Mensur *>(layerElement);
-            assert(m_currentMensur);
+            m_currentParams.mensur = vrv_cast<Mensur *>(layerElement);
+            assert(m_currentParams.mensur);
             type = ALIGNMENT_MENSUR;
         }
     }
@@ -227,18 +249,29 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             type = ALIGNMENT_SCOREDEF_METERSIG;
         else {
             // replace the current meter signature
-            m_currentMeterSig = vrv_cast<MeterSig *>(layerElement);
-            assert(m_currentMeterSig);
+            m_currentParams.meterSig = vrv_cast<MeterSig *>(layerElement);
+            assert(m_currentParams.meterSig);
             // type = ALIGNMENT_METERSIG
             // We force this because they should appear only at the beginning of a measure and should be non-justifiable
             // We also need it because the PAE importer creates meterSig (and not staffDef @meter)
             type = ALIGNMENT_SCOREDEF_METERSIG;
         }
     }
-    else if (layerElement->Is({ MULTIREST, MREST, MRPT })) {
+    else if (layerElement->Is(PROPORT)) {
+        if (layerElement->GetType() == "cmme_tempo_change") return FUNCTOR_SIBLINGS;
+        // replace the current proport
+        const Proport *previous = (m_currentParams.proport) ? (m_currentParams.proport) : NULL;
+        m_currentParams.proport = vrv_cast<Proport *>(layerElement);
+        assert(m_currentParams.proport);
+        if (previous) {
+            m_currentParams.proport->Cumulate(previous);
+        }
+        type = ALIGNMENT_PROPORT;
+    }
+    else if (layerElement->IsAnyOf(std::array{ MULTIREST, MREST, MRPT })) {
         type = ALIGNMENT_FULLMEASURE;
     }
-    else if (layerElement->Is({ MRPT2, MULTIRPT })) {
+    else if (layerElement->IsAnyOf(std::array{ MRPT2, MULTIRPT })) {
         type = ALIGNMENT_FULLMEASURE2;
     }
     else if (layerElement->Is(DOT)) {
@@ -248,9 +281,12 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
             layerElement->SetAlignment(dot->m_drawingPreviousElement->GetAlignment());
         }
         else {
-            // Create an alignment only if the dot has no resolved preceeding note
+            // Create an alignment only if the dot has no resolved preceding note
             type = ALIGNMENT_DOT;
         }
+    }
+    else if (layerElement->Is(CUSTOS)) {
+        type = ALIGNMENT_CUSTOS;
     }
     else if (layerElement->Is(ACCID)) {
         // accid within note was already taken into account by noteParent
@@ -263,20 +299,40 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
         layerElement->SetAlignment(note->GetAlignment());
     }
     else if (layerElement->Is(SYL)) {
-        Staff *staff = layerElement->GetAncestorStaff();
         Note *note = vrv_cast<Note *>(layerElement->GetFirstAncestor(NOTE));
-        if (!note || (staff->m_drawingNotationType == NOTATIONTYPE_neume)) {
-            type = ALIGNMENT_DEFAULT;
-        }
-        else {
+        if (note) {
             layerElement->SetAlignment(note->GetAlignment());
         }
+        else {
+            Syllable *syllable = vrv_cast<Syllable *>(layerElement->GetFirstAncestor(SYLLABLE));
+            if (syllable) layerElement->SetAlignment(syllable->GetAlignment());
+        }
+        // Else add a default
     }
     else if (layerElement->Is(VERSE)) {
         // Idem
         Note *note = vrv_cast<Note *>(layerElement->GetFirstAncestor(NOTE));
         assert(note);
         layerElement->SetAlignment(note->GetAlignment());
+    }
+    else if (layerElement->Is(NC)) {
+        // Align with the neume
+        if (!neumeAsNote) {
+            Neume *neume = vrv_cast<Neume *>(layerElement->GetFirstAncestor(NEUME));
+            assert(neume);
+            layerElement->SetAlignment(neume->GetAlignment());
+        }
+        // Otherwise each nc has its own aligner
+    }
+    else if (layerElement->Is(NEUME)) {
+        // Align with the syllable
+        if (neumeAsNote) {
+            Syllable *syllable = vrv_cast<Syllable *>(layerElement->GetFirstAncestor(SYLLABLE));
+            assert(syllable);
+            layerElement->SetAlignment(syllable->GetAlignment());
+            return FUNCTOR_CONTINUE;
+        }
+        // Otherwise each neume has its own aligner
     }
     else if (layerElement->Is(GRACEGRP)) {
         return FUNCTOR_CONTINUE;
@@ -285,11 +341,11 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
         type = ALIGNMENT_GRACENOTE;
     }
 
-    double duration = 0.0;
+    Fraction duration;
     // We have already an alignment with grace note children - skip this
     if (!layerElement->GetAlignment()) {
         // get the duration of the event
-        duration = layerElement->GetAlignmentDuration(m_currentMensur, m_currentMeterSig, true, m_notationType);
+        duration = layerElement->GetAlignmentDuration(m_currentParams, true, m_notationType);
 
         // For timestamp, what we get from GetAlignmentDuration is actually the position of the timestamp
         // So use it as current time - we can do this because the timestamp loop is redirected from the measure
@@ -331,7 +387,7 @@ FunctorCode AlignHorizontallyFunctor::VisitLayerElement(LayerElement *layerEleme
 
     if (!layerElement->Is(TIMESTAMP_ATTR)) {
         // increase the time position, but only when not a timestamp (it would actually do nothing)
-        m_time += duration;
+        m_time = m_time + duration;
     }
 
     return FUNCTOR_CONTINUE;
@@ -346,6 +402,7 @@ FunctorCode AlignHorizontallyFunctor::VisitMeasure(Measure *measure)
     // point to it
     m_measureAligner = &measureAligner;
     m_hasMultipleLayer = false;
+    m_currentParams.metcon = (measure->GetMetcon() != BOOLEAN_false);
 
     if (measure->GetLeftBarLine()->SetAlignment(measureAligner.GetLeftBarLineAlignment())) m_hasMultipleLayer = true;
     if (measure->GetRightBarLine()->SetAlignment(measureAligner.GetRightBarLineAlignment())) m_hasMultipleLayer = true;
@@ -357,7 +414,9 @@ FunctorCode AlignHorizontallyFunctor::VisitMeasure(Measure *measure)
 
 FunctorCode AlignHorizontallyFunctor::VisitMeasureEnd(Measure *measure)
 {
-    int meterUnit = m_currentMeterSig ? m_currentMeterSig->GetUnit() : 4;
+    data_DURATION meterUnit = (m_currentParams.meterSig && m_currentParams.meterSig->HasUnit())
+        ? m_currentParams.meterSig->GetUnitAsDur()
+        : DURATION_4;
     measure->m_measureAligner.SetInitialTstamp(meterUnit);
 
     // We also need to align the timestamps - we do it at the end since we need the *meterSig to be initialized by a
@@ -368,7 +427,11 @@ FunctorCode AlignHorizontallyFunctor::VisitMeasureEnd(Measure *measure)
     // Next scoreDef will be INTERMEDIATE_SCOREDEF (See VisitLayer)
     m_isFirstMeasure = false;
 
+    m_sectionRestart = false;
+
     if (m_hasMultipleLayer) measure->HasAlignmentRefWithMultipleLayers(true);
+
+    // measure->m_measureAligner.LogDebugTree(3);
 
     return FUNCTOR_CONTINUE;
 }
@@ -378,8 +441,30 @@ FunctorCode AlignHorizontallyFunctor::VisitMeterSigGrp(MeterSigGrp *meterSigGrp)
     return meterSigGrp->IsScoreDefElement() ? FUNCTOR_STOP : FUNCTOR_CONTINUE;
 }
 
+FunctorCode AlignHorizontallyFunctor::VisitOssia(Ossia *ossia)
+{
+    Measure *measure = vrv_cast<Measure *>(ossia->GetParent());
+    if (measure) {
+        ossia->GetDrawingLeftBarLine()->SetParent(measure);
+        ossia->GetDrawingLeftBarLine()->SetAlignment(measure->GetLeftBarLine()->GetAlignment());
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode AlignHorizontallyFunctor::VisitSection(Section *section)
+{
+    if (section->GetRestart() == BOOLEAN_true) {
+        m_sectionRestart = true;
+    }
+
+    return FUNCTOR_CONTINUE;
+}
+
 FunctorCode AlignHorizontallyFunctor::VisitStaff(Staff *staff)
 {
+    if (staff->IsHidden()) return FUNCTOR_CONTINUE;
+
     StaffDef *drawingStaffDef = staff->m_drawingStaffDef;
     assert(drawingStaffDef);
 
@@ -592,9 +677,9 @@ FunctorCode AlignVerticallyFunctor::VisitStaff(Staff *staff)
     std::vector<Object *>::const_iterator verseIterator = std::find_if(
         staff->m_timeSpanningElements.begin(), staff->m_timeSpanningElements.end(), ObjectComparison(VERSE));
     if (verseIterator != staff->m_timeSpanningElements.end()) {
-        Verse *v = vrv_cast<Verse *>(*verseIterator);
-        assert(v);
-        alignment->AddVerseN(v->GetN());
+        Verse *verse = vrv_cast<Verse *>(*verseIterator);
+        assert(verse);
+        alignment->AddVerseN(verse->GetN(), verse->GetPlace());
     }
 
     // add verse number to alignment in case there are spanning SYL elements but there is no verse number already - this
@@ -605,9 +690,13 @@ FunctorCode AlignVerticallyFunctor::VisitStaff(Staff *staff)
         Verse *verse = vrv_cast<Verse *>((*sylIterator)->GetFirstAncestor(VERSE));
         if (verse) {
             const int verseNumber = verse->GetN();
+            const data_STAFFREL versePlace = verse->GetPlace();
             const bool verseCollapse = m_doc->GetOptions()->m_lyricVerseCollapse.GetValue();
-            if (!alignment->GetVersePosition(verseNumber, verseCollapse)) {
-                alignment->AddVerseN(verseNumber);
+            if ((versePlace == STAFFREL_above) && !alignment->GetVersePositionAbove(verseNumber, verseCollapse)) {
+                alignment->AddVerseN(verseNumber, verse->GetPlace());
+            }
+            if ((versePlace != STAFFREL_above) && !alignment->GetVersePositionBelow(verseNumber, verseCollapse)) {
+                alignment->AddVerseN(verseNumber, verse->GetPlace());
             }
         }
     }
@@ -626,6 +715,18 @@ FunctorCode AlignVerticallyFunctor::VisitStaffAlignmentEnd(StaffAlignment *staff
 
     m_cumulatedShift += staffAlignment->GetStaffHeight();
     ++m_staffIdx;
+
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode AlignVerticallyFunctor::VisitSyllable(Syllable *syllable)
+{
+    if (!syllable->FindDescendantByType(SYL)) return FUNCTOR_CONTINUE;
+
+    StaffAlignment *alignment = m_systemAligner->GetStaffAlignmentForStaffN(m_staffN);
+    if (!alignment) return FUNCTOR_CONTINUE;
+    // Current limitation of only one syl (verse n) by syllable
+    alignment->AddVerseN(1, STAFFREL_below);
 
     return FUNCTOR_CONTINUE;
 }
@@ -660,7 +761,7 @@ FunctorCode AlignVerticallyFunctor::VisitVerse(Verse *verse)
     if (!alignment) return FUNCTOR_CONTINUE;
 
     // Add the number count
-    alignment->AddVerseN(verse->GetN());
+    alignment->AddVerseN(verse->GetN(), verse->GetPlace());
 
     return FUNCTOR_CONTINUE;
 }

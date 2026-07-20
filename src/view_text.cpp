@@ -157,8 +157,8 @@ void View::DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDraw
     assert(dc);
     assert(dc->HasFont());
 
-    int toDcX = ToDeviceContextX(params.m_x);
-    int toDcY = ToDeviceContextY(params.m_y);
+    int toDcX = this->ToDeviceContextX(params.m_x);
+    int toDcY = this->ToDeviceContextY(params.m_y);
 
     size_t prevPos = 0, pos;
     while ((pos = str.find_first_of(VRV_TEXT_HARM, prevPos)) != std::wstring::npos) {
@@ -271,21 +271,21 @@ void View::DrawLyricString(
     std::u32string syl = U"";
     std::u32string lyricStr = str;
 
-    const int x = (params) ? params->m_x : VRV_UNSET;
-    const int y = (params) ? params->m_y : VRV_UNSET;
+    const int dcX = (params) ? this->ToDeviceContextX(params->m_x) : VRV_UNSET;
+    const int dcY = (params) ? this->ToDeviceContextY(params->m_y) : VRV_UNSET;
     const int width = (params) ? params->m_width : VRV_UNSET;
     const int height = (params) ? params->m_height : VRV_UNSET;
 
     if (m_doc->GetOptions()->m_lyricElision.GetValue() == ELISION_unicode) {
         std::replace(lyricStr.begin(), lyricStr.end(), U'_', UNICODE_UNDERTIE);
-        dc->DrawText(UTF32to8(lyricStr), lyricStr, x, y, width, height);
+        dc->DrawText(UTF32to8(lyricStr), lyricStr, dcX, dcY, width, height);
     }
     else {
         while (lyricStr.compare(syl) != 0) {
             wroteText = true;
             auto index = lyricStr.find_first_of(U"_");
             syl = lyricStr.substr(0, index);
-            dc->DrawText(UTF32to8(syl), syl, x, y, width, height);
+            dc->DrawText(UTF32to8(syl), syl, dcX, dcY, width, height);
 
             // no _
             if (index == std::string::npos) break;
@@ -298,7 +298,7 @@ void View::DrawLyricString(
             bool isFallbackNeeded = (m_doc->GetResources()).IsSmuflFallbackNeeded(elision);
             vrvTxt.SetSmuflWithFallback(isFallbackNeeded);
             dc->SetFont(&vrvTxt);
-            dc->DrawText(UTF32to8(elision), elision, x, y, width, height);
+            dc->DrawText(UTF32to8(elision), elision, dcX, dcY, width, height);
             dc->ResetFont();
 
             // next syllable
@@ -310,7 +310,8 @@ void View::DrawLyricString(
     // This should only be called in facsimile mode where a zone is specified but there is
     // no text. This draws the bounds of the zone but leaves the space blank.
     if (!wroteText && params) {
-        dc->DrawText("", U"", params->m_x, params->m_y, params->m_width, params->m_height);
+        dc->DrawText("", U"", this->ToDeviceContextX(params->m_x), this->ToDeviceContextY(params->m_y), params->m_width,
+            params->m_height);
     }
 }
 
@@ -377,7 +378,7 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
             params.m_alignment = rend->HasHalign() ? rend->GetHalign() : HORIZONTALALIGNMENT_left;
             params.m_x = rend->GetDrawingX();
             params.m_y = rend->GetDrawingY();
-            dc->MoveTextTo(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), params.m_alignment);
+            dc->MoveTextTo(this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), params.m_alignment);
         }
     }
 
@@ -490,16 +491,18 @@ void View::DrawText(DeviceContext *dc, Text *text, TextDrawingParams &params)
     resources->SelectTextFont(dc->GetFont()->GetWeight(), dc->GetFont()->GetStyle());
 
     if (params.m_explicitPosition) {
-        dc->MoveTextTo(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_NONE);
+        dc->MoveTextTo(
+            this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_NONE);
         params.m_explicitPosition = false;
     }
     else if (params.m_verticalShift) {
-        dc->MoveTextVerticallyTo(ToDeviceContextY(params.m_y));
+        dc->MoveTextVerticallyTo(this->ToDeviceContextY(params.m_y));
         params.m_verticalShift = false;
     }
 
     // special case where we want to replace some unicode music points to SMuFL
-    if (text->GetFirstAncestor(DIR) || text->GetFirstAncestor(ORNAM) || text->GetFirstAncestor(REPEATMARK)) {
+    if (text->GetFirstAncestor(CPMARK) || text->GetFirstAncestor(DIR) || text->GetFirstAncestor(ORNAM)
+        || text->GetFirstAncestor(REPEATMARK)) {
         this->DrawDirString(dc, text->GetText(), params);
     }
     else if (text->GetFirstAncestor(DYNAM)) {
@@ -545,7 +548,8 @@ void View::DrawGraphic(DeviceContext *dc, Graphic *graphic, TextDrawingParams &p
         height = height * m_options->m_graceFactor.GetValue();
     }
 
-    dc->DrawGraphicUri(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), width, height, graphic->GetTarget());
+    dc->DrawGraphicUri(
+        this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), width, height, graphic->GetTarget());
 
     dc->EndGraphic(graphic, this);
 }
@@ -572,7 +576,8 @@ void View::DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params, int s
         scale = scale * m_options->m_graceFactor.GetValue();
     }
 
-    dc->DrawSvgShape(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), width, height, scale, svg->Get());
+    dc->DrawSvgShape(
+        this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), width, height, scale, svg->Get());
 
     dc->EndGraphic(svg, this);
 }
@@ -586,7 +591,8 @@ void View::DrawSymbol(DeviceContext *dc, Symbol *symbol, TextDrawingParams &para
 
     // This can happen after an <lb/>
     if (params.m_explicitPosition) {
-        dc->MoveTextTo(ToDeviceContextX(params.m_x), ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_NONE);
+        dc->MoveTextTo(
+            this->ToDeviceContextX(params.m_x), this->ToDeviceContextY(params.m_y), HORIZONTALALIGNMENT_NONE);
         params.m_explicitPosition = false;
     }
 
@@ -663,7 +669,7 @@ void View::DrawTextLayoutElement(DeviceContext *dc, TextLayoutElement *textLayou
 
     FontInfo textElementFont;
     if (!dc->UseGlobalStyling()) {
-        textElementFont.SetFaceName("Times");
+        textElementFont.SetFaceName(m_doc->GetResources().GetTextFont());
     }
 
     TextDrawingParams params;
@@ -678,13 +684,11 @@ void View::DrawTextLayoutElement(DeviceContext *dc, TextLayoutElement *textLayou
 
     textElementFont.SetPointSize(params.m_pointSize);
 
-    dc->SetBrush(m_currentColor, AxSOLID);
     dc->SetFont(&textElementFont);
 
     this->DrawRunningChildren(dc, textLayoutElement, params);
 
     dc->ResetFont();
-    dc->ResetBrush();
 
     dc->EndGraphic(textLayoutElement, this);
 }

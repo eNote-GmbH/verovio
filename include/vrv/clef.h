@@ -11,7 +11,7 @@
 #include "atts_externalsymbols.h"
 #include "atts_shared.h"
 #include "layerelement.h"
-#include "visualoffsetinterface.h"
+#include "offsetinterface.h"
 #include "vrvdef.h"
 
 namespace vrv {
@@ -26,7 +26,7 @@ class ScoreDefInterface;
  * This class models the MEI <clef> element.
  */
 class Clef : public LayerElement,
-             public VisualOffsetInterface,
+             public OffsetInterface,
              public AttClefLog,
              public AttClefShape,
              public AttColor,
@@ -49,18 +49,15 @@ public:
     virtual ~Clef();
     Object *Clone() const override { return new Clef(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Clef"; }
+    std::string GetClassName() const override { return "clef"; }
     ///@}
 
     /**
      * @name Getter to interfaces
      */
     ///@{
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
-    }
+    OffsetInterface *GetOffsetInterface() override { return vrv_cast<OffsetInterface *>(this); }
+    const OffsetInterface *GetOffsetInterface() const override { return vrv_cast<const OffsetInterface *>(this); }
     ///@}
 
     /** Override the method since alignment is required */

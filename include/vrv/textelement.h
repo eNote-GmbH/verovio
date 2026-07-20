@@ -28,7 +28,6 @@ public:
     ///@{
     TextElement();
     TextElement(ClassId classId);
-    TextElement(ClassId classId, const std::string &classIdStr);
     virtual ~TextElement();
     void Reset() override;
     ///@}
@@ -105,7 +104,7 @@ public:
         m_enclose = TEXTRENDITION_NONE;
         m_textEnclose = ENCLOSURE_NONE;
     }
-    virtual ~TextDrawingParams() {};
+    virtual ~TextDrawingParams() {}
 
     int m_x;
     int m_y;

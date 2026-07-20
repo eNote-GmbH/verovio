@@ -42,8 +42,8 @@ const std::vector<data_ARTICULATION> Artic::s_aboveStaffArtic = { ARTICULATION_d
 static const ClassRegistrar<Artic> s_factory("artic", ARTIC);
 
 Artic::Artic()
-    : LayerElement(ARTIC, "artic-")
-    , VisualOffsetInterface()
+    : LayerElement(ARTIC)
+    , OffsetInterface()
     , AttArticulation()
     , AttArticulationGes()
     , AttColor()
@@ -52,7 +52,7 @@ Artic::Artic()
     , AttExtSymNames()
     , AttPlacementRelEvent()
 {
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
+    this->RegisterInterface(OffsetInterface::GetAttClasses(), OffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_ARTICULATION);
     this->RegisterAttClass(ATT_ARTICULATIONGES);
     this->RegisterAttClass(ATT_COLOR);
@@ -69,7 +69,7 @@ Artic::~Artic() {}
 void Artic::Reset()
 {
     LayerElement::Reset();
-    VisualOffsetInterface::Reset();
+    OffsetInterface::Reset();
     this->ResetArticulation();
     this->ResetArticulationGes();
     this->ResetColor();
@@ -167,7 +167,6 @@ char32_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) cons
     if (place == STAFFREL_above) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A0_articAccentAbove;
-            case ARTICULATION_acc_inv: return SMUFL_E4BE_articReversedAccentAbove;
             case ARTICULATION_acc_soft: return SMUFL_ED40_articSoftAccentAbove;
             case ARTICULATION_stacc: return SMUFL_E4A2_articStaccatoAbove;
             case ARTICULATION_ten: return SMUFL_E4A4_articTenutoAbove;
@@ -207,7 +206,6 @@ char32_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) cons
     else if (place == STAFFREL_below) {
         switch (artic) {
             case ARTICULATION_acc: return SMUFL_E4A1_articAccentBelow;
-            case ARTICULATION_acc_inv: return SMUFL_E4BF_articReversedAccentBelow;
             case ARTICULATION_acc_soft: return SMUFL_ED41_articSoftAccentBelow;
             case ARTICULATION_stacc: return SMUFL_E4A3_articStaccatoBelow;
             case ARTICULATION_ten: return SMUFL_E4A5_articTenutoBelow;
@@ -236,17 +234,14 @@ char32_t Artic::GetArticGlyph(data_ARTICULATION artic, data_STAFFREL place) cons
 
 std::pair<char32_t, char32_t> Artic::GetEnclosingGlyphs() const
 {
-    std::pair<char32_t, char32_t> glyphs(0, 0);
     if (this->HasEnclose()) {
         switch (this->GetEnclose()) {
-            case ENCLOSURE_brack:
-                glyphs = { SMUFL_E26C_accidentalBracketLeft, SMUFL_E26D_accidentalBracketRight };
-                break;
-            case ENCLOSURE_paren: glyphs = { SMUFL_E26A_accidentalParensLeft, SMUFL_E26B_accidentalParensRight }; break;
-            default: break;
+            case ENCLOSURE_brack: return { SMUFL_E26C_accidentalBracketLeft, SMUFL_E26D_accidentalBracketRight }; break;
+            case ENCLOSURE_paren: return { SMUFL_E26A_accidentalParensLeft, SMUFL_E26B_accidentalParensRight }; break;
+            default: return { 0, 0 };
         }
     }
-    return glyphs;
+    return { 0, 0 };
 }
 
 //----------------------------------------------------------------------------

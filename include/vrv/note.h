@@ -13,19 +13,20 @@
 //----------------------------------------------------------------------------
 
 #include "accid.h"
+#include "altsyminterface.h"
 #include "atts_analytical.h"
 #include "atts_externalsymbols.h"
-#include "atts_frettab.h"
 #include "atts_mensural.h"
 #include "atts_midi.h"
 #include "atts_shared.h"
+#include "atts_stringtab.h"
 #include "beam.h"
 #include "chord.h"
 #include "durationinterface.h"
 #include "layerelement.h"
+#include "offsetinterface.h"
 #include "pitchinterface.h"
 #include "transposition.h"
-#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -46,10 +47,11 @@ class Verse;
  */
 class Note : public LayerElement,
              public StemmedDrawingInterface,
+             public AltSymInterface,
              public DurationInterface,
+             public OffsetInterface,
              public PitchInterface,
              public PositionInterface,
-             public VisualOffsetInterface,
              public AttColor,
              public AttColoration,
              public AttCue,
@@ -58,11 +60,11 @@ class Note : public LayerElement,
              public AttGraced,
              public AttHarmonicFunction,
              public AttMidiVelocity,
-             public AttNoteGesTab,
              public AttNoteHeads,
              public AttNoteVisMensural,
              public AttStems,
              public AttStemsCmn,
+             public AttStringtab,
              public AttTiePresent,
              public AttVisibility {
 public:
@@ -75,15 +77,19 @@ public:
     virtual ~Note();
     Object *Clone() const override { return new Note(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Note"; }
+    std::string GetClassName() const override { return "note"; }
     ///@}
 
     /**
      * @name Getter to interfaces
      */
     ///@{
+    AltSymInterface *GetAltSymInterface() override { return vrv_cast<AltSymInterface *>(this); }
+    const AltSymInterface *GetAltSymInterface() const override { return vrv_cast<const AltSymInterface *>(this); }
     DurationInterface *GetDurationInterface() override { return vrv_cast<DurationInterface *>(this); }
     const DurationInterface *GetDurationInterface() const override { return vrv_cast<const DurationInterface *>(this); }
+    OffsetInterface *GetOffsetInterface() override { return vrv_cast<OffsetInterface *>(this); }
+    const OffsetInterface *GetOffsetInterface() const override { return vrv_cast<const OffsetInterface *>(this); }
     PitchInterface *GetPitchInterface() override { return vrv_cast<PitchInterface *>(this); }
     const PitchInterface *GetPitchInterface() const override { return vrv_cast<const PitchInterface *>(this); }
     PositionInterface *GetPositionInterface() override { return vrv_cast<PositionInterface *>(this); }
@@ -92,11 +98,6 @@ public:
     const StemmedDrawingInterface *GetStemmedDrawingInterface() const override
     {
         return vrv_cast<const StemmedDrawingInterface *>(this);
-    }
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 
@@ -110,12 +111,17 @@ public:
      * Add an element (a verse or an accid) to a note.
      * Only Verse and Accid elements will be actually added to the note.
      */
-    bool IsSupportedChild(Object *object) override;
+    bool IsSupportedChild(ClassId classId) override;
 
     /**
      * Overwritten method for note
      */
-    void AddChild(Object *object) override;
+    bool AddChild(Object *object) override;
+
+    /**
+     * Additional check when adding a child.
+     */
+    bool AddChildAdditionalCheck(Object *child) override;
 
     /**
      * Align dots shift for two notes. Should be used for unison notes to align dots positioning
@@ -131,29 +137,12 @@ public:
     ///@}
 
     /**
-     * @name Setter and getter for the drawing staff loc.
-     * This is set by the CalcAlignmentPitchPosFunctor.
-     */
-    ///@{
-    void SetDrawingLoc(int drawingLoc) { m_drawingLoc = drawingLoc; }
-    int GetDrawingLoc() const { return m_drawingLoc; }
-    ///@}
-
-    /**
-     * Check if the note has ledger lines.
-     * If staff is passed, use it for getting the staff line number.
-     * Otherwise, it will look for the Staff ancestor.
-     * Set the value of ledger lines above or below.
-     */
-    bool HasLedgerLines(int &linesAbove, int &linesBelow, const Staff *staff = NULL) const;
-
-    /**
      * Overriding functions to return information from chord parent if any
      */
     ///@{
     Chord *IsChordTone();
     const Chord *IsChordTone() const;
-    int GetDrawingDur() const;
+    data_DURATION GetDrawingDur() const;
     bool IsNoteGroupExtreme() const; // used to find if it is the highest or lowest note in a note group
     ///@}
 
@@ -169,7 +158,7 @@ public:
      * @name Return the smufl string to use for a note give the notation type
      */
     ///@{
-    std::u32string GetTabFretString(data_NOTATIONTYPE notationType) const;
+    std::u32string GetTabFretString(data_NOTATIONTYPE notationType, int &overline, int &strike, int &underline) const;
     ///@}
 
     /**
@@ -218,7 +207,7 @@ public:
     /**
      * Return a SMuFL code for the notehead
      */
-    char32_t GetNoteheadGlyph(const int duration) const;
+    char32_t GetNoteheadGlyph(const data_DURATION duration) const;
 
     /**
      * Check whether current note is enharmonic with another
@@ -233,7 +222,7 @@ public:
     /**
      * MIDI pitch
      */
-    int GetMIDIPitch(int shift = 0) const;
+    int GetMIDIPitch(int shift = 0, int octaveShift = 0) const;
 
     /**
      * Get pitch class of the current note
@@ -333,11 +322,6 @@ private:
 public:
     //
 private:
-    /**
-     * The drawing location of the note
-     */
-    int m_drawingLoc;
-
     /**
      * A fling indicating if the note head is flipped
      */

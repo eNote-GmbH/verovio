@@ -19,6 +19,7 @@
 #include "bracketspan.h"
 #include "breath.h"
 #include "caesura.h"
+#include "cpmark.h"
 #include "dir.h"
 #include "doc.h"
 #include "dynam.h"
@@ -55,17 +56,12 @@ thread_local std::vector<void *> FloatingObject::s_drawingObjectIds;
 // FloatingObject
 //----------------------------------------------------------------------------
 
-FloatingObject::FloatingObject() : Object(FLOATING_OBJECT, "fe")
+FloatingObject::FloatingObject() : Object(FLOATING_OBJECT)
 {
     this->Reset();
 }
 
-FloatingObject::FloatingObject(ClassId classId) : Object(classId, "fe")
-{
-    this->Reset();
-}
-
-FloatingObject::FloatingObject(ClassId classId, const std::string &classIdStr) : Object(classId, classIdStr)
+FloatingObject::FloatingObject(ClassId classId) : Object(classId)
 {
     this->Reset();
 }
@@ -218,7 +214,17 @@ FloatingPositioner::FloatingPositioner(FloatingObject *object, StaffAlignment *a
     m_alignment = alignment;
     m_spanningType = spanningType;
 
-    if (object->Is(BRACKETSPAN)) {
+    if (object->Is(ACCID_FLOATING)) {
+        assert(object->GetParent());
+        Accid *accid = vrv_cast<Accid *>(object->GetParent());
+        assert(accid);
+        // accid above by default;
+        m_place = (accid->GetPlace() != STAFFREL_NONE) ? accid->GetPlace() : STAFFREL_above;
+    }
+    else if (object->Is(ANNOTSCORE)) {
+        m_place = STAFFREL_above;
+    }
+    else if (object->Is(BRACKETSPAN)) {
         m_place = STAFFREL_above;
     }
     else if (object->Is(BREATH)) {
@@ -232,6 +238,12 @@ FloatingPositioner::FloatingPositioner(FloatingObject *object, StaffAlignment *a
         assert(caesura);
         // caesura within by default
         m_place = (caesura->GetPlace() != STAFFREL_NONE) ? caesura->GetPlace() : STAFFREL_within;
+    }
+    else if (object->Is(CPMARK)) {
+        CpMark *cpMark = vrv_cast<CpMark *>(object);
+        assert(cpMark);
+        // cpMark above by default
+        m_place = (cpMark->GetPlace() != STAFFREL_NONE) ? cpMark->GetPlace() : STAFFREL_above;
     }
     else if (object->Is(DIR)) {
         Dir *dir = vrv_cast<Dir *>(object);
@@ -264,7 +276,7 @@ FloatingPositioner::FloatingPositioner(FloatingObject *object, StaffAlignment *a
     else if (object->Is(HAIRPIN)) {
         Hairpin *hairpin = vrv_cast<Hairpin *>(object);
         assert(hairpin);
-        // haripin below by default;
+        // hairpin below by default;
         m_place = (hairpin->GetPlace() != STAFFREL_NONE) ? hairpin->GetPlace() : STAFFREL_below;
     }
     else if (object->Is(HARM)) {
@@ -417,6 +429,8 @@ void FloatingPositioner::SetDrawingYRel(int drawingYRel, bool force)
 
 bool FloatingPositioner::HasHorizontalOverlapWith(const BoundingBox *bbox, int unit) const
 {
+    assert(bbox);
+
     int bboxExtenderWidth = 0;
     const FloatingPositioner *bboxPositioner = dynamic_cast<const FloatingPositioner *>(bbox);
     if (bboxPositioner) {
@@ -488,7 +502,7 @@ void FloatingPositioner::CalcDrawingYRel(
                 assert(turn);
                 yRel += turn->GetTurnHeight(doc, staffSize) / 2;
             }
-            else if (!m_object->Is({ DIR, HAIRPIN })) {
+            else if (!m_object->IsAnyOf(std::array{ CPMARK, DIR, HAIRPIN })) {
                 yRel += (this->GetContentY2() - this->GetContentY1()) / 2;
             }
             this->SetDrawingYRel(yRel);
@@ -514,7 +528,7 @@ void FloatingPositioner::CalcDrawingYRel(
 
         if (!hasRefinedContentBoundary) {
             // Employ special collision detection for beams and slurs/ties
-            if (curve && curve->m_object->Is({ LV, PHRASE, SLUR, TIE })) {
+            if (curve && curve->m_object->IsAnyOf(std::array{ LV, PHRASE, SLUR, TIE })) {
                 const int shift = this->Intersects(curve, CONTENT, margin);
                 if (shift != 0) {
                     this->SetDrawingYRel(this->GetDrawingYRel() - shift);
@@ -560,7 +574,7 @@ void FloatingPositioner::CalcDrawingYRel(
 
 void FloatingPositioner::AdjustExtenders()
 {
-    const bool isExtender = m_object->Is({ DIR, DYNAM, TEMPO }) && m_object->IsExtenderElement();
+    const bool isExtender = m_object->IsAnyOf(std::array{ DIR, DYNAM, TEMPO }) && m_object->IsExtenderElement();
     if (!isExtender) return;
 
     m_object->SetMaxDrawingYRel(this->GetDrawingYRel(), m_place);
@@ -632,7 +646,7 @@ FloatingCurvePositioner::FloatingCurvePositioner(FloatingObject *object, StaffAl
 
 FloatingCurvePositioner::~FloatingCurvePositioner()
 {
-    ClearSpannedElements();
+    this->ClearSpannedElements();
 }
 
 void FloatingCurvePositioner::ResetPositioner()
@@ -723,7 +737,7 @@ void FloatingCurvePositioner::MoveBackVertical(int distance)
 int FloatingCurvePositioner::CalcMinMaxY(const Point points[4]) const
 {
     assert(this->GetObject());
-    assert(this->GetObject()->Is({ LV, PHRASE, SLUR, TIE }));
+    assert(this->GetObject()->IsAnyOf(std::array{ LV, PHRASE, SLUR, TIE }));
     assert(m_dir != curvature_CURVEDIR_NONE);
 
     if (m_cachedMinMaxY != VRV_UNSET) return m_cachedMinMaxY;
@@ -819,7 +833,7 @@ std::pair<int, int> FloatingCurvePositioner::CalcDirectionalLeftRightAdjustment(
 
         // For selected types use the cut out boundary
         int boxTopY = boundingBox->GetTopBy(type);
-        if (this->GetObject()->Is({ PHRASE, SLUR }) && boundingBox->Is(ACCID)) {
+        if (this->GetObject()->IsAnyOf(std::array{ PHRASE, SLUR }) && boundingBox->Is(ACCID)) {
             const Resources *resources = vrv_cast<const Object *>(boundingBox)->GetDocResources();
             if (resources) {
                 boxTopY = boundingBox->GetCutOutTop(*resources);
@@ -856,7 +870,7 @@ std::pair<int, int> FloatingCurvePositioner::CalcDirectionalLeftRightAdjustment(
 
         // For selected types use the cut out boundary
         int boxBottomY = boundingBox->GetBottomBy(type);
-        if (this->GetObject()->Is({ PHRASE, SLUR }) && boundingBox->Is(ACCID)) {
+        if (this->GetObject()->IsAnyOf(std::array{ PHRASE, SLUR }) && boundingBox->Is(ACCID)) {
             const Resources *resources = vrv_cast<const Object *>(boundingBox)->GetDocResources();
             if (resources) {
                 boxBottomY = boundingBox->GetCutOutBottom(*resources);

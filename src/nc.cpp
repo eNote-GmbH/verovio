@@ -18,6 +18,8 @@
 #include "elementpart.h"
 #include "functor.h"
 #include "liquescent.h"
+#include "oriscus.h"
+#include "quilisma.h"
 #include "staff.h"
 #include "vrv.h"
 
@@ -30,8 +32,9 @@ namespace vrv {
 static const ClassRegistrar<Nc> s_factory("nc", NC);
 
 Nc::Nc()
-    : LayerElement(NC, "nc-")
+    : LayerElement(NC)
     , DurationInterface()
+    , OffsetInterface()
     , PitchInterface()
     , PositionInterface()
     , AttColor()
@@ -41,6 +44,7 @@ Nc::Nc()
 
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
+    this->RegisterInterface(OffsetInterface::GetAttClasses(), OffsetInterface::IsInterface());
     this->RegisterInterface(PitchInterface::GetAttClasses(), PitchInterface::IsInterface());
     this->RegisterInterface(PositionInterface::GetAttClasses(), PositionInterface::IsInterface());
     this->RegisterAttClass(ATT_COLOR);
@@ -57,12 +61,22 @@ void Nc::Reset()
 {
     LayerElement::Reset();
     DurationInterface::Reset();
+    OffsetInterface::Reset();
     PitchInterface::Reset();
     PositionInterface::Reset();
     this->ResetColor();
     this->ResetCurvatureDirection();
     this->ResetIntervalMelodic();
     this->ResetNcForm();
+}
+
+int Nc::PitchOrLocDifferenceTo(const Nc *nc) const
+{
+    int difference = this->PitchDifferenceTo(nc);
+    if ((difference == 0) && this->HasLoc() && nc->HasLoc()) {
+        difference = this->GetLoc() - nc->GetLoc();
+    }
+    return difference;
 }
 
 FunctorCode Nc::Accept(Functor &functor)
@@ -85,15 +99,16 @@ FunctorCode Nc::AcceptEnd(ConstFunctor &functor) const
     return functor.VisitNcEnd(this);
 }
 
-bool Nc::IsSupportedChild(Object *child)
+bool Nc::IsSupportedChild(ClassId classId)
 {
-    if (child->Is(LIQUESCENT)) {
-        assert(dynamic_cast<Liquescent *>(child));
+    static const std::vector<ClassId> supported{ EPISEMA, LIQUESCENT, ORISCUS, QUILISMA, STROPHICUS, UNCLEAR };
+
+    if (std::find(supported.begin(), supported.end(), classId) != supported.end()) {
+        return true;
     }
     else {
         return false;
     }
-    return true;
 }
 
 } // namespace vrv

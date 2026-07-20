@@ -30,7 +30,7 @@
         "tupletBracketThickness": 0.16
     },
     "fontName": "Leipzig",
-    "fontVersion": "5.2.88",
+    "fontVersion": "5.2.101",
     "glyphBBoxes": {
         "4stringTabClef": {
             "bBoxNE": [
@@ -932,6 +932,16 @@
                 0.0
             ]
         },
+        "breathMarkSalzedo": {
+            "bBoxNE": [
+                2.4,
+                1.28
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.768
+            ]
+        },
         "buzzRoll": {
             "bBoxNE": [
                 0.624,
@@ -1035,7 +1045,7 @@
         "caesuraSingleStroke": {
             "bBoxNE": [
                 0.144,
-                2.0
+                1.2
             ],
             "bBoxSW": [
                 0.0,
@@ -1074,8 +1084,8 @@
         },
         "chantCaesura": {
             "bBoxNE": [
-                0.5493,
-                1.9931
+                0.548,
+                1.992
             ],
             "bBoxSW": [
                 0.0,
@@ -1312,6 +1322,16 @@
                 -0.6
             ]
         },
+        "chantEpisema": {
+            "bBoxNE": [
+                0.68,
+                0.58
+            ],
+            "bBoxSW": [
+                -0.024,
+                0.5
+            ]
+        },
         "chantFclef": {
             "bBoxNE": [
                 0.724,
@@ -1320,6 +1340,26 @@
             "bBoxSW": [
                 -0.756,
                 -1.072
+            ]
+        },
+        "chantIctusAbove": {
+            "bBoxNE": [
+                0.128,
+                0.532
+            ],
+            "bBoxSW": [
+                0.0,
+                0.12
+            ]
+        },
+        "chantIctusBelow": {
+            "bBoxNE": [
+                0.128,
+                -0.116
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.532
             ]
         },
         "chantLigaturaDesc2nd": {
@@ -1414,12 +1454,12 @@
         },
         "chantPunctumDeminutum": {
             "bBoxNE": [
-                0.5,
-                0.352
+                0.364,
+                0.232
             ],
             "bBoxSW": [
-                0.012,
-                -0.348
+                0.0,
+                -0.228
             ]
         },
         "chantPunctumInclinatum": {
@@ -2714,7 +2754,7 @@
         },
         "gClef8vbCClef": {
             "bBoxNE": [
-                3.052,
+                3.212,
                 4.332
             ],
             "bBoxSW": [
@@ -3632,6 +3672,16 @@
                 -1.016
             ]
         },
+        "medRenOriscusCMN": {
+            "bBoxNE": [
+                1.276,
+                0.52
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.52
+            ]
+        },
         "medRenSharpCroix": {
             "bBoxNE": [
                 1.168,
@@ -3640,6 +3690,16 @@
             "bBoxSW": [
                 0.0,
                 -0.4963
+            ]
+        },
+        "medRenStrophicusCMN": {
+            "bBoxNE": [
+                0.7368,
+                0.5451
+            ],
+            "bBoxSW": [
+                -0.0025,
+                -0.5535
             ]
         },
         "mensuralCclef": {
@@ -3900,6 +3960,16 @@
             "bBoxSW": [
                 0.0,
                 -3.532
+            ]
+        },
+        "mensuralGclef": {
+            "bBoxNE": [
+                1.512,
+                0.924
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.928
             ]
         },
         "mensuralGclefPetrucci": {
@@ -4462,6 +4532,96 @@
                 -0.188
             ]
         },
+        "mensuralProportion1": {
+            "bBoxNE": [
+                0.8,
+                0.76
+            ],
+            "bBoxSW": [
+                0.08,
+                -0.8
+            ]
+        },
+        "mensuralProportion2": {
+            "bBoxNE": [
+                1.096,
+                0.76
+            ],
+            "bBoxSW": [
+                0.08,
+                -0.8
+            ]
+        },
+        "mensuralProportion3": {
+            "bBoxNE": [
+                0.952,
+                0.76
+            ],
+            "bBoxSW": [
+                0.092,
+                -0.804
+            ]
+        },
+        "mensuralProportion4": {
+            "bBoxNE": [
+                1.096,
+                0.72
+            ],
+            "bBoxSW": [
+                0.08,
+                -0.808
+            ]
+        },
+        "mensuralProportion5": {
+            "bBoxNE": [
+                1.04,
+                0.768
+            ],
+            "bBoxSW": [
+                0.052,
+                -0.8
+            ]
+        },
+        "mensuralProportion6": {
+            "bBoxNE": [
+                0.988,
+                0.76
+            ],
+            "bBoxSW": [
+                0.06,
+                -0.8
+            ]
+        },
+        "mensuralProportion7": {
+            "bBoxNE": [
+                1.012,
+                0.76
+            ],
+            "bBoxSW": [
+                0.08,
+                -0.804
+            ]
+        },
+        "mensuralProportion8": {
+            "bBoxNE": [
+                1.012,
+                0.76
+            ],
+            "bBoxSW": [
+                0.08,
+                -0.8
+            ]
+        },
+        "mensuralProportion9": {
+            "bBoxNE": [
+                0.992,
+                0.76
+            ],
+            "bBoxSW": [
+                0.064,
+                -0.8
+            ]
+        },
         "mensuralProportionProportioDupla1": {
             "bBoxNE": [
                 2.2,
@@ -4882,6 +5042,16 @@
                 -0.532
             ]
         },
+        "noteheadCircleX": {
+            "bBoxNE": [
+                0.996,
+                0.5
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
         "noteheadDiamondBlack": {
             "bBoxNE": [
                 1.256,
@@ -4955,6 +5125,16 @@
         "noteheadDoubleWholeSquare": {
             "bBoxNE": [
                 1.392,
+                0.68
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.68
+            ]
+        },
+        "noteheadDoubleWholeWithX": {
+            "bBoxNE": [
+                2.18,
                 0.68
             ],
             "bBoxSW": [
@@ -5070,6 +5250,106 @@
             "bBoxSW": [
                 0.0,
                 -1.0
+            ]
+        },
+        "noteheadSlashedBlack1": {
+            "bBoxNE": [
+                1.4066,
+                0.575
+            ],
+            "bBoxSW": [
+                -0.1786,
+                -0.575
+            ]
+        },
+        "noteheadSlashedBlack2": {
+            "bBoxNE": [
+                1.4066,
+                0.575
+            ],
+            "bBoxSW": [
+                -0.1786,
+                -0.575
+            ]
+        },
+        "noteheadSlashedDoubleWhole1": {
+            "bBoxNE": [
+                2.18,
+                0.68
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.68
+            ]
+        },
+        "noteheadSlashedDoubleWhole2": {
+            "bBoxNE": [
+                2.18,
+                0.68
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.68
+            ]
+        },
+        "noteheadSlashedHalf1": {
+            "bBoxNE": [
+                1.4066,
+                0.575
+            ],
+            "bBoxSW": [
+                -0.1786,
+                -0.575
+            ]
+        },
+        "noteheadSlashedHalf2": {
+            "bBoxNE": [
+                1.4066,
+                0.575
+            ],
+            "bBoxSW": [
+                -0.1786,
+                -0.575
+            ]
+        },
+        "noteheadSlashedWhole1": {
+            "bBoxNE": [
+                1.62,
+                0.575
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.575
+            ]
+        },
+        "noteheadSlashedWhole2": {
+            "bBoxNE": [
+                1.62,
+                0.575
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.575
+            ]
+        },
+        "noteheadSquareBlack": {
+            "bBoxNE": [
+                1.2,
+                0.5
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
+            ]
+        },
+        "noteheadSquareWhite": {
+            "bBoxNE": [
+                1.2,
+                0.5
+            ],
+            "bBoxSW": [
+                0.0,
+                -0.5
             ]
         },
         "noteheadVoidWithX": {
@@ -5235,6 +5515,16 @@
         "ornamentLeftVerticalStroke": {
             "bBoxNE": [
                 0.12,
+                1.6
+            ],
+            "bBoxSW": [
+                0.0,
+                0.0
+            ]
+        },
+        "ornamentLeftVerticalStrokeWithCross": {
+            "bBoxNE": [
+                0.84,
                 1.6
             ],
             "bBoxSW": [
@@ -7680,6 +7970,26 @@
                 -0.5
             ]
         },
+        "mensuralNoteheadMinimaWhite": {
+            "stemDownNW": [
+                0.584,
+                -0.7
+            ],
+            "stemUpSE": [
+                0.664,
+                0.7
+            ]
+        },
+        "mensuralNoteheadSemiminimaWhite": {
+            "stemDownNW": [
+                0.584,
+                -0.7
+            ],
+            "stemUpSE": [
+                0.664,
+                0.7
+            ]
+        },
         "noteheadBlack": {
             "cutOutNW": [
                 0.144,
@@ -7860,6 +8170,98 @@
             "stemUpSE": [
                 1.84,
                 1.0
+            ]
+        },
+        "noteheadSlashedBlack1": {
+            "cutOutNW": [
+                0.144,
+                0.24
+            ],
+            "cutOutSE": [
+                1.088,
+                -0.244
+            ],
+            "stemDownNW": [
+                -0.0,
+                -0.156
+            ],
+            "stemUpSE": [
+                1.256,
+                0.156
+            ]
+        },
+        "noteheadSlashedBlack2": {
+            "cutOutNW": [
+                0.144,
+                0.24
+            ],
+            "cutOutSE": [
+                1.088,
+                -0.244
+            ],
+            "stemDownNW": [
+                -0.0,
+                -0.156
+            ],
+            "stemUpSE": [
+                1.256,
+                0.156
+            ]
+        },
+        "noteheadSlashedHalf1": {
+            "cutOutNW": [
+                0.14,
+                0.24
+            ],
+            "cutOutSE": [
+                1.076,
+                -0.24
+            ],
+            "stemDownNW": [
+                0.0,
+                -0.144
+            ],
+            "stemUpSE": [
+                1.256,
+                0.164
+            ]
+        },
+        "noteheadSlashedHalf2": {
+            "cutOutNW": [
+                0.14,
+                0.24
+            ],
+            "cutOutSE": [
+                1.076,
+                -0.24
+            ],
+            "stemDownNW": [
+                0.0,
+                -0.144
+            ],
+            "stemUpSE": [
+                1.256,
+                0.164
+            ]
+        },
+        "noteheadSlashedWhole1": {
+            "cutOutNW": [
+                0.06,
+                0.244
+            ],
+            "cutOutSE": [
+                1.568,
+                -0.232
+            ]
+        },
+        "noteheadSlashedWhole2": {
+            "cutOutNW": [
+                0.06,
+                0.244
+            ],
+            "cutOutSE": [
+                1.568,
+                -0.232
             ]
         },
         "noteheadVoidWithX": {

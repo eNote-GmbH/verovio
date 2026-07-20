@@ -44,7 +44,18 @@ public:
      */
     virtual std::string EditInfo() { return m_editInfo.json(); }
 
+#ifndef NO_EDIT_SUPPORT
 protected:
+    bool AppendChild(std::string &elementId, const std::string &elementName, bool unique);
+    bool InsertBefore(std::string &elementId, const std::string &elementName);
+    bool InsertAfter(std::string &elementId, const std::string &elementName);
+    Object *GetElement(const std::string &elementId);
+    Object *PrepareInsertion(Object *parent, const std::string &elementName);
+    Object *GetChainedElement(std::string &elementId);
+#endif
+
+protected:
+    std::string m_chainedId;
     Doc *m_doc;
     View *m_view;
     jsonxx::Object m_editInfo;

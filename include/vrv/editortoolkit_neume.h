@@ -16,6 +16,8 @@
 
 #include "doc.h"
 #include "editortoolkit.h"
+#include "measure.h"
+#include "staff.h"
 #include "view.h"
 #include "vrv.h"
 #include "zone.h"
@@ -32,15 +34,15 @@ class EditorToolkitNeume : public EditorToolkit {
 public:
     EditorToolkitNeume(Doc *doc, View *view) : EditorToolkit(doc, view) {}
     bool ParseEditorAction(const std::string &json_editorAction) override;
-    std::string EditInfo() override;
 
     /**
      * Experimental editor functions.
      */
     ///@{
+    bool AddSyl(std::string elementId, std::string sylText);
     bool Chain(jsonxx::Array actions);
     bool DisplaceClefOctave(std::string elementId, std::string direction);
-    bool Drag(std::string elementId, int x, int y);
+    bool Drag(std::string elementId, int x, int y, bool topLevel = true);
     bool Insert(std::string elementType, std::string staffId, int ulx, int uly, int lrx, int lry,
         std::vector<std::pair<std::string, std::string>> attributes);
     bool InsertToSyllable(std::string elementId);
@@ -50,6 +52,9 @@ public:
     bool Set(std::string elementId, std::string attrType, std::string attrValue);
     bool SetText(std::string elementId, const std::string &text);
     bool SetClef(std::string elementId, std::string shape);
+    bool SetLiquescent(std::string elementId, std::string shape);
+    bool SetAquitanianElement(std::string elementId, std::string shape);
+    bool SortStaves();
     bool Split(std::string elementId, int x);
     bool SplitNeume(std::string elementId, std::string ncId);
     bool Remove(std::string elementId);
@@ -68,6 +73,7 @@ protected:
      * Parse JSON instructions for experimental editor functions.
      */
     ///@{
+    bool ParseAddSylAction(jsonxx::Object param, std::string *elementId, std::string *sylText);
     bool ParseDisplaceClefAction(jsonxx::Object param, std::string *elementId, std::string *direction);
     bool ParseDragAction(jsonxx::Object param, std::string *elementId, int *x, int *y);
     bool ParseInsertAction(jsonxx::Object param, std::string *elementType, std::string *startId, std::string *endId);
@@ -80,6 +86,8 @@ protected:
     bool ParseSetAction(jsonxx::Object param, std::string *elementId, std::string *attrType, std::string *attrValue);
     bool ParseSetTextAction(jsonxx::Object param, std::string *elementId, std::string *text);
     bool ParseSetClefAction(jsonxx::Object param, std::string *elementId, std::string *shape);
+    bool ParseSetLiquescentAction(jsonxx::Object param, std::string *elementId, std::string *shape);
+    bool ParseSetAquitanianElementAction(jsonxx::Object param, std::string *elementId, std::string *shape);
     bool ParseSplitAction(jsonxx::Object param, std::string *elementId, int *x);
     bool ParseSplitNeumeAction(jsonxx::Object param, std::string *elementId, std::string *ncId);
     bool ParseRemoveAction(jsonxx::Object param, std::string *elementId);
@@ -98,7 +106,8 @@ protected:
      * Helper functions for editor actions.
      */
     ///@{
-    bool AdjustPitchFromPosition(Object *obj, Clef *clef = NULL);
+    bool AdjustPitchAfterDrag(Object *obj, int y = 0);
+    bool AdjustPitchFromPosition(Object *obj);
     bool AdjustClefLineFromPosition(Clef *clef, Staff *staff = NULL);
     ///@}
 };
@@ -130,15 +139,16 @@ struct ClosestBB {
         Zone *zoneA = a->GetFacsimileInterface()->GetZone();
         Zone *zoneB = b->GetFacsimileInterface()->GetZone();
 
-        int distA
-            = distanceToBB(zoneA->GetUlx(), zoneA->GetUly(), zoneA->GetLrx(), zoneA->GetLry(), zoneA->GetRotate());
-        int distB
-            = distanceToBB(zoneB->GetUlx(), zoneB->GetUly(), zoneB->GetLrx(), zoneB->GetLry(), zoneB->GetRotate());
+        int distA = distanceToBB(zoneA->GetUlx(), zoneA->GetUly(), zoneA->GetLrx(), zoneA->GetLry(),
+            zoneA->HasRotate() ? zoneA->GetRotate() : 0);
+        int distB = distanceToBB(zoneB->GetUlx(), zoneB->GetUly(), zoneB->GetLrx(), zoneB->GetLry(),
+            zoneB->HasRotate() ? zoneB->GetRotate() : 0);
         return (distA < distB);
     }
 };
 
 // To be used with std::stable_sort to find the position to insert a new accid / divLine
+// TODO: use closesBB instead
 struct ClosestNeume {
     int x;
     int y;
@@ -175,13 +185,47 @@ struct ClosestNeume {
 // To be used with std::stable_sort to find the position to insert a new staff
 
 struct StaffSort {
-    // Sort staves left-to-right and top-to-bottom
-    // Sort by y if there is no intersection, by x if there is x intersection is smaller than half length of staff line
+    // Update 2024-04:
+    // Used only in neume lines,
+    // System->(Measure->Staff)
+    // Need to sort Measure to sort staff
+
+    // Sort staves by:
+    // 1. Column number derived from staff@type (column1, column2, etc)
+    // 2. Within each column: left-to-right and top-to-bottom
     bool operator()(Object *a, Object *b)
     {
-        if (!a->GetFacsimileInterface() || !b->GetFacsimileInterface()) return true;
-        Zone *zoneA = a->GetFacsimileInterface()->GetZone();
-        Zone *zoneB = b->GetFacsimileInterface()->GetZone();
+        if (!a->Is(SYSTEM) || !b->Is(SYSTEM)) return false;
+        if (!a->FindDescendantByType(MEASURE) || !b->FindDescendantByType(MEASURE)) return false;
+
+        Measure *measureA = dynamic_cast<Measure *>(a->FindDescendantByType(MEASURE));
+        Measure *measureB = dynamic_cast<Measure *>(b->FindDescendantByType(MEASURE));
+        if (!measureA->IsNeumeLine() || !measureB->IsNeumeLine()) return true;
+
+        Staff *staffA = dynamic_cast<Staff *>(a->FindDescendantByType(STAFF));
+        Staff *staffB = dynamic_cast<Staff *>(b->FindDescendantByType(STAFF));
+        assert(staffA);
+        assert(staffB);
+
+        if (staffA->HasType() && staffB->HasType()) {
+            // First compare column numbers from staff@type
+            std::string typeA = staffA->GetType();
+            std::string typeB = staffB->GetType();
+
+            if (staffA->GetType().find("column") == 0 && staffB->GetType().find("column") == 0) {
+                int columnA = std::stoi(typeA.substr(6));
+                int columnB = std::stoi(typeB.substr(6));
+                if (columnA != columnB) {
+                    return columnA < columnB;
+                }
+            }
+        }
+
+        // If in same column, use position-based sorting logic
+        Zone *zoneA = staffA->GetFacsimileInterface()->GetZone();
+        Zone *zoneB = staffB->GetFacsimileInterface()->GetZone();
+        assert(zoneA);
+        assert(zoneB);
 
         int aLowest, bLowest, aHighest, bHighest;
 

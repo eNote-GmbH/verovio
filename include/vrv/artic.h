@@ -12,7 +12,7 @@
 #include "atts_gestural.h"
 #include "atts_shared.h"
 #include "layerelement.h"
-#include "visualoffsetinterface.h"
+#include "offsetinterface.h"
 
 namespace vrv {
 
@@ -21,7 +21,7 @@ namespace vrv {
 //----------------------------------------------------------------------------
 
 class Artic : public LayerElement,
-              public VisualOffsetInterface,
+              public OffsetInterface,
               public AttArticulation,
               public AttArticulationGes,
               public AttColor,
@@ -39,18 +39,15 @@ public:
     virtual ~Artic();
     Object *Clone() const override { return new Artic(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Artic"; }
+    std::string GetClassName() const override { return "artic"; }
     ///@}
 
     /**
      * @name Getter to interfaces
      */
     ///@{
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
-    }
+    OffsetInterface *GetOffsetInterface() override { return vrv_cast<OffsetInterface *>(this); }
+    const OffsetInterface *GetOffsetInterface() const override { return vrv_cast<const OffsetInterface *>(this); }
     ///@}
 
     /** Override the method since alignment is required */

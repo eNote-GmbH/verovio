@@ -12,7 +12,6 @@
 #include "atts_shared.h"
 #include "controlelement.h"
 #include "timeinterface.h"
-#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -25,8 +24,6 @@ namespace vrv {
  */
 class Octave : public ControlElement,
                public TimeSpanningInterface,
-               public VisualOffsetInterface,
-               public AttColor,
                public AttExtender,
                public AttLineRend,
                public AttLineRendBase,
@@ -42,7 +39,7 @@ public:
     virtual ~Octave();
     Object *Clone() const override { return new Octave(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Octave"; }
+    std::string GetClassName() const override { return "octave"; }
     ///@}
 
     /**
@@ -58,11 +55,6 @@ public:
     const TimeSpanningInterface *GetTimeSpanningInterface() const override
     {
         return vrv_cast<const TimeSpanningInterface *>(this);
-    }
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 

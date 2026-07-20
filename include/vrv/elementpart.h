@@ -22,7 +22,7 @@ class TupletNum;
 //----------------------------------------------------------------------------
 
 /**
- * This class models a group of dots as a layer element part and has not direct MEI equivlatent.
+ * This class models a group of dots as a layer element part and has no direct MEI equivalent.
  */
 class Dots : public LayerElement, public AttAugmentDots {
 public:
@@ -34,7 +34,7 @@ public:
     Dots();
     virtual ~Dots();
     void Reset() override;
-    std::string GetClassName() const override { return "Dots"; }
+    std::string GetClassName() const override { return "dots"; }
     Object *Clone() const override { return new Dots(*this); }
     ///@}
 
@@ -92,7 +92,7 @@ private:
 //----------------------------------------------------------------------------
 
 /**
- * This class models a stem as a layer element part and has not direct MEI equivlatent.
+ * This class models a stem as a layer element part and has no direct MEI equivalent.
  */
 class Flag : public LayerElement {
 public:
@@ -104,7 +104,7 @@ public:
     Flag();
     virtual ~Flag();
     void Reset() override;
-    std::string GetClassName() const override { return "Flag"; }
+    std::string GetClassName() const override { return "flag"; }
     Object *Clone() const override { return new Flag(*this); }
     ///@}
 
@@ -144,7 +144,7 @@ private:
 //----------------------------------------------------------------------------
 
 /**
- * This class models a bracket as a layer element part and has not direct MEI equivlatent.
+ * This class models a bracket as a layer element part and has no direct MEI equivalent.
  * It is used to represent tuplet brackets.
  */
 class TupletBracket : public LayerElement, public AttTupletVis {
@@ -157,7 +157,7 @@ public:
     TupletBracket();
     virtual ~TupletBracket();
     void Reset() override;
-    std::string GetClassName() const override { return "TupletBracket"; }
+    std::string GetClassName() const override { return "tupletBracket"; }
     ///@}
 
     /**
@@ -243,7 +243,7 @@ private:
 //----------------------------------------------------------------------------
 
 /**
- * This class models a tuplet num as a layer element part and has not direct MEI equivlatent.
+ * This class models a tuplet num as a layer element part and has no direct MEI equivalent.
  * It is used to represent tuplet number
  */
 class TupletNum : public LayerElement, public AttNumberPlacement, public AttTupletVis {
@@ -256,7 +256,7 @@ public:
     TupletNum();
     virtual ~TupletNum();
     void Reset() override;
-    std::string GetClassName() const override { return "TupletNum"; }
+    std::string GetClassName() const override { return "tupletNum"; }
     ///@}
 
     /**

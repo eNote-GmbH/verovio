@@ -46,13 +46,7 @@ namespace vrv {
 static const ClassRegistrar<Layer> s_factory("layer", LAYER);
 
 Layer::Layer()
-    : Object(LAYER, "layer-")
-    , DrawingListInterface()
-    , ObjectListInterface()
-    , AttCue()
-    , AttNInteger()
-    , AttTyped()
-    , AttVisibility()
+    : Object(LAYER), DrawingListInterface(), ObjectListInterface(), AttCue(), AttNInteger(), AttTyped(), AttVisibility()
 {
     this->RegisterAttClass(ATT_CUE);
     this->RegisterAttClass(ATT_NINTEGER);
@@ -110,6 +104,7 @@ void Layer::CloneReset()
     m_cautionStaffDefKeySig = NULL;
     m_cautionStaffDefMensur = NULL;
     m_cautionStaffDefMeterSig = NULL;
+    m_drawOssiaStaffDef = false;
 
     m_drawingStemDir = STEMDIRECTION_NONE;
     m_crossStaffFromAbove = false;
@@ -157,36 +152,47 @@ void Layer::ResetStaffDefObjects()
         delete m_cautionStaffDefMeterSig;
         m_cautionStaffDefMeterSig = NULL;
     }
+    // ossia
+    m_drawOssiaStaffDef = false;
 }
 
-bool Layer::IsSupportedChild(Object *child)
+bool Layer::IsSupportedChild(ClassId classId)
 {
-    if (child->IsLayerElement()) {
-        assert(dynamic_cast<LayerElement *>(child));
+    if (Object::IsLayerElement(classId)) {
+        return true;
     }
-    else if (child->IsEditorialElement()) {
-        assert(dynamic_cast<EditorialElement *>(child));
-    }
-    else if (child->Is(METERSIGGRP)) {
-        assert(dynamic_cast<MeterSigGrp *>(child));
+    else if (Object::IsEditorialElement(classId)) {
+        return true;
     }
     else {
         return false;
     }
-    return true;
 }
 
-LayerElement *Layer::GetPrevious(const LayerElement *element)
+LayerElement *Layer::GetPreviousInLayer(const LayerElement *element)
 {
-    return const_cast<LayerElement *>(std::as_const(*this).GetPrevious(element));
+    return const_cast<LayerElement *>(std::as_const(*this).GetPreviousInLayer(element));
 }
 
-const LayerElement *Layer::GetPrevious(const LayerElement *element) const
+const LayerElement *Layer::GetPreviousInLayer(const LayerElement *element) const
 {
     this->ResetList();
     if (!element || this->HasEmptyList()) return NULL;
 
     return dynamic_cast<const LayerElement *>(this->GetListPrevious(element));
+}
+
+LayerElement *Layer::GetNextInLayer(const LayerElement *element)
+{
+    return const_cast<LayerElement *>(std::as_const(*this).GetNextInLayer(element));
+}
+
+const LayerElement *Layer::GetNextInLayer(const LayerElement *element) const
+{
+    this->ResetList();
+    if (!element || this->HasEmptyList()) return NULL;
+
+    return dynamic_cast<const LayerElement *>(this->GetListNext(element));
 }
 
 LayerElement *Layer::GetAtPos(int x)
@@ -302,7 +308,6 @@ int Layer::GetCrossStaffClefLocOffset(const LayerElement *element, int currentOf
             }
         }
     }
-
     return currentOffset;
 }
 
@@ -349,8 +354,8 @@ data_STEMDIRECTION Layer::GetDrawingStemDir(const ArrayOfBeamElementCoords *coor
     // We are ignoring cross-staff situation here because this should not be called if we have one
     const Staff *staff = first->GetAncestorStaff();
 
-    double time = alignmentFirst->GetTime();
-    double duration = 0.0;
+    Fraction time = alignmentFirst->GetTime();
+    Fraction duration;
     // For the sake of counting number of layers consider only current measure. If first and last elements' layers are
     // different, take only time within current measure to run GetLayerCountInTimeSpan.
     const Measure *lastMeasure = vrv_cast<const Measure *>(last->GetFirstAncestor(MEASURE));
@@ -360,7 +365,6 @@ data_STEMDIRECTION Layer::GetDrawingStemDir(const ArrayOfBeamElementCoords *coor
     else {
         duration = measure->m_measureAligner.GetRightAlignment()->GetTime() - time;
     }
-    duration = durRound(duration);
 
     if (this->GetLayerCountInTimeSpan(time, duration, measure, staff->GetN()) < 2) {
         return STEMDIRECTION_NONE;
@@ -390,7 +394,8 @@ int Layer::GetLayerCountForTimeSpanOf(const LayerElement *element) const
     return static_cast<int>(this->GetLayersNForTimeSpanOf(element).size());
 }
 
-std::set<int> Layer::GetLayersNInTimeSpan(double time, double duration, const Measure *measure, int staff) const
+std::set<int> Layer::GetLayersNInTimeSpan(
+    const Fraction &time, const Fraction &duration, const Measure *measure, int staff) const
 {
     assert(measure);
 
@@ -407,7 +412,8 @@ std::set<int> Layer::GetLayersNInTimeSpan(double time, double duration, const Me
     return layersInTimeSpan.GetLayers();
 }
 
-int Layer::GetLayerCountInTimeSpan(double time, double duration, const Measure *measure, int staff) const
+int Layer::GetLayerCountInTimeSpan(
+    const Fraction &time, const Fraction &duration, const Measure *measure, int staff) const
 {
     return static_cast<int>(this->GetLayersNInTimeSpan(time, duration, measure, staff).size());
 }
@@ -428,8 +434,8 @@ ListOfConstObjects Layer::GetLayerElementsForTimeSpanOf(const LayerElement *elem
     const Measure *measure = vrv_cast<const Measure *>(this->GetFirstAncestor(MEASURE));
     assert(measure);
 
-    double time = 0.0;
-    double duration = 0.0;
+    Fraction time;
+    Fraction duration;
     const Alignment *alignment = element->GetAlignment();
     // Get duration and time if element has alignment
     if (alignment) {
@@ -447,7 +453,7 @@ ListOfConstObjects Layer::GetLayerElementsForTimeSpanOf(const LayerElement *elem
         if (!first || !last) return {};
 
         time = first->GetAlignment()->GetTime();
-        double lastTime = last->GetAlignment()->GetTime();
+        Fraction lastTime = last->GetAlignment()->GetTime();
         duration = lastTime - time + last->GetAlignmentDuration();
     }
     else {
@@ -460,7 +466,7 @@ ListOfConstObjects Layer::GetLayerElementsForTimeSpanOf(const LayerElement *elem
 }
 
 ListOfObjects Layer::GetLayerElementsInTimeSpan(
-    double time, double duration, const Measure *measure, int staff, bool excludeCurrent)
+    const Fraction &time, const Fraction &duration, const Measure *measure, int staff, bool excludeCurrent)
 {
     ListOfConstObjects elements
         = std::as_const(*this).GetLayerElementsInTimeSpan(time, duration, measure, staff, excludeCurrent);
@@ -471,7 +477,7 @@ ListOfObjects Layer::GetLayerElementsInTimeSpan(
 }
 
 ListOfConstObjects Layer::GetLayerElementsInTimeSpan(
-    double time, double duration, const Measure *measure, int staff, bool excludeCurrent) const
+    const Fraction &time, const Fraction &duration, const Measure *measure, int staff, bool excludeCurrent) const
 {
     assert(measure);
 
@@ -539,6 +545,18 @@ const MeterSig *Layer::GetCurrentMeterSig() const
     return staff->m_drawingStaffDef->GetCurrentMeterSig();
 }
 
+Proport *Layer::GetCurrentProport()
+{
+    return const_cast<Proport *>(std::as_const(*this).GetCurrentProport());
+}
+
+const Proport *Layer::GetCurrentProport() const
+{
+    const Staff *staff = vrv_cast<const Staff *>(this->GetFirstAncestor(STAFF));
+    assert(staff && staff->m_drawingStaffDef);
+    return staff->m_drawingStaffDef->GetCurrentProport();
+}
+
 void Layer::SetDrawingStaffDefValues(StaffDef *currentStaffDef)
 {
     if (!currentStaffDef) {
@@ -578,6 +596,32 @@ void Layer::SetDrawingStaffDefValues(StaffDef *currentStaffDef)
     currentStaffDef->SetDrawMeterSigGrp(false);
 }
 
+bool Layer::GetDrawingStaffDefValues(StaffDef *staffDef) const
+{
+    bool hasValue = false;
+    if (this->m_staffDefClef) {
+        staffDef->SetDrawClef(true);
+        hasValue = true;
+    }
+    if (this->m_staffDefKeySig) {
+        staffDef->SetDrawKeySig(true);
+        hasValue = true;
+    }
+    if (this->m_staffDefMensur) {
+        staffDef->SetDrawMensur(true);
+        hasValue = true;
+    }
+    if (this->m_staffDefMeterSig) {
+        staffDef->SetDrawMeterSig(true);
+        hasValue = true;
+    }
+    if (this->m_staffDefMeterSigGrp) {
+        staffDef->SetDrawMeterSigGrp(true);
+        hasValue = true;
+    }
+    return hasValue;
+}
+
 void Layer::SetDrawingCautionValues(StaffDef *currentStaffDef)
 {
     if (!currentStaffDef) {
@@ -592,6 +636,7 @@ void Layer::SetDrawingCautionValues(StaffDef *currentStaffDef)
     // special case - see above
     if (currentStaffDef->DrawKeySig()) {
         m_cautionStaffDefKeySig = new KeySig(*currentStaffDef->GetCurrentKeySig());
+        m_cautionStaffDefKeySig->SetDrawingClef(currentStaffDef->GetCurrentClef());
         m_cautionStaffDefKeySig->SetParent(this);
     }
     if (currentStaffDef->DrawMensur()) {

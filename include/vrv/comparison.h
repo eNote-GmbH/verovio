@@ -89,7 +89,7 @@ public:
 
     bool operator()(const Object *object) override { return Result(this->MatchesType(object)); }
 
-    bool MatchesType(const Object *object) { return (object->Is(m_classIds)); }
+    bool MatchesType(const Object *object) { return (object->IsAnyOf(m_classIds)); }
 
 protected:
     std::vector<ClassId> m_classIds;
@@ -114,6 +114,24 @@ public:
 
 protected:
     InterfaceId m_interfaceId;
+};
+
+//----------------------------------------------------------------------------
+// ChildOfClassIdComparison
+//----------------------------------------------------------------------------
+
+class ChildOfClassIdComparison : public Comparison {
+
+public:
+    ChildOfClassIdComparison(ClassId classId) { m_classId = classId; }
+
+    bool operator()(const Object *object) override
+    {
+        return (object->GetParent() && object->GetParent()->GetClassId() == m_classId);
+    }
+
+protected:
+    ClassId m_classId;
 };
 
 //----------------------------------------------------------------------------
@@ -471,7 +489,7 @@ public:
         if (!MatchesType(object)) return false;
         const Measure *measure = vrv_cast<const Measure *>(object);
         assert(measure);
-        return (measure->EnclosesTime(m_time) > 0);
+        return (measure->EnclosesTime(m_time) != VRV_UNSET);
     }
 
 private:

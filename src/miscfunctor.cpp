@@ -12,8 +12,10 @@
 #include "layer.h"
 #include "page.h"
 #include "staff.h"
+#include "surface.h"
 #include "system.h"
 #include "verse.h"
+#include "zone.h"
 
 //----------------------------------------------------------------------------
 
@@ -23,22 +25,27 @@ namespace vrv {
 // ApplyPPUFactorFunctor
 //----------------------------------------------------------------------------
 
-ApplyPPUFactorFunctor::ApplyPPUFactorFunctor() : Functor()
+ApplyPPUFactorFunctor::ApplyPPUFactorFunctor(Page *page) : Functor()
 {
-    m_page = NULL;
+    m_page = page;
 }
 
 FunctorCode ApplyPPUFactorFunctor::VisitLayerElement(LayerElement *layerElement)
 {
+    assert(m_page);
+
     if (layerElement->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
     if (layerElement->m_drawingFacsX != VRV_UNSET) layerElement->m_drawingFacsX /= m_page->GetPPUFactor();
+    if (layerElement->m_drawingFacsY != VRV_UNSET) layerElement->m_drawingFacsY /= m_page->GetPPUFactor();
 
     return FUNCTOR_CONTINUE;
 }
 
 FunctorCode ApplyPPUFactorFunctor::VisitMeasure(Measure *measure)
 {
+    assert(m_page);
+
     if (measure->m_drawingFacsX1 != VRV_UNSET) measure->m_drawingFacsX1 /= m_page->GetPPUFactor();
     if (measure->m_drawingFacsX2 != VRV_UNSET) measure->m_drawingFacsX2 /= m_page->GetPPUFactor();
 
@@ -60,17 +67,45 @@ FunctorCode ApplyPPUFactorFunctor::VisitPage(Page *page)
 
 FunctorCode ApplyPPUFactorFunctor::VisitStaff(Staff *staff)
 {
+    assert(m_page);
+
     if (staff->m_drawingFacsY != VRV_UNSET) staff->m_drawingFacsY /= m_page->GetPPUFactor();
+
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode ApplyPPUFactorFunctor::VisitSurface(Surface *surface)
+{
+    assert(m_page);
+
+    if (surface->HasUlx()) surface->SetUlx(surface->GetUlx() * m_page->GetPPUFactor());
+    if (surface->HasUly()) surface->SetUly(surface->GetUly() * m_page->GetPPUFactor());
+    if (surface->HasLrx()) surface->SetLrx(surface->GetLrx() * m_page->GetPPUFactor());
+    if (surface->HasLry()) surface->SetLry(surface->GetLry() * m_page->GetPPUFactor());
 
     return FUNCTOR_CONTINUE;
 }
 
 FunctorCode ApplyPPUFactorFunctor::VisitSystem(System *system)
 {
+    assert(m_page);
+
     if (system->m_drawingFacsX != VRV_UNSET) system->m_drawingFacsX /= m_page->GetPPUFactor();
     if (system->m_drawingFacsY != VRV_UNSET) system->m_drawingFacsY /= m_page->GetPPUFactor();
     system->m_systemLeftMar *= m_page->GetPPUFactor();
     system->m_systemRightMar *= m_page->GetPPUFactor();
+
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode ApplyPPUFactorFunctor::VisitZone(Zone *zone)
+{
+    assert(m_page);
+
+    if (zone->HasUlx()) zone->SetUlx(zone->GetUlx() * m_page->GetPPUFactor());
+    if (zone->HasUly()) zone->SetUly(zone->GetUly() * m_page->GetPPUFactor());
+    if (zone->HasLrx()) zone->SetLrx(zone->GetLrx() * m_page->GetPPUFactor());
+    if (zone->HasLry()) zone->SetLry(zone->GetLry() * m_page->GetPPUFactor());
 
     return FUNCTOR_CONTINUE;
 }
@@ -91,7 +126,7 @@ FunctorCode GetAlignmentLeftRightFunctor::VisitObject(const Object *object)
 
     if (!object->HasSelfBB() || object->HasEmptyBB()) return FUNCTOR_CONTINUE;
 
-    if (object->Is(m_excludeClasses)) return FUNCTOR_CONTINUE;
+    if (object->IsAnyOf(m_excludeClasses)) return FUNCTOR_CONTINUE;
 
     m_minLeft = std::min(m_minLeft, object->GetSelfLeft());
     m_maxRight = std::max(m_maxRight, object->GetSelfRight());

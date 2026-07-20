@@ -42,11 +42,6 @@ BoundingBox::BoundingBox()
     this->ResetBoundingBox();
 }
 
-bool BoundingBox::Is(const std::vector<ClassId> &classIds) const
-{
-    return (std::find(classIds.begin(), classIds.end(), this->GetClassId()) != classIds.end());
-}
-
 void BoundingBox::UpdateContentBBoxX(int x1, int x2)
 {
     // LogDebug("CB Was: %i %i %i %i", m_contentBB_x1, m_contentBB_y1, m_contentBB_x2, m_contentBB_y2);
@@ -634,9 +629,9 @@ int BoundingBox::Intersects(const FloatingCurvePositioner *curve, Accessor type,
 {
     assert(curve);
     assert(curve->GetObject());
-    assert(curve->GetObject()->Is({ LV, PHRASE, SLUR, TIE }));
+    assert(curve->GetObject()->IsAnyOf(std::array{ LV, PHRASE, SLUR, TIE }));
 
-    // for lisability
+    // for readability
     Point points[4];
     curve->GetPoints(points);
     Point p1 = points[0];
@@ -937,20 +932,20 @@ void BoundingBox::CalcLinearInterpolation(Point &dest, const Point &a, const Poi
 Point BoundingBox::CalcPointAtBezier(const Point bezier[4], double t)
 {
     Point p1, p2, p3, p4, p5;
-    CalcLinearInterpolation(p1, bezier[0], bezier[1], t);
-    CalcLinearInterpolation(p2, bezier[1], bezier[2], t);
-    CalcLinearInterpolation(p3, bezier[2], bezier[3], t);
-    CalcLinearInterpolation(p4, p1, p2, t);
-    CalcLinearInterpolation(p5, p2, p3, t);
+    BoundingBox::CalcLinearInterpolation(p1, bezier[0], bezier[1], t);
+    BoundingBox::CalcLinearInterpolation(p2, bezier[1], bezier[2], t);
+    BoundingBox::CalcLinearInterpolation(p3, bezier[2], bezier[3], t);
+    BoundingBox::CalcLinearInterpolation(p4, p1, p2, t);
+    BoundingBox::CalcLinearInterpolation(p5, p2, p3, t);
     Point midPoint;
-    CalcLinearInterpolation(midPoint, p4, p5, t); // middle point on the bezier-curve
+    BoundingBox::CalcLinearInterpolation(midPoint, p4, p5, t); // middle point on the bezier-curve
     return midPoint;
 }
 
 double BoundingBox::GetBezierThicknessCoefficient(const Point bezier[4], int currentThickness, int penWidth)
 {
     Point top[4], bottom[4];
-    CalcThickBezier(bezier, currentThickness, top, bottom);
+    BoundingBox::CalcThickBezier(bezier, currentThickness, top, bottom);
 
     Point topMidpoint = CalcPointAtBezier(top, 0.5);
     Point bottomMidpoint = CalcPointAtBezier(bottom, 0.5);

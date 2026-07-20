@@ -342,7 +342,7 @@ bool EnoteToolkit::HasArticulation(const std::optional<std::string> &articID, co
 {
     if (articID) {
         Object *parent = this->FindElement(noteOrChordID, measureID);
-        if (parent && parent->Is({ CHORD, NOTE })) {
+        if (parent && (parent->Is(CHORD) || parent->Is(NOTE))) {
             return (dynamic_cast<Artic *>(parent->FindDescendantByID(*articID)) != NULL);
         }
         return false;
@@ -355,7 +355,7 @@ bool EnoteToolkit::HasArticulation(const std::optional<std::string> &articID, co
 int EnoteToolkit::GetArticulationCount(const std::string &noteOrChordID, const std::optional<std::string> &measureID)
 {
     Object *parent = this->FindElement(noteOrChordID, measureID);
-    if (parent && parent->Is({ CHORD, NOTE })) {
+    if (parent && (parent->Is(CHORD) || parent->Is(NOTE))) {
         return parent->GetChildCount(ARTIC);
     }
     return 0;
@@ -365,7 +365,7 @@ bool EnoteToolkit::AddArticulation(const std::optional<std::string> &articID, co
     const std::optional<std::string> &measureID, data_ARTICULATION type)
 {
     Object *parent = this->FindElement(noteOrChordID, measureID);
-    if (parent && parent->Is({ CHORD, NOTE })) {
+    if (parent && (parent->Is(CHORD) || parent->Is(NOTE))) {
         Artic *artic = new Artic();
         artic->SetArtic({ type });
         if (articID) artic->SetID(*articID);
@@ -392,7 +392,7 @@ bool EnoteToolkit::EditArticulation(const std::optional<std::string> &articID, c
     const std::optional<std::string> &measureID, data_ARTICULATION type, bool resetPlace)
 {
     Object *parent = this->FindElement(noteOrChordID, measureID);
-    if (parent && parent->Is({ CHORD, NOTE })) {
+    if (parent && (parent->Is(CHORD) || parent->Is(NOTE))) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
         if (articID) artic = dynamic_cast<Artic *>(parent->FindDescendantByID(*articID));
         if (artic) {
@@ -409,7 +409,7 @@ bool EnoteToolkit::RemoveArticulation(const std::optional<std::string> &articID,
     const std::optional<std::string> &measureID)
 {
     Object *parent = this->FindElement(noteOrChordID, measureID);
-    if (parent && parent->Is({ CHORD, NOTE })) {
+    if (parent && (parent->Is(CHORD) || parent->Is(NOTE))) {
         Artic *artic = vrv_cast<Artic *>(parent->GetChild(0, ARTIC));
         if (articID) artic = dynamic_cast<Artic *>(parent->FindDescendantByID(*articID));
         if (artic) {

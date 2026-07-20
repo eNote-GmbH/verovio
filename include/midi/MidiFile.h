@@ -16,18 +16,23 @@
 
 #include "MidiEventList.h"
 
-#include <vector>
-#include <string>
-#include <istream>
 #include <fstream>
+#include <istream>
+#include <string>
+#include <vector>
 
-#define TIME_STATE_DELTA       0
-#define TIME_STATE_ABSOLUTE    1
-
-#define TRACK_STATE_SPLIT      0
-#define TRACK_STATE_JOINED     1
 
 namespace smf {
+
+enum {
+    TRACK_STATE_SPLIT  = 0, // Tracks are separated into separate vector postions.
+    TRACK_STATE_JOINED = 1  // Tracks are merged into a single vector position,
+};                          // like a Type-0 MIDI file, but reversible.
+
+enum {
+    TIME_STATE_DELTA    = 0, // MidiMessage::ticks are in delta time format (like MIDI file).
+    TIME_STATE_ABSOLUTE = 1  // MidiMessage::ticks are in absolute time format (0=start time).
+};
 
 class _TickTime {
 	public:
@@ -102,12 +107,16 @@ class MidiFile {
 		int              getSplitTrack             (int index) const;
 
 		// track sorting funcionality:
-		void             sortTrack                 (int track);
-		void             sortTracks                (void);
-		void             markSequence              (void);
-		void             markSequence              (int track, int sequence = 1);
-		void             clearSequence             (void);
-		void             clearSequence             (int track);
+		void             sortTrack                  (int track) { sortTrackNoteOnsBeforeOffs(track); }
+		void             sortTrackNoteOnsBeforeOffs (int track);
+		void             sortTrackNoteOffsBeforeOns (int track);
+		void             sortTracks                 (void) { sortTracksNoteOnsBeforeOffs(); }
+		void             sortTracksNoteOnsBeforeOffs(void);
+		void             sortTracksNoteOffsBeforeOns(void);
+		void             markSequence               (void);
+		void             markSequence               (int track, int sequence = 1);
+		void             clearSequence              (void);
+		void             clearSequence              (int track);
 
 		// track manipulation functionality:
 		int              addTrack                  (void);
@@ -134,7 +143,9 @@ class MidiFile {
 		double           getFileDurationInSeconds  (void);
 
 		// note-analysis functions:
-		int              linkNotePairs             (void);
+		int              linkNotePairsFIFO         (void);
+		int              linkNotePairsLIFO         (void);
+		int              linkNotePairs             (void) { return linkNotePairsFIFO(); }
 		int              linkEventPairs            (void);
 		void             clearLinks                (void);
 
@@ -217,7 +228,7 @@ class MidiFile {
 		MidiEvent*         addTempo               (int aTrack, int aTick,
 		                                           double aTempo);
 		MidiEvent*         addKeySignature        (int aTrack, int aTick,
-		                                           int key, bool mode = 0);
+		                                           int fifths, bool mode = 0);
 		MidiEvent*         addTimeSignature       (int aTrack, int aTick,
 		                                           int top, int bottom,
 		                                           int clocksPerClick = 24,

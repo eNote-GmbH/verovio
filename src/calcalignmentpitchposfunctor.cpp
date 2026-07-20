@@ -17,6 +17,7 @@
 #include "rest.h"
 #include "score.h"
 #include "staff.h"
+#include "tabgrp.h"
 #include "tuning.h"
 
 //----------------------------------------------------------------------------
@@ -45,7 +46,7 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
     if (pitchInterface) {
         pitchInterface->SetOctDefault(m_octDefault);
         // Check if there is a octave default for the staff - ignore cross-staff for this and use staffY
-        if (m_octDefaultForStaffN.count(staffY->GetN()) > 0) {
+        if (m_octDefaultForStaffN.contains(staffY->GetN())) {
             pitchInterface->SetOctDefault(m_octDefaultForStaffN.at(staffY->GetN()));
         }
     }
@@ -60,8 +61,9 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
     if (layerElement->Is(ACCID)) {
         Accid *accid = vrv_cast<Accid *>(layerElement);
         assert(accid);
-        if (!accid->GetFirstAncestor(NOTE) && !accid->GetFirstAncestor(CUSTOS)) {
+        if (!accid->GetFirstAncestor(NOTE) && !accid->GetFirstAncestor(CUSTOS) && !m_doc->IsNeumeLines()) {
             // do something for accid that are not children of a note - e.g., mensural?
+            // skip for neume-lines mode as accid doesn't have a pitch in this case
             accid->SetDrawingYRel(staffY->CalcPitchPosYRel(m_doc, accid->CalcDrawingLoc(layerY, layerElementY)));
         }
         // override if staff position is set explicitly
@@ -102,10 +104,12 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
         Chord *chord = note->IsChordTone();
         int loc = 0;
         TabGrp *tabGrp = note->IsTabGrpNote();
-        if (tabGrp) {
-            assert(staffY->m_drawingTuning);
-            loc = staffY->m_drawingTuning->CalcPitchPos(
-                note->GetTabCourse(), staffY->m_drawingNotationType, staffY->m_drawingLines);
+        if (tabGrp && staffY->IsTablature()) { // not for tab.staff-like
+            assert(staffY->m_drawingStaffDef);
+            loc = Tuning::CalcPitchPos(note->GetTabCourse(), staffY->m_drawingNotationType, staffY->m_drawingLines,
+                tabGrp->GetListSize(), tabGrp->GetListIndex(note), note->GetLoc(), note->GetTabLine(),
+                staffY->m_drawingStaffDef->GetTabAnchorline(),
+                staffY->m_drawingStaffDef->GetTabAlign() != VERTICALALIGNMENT_bottom);
         }
         else if ((note->HasPname() && (note->HasOct() || note->HasOctDefault())) || note->HasLoc()) {
             loc = PitchInterface::CalcLoc(note, layerY, layerElementY);
@@ -146,7 +150,7 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
         mRest->SetDrawingLoc(loc);
         mRest->SetDrawingYRel(staffY->CalcPitchPosYRel(m_doc, loc));
     }
-    else if (layerElement->Is({ REST, SPACE })) {
+    else if (layerElement->IsAnyOf(std::array{ REST, SPACE })) {
         DurationInterface *durInterface = layerElement->GetDurationInterface();
         assert(durInterface);
         Rest *rest = NULL;
@@ -168,10 +172,10 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
             // set default location to the middle of the staff
             Staff *staff = layerElement->GetAncestorStaff();
             loc = staff->m_drawingLines - 1;
-            if ((durInterface->GetDur() < DUR_4) && (loc % 2 != 0)) --loc;
+            if ((durInterface->GetDur() < DURATION_4) && (loc % 2 != 0)) --loc;
             // Adjust special cases
-            if ((durInterface->GetDur() == DUR_1) && (staff->m_drawingLines > 1)) loc += 2;
-            if ((durInterface->GetDur() == DUR_BR) && (staff->m_drawingLines < 2)) loc -= 2;
+            if ((durInterface->GetDur() == DURATION_1) && (staff->m_drawingLines > 1)) loc += 2;
+            if ((durInterface->GetDur() == DURATION_breve) && (staff->m_drawingLines < 2)) loc -= 2;
 
             // If within a beam, calculate the rest's height based on it's relationship to the notes that surround it
             Beam *beam = vrv_cast<Beam *>(layerElement->GetFirstAncestor(BEAM, 1));
@@ -239,7 +243,7 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
                     loc = locAvg;
                 }
 
-                // note: bottomAlignedLoc and topAlignedLoc are only accounting for discrepencies
+                // note: bottomAlignedLoc and topAlignedLoc are only accounting for discrepancies
                 // between 8th, 16th and 32nd notes, not 64th's and on
                 // I've described how to implement 64ths and beyond below
 
@@ -306,17 +310,20 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitLayerElement(LayerElement *layerE
     else if (layerElement->Is(TABDURSYM)) {
         int yRel = 0;
         if (staffY->IsTabWithStemsOutside()) {
-            double spacingRatio = (staffY->IsTabLuteFrench()) ? 2.0 : 1.0;
+            double spacingRatio = (staffY->IsTabLuteFrench() || staffY->IsTabLuteGerman()) ? 2.0 : 1.0;
             yRel += m_doc->GetDrawingUnit(staffY->m_drawingStaffSize) * spacingRatio;
         }
         layerElement->SetDrawingYRel(yRel);
     }
-    else if (layerElement->Is(NC) && m_doc->GetOptions()->m_neumeAsNote.GetValue()) {
+    else if (layerElement->Is(NC)) {
         Nc *nc = vrv_cast<Nc *>(layerElement);
         assert(nc);
         int loc = 0;
         if (nc->HasPname() && nc->HasOct()) {
             loc = PitchInterface::CalcLoc(nc->GetPname(), nc->GetOct(), layerY->GetClefLocOffset(nc));
+        }
+        else if (nc->HasLoc()) {
+            loc = nc->GetLoc();
         }
         int yRel = staffY->CalcPitchPosYRel(m_doc, loc);
         nc->SetDrawingLoc(loc);
@@ -350,7 +357,7 @@ FunctorCode CalcAlignmentPitchPosFunctor::VisitStaffDef(StaffDef *staffDef)
         m_octDefaultForStaffN[staffDef->GetN()] = staffDef->GetOctDefault();
     }
 
-    return FUNCTOR_CONTINUE;
+    return FUNCTOR_SIBLINGS;
 }
 
 } // namespace vrv

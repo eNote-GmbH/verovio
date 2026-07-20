@@ -25,7 +25,7 @@
 #include "fing.h"
 #include "ftrem.h"
 #include "harm.h"
-#include "io.h"
+#include "iobase.h"
 #include "keysig.h"
 #include "label.h"
 #include "metersig.h"
@@ -278,6 +278,7 @@ namespace humaux {
         // an ottava line which will be turned off later.  ottavameasure == the
         // starting measure of the ottava mark.
         Note *ottavanotestart;
+        std::string ottavanotestartid;
         Note *ottavanoteend;
         hum::HumNum ottavaendtimestamp;
         Measure *ottavameasure;
@@ -286,6 +287,7 @@ namespace humaux {
         // an ottava down line which will be turned off later.  ottavadownmeasure == the
         // starting measure of the ottava down mark.
         Note *ottavadownnotestart;
+        std::string ottavadownnotestartid;
         Note *ottavadownnoteend;
         hum::HumNum ottavadownendtimestamp;
         Measure *ottavadownmeasure;
@@ -294,6 +296,7 @@ namespace humaux {
         // an ottava2 line which will be turned off later.  ottava2measure == the
         // starting measure of the ottava2 mark.
         Note *ottava2notestart;
+        std::string ottava2notestartid;
         Note *ottava2noteend;
         hum::HumNum ottava2endtimestamp;
         Measure *ottava2measure;
@@ -302,6 +305,7 @@ namespace humaux {
         // an ottava2 down line which will be turned off later.  ottava2downmeasure == the
         // starting measure of the ottava2 down mark.
         Note *ottava2downnotestart;
+        std::string ottava2downnotestartid;
         Note *ottava2downnoteend;
         hum::HumNum ottava2downendtimestamp;
         Measure *ottava2downmeasure;
@@ -659,7 +663,8 @@ protected:
     std::vector<hum::HTp> getSystemArpeggioTokens(hum::HTp token);
     std::vector<hum::HTp> getStaffArpeggioTokens(hum::HTp token);
     void addDirection(const std::string &text, const std::string &placement, bool bold, bool italic, hum::HTp token,
-        int staffindex, int justification = 0, const std::string &color = "", int vgroup = -1);
+        int staffindex, int justification = 0, const std::string &color = "", int vgroup = -1,
+        const std::string &label = "");
     bool addTempoDirection(const std::string &text, const std::string &placement, bool bold, bool italic,
         hum::HTp token, int staffindex, int justification, const std::string &color);
     bool setTempoContent(Tempo *tempo, const std::string &text);
@@ -710,6 +715,7 @@ protected:
     std::string getInstrumentClass(hum::HTp start);
     void removeInstrumentName(StaffDef *sd);
     void removeInstrumentAbbreviation(StaffDef *sd);
+    std::string getStartIdForOttava(hum::HTp token);
     std::string getEndIdForOttava(hum::HTp token);
     void prepareInitialOttavas(hum::HTp measure);
     void linkFingeringToNote(Fing *fing, hum::HTp token, int xstaffindex);
@@ -751,7 +757,7 @@ protected:
         std::vector<string> &elements, std::vector<void *> &pointers, std::vector<hum::HTp> tokens, int index);
     void setRepeatSlashes(BeatRpt *repeat, std::vector<hum::HTp> &tokens, int index);
     std::string getLabelFromInstrumentCode(hum::HTp icode, const std::string &transpose);
-    void checkForRehearsal(int line);
+    void checkForGlobalRehearsal(int line);
     bool isBlackNotation(hum::HTp starting);
     std::string checkNoteForScordatura(const std::string &token);
     bool checkForScordatura(hum::HumdrumFile &infile);
@@ -893,6 +899,14 @@ protected:
     int getKeySignatureNumber(const std::string &humkeysig);
     int getStaffNumForSpine(hum::HTp token);
     bool checkIfReversedSpineOrder(std::vector<hum::HTp> &staffstarts);
+    bool hasOmdText(int startline, int endline);
+    void processMeiOptions(hum::HumdrumFile &infile);
+    std::string getInstrumentNumber(hum::HTp icode);
+    void insertTextWithNewlines(Label *label, const std::string &text);
+    bool hasBounceAfter(hum::HTp token);
+    bool hasBounceBefore(hum::HTp token);
+    void analyzeDefaultLayoutStyles(hum::HumdrumFile &infile);
+    std::string getDefaultLayoutParameter(const std::string &category, const std::string &parameter);
 
     // header related functions: ///////////////////////////////////////////
     void createHeader();
@@ -926,6 +940,7 @@ protected:
     int getBestItem(const std::vector<HumdrumReferenceItem> &items, const std::string &requiredLanguage);
     bool isStandardHumdrumKey(const std::string &key);
     void appendText(pugi::xml_node element, std::string text);
+    void addDefaultTempoDist(double distance);
 
     /// Templates ///////////////////////////////////////////////////////////
     template <class ELEMENT> void verticalRest(ELEMENT rest, const std::string &token);
@@ -964,8 +979,8 @@ protected:
     void appendElement(const std::vector<std::string> &name, const std::vector<void *> &pointers, CHILD child);
     void popElementStack(std::vector<std::string> &elements, std::vector<void *> &pointers);
     template <class ELEMENT>
-    void addTextElement(
-        ELEMENT *element, const std::string &content, const std::string &fontstyle = "", bool addSpacer = true);
+    void addTextElement(ELEMENT *element, const std::string &content, const std::string &fontstyle = "",
+        bool addSpacer = true, const std::string &label = "");
     template <class ELEMENT> void addMusicSymbol(ELEMENT *element, const std::string &musictext);
     template <class ELEMENT> void checkForAutoStem(ELEMENT element, hum::HTp token);
     template <class ELEMENT> void appendTypeTag(ELEMENT *element, const std::string &tag);
@@ -989,6 +1004,8 @@ protected:
     template <class ELEMENT> void setAttachmentType(ELEMENT *element, hum::HTp token);
     template <class ELEMENT>
     void setFontsize(ELEMENT *element, const std::string &percentage, const std::string &original);
+    template <class ELEMENT> void setTstamp(ELEMENT *element, const string &value);
+    template <class ELEMENT> void setEnclosure(ELEMENT *element, const string &value);
 
     /// Static functions ////////////////////////////////////////////////////
     static std::string unescapeHtmlEntities(const std::string &input);
@@ -1280,6 +1297,9 @@ private:
     // m_textSmuflSpace = space to give between SMuFL characters
     // (excluding augmentation dots).
     std::string m_textSmuflSpacer = "\xc2\xa0";
+
+    // m_layoutDefaultStyles = default layout styles for LO categories.
+    std::map<std::string, std::map<string, std::string>> m_layoutDefaultStyles;
 
     // Some metadata elements that are computed once and used multiple times
     std::vector<hum::HumdrumLine *> m_humdrumLineReferences;

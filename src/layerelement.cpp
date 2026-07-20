@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 #include "accid.h"
+#include "alignfunctor.h"
 #include "barline.h"
 #include "beam.h"
 #include "beamspan.h"
@@ -31,6 +32,7 @@
 #include "doc.h"
 #include "dot.h"
 #include "elementpart.h"
+#include "fraction.h"
 #include "ftrem.h"
 #include "functor.h"
 #include "horizontalaligner.h"
@@ -49,6 +51,7 @@
 #include "neume.h"
 #include "note.h"
 #include "page.h"
+#include "proport.h"
 #include "rest.h"
 #include "slur.h"
 #include "smufl.h"
@@ -72,18 +75,18 @@
 namespace vrv {
 
 // Large spacing between syllables is a quarter note space
-// MAX_DURATION / pow(2.0, (DUR_4 - 2.0))
-#define NEUME_LARGE_SPACE 256
+#define NEUME_LARGE_SPACE Fraction(1, 4)
+// Medium spacing between neume is a 8th note space
+#define NEUME_MEDIUM_SPACE Fraction(1, 8)
 // Small spacing between neume components is a 16th note space
-// MAX_DURATION / pow(2.0, (DUR_6 - 2.0))
-#define NEUME_SMALL_SPACE 64
+#define NEUME_SMALL_SPACE Fraction(1, 16)
 
 //----------------------------------------------------------------------------
 // LayerElement
 //----------------------------------------------------------------------------
 
 LayerElement::LayerElement()
-    : Object(LAYER_ELEMENT, "le-"), FacsimileInterface(), LinkingInterface(), AttCoordX1(), AttLabelled(), AttTyped()
+    : Object(LAYER_ELEMENT), FacsimileInterface(), LinkingInterface(), AttCoordX1(), AttLabelled(), AttTyped()
 {
     this->RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
     this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
@@ -95,19 +98,7 @@ LayerElement::LayerElement()
 }
 
 LayerElement::LayerElement(ClassId classId)
-    : Object(classId, "le-"), FacsimileInterface(), LinkingInterface(), AttCoordX1(), AttLabelled(), AttTyped()
-{
-    this->RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
-    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
-    this->RegisterAttClass(ATT_COORDX1);
-    this->RegisterAttClass(ATT_LABELLED);
-    this->RegisterAttClass(ATT_TYPED);
-
-    this->Reset();
-}
-
-LayerElement::LayerElement(ClassId classId, const std::string &classIdStr)
-    : Object(classId, classIdStr), FacsimileInterface(), LinkingInterface(), AttCoordX1(), AttLabelled(), AttTyped()
+    : Object(classId), FacsimileInterface(), LinkingInterface(), AttCoordX1(), AttLabelled(), AttTyped()
 {
     this->RegisterInterface(FacsimileInterface::GetAttClasses(), FacsimileInterface::IsInterface());
     this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
@@ -129,6 +120,7 @@ void LayerElement::Reset()
 
     m_drawingFacsX = VRV_UNSET;
     m_drawingYRel = 0;
+    m_drawingFacsY = VRV_UNSET;
     m_drawingXRel = 0;
     m_drawingCueSize = false;
 
@@ -224,7 +216,7 @@ FTrem *LayerElement::GetAncestorFTrem()
 
 const FTrem *LayerElement::GetAncestorFTrem() const
 {
-    if (!this->Is({ CHORD, NOTE })) return NULL;
+    if (!this->IsAnyOf(std::array{ CHORD, NOTE })) return NULL;
     return vrv_cast<const FTrem *>(this->GetFirstAncestor(FTREM, MAX_FTREM_DEPTH));
 }
 
@@ -235,7 +227,7 @@ Beam *LayerElement::GetAncestorBeam()
 
 const Beam *LayerElement::GetAncestorBeam() const
 {
-    if (!this->Is({ CHORD, NOTE, REST, TABGRP, TABDURSYM, STEM })) return NULL;
+    if (!this->IsAnyOf(std::array{ CHORD, NOTE, REST, TABGRP, TABDURSYM, STEM })) return NULL;
     const Beam *beamParent = vrv_cast<const Beam *>(this->GetFirstAncestor(BEAM));
     if (this->Is(REST)) return beamParent;
 
@@ -271,7 +263,7 @@ int LayerElement::GetOriginalLayerN() const
 
 void LayerElement::SetIsInBeamSpan(bool isInBeamSpan)
 {
-    if (!this->Is({ CHORD, NOTE, REST })) return;
+    if (!this->IsAnyOf(std::array{ CHORD, NOTE, REST })) return;
     m_isInBeamspan = isInBeamSpan;
 }
 
@@ -342,7 +334,7 @@ void LayerElement::GetOverflowStaffAlignments(StaffAlignment *&above, StaffAlign
     this->GetChordOverflow(above, below, staff->GetN());
 
     // Stems cross-staff beam need special treatment but only if the beam itself is not cross-staff
-    if (this->Is({ ARTIC, STEM })) {
+    if (this->IsAnyOf(std::array{ ARTIC, STEM })) {
         if (this->GetFirstAncestor(BEAM)) {
             Beam *beam = vrv_cast<Beam *>(this->GetFirstAncestor(BEAM));
             if (!beam->m_crossStaff) beam->GetBeamChildOverflow(above, below);
@@ -353,7 +345,7 @@ void LayerElement::GetOverflowStaffAlignments(StaffAlignment *&above, StaffAlign
         }
     }
     // Beams in cross-staff situation need special treatment
-    else if (this->Is({ BEAM, FTREM }) && !m_crossStaff) {
+    else if (this->IsAnyOf(std::array{ BEAM, FTREM }) && !m_crossStaff) {
         BeamDrawingInterface *interface = this->GetBeamDrawingInterface();
         assert(interface);
         interface->GetBeamOverflow(above, below);
@@ -364,7 +356,7 @@ void LayerElement::GetChordOverflow(StaffAlignment *&above, StaffAlignment *&bel
 {
     Chord *chord = vrv_cast<Chord *>(this->GetFirstAncestor(CHORD));
     // Dots, flags and stems with cross-staff chords need special treatment
-    if (this->Is({ DOTS, FLAG, STEM }) && chord && chord->HasCrossStaff()) {
+    if (this->IsAnyOf(std::array{ DOTS, FLAG, STEM }) && chord && chord->HasCrossStaff()) {
         Staff *staffAbove = NULL;
         Staff *staffBelow = NULL;
         chord->GetCrossStaffExtremes(staffAbove, staffBelow);
@@ -396,14 +388,6 @@ void LayerElement::SetGraceAlignment(Alignment *graceAlignment)
 
 int LayerElement::GetDrawingX() const
 {
-    // If this element has a facsimile and we are in facsimile mode, use Facsimile::GetDrawingX
-    if (this->HasFacs()) {
-        const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
-        assert(doc);
-        if (doc->IsFacs()) {
-            return FacsimileInterface::GetDrawingX();
-        }
-    }
 
     // Since m_drawingFacsX is the left position, we adjust the XRel accordingly in AdjustXRelForTranscription
     if (m_drawingFacsX != VRV_UNSET) return m_drawingFacsX + this->GetDrawingXRel();
@@ -444,14 +428,8 @@ int LayerElement::GetDrawingX() const
 
 int LayerElement::GetDrawingY() const
 {
-    // If this element has a facsimile and we are in facsimile mode, use Facsimile::GetDrawingY
-    if (this->HasFacs()) {
-        const Doc *doc = vrv_cast<const Doc *>(this->GetFirstAncestor(DOC));
-        assert(doc);
-        if (doc->IsFacs()) {
-            return FacsimileInterface::GetDrawingY();
-        }
-    }
+
+    if (m_drawingFacsY != VRV_UNSET) return m_drawingFacsY + this->GetDrawingYRel();
 
     if (m_cachedDrawingY != VRV_UNSET) return m_cachedDrawingY;
 
@@ -474,7 +452,7 @@ int LayerElement::GetDrawingY() const
 int LayerElement::GetDrawingArticulationTopOrBottom(data_STAFFREL place, ArticType type) const
 {
     // It would not crash otherwise but there is not reason to call it
-    assert(this->Is({ NOTE, CHORD }));
+    assert(this->IsAnyOf(std::array{ NOTE, CHORD }));
 
     ClassIdComparison isArtic(ARTIC);
     ListOfConstObjects artics;
@@ -544,7 +522,7 @@ void LayerElement::CenterDrawingX()
 
 int LayerElement::GetDrawingTop(const Doc *doc, int staffSize, bool withArtic, ArticType type) const
 {
-    if (this->Is({ NOTE, CHORD }) && withArtic) {
+    if (this->IsAnyOf(std::array{ NOTE, CHORD }) && withArtic) {
         int articY = this->GetDrawingArticulationTopOrBottom(STAFFREL_above, type);
         if (articY != VRV_UNSET) return articY;
     }
@@ -563,7 +541,7 @@ int LayerElement::GetDrawingTop(const Doc *doc, int staffSize, bool withArtic, A
     if (note) {
         const DurationInterface *durationInterface = this->GetDurationInterface();
         assert(durationInterface);
-        if (durationInterface->GetNoteOrChordDur(this) < DUR_2) {
+        if (durationInterface->GetNoteOrChordDur(this) < DURATION_2) {
             return note->GetDrawingY() + doc->GetDrawingUnit(staffSize);
         }
         // We should also take into account the stem shift to the right
@@ -582,7 +560,7 @@ int LayerElement::GetDrawingTop(const Doc *doc, int staffSize, bool withArtic, A
 
 int LayerElement::GetDrawingBottom(const Doc *doc, int staffSize, bool withArtic, ArticType type) const
 {
-    if (this->Is({ NOTE, CHORD }) && withArtic) {
+    if (this->IsAnyOf(std::array{ NOTE, CHORD }) && withArtic) {
         int articY = this->GetDrawingArticulationTopOrBottom(STAFFREL_below, type);
         if (articY != -VRV_UNSET) return articY;
     }
@@ -601,7 +579,7 @@ int LayerElement::GetDrawingBottom(const Doc *doc, int staffSize, bool withArtic
     if (note) {
         const DurationInterface *durationInterface = this->GetDurationInterface();
         assert(durationInterface);
-        if (durationInterface->GetNoteOrChordDur(this) < DUR_2) {
+        if (durationInterface->GetNoteOrChordDur(this) < DURATION_2) {
             return note->GetDrawingY() - doc->GetDrawingUnit(staffSize);
         }
         // We should also take into account the stem shift to the right
@@ -622,10 +600,10 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
 {
     assert(doc);
 
-    if (!this->Is({ CHORD, NC, NOTE, REST })) return 0;
+    if (!this->IsAnyOf(std::array{ CHORD, NC, NOTE, REST })) return 0;
 
     char32_t code = 0;
-    int dur = DUR_4;
+    data_DURATION dur = DURATION_4;
     const Staff *staff = this->GetAncestorStaff();
     bool isMensuralDur = false;
     if (this->Is(NOTE)) {
@@ -645,26 +623,26 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
         assert(chord);
         dur = chord->GetActualDur();
         isMensuralDur = chord->IsMensuralDur();
-        if (dur == DUR_BR) {
+        if (dur == DURATION_breve) {
             code = SMUFL_E0A1_noteheadDoubleWholeSquare;
         }
-        else if (dur == DUR_1) {
+        else if (dur == DURATION_1) {
             code = SMUFL_E0A2_noteheadWhole;
         }
-        else if (dur == DUR_2) {
+        else if (dur == DURATION_2) {
             code = SMUFL_E0A3_noteheadHalf;
         }
         else {
             code = SMUFL_E0A4_noteheadBlack;
         }
     }
-    else if (this->Is({ REST, NC })) {
+    else if (this->IsAnyOf(std::array{ REST, NC })) {
         code = SMUFL_E0A4_noteheadBlack;
     }
 
-    // Mensural note shorter than DUR_BR
-    if ((isMensuralDur && (dur <= DUR_BR)) || ((dur == DUR_1) && isInLigature)) {
-        int widthFactor = (dur == DUR_MX) ? 2 : 1;
+    // Mensural note shorter than DURATION_breve
+    if ((isMensuralDur && (dur <= DURATION_breve)) || ((dur == DURATION_1) && isInLigature)) {
+        int widthFactor = (dur == DURATION_maxima) ? 2 : 1;
         if (staff->m_drawingNotationType == NOTATIONTYPE_mensural_black) {
             return widthFactor * doc->GetDrawingBrevisWidth(staff->m_drawingStaffSize) * 0.7;
         }
@@ -680,115 +658,149 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
     return doc->GetGlyphWidth(code, staff->m_drawingStaffSize, this->GetDrawingCueSize()) / 2;
 }
 
-double LayerElement::GetAlignmentDuration(
-    const Mensur *mensur, const MeterSig *meterSig, bool notGraceOnly, data_NOTATIONTYPE notationType) const
+Fraction LayerElement::GetAlignmentDuration(
+    const AlignMeterParams &params, bool notGraceOnly, data_NOTATIONTYPE notationType) const
 {
     if (this->IsGraceNote() && notGraceOnly) {
-        return 0.0;
+        return Fraction(0);
+    }
+
+    // Mensural chords are aligned looking at the duration of the notes
+    if (this->Is(CHORD) && IsMensuralType(notationType)) {
+        Fraction duration = 0;
+        ListOfConstObjects notes = this->FindAllDescendantsByType(NOTE);
+        for (const Object *object : notes) {
+            const Note *note = vrv_cast<const Note *>(object);
+            Fraction noteDuration = note->GetAlignmentDuration(params, notGraceOnly, notationType);
+            duration = std::max(duration, noteDuration);
+        }
+        return duration;
     }
 
     // Only resolve simple sameas links to avoid infinite recursion
     const LayerElement *sameas = dynamic_cast<const LayerElement *>(this->GetSameasLink());
     if (sameas && !sameas->HasSameasLink()) {
-        return sameas->GetAlignmentDuration(mensur, meterSig, notGraceOnly, notationType);
+        return sameas->GetAlignmentDuration(params, notGraceOnly, notationType);
     }
 
     if (this->HasInterface(INTERFACE_DURATION)) {
         int num = 1;
         int numbase = 1;
+
+        if (params.proport) {
+            // Proportion are applied reversly - higher ratio means shorter values
+            if (params.proport->HasNum()) num *= params.proport->GetCumulatedNum();
+            if (params.proport->HasNumbase()) numbase *= params.proport->GetCumulatedNumbase();
+        }
+
         const Tuplet *tuplet = vrv_cast<const Tuplet *>(this->GetFirstAncestor(TUPLET, MAX_TUPLET_DEPTH));
         if (tuplet) {
             ListOfConstObjects objects;
             ClassIdsComparison ids({ CHORD, NOTE, REST, SPACE });
             tuplet->FindAllDescendantsByComparison(&objects, &ids);
-            if (objects.size() > 1) {
+            if (objects.size() > 0) {
                 num = tuplet->GetNum();
                 numbase = tuplet->GetNumbase();
-                // 0 is not valid in MEI anyway - just correct it silently
-                if (num == 0) num = 1;
-                if (numbase == 0) numbase = 1;
+                // Adjust VRV_UNSET and 0 - which is not valid in MEI anyway
+                num = std::max(1, num);
+                numbase = std::max(1, numbase);
             }
         }
         const DurationInterface *duration = this->GetDurationInterface();
         assert(duration);
         if (duration->IsMensuralDur() && (notationType != NOTATIONTYPE_cmn)) {
-            return duration->GetInterfaceAlignmentMensuralDuration(num, numbase, mensur);
+            return duration->GetInterfaceAlignmentMensuralDuration(num, numbase, params.mensur, params.equivalence);
         }
         if (this->Is(NC)) {
+            // This is called only with --neume-as-note
             const Object *neume = this->GetFirstAncestor(NEUME);
             assert(neume);
             const Object *syllable = neume->GetFirstAncestor(SYLLABLE);
             assert(syllable);
-            // Add a gap after the last nc of the last neume in the syllable
-            if ((neume->GetLast() == this) && (syllable->GetLast() == neume)) {
-                return NEUME_LARGE_SPACE;
+            // Add a larger gap after the last nc of the last neume in the syllable
+            if (neume->GetLast() == this) {
+                return (syllable->GetLast() == neume) ? NEUME_LARGE_SPACE : NEUME_MEDIUM_SPACE;
             }
             else {
                 return NEUME_SMALL_SPACE;
             }
         }
-        double durationValue = duration->GetInterfaceAlignmentDuration(num, numbase);
+        Fraction durationValue = duration->GetInterfaceAlignmentDuration(num, numbase);
         // With fTrem we need to divide the duration by two
         const FTrem *fTrem = vrv_cast<const FTrem *>(this->GetFirstAncestor(FTREM, MAX_FTREM_DEPTH));
         if (fTrem) {
-            durationValue /= 2.0;
+            durationValue = durationValue * Fraction(1, 2);
         }
         return durationValue;
     }
     else if (this->Is(BEATRPT)) {
         const BeatRpt *beatRpt = vrv_cast<const BeatRpt *>(this);
         assert(beatRpt);
-        int meterUnit = 4;
-        if (meterSig && meterSig->HasUnit()) meterUnit = meterSig->GetUnit();
+        data_DURATION meterUnit = DURATION_4;
+        if (params.meterSig && params.meterSig->HasUnit()) meterUnit = params.meterSig->GetUnitAsDur();
         return beatRpt->GetBeatRptAlignmentDuration(meterUnit);
     }
     else if (this->Is(TIMESTAMP_ATTR)) {
         const TimestampAttr *timestampAttr = vrv_cast<const TimestampAttr *>(this);
         assert(timestampAttr);
-        int meterUnit = 4;
-        if (meterSig && meterSig->HasUnit()) meterUnit = meterSig->GetUnit();
+        data_DURATION meterUnit = DURATION_4;
+        if (params.meterSig && params.meterSig->HasUnit()) meterUnit = params.meterSig->GetUnitAsDur();
         return timestampAttr->GetTimestampAttrAlignmentDuration(meterUnit);
     }
     // We align all full measure element to the current time signature, even the ones that last longer than one measure
-    else if (this->Is({ HALFMRPT, MREST, MULTIREST, MRPT, MRPT2, MULTIRPT })) {
-        int meterUnit = 4;
+    // If metcon is false, then the duration will remain 0 because it cannot be determined
+    else if (params.metcon && this->IsAnyOf(std::array{ HALFMRPT, MREST, MULTIREST, MRPT, MRPT2, MULTIRPT })) {
+        data_DURATION meterUnit = DURATION_4;
         int meterCount = 4;
-        if (meterSig && meterSig->HasUnit()) meterUnit = meterSig->GetUnit();
-        if (meterSig && meterSig->HasCount()) meterCount = meterSig->GetTotalCount();
-
-        if (this->Is(HALFMRPT)) {
-            return (DUR_MAX / meterUnit * meterCount) / 2;
-        }
-        else {
-            return DUR_MAX / meterUnit * meterCount;
-        }
+        if (params.meterSig && params.meterSig->HasUnit()) meterUnit = params.meterSig->GetUnitAsDur();
+        if (params.meterSig && params.meterSig->HasCount()) meterCount = params.meterSig->GetTotalCount();
+        Fraction duration = Fraction(meterUnit) * meterCount;
+        return (this->Is(HALFMRPT)) ? (duration / 2) : duration;
+    }
+    // This is not called with --neume-as-note since otherwise each nc has an aligner
+    else if (this->Is(NEUME)) {
+        const Object *syllable = this->GetFirstAncestor(SYLLABLE);
+        assert(syllable);
+        // Add a larger gap after the last neume of the syllable
+        return (syllable->GetLast() == this) ? NEUME_MEDIUM_SPACE : NEUME_SMALL_SPACE;
+    }
+    // This is called only with syallable without neume
+    // Otherwise the duration is given by the neume (or by the nc with --neume-as-note)
+    else if (this->Is(SYLLABLE) && !this->FindDescendantByType(NEUME)) {
+        return NEUME_MEDIUM_SPACE;
     }
     else {
-        return 0.0;
+        return Fraction(0);
     }
 }
 
-double LayerElement::GetSameAsContentAlignmentDuration(
-    const Mensur *mensur, const MeterSig *meterSig, bool notGraceOnly, data_NOTATIONTYPE notationType) const
+Fraction LayerElement::GetAlignmentDuration(bool notGraceOnly, data_NOTATIONTYPE notationType) const
 {
-    if (!this->HasSameasLink() || !this->GetSameasLink()->Is({ BEAM, FTREM, TUPLET })) {
-        return 0.0;
+    AlignMeterParams params;
+    return this->GetAlignmentDuration(params, notGraceOnly, notationType);
+}
+
+Fraction LayerElement::GetSameAsContentAlignmentDuration(
+    const AlignMeterParams &params, bool notGraceOnly, data_NOTATIONTYPE notationType) const
+{
+    if (!this->HasSameasLink() || !this->GetSameasLink()->IsAnyOf(std::array{ BEAM, FTREM, TUPLET })) {
+        return Fraction(0);
     }
 
     const LayerElement *sameas = vrv_cast<const LayerElement *>(this->GetSameasLink());
     assert(sameas);
 
-    return sameas->GetContentAlignmentDuration(mensur, meterSig, notGraceOnly, notationType);
+    return sameas->GetContentAlignmentDuration(params, notGraceOnly, notationType);
 }
 
-double LayerElement::GetContentAlignmentDuration(
-    const Mensur *mensur, const MeterSig *meterSig, bool notGraceOnly, data_NOTATIONTYPE notationType) const
+Fraction LayerElement::GetContentAlignmentDuration(
+    const AlignMeterParams &params, bool notGraceOnly, data_NOTATIONTYPE notationType) const
 {
-    if (!this->Is({ BEAM, FTREM, TUPLET })) {
-        return 0.0;
+    if (!this->IsAnyOf(std::array{ BEAM, FTREM, TUPLET })) {
+        return Fraction(0);
     }
 
-    double duration = 0.0;
+    Fraction duration;
 
     for (const Object *child : this->GetChildren()) {
         // Skip everything that does not have a duration interface and notes in chords
@@ -797,10 +809,16 @@ double LayerElement::GetContentAlignmentDuration(
         }
         const LayerElement *element = vrv_cast<const LayerElement *>(child);
         assert(element);
-        duration += element->GetAlignmentDuration(mensur, meterSig, notGraceOnly, notationType);
+        duration = duration + element->GetAlignmentDuration(params, notGraceOnly, notationType);
     }
 
     return duration;
+}
+
+Fraction LayerElement::GetContentAlignmentDuration(bool notGraceOnly, data_NOTATIONTYPE notationType) const
+{
+    AlignMeterParams params;
+    return this->GetContentAlignmentDuration(params, notGraceOnly, notationType);
 }
 
 bool LayerElement::GenerateZoneBounds(int *ulx, int *uly, int *lrx, int *lry) const
@@ -890,7 +908,7 @@ std::vector<int> LayerElement::GetElementsInUnison(
 
 MapOfDotLocs LayerElement::CalcOptimalDotLocations()
 {
-    if (!this->Is({ NOTE, CHORD })) {
+    if (!this->IsAnyOf(std::array{ NOTE, CHORD })) {
         return {};
     }
 
@@ -903,13 +921,16 @@ MapOfDotLocs LayerElement::CalcOptimalDotLocations()
 
     // Special treatment for two layers
     if (layerCount == 2) {
-        // Find the first note on the other layer
+        // Find the first note on the other layer, but in the same staff
         Alignment *alignment = this->GetAlignment();
+        const Staff *currentStaff = this->GetAncestorStaff(RESOLVE_CROSS_STAFF);
         const int currentLayerN = abs(this->GetAlignmentLayerN());
         ListOfObjects notes = alignment->FindAllDescendantsByType(NOTE, false);
-        auto noteIt = std::find_if(notes.cbegin(), notes.cend(), [currentLayerN](Object *obj) {
-            const int otherLayerN = abs(vrv_cast<Note *>(obj)->GetAlignmentLayerN());
-            return (currentLayerN != otherLayerN);
+        auto noteIt = std::find_if(notes.cbegin(), notes.cend(), [currentLayerN, currentStaff](Object *obj) {
+            const Note *otherNote = vrv_cast<Note *>(obj);
+            const Staff *otherStaff = otherNote->GetAncestorStaff(RESOLVE_CROSS_STAFF);
+            const int otherLayerN = abs(otherNote->GetAlignmentLayerN());
+            return ((currentLayerN != otherLayerN) && (currentStaff == otherStaff));
         });
 
         if (noteIt != notes.cend()) {
@@ -966,79 +987,6 @@ MapOfDotLocs LayerElement::CalcOptimalDotLocations()
     // Count dots to decide which set is used
     const bool usePrimary = (this->GetDotCount(dotLocs1) >= this->GetDotCount(dotLocs2));
     return usePrimary ? dotLocs1 : dotLocs2;
-}
-
-int LayerElement::CalcLayerOverlap(const Doc *doc, int direction, int y1, int y2)
-{
-    Layer *parentLayer = vrv_cast<Layer *>(this->GetFirstAncestor(LAYER));
-    if (!parentLayer) return 0;
-    // Check whether there are elements on other layer in the duration of the current beam. If there are none - stop
-    // here, there's nothing to be done
-    ListOfObjects collidingElementsList = parentLayer->GetLayerElementsForTimeSpanOf(this, true);
-    if (collidingElementsList.empty()) return 0;
-
-    Staff *staff = this->GetAncestorStaff();
-
-    const int unit = doc->GetDrawingUnit(staff->m_drawingStaffSize);
-    int leftMargin = 0;
-    int rightMargin = 0;
-    bool sameDirElement = false;
-    std::vector<int> elementOverlaps;
-    for (Object *object : collidingElementsList) {
-        LayerElement *layerElement = vrv_cast<LayerElement *>(object);
-        if (!this->HorizontalContentOverlap(object)) continue;
-        const int elementBottom = layerElement->GetDrawingBottom(doc, staff->m_drawingStaffSize);
-        const int elementTop = layerElement->GetDrawingTop(doc, staff->m_drawingStaffSize);
-        if (direction > 0) {
-            // make sure that there's actual overlap first
-            if ((elementBottom > y1) && (elementBottom > y2)) continue;
-            const int currentBottom = this->GetDrawingBottom(doc, staff->m_drawingStaffSize);
-            if (currentBottom >= elementTop) continue;
-            const StemmedDrawingInterface *stemInterface = layerElement->GetStemmedDrawingInterface();
-            if (stemInterface && (sameDirElement || (stemInterface->GetDrawingStemDir() == STEMDIRECTION_up))) {
-                if (elementBottom - stemInterface->GetDrawingStemLen() < currentBottom) continue;
-                leftMargin = unit + y1 - elementBottom;
-                rightMargin = unit + y2 - elementBottom;
-                sameDirElement = true;
-            }
-            else {
-                leftMargin = elementTop - y1;
-                rightMargin = elementTop - y2;
-            }
-        }
-        else {
-            // make sure that there's actual overlap first
-            if ((elementTop < y1) && (elementTop < y2)) continue;
-            const int currentTop = this->GetDrawingTop(doc, staff->m_drawingStaffSize);
-            if (currentTop <= elementBottom) continue;
-            const StemmedDrawingInterface *stemInterface = layerElement->GetStemmedDrawingInterface();
-            if (stemInterface && (sameDirElement || (stemInterface->GetDrawingStemDir() == STEMDIRECTION_down))) {
-                if (currentTop - stemInterface->GetDrawingStemLen() > currentTop) continue;
-                leftMargin = unit + y1 - elementTop;
-                rightMargin = unit + y2 - elementTop;
-                sameDirElement = true;
-            }
-            else {
-                leftMargin = elementBottom - y1;
-                rightMargin = elementBottom - y2;
-            }
-        }
-        elementOverlaps.emplace_back(std::max(leftMargin * direction, rightMargin * direction));
-    }
-    if (elementOverlaps.empty()) return 0;
-
-    const auto maxOverlap = std::max_element(elementOverlaps.begin(), elementOverlaps.end());
-    int overlap = 0;
-    if (*maxOverlap >= 0) {
-        const int multiplier = sameDirElement ? -1 : 1;
-        overlap = ((*maxOverlap == 0) ? unit : *maxOverlap) * direction * multiplier;
-    }
-    else {
-        int maxShorteningInHalfUnits = (std::abs(*maxOverlap) / unit) * 2;
-        if (maxShorteningInHalfUnits > 0) --maxShorteningInHalfUnits;
-        this->SetElementShortening(maxShorteningInHalfUnits);
-    }
-    return overlap;
 }
 
 data_STEMMODIFIER LayerElement::GetDrawingStemMod() const
@@ -1138,7 +1086,7 @@ int LayerElement::AdjustOverlappingLayers(const Doc *doc, const std::vector<Laye
         if (stemSameas) return 0;
     }
 
-    if (this->Is({ ACCID, DOTS, STEM })) {
+    if (this->IsAnyOf(std::array{ ACCID, DOTS, STEM })) {
         LayerElement *parent
             = vrv_cast<LayerElement *>(this->GetFirstAncestorInRange(LAYER_ELEMENT, LAYER_ELEMENT_max));
         assert(parent);
@@ -1182,7 +1130,7 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
             isUnisonElement = currentNote->IsUnisonWith(previousNote, true);
             // Unisson, look at the duration for the note heads
             if (unison && currentNote->IsUnisonWith(previousNote, false)) {
-                int previousDuration = previousNote->GetDrawingDur();
+                data_DURATION previousDuration = previousNote->GetDrawingDur();
                 assert(previousNote->GetParent());
                 const bool isPreviousChord = previousNote->GetParent()->Is(CHORD);
                 bool isEdgeElement = false;
@@ -1194,11 +1142,11 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
                         || ((STEMDIRECTION_up == stemDir) && (parentChord->GetTopNote() == previousNote));
                 }
                 // Reduce the margin to 0 for whole notes unisson
-                else if ((currentNote->GetDrawingDur() == DUR_1) && (previousDuration == DUR_1)) {
+                else if ((currentNote->GetDrawingDur() == DURATION_1) && (previousDuration == DURATION_1)) {
                     horizontalMargin = 0;
                 }
                 if (!isPreviousChord || isEdgeElement || isChordElement) {
-                    if ((currentNote->GetDrawingDur() == DUR_2) && (previousDuration == DUR_2)) {
+                    if ((currentNote->GetDrawingDur() == DURATION_2) && (previousDuration == DURATION_2)) {
                         isInUnison = true;
                     }
                     else if ((!currentNote->IsGraceNote() && !currentNote->GetDrawingCueSize())
@@ -1214,7 +1162,7 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
                         isInUnison = true;
                         continue;
                     }
-                    else if ((currentNote->GetDrawingDur() > DUR_2) && (previousDuration > DUR_2)) {
+                    else if ((currentNote->GetDrawingDur() > DURATION_2) && (previousDuration > DURATION_2)) {
                         isInUnison = true;
                     }
                     if (isInUnison && (currentNote->GetDots() == previousNote->GetDots())) {
@@ -1222,7 +1170,8 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
                     }
                     else {
                         isInUnison = false;
-                        if ((currentNote->GetDrawingDur() <= DUR_1) || (previousNote->GetDrawingDur() <= DUR_1)) {
+                        if ((currentNote->GetDrawingDur() <= DURATION_1)
+                            || (previousNote->GetDrawingDur() <= DURATION_1)) {
                             horizontalMargin *= -1;
                         }
                         else {
@@ -1245,7 +1194,8 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
                 if (previousNote->GetDrawingLoc() - currentNote->GetDrawingLoc() == -1) {
                     horizontalMargin *= -1;
                 }
-                else if ((currentNote->GetDrawingDur() <= DUR_1) && (previousNote->GetDrawingDur() <= DUR_1)) {
+                else if ((currentNote->GetDrawingDur() <= DURATION_1)
+                    && (previousNote->GetDrawingDur() <= DURATION_1)) {
                     continue;
                 }
                 else if (previousNote->m_crossStaff || m_crossStaff)
@@ -1262,7 +1212,7 @@ std::pair<int, bool> LayerElement::CalcElementHorizontalOverlap(const Doc *doc,
             Dots *dot = vrv_cast<Dots *>(this);
             if (dot->IsAdjusted() || !HorizontalSelfOverlap(otherElements.at(i), horizontalMargin)) continue;
 
-            if (otherElements.at(i)->Is({ NOTE, STEM })) {
+            if (otherElements.at(i)->IsAnyOf(std::array{ NOTE, STEM })) {
                 shift -= otherElements.at(i)->HorizontalLeftOverlap(this, doc, shift + horizontalMargin / 2, 0);
             }
             else {

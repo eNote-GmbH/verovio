@@ -9,8 +9,8 @@
 #define __VRV_TIE_H__
 
 #include "controlelement.h"
+#include "offsetinterface.h"
 #include "timeinterface.h"
-#include "visualoffsetinterface.h"
 
 namespace vrv {
 
@@ -26,9 +26,8 @@ class Note;
  * This class models the MEI <tie> element.
  */
 class Tie : public ControlElement,
+            public OffsetSpanningInterface,
             public TimeSpanningInterface,
-            public VisualOffsetInterface,
-            public AttColor,
             public AttCurvature,
             public AttLineRendBase {
 public:
@@ -39,17 +38,21 @@ public:
     ///@{
     Tie();
     Tie(ClassId classId);
-    Tie(ClassId classId, const std::string &classIdStr);
     virtual ~Tie();
     Object *Clone() const override { return new Tie(*this); }
     void Reset() override;
-    std::string GetClassName() const override { return "Tie"; }
+    std::string GetClassName() const override { return "tie"; }
     ///@}
 
     /**
      * @name Getter to interfaces
      */
     ///@{
+    OffsetSpanningInterface *GetOffsetSpanningInterface() override { return vrv_cast<OffsetSpanningInterface *>(this); }
+    const OffsetSpanningInterface *GetOffsetSpanningInterface() const override
+    {
+        return vrv_cast<const OffsetSpanningInterface *>(this);
+    }
     TimePointInterface *GetTimePointInterface() override { return vrv_cast<TimePointInterface *>(this); }
     const TimePointInterface *GetTimePointInterface() const override
     {
@@ -59,11 +62,6 @@ public:
     const TimeSpanningInterface *GetTimeSpanningInterface() const override
     {
         return vrv_cast<const TimeSpanningInterface *>(this);
-    }
-    VisualOffsetInterface *GetVisualOffsetInterface() override { return vrv_cast<VisualOffsetInterface *>(this); }
-    const VisualOffsetInterface *GetVisualOffsetInterface() const override
-    {
-        return vrv_cast<const VisualOffsetInterface *>(this);
     }
     ///@}
 

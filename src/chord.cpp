@@ -37,7 +37,7 @@
 
 namespace vrv {
 
-// Helper template function to calculate optiomal dot locations based on note locations in the chord. Takes iterators
+// Helper template function to calculate optimal dot locations based on note locations in the chord. Takes iterators
 // for the begin/end of the range; reverse iterators should be passed if reverse order is specified
 template <typename Iterator> std::set<int> CalculateDotLocations(Iterator begin, Iterator end, bool isReverseOrder)
 {
@@ -66,12 +66,11 @@ template <typename Iterator> std::set<int> CalculateDotLocations(Iterator begin,
 static const ClassRegistrar<Chord> s_factory("chord", CHORD);
 
 Chord::Chord()
-    : LayerElement(CHORD, "chord-")
+    : LayerElement(CHORD)
     , ObjectListInterface()
     , DrawingListInterface()
     , StemmedDrawingInterface()
     , DurationInterface()
-    , VisualOffsetInterface()
     , AttChordVis()
     , AttColor()
     , AttCue()
@@ -82,7 +81,6 @@ Chord::Chord()
     , AttVisibility()
 {
     this->RegisterInterface(DurationInterface::GetAttClasses(), DurationInterface::IsInterface());
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
     this->RegisterAttClass(ATT_CHORDVIS);
     this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CUE);
@@ -97,7 +95,7 @@ Chord::Chord()
 
 Chord::~Chord()
 {
-    ClearNoteGroups();
+    this->ClearNoteGroups();
 }
 
 void Chord::Reset()
@@ -106,7 +104,6 @@ void Chord::Reset()
     DrawingListInterface::Reset();
     StemmedDrawingInterface::Reset();
     DurationInterface::Reset();
-    VisualOffsetInterface::Reset();
     this->ResetChordVis();
     this->ResetColor();
     this->ResetCue();
@@ -116,7 +113,7 @@ void Chord::Reset()
     this->ResetTiePresent();
     this->ResetVisibility();
 
-    ClearNoteGroups();
+    this->ClearNoteGroups();
 }
 
 void Chord::ClearNoteGroups() const
@@ -172,37 +169,26 @@ void Chord::CalculateNoteGroups()
     }
 }
 
-bool Chord::IsSupportedChild(Object *child)
+bool Chord::IsSupportedChild(ClassId classId)
 {
-    if (child->Is(ARTIC)) {
-        assert(dynamic_cast<Artic *>(child));
+    static const std::vector<ClassId> supported{ ARTIC, DOTS, NOTE, STEM, VERSE };
+
+    if (std::find(supported.begin(), supported.end(), classId) != supported.end()) {
+        return true;
     }
-    else if (child->Is(DOTS)) {
-        assert(dynamic_cast<Dots *>(child));
-    }
-    else if (child->Is(NOTE)) {
-        assert(dynamic_cast<Note *>(child));
-    }
-    else if (child->Is(STEM)) {
-        assert(dynamic_cast<Stem *>(child));
-    }
-    else if (child->Is(VERSE)) {
-        assert(dynamic_cast<Verse *>(child));
-    }
-    else if (child->IsEditorialElement()) {
-        assert(dynamic_cast<EditorialElement *>(child));
+    else if (Object::IsEditorialElement(classId)) {
+        return true;
     }
     else {
         return false;
     }
-    return true;
 }
 
-void Chord::AddChild(Object *child)
+bool Chord::AddChild(Object *child)
 {
-    if (!this->IsSupportedChild(child)) {
+    if (!this->IsSupportedChild(child->GetClassId()) || !this->AddChildAdditionalCheck(child)) {
         LogError("Adding '%s' to a '%s'", child->GetClassName().c_str(), this->GetClassName().c_str());
-        return;
+        return false;
     }
 
     ArrayOfObjects &children = this->GetChildrenForModification();
@@ -210,13 +196,15 @@ void Chord::AddChild(Object *child)
     child->SetParent(this);
     // Stem are always added by PrepareLayerElementParts (for now) and we want them to be in the front
     // for the drawing order in the SVG output
-    if (child->Is({ DOTS, STEM })) {
+    if (child->IsAnyOf(std::array{ DOTS, STEM })) {
         children.insert(children.begin(), child);
     }
     else {
         children.push_back(child);
     }
-    Modify();
+    this->Modify();
+
+    return true;
 }
 
 void Chord::FilterList(ListOfConstObjects &childList) const

@@ -12,7 +12,6 @@
 #include "doc.h"
 #include "multirest.h"
 #include "rest.h"
-#include "score.h"
 #include "staff.h"
 #include "system.h"
 
@@ -24,20 +23,21 @@ namespace vrv {
 // AdjustXPosFunctor
 //----------------------------------------------------------------------------
 
-AdjustXPosFunctor::AdjustXPosFunctor(Doc *doc, const std::vector<int> &staffNs) : DocFunctor(doc)
+AdjustXPosFunctor::AdjustXPosFunctor(Doc *doc) : DocFunctor(doc)
 {
     m_minPos = 0;
     m_upcomingMinPos = VRV_UNSET;
     m_cumulatedXShift = 0;
     m_staffN = 0;
-    m_staffNs = staffNs;
     m_staffSize = 100;
     m_rightBarLinesOnly = false;
+    m_measure = NULL;
 }
 
 FunctorCode AdjustXPosFunctor::VisitAlignment(Alignment *alignment)
 {
-    // LogDebug("Alignment type %d", alignment->GetType());
+    // Ossia scoreDef should not be aligned because that is taken care of in the dedicated functor
+    if (alignment->GetType() < ALIGNMENT_MEASURE_START) return FUNCTOR_SIBLINGS;
 
     alignment->SetXRel(alignment->GetXRel() + m_cumulatedXShift);
 
@@ -104,12 +104,12 @@ FunctorCode AdjustXPosFunctor::VisitLayerElement(LayerElement *layerElement)
     }
 
     // If we have a list of types to exclude and it is one of them, stop it
-    if (!m_excludes.empty() && layerElement->Is(m_excludes)) {
+    if (!m_excludes.empty() && layerElement->IsAnyOf(m_excludes)) {
         return FUNCTOR_CONTINUE;
     }
 
     // If we have a list of types to include and it is not one of them, stop it
-    if (!m_includes.empty() && !layerElement->Is(m_includes)) {
+    if (!m_includes.empty() && !layerElement->IsAnyOf(m_includes)) {
         return FUNCTOR_CONTINUE;
     }
 
@@ -125,7 +125,7 @@ FunctorCode AdjustXPosFunctor::VisitLayerElement(LayerElement *layerElement)
         return FUNCTOR_SIBLINGS;
     }
 
-    if (layerElement->GetAlignment()->GetType() == ALIGNMENT_CLEF) {
+    if ((layerElement->GetAlignment()->GetType() == ALIGNMENT_CLEF) && !m_isNeumeStaff) {
         return FUNCTOR_CONTINUE;
     }
 
@@ -142,11 +142,12 @@ FunctorCode AdjustXPosFunctor::VisitLayerElement(LayerElement *layerElement)
         m_upcomingMinPos += (-offset);
     }
 
-    int selfRight = layerElement->GetAlignment()->GetXRel();
+    int selfRight;
     if (!layerElement->HasSelfBB() || layerElement->HasEmptyBB()) {
         selfRight = layerElement->GetAlignment()->GetXRel();
-        // Still add the right margin for the barlines
-        if (layerElement->Is(BARLINE)) selfRight += m_doc->GetRightMargin(layerElement) * drawingUnit;
+        // Still add the right margin for the barlines but not with non measure music
+        if (layerElement->Is(BARLINE) && m_measure->IsMeasuredMusic())
+            selfRight += m_doc->GetRightMargin(layerElement) * drawingUnit;
     }
     else {
         selfRight = layerElement->GetSelfRight() + m_doc->GetRightMargin(layerElement) * drawingUnit;
@@ -159,7 +160,7 @@ FunctorCode AdjustXPosFunctor::VisitLayerElement(LayerElement *layerElement)
     Alignment *nextAlignment = vrv_cast<Alignment *>(
         layerElement->GetAlignment()->GetParent()->GetNext(layerElement->GetAlignment(), ALIGNMENT));
     AlignmentType next = nextAlignment ? nextAlignment->GetType() : ALIGNMENT_DEFAULT;
-    if (layerElement->Is({ DOTS, FLAG }) && currentReference->HasMultipleLayer()
+    if (layerElement->IsAnyOf(std::array{ DOTS, FLAG }) && currentReference->HasMultipleLayer()
         && (next != ALIGNMENT_MEASURE_RIGHT_BARLINE)) {
         const int additionalOffset = selfRight - m_upcomingMinPos;
         if (additionalOffset > m_currentAlignment.m_offset) {
@@ -210,6 +211,8 @@ FunctorCode AdjustXPosFunctor::VisitMeasure(Measure *measure)
     m_upcomingMinPos = VRV_UNSET;
     m_cumulatedXShift = 0;
 
+    m_measure = measure;
+
     System *system = vrv_cast<System *>(measure->GetFirstAncestor(SYSTEM));
     assert(system);
 
@@ -228,6 +231,7 @@ FunctorCode AdjustXPosFunctor::VisitMeasure(Measure *measure)
         m_currentAlignment.Reset();
         StaffAlignment *staffAlignment = system->m_systemAligner.GetStaffAlignmentForStaffN(staffN);
         m_staffSize = (staffAlignment) ? staffAlignment->GetStaffSize() : 100;
+        m_isNeumeStaff = (staffAlignment && staffAlignment->GetStaff()) ? staffAlignment->GetStaff()->IsNeume() : false;
 
         // Prevent collisions of scoredef clefs with thick barlines
         if (hasSystemStartLine) {
@@ -249,6 +253,9 @@ FunctorCode AdjustXPosFunctor::VisitMeasure(Measure *measure)
     }
 
     this->SetFilters(previousFilters);
+
+    // There is no reason to adjust a minimum width with mensural music
+    if (!measure->IsMeasuredMusic()) return FUNCTOR_SIBLINGS;
 
     int minMeasureWidth = m_doc->GetOptions()->m_unit.GetValue() * m_doc->GetOptions()->m_measureMinWidth.GetValue();
     // First try to see if we have a double measure length element
@@ -297,9 +304,9 @@ FunctorCode AdjustXPosFunctor::VisitMeasure(Measure *measure)
     return FUNCTOR_SIBLINGS;
 }
 
-FunctorCode AdjustXPosFunctor::VisitScore(Score *score)
+FunctorCode AdjustXPosFunctor::VisitSystem(System *system)
 {
-    m_staffNs = score->GetScoreDef()->GetStaffNs();
+    if (system->GetDrawingScoreDef()) m_staffNs = system->GetDrawingScoreDef()->GetStaffNs();
 
     return FUNCTOR_CONTINUE;
 }
@@ -346,6 +353,7 @@ std::pair<int, int> AdjustXPosFunctor::CalculateXPosOffset(LayerElement *layerEl
         int margin = (m_doc->GetRightMargin(bboxElement) + selfLeftMargin) * drawingUnit;
         if (bboxElement->Is(NOTE)) {
             Note *note = vrv_cast<Note *>(bboxElement);
+            assert(note);
             if (note->HasStemMod() && note->GetStemMod() < STEMMODIFIER_MAX) {
                 const int tremWidth = m_doc->GetGlyphWidth(SMUFL_E220_tremolo1, m_staffSize, false);
                 margin = std::max(margin, drawingUnit / 3 + tremWidth / 2);
@@ -378,6 +386,7 @@ std::pair<int, int> AdjustXPosFunctor::CalculateXPosOffset(LayerElement *layerEl
         }
         else if (layerElement->Is(ACCID) && bboxElement->Is(REST)) {
             Rest *rest = vrv_cast<Rest *>(bboxElement);
+            assert(rest);
             const bool hasExplicitLoc = ((rest->HasOloc() && rest->HasPloc()) || rest->HasLoc());
             if (rest->IsInBeam() && !hasExplicitLoc) {
                 overlap = std::max(overlap, bboxElement->GetSelfRight() - layerElement->GetSelfLeft() + margin);
@@ -393,11 +402,11 @@ std::pair<int, int> AdjustXPosFunctor::CalculateXPosOffset(LayerElement *layerEl
         if (!overlap) {
             // if last element of the tuplet is rest, make sure there is sufficient distance between it and next
             // note/chord (for ledger lines)
-            if (layerElement->Is({ NOTE, CHORD }) && !layerElement->GetFirstAncestor(TUPLET) && bboxElement->Is(REST)
-                && bboxElement->GetFirstAncestor(TUPLET)) {
+            if (layerElement->IsAnyOf(std::array{ NOTE, CHORD }) && !layerElement->GetFirstAncestor(TUPLET)
+                && bboxElement->Is(REST) && bboxElement->GetFirstAncestor(TUPLET)) {
                 Rest *rest = vrv_cast<Rest *>(bboxElement);
-                if (rest->GetDur() > DUR_8) {
-                    overlap = 1.5 * (rest->GetDur() - DUR_8) * drawingUnit;
+                if (rest->GetDur() > DURATION_8) {
+                    overlap = 1.5 * (rest->GetDur() - DURATION_8) * drawingUnit;
                 }
             }
         }

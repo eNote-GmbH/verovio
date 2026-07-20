@@ -46,7 +46,7 @@ FunctorCode AdjustSlursFunctor::VisitStaffAlignment(StaffAlignment *staffAlignme
     ArrayOfFloatingCurvePositioners positioners;
     for (FloatingPositioner *positioner : staffAlignment->GetFloatingPositioners()) {
         assert(positioner->GetObject());
-        if (!positioner->GetObject()->Is({ PHRASE, SLUR })) continue;
+        if (!positioner->GetObject()->IsAnyOf(std::array{ PHRASE, SLUR })) continue;
         Slur *slur = vrv_cast<Slur *>(positioner->GetObject());
         assert(slur);
         m_currentSlur = slur;
@@ -543,7 +543,7 @@ std::tuple<bool, int, int> AdjustSlursFunctor::CalcControlPointOffset(const Bezi
 
     if ((leftSlopeMax == 0.0) || (rightSlopeMax == 0.0)) return { false, 0, 0 };
 
-    // Calculate offset from extremal slope, but use 1/20 of horizontal distance as minimum
+    // Calculate offset from extreme slope, but use 1/20 of horizontal distance as minimum
     const int minOffset = (bezierCurve.p2.x - bezierCurve.p1.x) / 20;
     int leftOffset = minOffset;
     if (bezierCurve.GetLeftControlOffset() > 0) {

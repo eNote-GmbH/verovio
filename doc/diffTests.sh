@@ -5,6 +5,8 @@
 
 # The path to the directory of tests in verovio.org
 testdir="/Users/laurent/Documents/verovio/gh-pages/_tests"
+# The path to the directory of musicxml tests
+testmusicxmldir="/Users/laurent/Documents/verovio/gh-pages/musicxmlTestSuite"
 # The path to the directory for the output of the develop (reference) branch
 indir1="/Users/laurent/tmp/test-output-dev"
 # The path to the directory for the output of the branch with the changes (PR)
@@ -43,23 +45,25 @@ build_dev=$1
 if [ ! -z $build_dev ]; then
     cd $devdir
     git pull
-    cd bindings
-    cmake ../cmake -B python -DBUILD_AS_PYTHON=ON -DNO_HUMDRUM_SUPPORT=ON -DVRV_DYNAMIC_CAST=ON
-    cd python
+    cd bindings/python
+    cmake ../../cmake  -DBUILD_AS_PYTHON=ON -DNO_HUMDRUM_SUPPORT=ON -DVRV_DYNAMIC_CAST=ON
     make -j8
 
     $PYTHON ../../doc/test-suite.py "$testdir" "$indir1"
+    $PYTHON ../../doc/test-suite.py "$testmusicxmldir" "$indir1"
 
     cd $home
 fi
 
-cd ../bindings
-cmake ../cmake -B python -DBUILD_AS_PYTHON=ON -DNO_HUMDRUM_SUPPORT=ON -DVRV_DYNAMIC_CAST=ON
-cd python
+cd ../bindings/python
+cmake ../../cmake -DBUILD_AS_PYTHON=ON -DNO_HUMDRUM_SUPPORT=ON -DVRV_DYNAMIC_CAST=ON
 make -j8
 
 $PYTHON ../../doc/test-suite.py "$testdir" "$indir2" --shortlist "$shortlist"
+$PYTHON ../../doc/test-suite.py "$testmusicxmldir" "$indir2"
 
 $PYTHON ../../doc/test-suite-diff.py "$indir2" "$indir1" "$outdir"
+
+$PYTHON ../../doc/test-suite-roundtrip.py "$testdir" "$outdir"
 
 open $outdir/index.html

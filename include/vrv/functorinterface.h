@@ -16,6 +16,7 @@ class Accid;
 class Alignment;
 class AlignmentReference;
 class AnchoredText;
+class AnnotScore;
 class Arpeg;
 class Artic;
 class BarLine;
@@ -30,6 +31,7 @@ class Chord;
 class Clef;
 class ControlElement;
 class Course;
+class CpMark;
 class Custos;
 class Dir;
 class Div;
@@ -41,6 +43,7 @@ class EditorialElement;
 class Ending;
 class Expansion;
 class F;
+class Facsimile;
 class Fb;
 class Fermata;
 class Fing;
@@ -48,9 +51,11 @@ class Fig;
 class Flag;
 class FloatingObject;
 class FTrem;
+class GenericLayerElement;
 class Gliss;
 class GraceAligner;
 class GraceGrp;
+class Graphic;
 class GrpSym;
 class Hairpin;
 class HalfmRpt;
@@ -88,6 +93,7 @@ class Num;
 class Object;
 class Octave;
 class Ornam;
+class Ossia;
 class Page;
 class PageElement;
 class PageMilestoneEnd;
@@ -117,6 +123,7 @@ class StaffAlignment;
 class StaffDef;
 class StaffGrp;
 class Stem;
+class Surface;
 class Svg;
 class Syl;
 class Syllable;
@@ -141,6 +148,7 @@ class TupletBracket;
 class TupletNum;
 class Turn;
 class Verse;
+class Zone;
 
 //----------------------------------------------------------------------------
 // FunctorInterface
@@ -156,7 +164,7 @@ public:
      * @name Constructors, destructors
      */
     ///@{
-    FunctorInterface() {};
+    FunctorInterface() {}
     virtual ~FunctorInterface() = default;
     ///@}
 
@@ -164,8 +172,8 @@ public:
      * @name Visit object and doc
      */
     ///@{
-    virtual FunctorCode VisitObject(Object *object) { return FUNCTOR_CONTINUE; }
-    virtual FunctorCode VisitObjectEnd(Object *object) { return FUNCTOR_CONTINUE; }
+    virtual FunctorCode VisitObject(Object *) { return FUNCTOR_CONTINUE; }
+    virtual FunctorCode VisitObjectEnd(Object *) { return FUNCTOR_CONTINUE; }
     virtual FunctorCode VisitDoc(Doc *doc);
     virtual FunctorCode VisitDocEnd(Doc *doc);
     ///@}
@@ -190,6 +198,8 @@ public:
     virtual FunctorCode VisitLayerDefEnd(LayerDef *layerDef);
     virtual FunctorCode VisitMeasure(Measure *measure);
     virtual FunctorCode VisitMeasureEnd(Measure *measure);
+    virtual FunctorCode VisitOssia(Ossia *ossia);
+    virtual FunctorCode VisitOssiaEnd(Ossia *ossia);
     virtual FunctorCode VisitPage(Page *page);
     virtual FunctorCode VisitPageEnd(Page *page);
     virtual FunctorCode VisitPages(Pages *pages);
@@ -275,6 +285,8 @@ public:
     ///@{
     virtual FunctorCode VisitAnchoredText(AnchoredText *anchoredText);
     virtual FunctorCode VisitAnchoredTextEnd(AnchoredText *anchoredText);
+    virtual FunctorCode VisitAnnotScore(AnnotScore *annotScore);
+    virtual FunctorCode VisitAnnotScoreEnd(AnnotScore *annotScore);
     virtual FunctorCode VisitArpeg(Arpeg *arpeg);
     virtual FunctorCode VisitArpegEnd(Arpeg *arpeg);
     virtual FunctorCode VisitBeamSpan(BeamSpan *beamSpan);
@@ -287,6 +299,8 @@ public:
     virtual FunctorCode VisitCaesuraEnd(Caesura *caesura);
     virtual FunctorCode VisitControlElement(ControlElement *controlElement);
     virtual FunctorCode VisitControlElementEnd(ControlElement *controlElement);
+    virtual FunctorCode VisitCpMark(CpMark *cpMark);
+    virtual FunctorCode VisitCpMarkEnd(CpMark *cpMark);
     virtual FunctorCode VisitDir(Dir *dir);
     virtual FunctorCode VisitDirEnd(Dir *dir);
     virtual FunctorCode VisitDynam(Dynam *dynam);
@@ -361,6 +375,8 @@ public:
     virtual FunctorCode VisitFlagEnd(Flag *flag);
     virtual FunctorCode VisitFTrem(FTrem *fTrem);
     virtual FunctorCode VisitFTremEnd(FTrem *fTrem);
+    virtual FunctorCode VisitGenericLayerElement(GenericLayerElement *genericLayerElement);
+    virtual FunctorCode VisitGenericLayerElementEnd(GenericLayerElement *genericLayerElement);
     virtual FunctorCode VisitGraceGrp(GraceGrp *graceGrp);
     virtual FunctorCode VisitGraceGrpEnd(GraceGrp *graceGrp);
     virtual FunctorCode VisitHalfmRpt(HalfmRpt *halfmRpt);
@@ -456,6 +472,20 @@ public:
     ///@}
 
     /**
+     * @name Visit facsimle elements
+     */
+    ///@{
+    virtual FunctorCode VisitFacsimile(Facsimile *facsimile);
+    virtual FunctorCode VisitFacsimileEnd(Facsimile *facsimile);
+    virtual FunctorCode VisitGraphic(Graphic *graphic);
+    virtual FunctorCode VisitGraphicEnd(Graphic *graphic);
+    virtual FunctorCode VisitSurface(Surface *surface);
+    virtual FunctorCode VisitSurfaceEnd(Surface *surface);
+    virtual FunctorCode VisitZone(Zone *zone);
+    virtual FunctorCode VisitZoneEnd(Zone *zone);
+    ///@}
+
+    /**
      * @name Visit horizontal aligners
      */
     ///@{
@@ -513,7 +543,7 @@ public:
      * @name Constructors, destructors
      */
     ///@{
-    ConstFunctorInterface() {};
+    ConstFunctorInterface() {}
     virtual ~ConstFunctorInterface() = default;
     ///@}
 
@@ -521,8 +551,8 @@ public:
      * @name Visit object and doc
      */
     ///@{
-    virtual FunctorCode VisitObject(const Object *object) { return FUNCTOR_CONTINUE; }
-    virtual FunctorCode VisitObjectEnd(const Object *object) { return FUNCTOR_CONTINUE; }
+    virtual FunctorCode VisitObject(const Object *) { return FUNCTOR_CONTINUE; }
+    virtual FunctorCode VisitObjectEnd(const Object *) { return FUNCTOR_CONTINUE; }
     virtual FunctorCode VisitDoc(const Doc *doc);
     virtual FunctorCode VisitDocEnd(const Doc *doc);
     ///@}
@@ -547,6 +577,8 @@ public:
     virtual FunctorCode VisitLayerDefEnd(const LayerDef *layerDef);
     virtual FunctorCode VisitMeasure(const Measure *measure);
     virtual FunctorCode VisitMeasureEnd(const Measure *measure);
+    virtual FunctorCode VisitOssia(const Ossia *ossia);
+    virtual FunctorCode VisitOssiaEnd(const Ossia *ossia);
     virtual FunctorCode VisitPage(const Page *page);
     virtual FunctorCode VisitPageEnd(const Page *page);
     virtual FunctorCode VisitPages(const Pages *pages);
@@ -632,6 +664,8 @@ public:
     ///@{
     virtual FunctorCode VisitAnchoredText(const AnchoredText *anchoredText);
     virtual FunctorCode VisitAnchoredTextEnd(const AnchoredText *anchoredText);
+    virtual FunctorCode VisitAnnotScore(const AnnotScore *annotScore);
+    virtual FunctorCode VisitAnnotScoreEnd(const AnnotScore *annotScore);
     virtual FunctorCode VisitArpeg(const Arpeg *arpeg);
     virtual FunctorCode VisitArpegEnd(const Arpeg *arpeg);
     virtual FunctorCode VisitBeamSpan(const BeamSpan *beamSpan);
@@ -644,6 +678,8 @@ public:
     virtual FunctorCode VisitCaesuraEnd(const Caesura *caesura);
     virtual FunctorCode VisitControlElement(const ControlElement *controlElement);
     virtual FunctorCode VisitControlElementEnd(const ControlElement *controlElement);
+    virtual FunctorCode VisitCpMark(const CpMark *cpMark);
+    virtual FunctorCode VisitCpMarkEnd(const CpMark *cpMark);
     virtual FunctorCode VisitDir(const Dir *dir);
     virtual FunctorCode VisitDirEnd(const Dir *dir);
     virtual FunctorCode VisitDynam(const Dynam *dynam);
@@ -718,6 +754,8 @@ public:
     virtual FunctorCode VisitFlagEnd(const Flag *flag);
     virtual FunctorCode VisitFTrem(const FTrem *fTrem);
     virtual FunctorCode VisitFTremEnd(const FTrem *fTrem);
+    virtual FunctorCode VisitGenericLayerElement(const GenericLayerElement *genericLayerElement);
+    virtual FunctorCode VisitGenericLayerElementEnd(const GenericLayerElement *genericLayerElement);
     virtual FunctorCode VisitGraceGrp(const GraceGrp *graceGrp);
     virtual FunctorCode VisitGraceGrpEnd(const GraceGrp *graceGrp);
     virtual FunctorCode VisitHalfmRpt(const HalfmRpt *halfmRpt);
@@ -810,6 +848,20 @@ public:
     virtual FunctorCode VisitTextEnd(const Text *text);
     virtual FunctorCode VisitTextElement(const TextElement *textElement);
     virtual FunctorCode VisitTextElementEnd(const TextElement *textElement);
+    ///@}
+
+    /**
+     * @name Visit facsimle elements
+     */
+    ///@{
+    virtual FunctorCode VisitFacsimile(const Facsimile *facsimile);
+    virtual FunctorCode VisitFacsimileEnd(const Facsimile *facsimile);
+    virtual FunctorCode VisitGraphic(const Graphic *graphic);
+    virtual FunctorCode VisitGraphicEnd(const Graphic *graphic);
+    virtual FunctorCode VisitSurface(const Surface *surface);
+    virtual FunctorCode VisitSurfaceEnd(const Surface *surface);
+    virtual FunctorCode VisitZone(const Zone *zone);
+    virtual FunctorCode VisitZoneEnd(const Zone *zone);
     ///@}
 
     /**

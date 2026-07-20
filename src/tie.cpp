@@ -34,17 +34,10 @@ namespace vrv {
 
 static const ClassRegistrar<Tie> s_factory("tie", TIE);
 
-Tie::Tie()
-    : ControlElement(TIE, "tie-")
-    , TimeSpanningInterface()
-    , VisualOffsetInterface()
-    , AttColor()
-    , AttCurvature()
-    , AttLineRendBase()
+Tie::Tie() : ControlElement(TIE), OffsetSpanningInterface(), TimeSpanningInterface(), AttCurvature(), AttLineRendBase()
 {
+    this->RegisterInterface(OffsetSpanningInterface::GetAttClasses(), OffsetSpanningInterface::IsInterface());
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
-    this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_LINERENDBASE);
 
@@ -52,33 +45,10 @@ Tie::Tie()
 }
 
 Tie::Tie(ClassId classId)
-    : ControlElement(classId, "tie-")
-    , TimeSpanningInterface()
-    , VisualOffsetInterface()
-    , AttColor()
-    , AttCurvature()
-    , AttLineRendBase()
+    : ControlElement(classId), OffsetSpanningInterface(), TimeSpanningInterface(), AttCurvature(), AttLineRendBase()
 {
+    this->RegisterInterface(OffsetSpanningInterface::GetAttClasses(), OffsetSpanningInterface::IsInterface());
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
-    this->RegisterAttClass(ATT_COLOR);
-    this->RegisterAttClass(ATT_CURVATURE);
-    this->RegisterAttClass(ATT_LINERENDBASE);
-
-    this->Reset();
-}
-
-Tie::Tie(ClassId classId, const std::string &classIdStr)
-    : ControlElement(classId, classIdStr)
-    , TimeSpanningInterface()
-    , VisualOffsetInterface()
-    , AttColor()
-    , AttCurvature()
-    , AttLineRendBase()
-{
-    this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
-    this->RegisterInterface(VisualOffsetInterface::GetAttClasses(), VisualOffsetInterface::IsInterface());
-    this->RegisterAttClass(ATT_COLOR);
     this->RegisterAttClass(ATT_CURVATURE);
     this->RegisterAttClass(ATT_LINERENDBASE);
 
@@ -90,9 +60,8 @@ Tie::~Tie() {}
 void Tie::Reset()
 {
     ControlElement::Reset();
+    OffsetSpanningInterface::Reset();
     TimeSpanningInterface::Reset();
-    VisualOffsetInterface::Reset();
-    this->ResetColor();
     this->ResetCurvature();
     this->ResetLineRendBase();
 }
@@ -282,7 +251,7 @@ bool Tie::CalculatePosition(const Doc *doc, const Staff *staff, int x1, int x2, 
     curve->UpdateCurveParams(bezier, thickness, drawingCurveDir);
 
     if ((!startParentChord || isOuterChordNote) && durElement && (spanningType != SPANNING_END)) {
-        UpdateTiePositioning(curve, bezier, durElement, note1, drawingUnit, drawingCurveDir);
+        this->UpdateTiePositioning(curve, bezier, durElement, note1, drawingUnit, drawingCurveDir);
         curve->UpdateCurveParams(bezier, thickness, drawingCurveDir);
     }
     if (!startParentChord && !endParentChord && note1 && note2 && (spanningType == SPANNING_START_END)) {

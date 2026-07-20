@@ -11,6 +11,7 @@
 #include "atts_analytical.h"
 #include "atts_shared.h"
 #include "layerelement.h"
+#include "offsetinterface.h"
 #include "pitchinterface.h"
 #include "positioninterface.h"
 
@@ -20,7 +21,11 @@ namespace vrv {
 // Liquescent
 //----------------------------------------------------------------------------
 
-class Liquescent : public LayerElement, public PitchInterface, public PositionInterface, public AttColor {
+class Liquescent : public LayerElement,
+                   public OffsetInterface,
+                   public PitchInterface,
+                   public PositionInterface,
+                   public AttColor {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
@@ -29,26 +34,37 @@ public:
     ///@{
     Liquescent();
     virtual ~Liquescent();
-    virtual Object *Clone() const { return new Liquescent(*this); }
-    virtual void Reset();
-    virtual std::string GetClassName() const { return "Liquescent"; }
+    Object *Clone() const override { return new Liquescent(*this); }
+    void Reset() override;
+    std::string GetClassName() const override { return "liquescent"; }
+    ///@}
+
+    /**
+     * @name Getter and setter for liquescent options
+     */
+    ///@{
+    bool HasNoTails() const { return (m_noTails); }
+    void SetNoTails(bool noTails) { m_noTails = noTails; }
     ///@}
 
     /**
      * @name Getter to interfaces
      */
     ///@{
-    virtual PitchInterface *GetPitchInterface() { return dynamic_cast<PitchInterface *>(this); }
+    OffsetInterface *GetOffsetInterface() override { return vrv_cast<OffsetInterface *>(this); }
+    const OffsetInterface *GetOffsetInterface() const override { return vrv_cast<const OffsetInterface *>(this); }
+    PitchInterface *GetPitchInterface() override { return vrv_cast<PitchInterface *>(this); }
+    const PitchInterface *GetPitchInterface() const override { return vrv_cast<const PitchInterface *>(this); }
+    PositionInterface *GetPositionInterface() override { return vrv_cast<PositionInterface *>(this); }
+    const PositionInterface *GetPositionInterface() const override { return vrv_cast<const PositionInterface *>(this); }
     ///@}
 
     /** Override the method since alignment is required */
-    virtual bool HasToBeAligned() const { return true; }
+    bool HasToBeAligned() const override { return true; }
 
 private:
-    //
-public:
-    //
-private:
+    // Used for enabling the command-line option: --liquescent-no-tails
+    bool m_noTails = false;
 };
 
 } // namespace vrv

@@ -57,8 +57,22 @@ namespace vrv {
 
 PrepareDataInitializationFunctor::PrepareDataInitializationFunctor(Doc *doc) : DocFunctor(doc) {}
 
+FunctorCode PrepareDataInitializationFunctor::VisitAccid(Accid *accid)
+{
+    // Call parent one too
+    this->VisitLayerElement(accid);
+
+    if (accid->GetFunc() == accidLog_FUNC_edit) {
+        accid->InitFloatingObject();
+    }
+    accid->Modify();
+
+    return FUNCTOR_CONTINUE;
+}
+
 FunctorCode PrepareDataInitializationFunctor::VisitDiv(Div *div)
 {
+    // Call parent one too
     this->VisitTextLayoutElement(div);
 
     if (m_doc->GetOptions()->m_breaks.GetValue() == BREAKS_none) {
@@ -70,6 +84,9 @@ FunctorCode PrepareDataInitializationFunctor::VisitDiv(Div *div)
 
 FunctorCode PrepareDataInitializationFunctor::VisitChord(Chord *chord)
 {
+    // Call parent one too
+    this->VisitLayerElement(chord);
+
     if (chord->HasEmptyList()) {
         LogWarning("Chord '%s' has no child note - a default note is added", chord->GetID().c_str());
         Note *rescueNote = new Note();
@@ -82,6 +99,9 @@ FunctorCode PrepareDataInitializationFunctor::VisitChord(Chord *chord)
 
 FunctorCode PrepareDataInitializationFunctor::VisitFloatingObject(FloatingObject *floatingObject)
 {
+    // Call parent one too
+    this->VisitObject(floatingObject);
+
     floatingObject->ResetDrawingObjectIDs();
 
     return FUNCTOR_CONTINUE;
@@ -89,6 +109,9 @@ FunctorCode PrepareDataInitializationFunctor::VisitFloatingObject(FloatingObject
 
 FunctorCode PrepareDataInitializationFunctor::VisitKeySig(KeySig *keySig)
 {
+    // Call parent one too
+    this->VisitLayerElement(keySig);
+
     // Clear and regenerate attribute children
     keySig->GenerateKeyAccidAttribChildren();
 
@@ -112,6 +135,11 @@ FunctorCode PrepareDataInitializationFunctor::VisitRepeatMark(RepeatMark *repeat
 
 FunctorCode PrepareDataInitializationFunctor::VisitScore(Score *score)
 {
+    // Call parent one too
+    this->VisitPageElement(score);
+
+    assert(score->GetScoreDef());
+
     // Evaluate functor on scoreDef
     score->GetScoreDef()->Process(*this);
 
@@ -120,6 +148,9 @@ FunctorCode PrepareDataInitializationFunctor::VisitScore(Score *score)
 
 FunctorCode PrepareDataInitializationFunctor::VisitTextLayoutElement(TextLayoutElement *textLayoutElement)
 {
+    // Call parent one too
+    this->VisitObject(textLayoutElement);
+
     textLayoutElement->ResetCells();
     textLayoutElement->ResetDrawingScaling();
 
@@ -188,7 +219,7 @@ FunctorCode PrepareCueSizeFunctor::VisitLayerElement(LayerElement *layerElement)
             if (note) accid->SetDrawingCueSize(note->GetDrawingCueSize());
         }
     }
-    else if (layerElement->Is({ ARTIC, DOTS, FLAG, STEM })) {
+    else if (layerElement->IsAnyOf(std::array{ ARTIC, DOTS, FLAG, STEM })) {
         Note *note = vrv_cast<Note *>(layerElement->GetFirstAncestor(NOTE, MAX_NOTE_DEPTH));
         if (note)
             layerElement->SetDrawingCueSize(note->GetDrawingCueSize());
@@ -273,12 +304,13 @@ FunctorCode PrepareCrossStaffFunctor::VisitLayerElement(LayerElement *layerEleme
             crossElement->GetStaff().at(0), layerElement->GetID().c_str());
         layerElement->m_crossStaff = NULL;
     }
-
-    if (direction == FORWARD) {
-        layerElement->m_crossLayer->SetCrossStaffFromAbove(true);
-    }
     else {
-        layerElement->m_crossLayer->SetCrossStaffFromBelow(true);
+        if (direction == FORWARD) {
+            layerElement->m_crossLayer->SetCrossStaffFromAbove(true);
+        }
+        else {
+            layerElement->m_crossLayer->SetCrossStaffFromBelow(true);
+        }
     }
 
     m_currentCrossStaff = layerElement->m_crossStaff;
@@ -301,7 +333,7 @@ FunctorCode PrepareCrossStaffFunctor::VisitLayerElementEnd(LayerElement *layerEl
             m_currentCrossLayer = NULL;
         }
     }
-    else if (layerElement->Is({ BEAM, BTREM, FTREM, TUPLET })) {
+    else if (layerElement->IsAnyOf(std::array{ BEAM, BTREM, FTREM, TUPLET })) {
         // For other elements (e.g., beams, tuplets) check if all their child duration elements are cross-staff
         // If yes, make them cross-staff themselves.
         ListOfObjects durations;
@@ -353,6 +385,7 @@ FunctorCode PrepareAltSymFunctor::VisitObject(Object *object)
     if (object->Is(SCORE)) {
         Score *score = vrv_cast<Score *>(object);
         assert(score);
+        assert(score->GetScoreDef());
         m_symbolTable = vrv_cast<SymbolTable *>(score->GetScoreDef()->FindDescendantByType(SYMBOLTABLE));
     }
 
@@ -460,7 +493,7 @@ void PrepareLinkingFunctor::ResolveStemSameas(Note *note)
     // Second pass we resolve links
     else {
         const std::string id = note->GetID();
-        if (m_stemSameasIDPairs.count(id)) {
+        if (m_stemSameasIDPairs.contains(id)) {
             Note *noteStemSameas = m_stemSameasIDPairs.at(id);
             // Instanciate the bi-directional references and mark the roles as unset
             note->SetStemSameasNote(noteStemSameas);
@@ -493,9 +526,9 @@ void PrepareLinkingFunctor::ResolveStemSameas(Note *note)
 
 PreparePlistFunctor::PreparePlistFunctor() : Functor(), CollectAndProcess() {}
 
-void PreparePlistFunctor::InsertInterfaceIDPair(const std::string &elementID, PlistInterface *interface)
+void PreparePlistFunctor::InsertInterfaceObjectIDPair(Object *objectWithPlist, const std::string &elementID)
 {
-    m_interfaceIDPairs.push_back(std::make_pair(interface, elementID));
+    m_plistObjectIDPairs.push_back(std::make_pair(objectWithPlist, elementID));
 }
 
 FunctorCode PreparePlistFunctor::VisitObject(Object *object)
@@ -508,15 +541,24 @@ FunctorCode PreparePlistFunctor::VisitObject(Object *object)
         }
     }
     else {
-        if (!object->IsLayerElement()) return FUNCTOR_CONTINUE;
+        if (!object->IsLayerElement() && !object->IsAnyOf(std::array{ ENDING, EXPANSION, SECTION }))
+            return FUNCTOR_CONTINUE;
 
         const std::string &id = object->GetID();
-        auto iter = std::find_if(m_interfaceIDPairs.begin(), m_interfaceIDPairs.end(),
-            [&id](const std::pair<PlistInterface *, std::string> &pair) { return (pair.second == id); });
-        if (iter != m_interfaceIDPairs.end()) {
-            // Set reference for matched pair and erase it from the list
-            iter->first->SetRef(object);
-            m_interfaceIDPairs.erase(iter);
+        for (auto it = m_plistObjectIDPairs.begin(); it != m_plistObjectIDPairs.end();) {
+            if (it->second == id) {
+                PlistInterface *interface = it->first->GetPlistInterface();
+                assert(interface);
+                interface->SetRef(object);
+                // Add back link to the object referred in the plist - for now only for Annot
+                if (it->first->Is(ANNOTSCORE)) {
+                    object->AddPlistReference(it->first);
+                }
+                it = m_plistObjectIDPairs.erase(it); // returns next valid iterator
+            }
+            else {
+                ++it;
+            }
         }
     }
 
@@ -540,7 +582,7 @@ FunctorCode PrepareDurationFunctor::VisitLayerElement(LayerElement *layerElement
         // Check if there is a duration default for the staff
         if (!m_durDefaultForStaffN.empty()) {
             Staff *staff = layerElement->GetAncestorStaff(RESOLVE_CROSS_STAFF);
-            if (m_durDefaultForStaffN.count(staff->GetN()) > 0) {
+            if (m_durDefaultForStaffN.contains(staff->GetN())) {
                 durInterface->SetDurDefault(m_durDefaultForStaffN.at(staff->GetN()));
             }
         }
@@ -615,7 +657,7 @@ FunctorCode PrepareTimePointingFunctor::VisitLayerElement(LayerElement *layerEle
     if (layerElement->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
     // Do not look for tstamp pointing to these
-    if (layerElement->Is({ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
+    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
 
     ListOfPointingInterClassIdPairs::iterator iter = m_timePointingInterfaces.begin();
     while (iter != m_timePointingInterfaces.end()) {
@@ -681,7 +723,7 @@ FunctorCode PrepareTimeSpanningFunctor::VisitLayerElement(LayerElement *layerEle
     if (layerElement->IsScoreDefElement()) return FUNCTOR_SIBLINGS;
 
     // Do not look for tstamp pointing to these
-    if (layerElement->Is({ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
+    if (layerElement->IsAnyOf(std::array{ ARTIC, BEAM, FLAG, TUPLET, STEM, VERSE })) return FUNCTOR_CONTINUE;
 
     ListOfSpanningInterOwnerPairs::iterator iter = m_timeSpanningInterfaces.begin();
     while (iter != m_timeSpanningInterfaces.end()) {
@@ -721,7 +763,7 @@ FunctorCode PrepareTimeSpanningFunctor::VisitMeasureEnd(Measure *measure)
         while (iter != m_timeSpanningInterfaces.end()) {
             // At the end of the measure we remove elements for which we do not need to match the end (for now).
             // Eventually, we could consider them, for example if we want to display their spanning or for
-            // improved midi output
+            // improved MIDI output
             if (iter->second->GetClassId() == HARM) {
                 iter = m_timeSpanningInterfaces.erase(iter);
             }
@@ -969,7 +1011,7 @@ FunctorCode PreparePointersByLayerFunctor::VisitLayerElement(LayerElement *layer
         // Do not attach a note when a barline is passed
         m_currentElement = NULL;
     }
-    else if (layerElement->Is({ NOTE, REST })) {
+    else if (layerElement->IsAnyOf(std::array{ NOTE, REST })) {
         m_currentElement = layerElement;
     }
 
@@ -1039,7 +1081,8 @@ FunctorCode PrepareLyricsFunctor::VisitSyl(Syl *syl)
 {
     Verse *verse = vrv_cast<Verse *>(syl->GetFirstAncestor(VERSE, MAX_NOTE_DEPTH));
     if (verse) {
-        syl->m_drawingVerse = std::max(verse->GetN(), 1);
+        syl->m_drawingVerseN = std::max(verse->GetN(), 1);
+        syl->m_drawingVersePlace = verse->GetPlace();
     }
 
     syl->SetStart(vrv_cast<LayerElement *>(syl->GetFirstAncestor(NOTE, MAX_NOTE_DEPTH)));
@@ -1047,24 +1090,33 @@ FunctorCode PrepareLyricsFunctor::VisitSyl(Syl *syl)
     if (!syl->GetStart()) {
         syl->SetStart(vrv_cast<LayerElement *>(syl->GetFirstAncestor(CHORD, MAX_CHORD_DEPTH)));
     }
+    const bool isEmptySyl = syl->IsEmpty();
 
     // At this stage currentSyl is actually the previous one that is ending here
     if (m_currentSyl) {
         // The previous syl was an initial or median -> The note we just parsed is the end
         if ((m_currentSyl->GetWordpos() == sylLog_WORDPOS_i) || (m_currentSyl->GetWordpos() == sylLog_WORDPOS_m)) {
-            m_currentSyl->SetEnd(m_lastNoteOrChord);
-            m_currentSyl->m_nextWordSyl = syl;
+            if (!isEmptySyl) {
+                m_currentSyl->SetEnd(m_lastNoteOrChord);
+                m_currentSyl->m_nextWordSyl = syl;
+            }
         }
-        // The previous syl was a underscore -> the previous but one was the end
+        // The previous syl was an underscore -> the explicit empty endpoint or the previous but one was the end.
         else if (m_currentSyl->GetCon() == sylLog_CON_u) {
-            if (m_currentSyl->GetStart() == m_penultimateNoteOrChord) {
+            LayerElement *end = isEmptySyl ? syl->GetStart() : m_penultimateNoteOrChord;
+            if (end && (m_currentSyl->GetStart() == end)) {
                 LogWarning("Syllable with underline extender under one single note '%s'",
                     m_currentSyl->GetStart()->GetID().c_str());
             }
-            else {
-                m_currentSyl->SetEnd(m_penultimateNoteOrChord);
+            else if (end) {
+                m_currentSyl->SetEnd(end);
             }
         }
+    }
+
+    if (isEmptySyl) {
+        m_currentSyl = NULL;
+        return FUNCTOR_CONTINUE;
     }
 
     // Now decide what to do with the starting syl and check if it has a forward connector
@@ -1099,12 +1151,12 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitChord(Chord *chord)
     currentStem->AttGraced::operator=(*chord);
     currentStem->FillAttributes(*chord);
 
-    int duration = chord->GetNoteOrChordDur(chord);
-    if ((duration < DUR_2) || (chord->GetStemVisible() == BOOLEAN_false)) {
+    data_DURATION duration = chord->GetNoteOrChordDur(chord);
+    if ((duration < DURATION_2) || (chord->GetStemVisible() == BOOLEAN_false)) {
         currentStem->IsVirtual(true);
     }
 
-    const bool shouldHaveFlag = ((duration > DUR_4) && !chord->IsInBeam() && !chord->GetAncestorFTrem());
+    const bool shouldHaveFlag = ((duration > DURATION_4) && !chord->IsInBeam() && !chord->GetAncestorFTrem());
     currentFlag = this->ProcessFlag(currentFlag, currentStem, shouldHaveFlag);
 
     chord->SetDrawingStem(currentStem);
@@ -1148,7 +1200,7 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitNote(Note *note)
         currentStem->AttGraced::operator=(*note);
         currentStem->FillAttributes(*note);
 
-        if (note->GetActualDur() < DUR_2 || (note->GetStemVisible() == BOOLEAN_false)) {
+        if (note->GetActualDur() < DURATION_2 || (note->GetStemVisible() == BOOLEAN_false)) {
             currentStem->IsVirtual(true);
         }
     }
@@ -1161,17 +1213,6 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitNote(Note *note)
         }
     }
 
-    // We don't care about flags or dots in mensural notes
-    if (note->IsMensuralDur()) return FUNCTOR_CONTINUE;
-
-    if (currentStem) {
-        const bool shouldHaveFlag = ((note->GetActualDur() > DUR_4) && !note->IsInBeam() && !note->GetAncestorFTrem()
-            && !note->IsChordTone() && !note->IsTabGrpNote());
-        currentFlag = this->ProcessFlag(currentFlag, currentStem, shouldHaveFlag);
-
-        if (!chord) note->SetDrawingStem(currentStem);
-    }
-
     /************ dots ***********/
 
     Dots *currentDots = vrv_cast<Dots *>(note->FindDescendantByType(DOTS, 1));
@@ -1181,6 +1222,17 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitNote(Note *note)
         LogWarning("Note '%s' with a @dots attribute with the same value as its chord parent", note->GetID().c_str());
     }
     currentDots = this->ProcessDots(currentDots, note, shouldHaveDots);
+
+    // We don't care about flags in mensural notes
+    if (note->IsMensuralDur()) return FUNCTOR_CONTINUE;
+
+    if (currentStem) {
+        const bool shouldHaveFlag = ((note->GetActualDur() > DURATION_4) && !note->IsInBeam()
+            && !note->GetAncestorFTrem() && !note->IsChordTone() && !note->IsTabGrpNote());
+        currentFlag = this->ProcessFlag(currentFlag, currentStem, shouldHaveFlag);
+
+        if (!chord) note->SetDrawingStem(currentStem);
+    }
 
     /************ Prepare the drawing cue size ************/
 
@@ -1194,7 +1246,7 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitRest(Rest *rest)
 {
     Dots *currentDots = vrv_cast<Dots *>(rest->FindDescendantByType(DOTS, 1));
 
-    const bool shouldHaveDots = (rest->GetDur() > DUR_BR) && (rest->GetDots() > 0);
+    const bool shouldHaveDots = (rest->GetDur() > DURATION_breve) && (rest->GetDots() > 0);
     currentDots = this->ProcessDots(currentDots, rest, shouldHaveDots);
 
     /************ Prepare the drawing cue size ************/
@@ -1220,7 +1272,7 @@ FunctorCode PrepareLayerElementPartsFunctor::VisitTabDurSym(TabDurSym *tabDurSym
     assert(tabGrp);
 
     // No flag within beam for durations longer than 8th notes
-    const bool shouldHaveFlag = (!tabDurSym->IsInBeam() && (tabGrp->GetActualDur() > DUR_4));
+    const bool shouldHaveFlag = (!tabDurSym->IsInBeam() && (tabGrp->GetActualDur() > DURATION_4));
     currentFlag = this->ProcessFlag(currentFlag, currentStem, shouldHaveFlag);
 
     return FUNCTOR_SIBLINGS;
@@ -1387,6 +1439,7 @@ FunctorCode PrepareRptFunctor::VisitStaff(Staff *staff)
 
     // This is happening only for the first staff element of the staff @n
     ScoreDef *scoreDef = m_doc->GetCorrespondingScore(staff)->GetScoreDef();
+    assert(scoreDef);
     if (StaffDef *staffDef = scoreDef->GetStaffDef(staff->GetN())) {
         const bool hideNumber = (staffDef->GetMultiNumber() == BOOLEAN_false)
             || ((staffDef->GetMultiNumber() != BOOLEAN_true) && (scoreDef->GetMultiNumber() == BOOLEAN_false));
@@ -1433,7 +1486,7 @@ FunctorCode PrepareDelayedTurnsFunctor::VisitLayerElement(LayerElement *layerEle
         this->ResetCurrent();
     }
 
-    if (m_delayedTurns.count(layerElement)) {
+    if (m_delayedTurns.contains(layerElement)) {
         m_previousElement = layerElement;
         m_currentTurn = m_delayedTurns.at(layerElement);
         if (layerElement->Is(CHORD)) {
@@ -1840,7 +1893,7 @@ PrepareRehPositionFunctor::PrepareRehPositionFunctor() : Functor() {}
 
 FunctorCode PrepareRehPositionFunctor::VisitReh(Reh *reh)
 {
-    if (!reh->HasStart() && !reh->HasTstamp()) {
+    if (!reh->HasStartid() && !reh->HasTstamp()) {
         Measure *measure = vrv_cast<Measure *>(reh->GetFirstAncestor(MEASURE));
         if (measure->GetLeftBarLine()) reh->SetStart(measure->GetLeftBarLine());
     }
@@ -1882,7 +1935,7 @@ FunctorCode PrepareBeamSpanElementsFunctor::VisitBeamSpan(BeamSpan *beamSpan)
         if (!elementStaff) continue;
         if (elementStaff->GetN() != staff->GetN()) {
             Layer *elementLayer = vrv_cast<Layer *>(layerElem->GetFirstAncestor(LAYER));
-            if (!elementStaff || !elementLayer) continue;
+            if (!elementLayer) continue;
             layerElem->m_crossStaff = elementStaff;
             layerElem->m_crossLayer = elementLayer;
         }
