@@ -800,6 +800,9 @@ public:
     OptionBool m_ossiaHidden;
     OptionArray m_substXPathQuery;
     OptionString m_transpose;
+    OptionString m_transposeCapo;
+    OptionInt m_transposeCapoMax;
+    OptionInt m_transposeCapoMin;
     OptionJson m_transposeMdiv;
     OptionBool m_transposeSelectedOnly;
     OptionBool m_transposeToSoundingPitch;

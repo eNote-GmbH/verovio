@@ -42,6 +42,7 @@ option(USE_PAE_OLD_PARSER       "Use old PAE parser"                           O
 option(BUILD_FONT_BENCHMARKS    "Build runtime font benchmark harness"          OFF)
 option(BUILD_FONT_TESTS         "Build runtime font API tests"                   OFF)
 option(BUILD_TEXT_BLOCK_TESTS   "Build MEI text block tests"                     OFF)
+option(BUILD_TRANSPOSE_CAPO_TESTS "Build guitar capo transposition tests"       OFF)
 
 if (NO_HUMDRUM_SUPPORT AND MUSICXML_DEFAULT_HUMDRUM)
     message(FATAL_ERROR "Default MusicXML to Humdrum cannot be enabled by default without Humdrum support")
@@ -299,6 +300,16 @@ if(BUILD_TEXT_BLOCK_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/text-flow-core.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei)
+endif()
+
+if(BUILD_TRANSPOSE_CAPO_TESTS)
+    enable_testing()
+    add_executable(transpose-capo-test ../tests/transpose-capo/transpose_capo.cpp ${all_SRC})
+    target_compile_definitions(transpose-capo-test PRIVATE VRV_TRANSPOSE_CAPO_TESTING)
+    add_test(NAME transpose-capo
+        COMMAND transpose-capo-test
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/transpose-capo/fixed-capo.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 endif()
 
 ##################

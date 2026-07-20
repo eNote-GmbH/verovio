@@ -1641,6 +1641,10 @@ void Doc::TransposeDoc()
         TransposeFunctor transpose(this, &transposer);
         transpose.SetVisibleOnly(selectedOnly);
         transpose.SetTransposition(m_options->m_transpose.GetValue());
+        transpose.SetCapoOptions(m_options->m_transposeCapo.GetValue(), m_options->m_transposeCapoMin.GetValue(),
+            m_options->m_transposeCapoMax.GetValue());
+        transpose.PrepareCapoArrangement();
+        transpose.ApplyCapoArrangement();
         this->Process(transpose);
     }
     else if (m_options->m_transposeMdiv.IsSet()) {
@@ -1651,6 +1655,10 @@ void Doc::TransposeDoc()
             transposeSelectedMdiv.SetVisibleOnly(selectedOnly);
             transposeSelectedMdiv.SetSelectedMdivID(id);
             transposeSelectedMdiv.SetTransposition(m_options->m_transposeMdiv.GetStrValue({ id }));
+            transposeSelectedMdiv.SetCapoOptions(m_options->m_transposeCapo.GetValue(),
+                m_options->m_transposeCapoMin.GetValue(), m_options->m_transposeCapoMax.GetValue());
+            transposeSelectedMdiv.PrepareCapoArrangement();
+            transposeSelectedMdiv.ApplyCapoArrangement();
             this->Process(transposeSelectedMdiv);
         }
     }

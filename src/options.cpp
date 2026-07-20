@@ -1664,6 +1664,18 @@ Options::Options()
     m_transpose.Init("");
     this->Register(&m_transpose, "transpose", &m_selectors);
 
+    m_transposeCapo.SetInfo("Transpose guitar capo", "Select guitar capo automatically, disable it, or set fret 0–12");
+    m_transposeCapo.Init("auto");
+    this->Register(&m_transposeCapo, "transposeCapo", &m_selectors);
+
+    m_transposeCapoMax.SetInfo("Maximum automatic guitar capo", "Highest capo fret considered in automatic mode");
+    m_transposeCapoMax.Init(7, 0, 12);
+    this->Register(&m_transposeCapoMax, "transposeCapoMax", &m_selectors);
+
+    m_transposeCapoMin.SetInfo("Minimum automatic guitar capo", "Lowest capo fret considered in automatic mode");
+    m_transposeCapoMin.Init(0, 0, 12);
+    this->Register(&m_transposeCapoMin, "transposeCapoMin", &m_selectors);
+
     m_transposeMdiv.SetInfo(
         "Transpose individual mdivs", "Json mapping the mdiv ids to the corresponding transposition");
     m_transposeMdiv.Init(JsonSource::String, "{}");

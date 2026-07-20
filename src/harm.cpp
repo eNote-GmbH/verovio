@@ -26,6 +26,72 @@
 
 namespace vrv {
 
+namespace {
+
+    std::vector<Text *> GetHarmonyTextNodes(Harm *harm)
+    {
+        std::vector<Text *> result;
+        for (Object *object : harm->FindAllDescendantsByType(TEXT)) {
+            if (Text *text = vrv_cast<Text *>(object)) result.push_back(text);
+        }
+        return result;
+    }
+
+    std::vector<const Text *> GetHarmonyTextNodes(const Harm *harm)
+    {
+        std::vector<const Text *> result;
+        for (const Object *object : harm->FindAllDescendantsByType(TEXT)) {
+            if (const Text *text = vrv_cast<const Text *>(object)) result.push_back(text);
+        }
+        return result;
+    }
+
+    void ReplaceHarmonyText(Harm *harm, size_t begin, size_t end, const std::u32string &replacement)
+    {
+        std::vector<Text *> nodes = GetHarmonyTextNodes(harm);
+        size_t offset = 0;
+        bool inserted = false;
+        for (Text *node : nodes) {
+            std::u32string text = node->GetText();
+            const size_t nodeBegin = offset;
+            const size_t nodeEnd = offset + text.size();
+            if (end <= nodeBegin || begin >= nodeEnd) {
+                offset = nodeEnd;
+                continue;
+            }
+            const size_t localBegin = begin > nodeBegin ? begin - nodeBegin : 0;
+            const size_t localEnd = std::min(end, nodeEnd) - nodeBegin;
+            const std::u32string value = inserted ? std::u32string() : replacement;
+            text.replace(localBegin, localEnd - localBegin, value);
+            node->SetText(text);
+            inserted = true;
+            offset = nodeEnd;
+        }
+    }
+
+    bool ParseHarmonyPitch(const std::u32string &text, TransPitch &pitch, unsigned int &pos)
+    {
+        if (text.length() <= pos || text.at(pos) < 'A' || text.at(pos) > 'G') return false;
+        int pname = (text.at(pos) - 'C' + 7) % 7;
+        int accid = 0;
+        for (pos++; pos < text.length(); pos++) {
+            if (text.at(pos) == UNICODE_DOUBLE_FLAT)
+                accid -= 2;
+            else if (text.at(pos) == 'b' || text.at(pos) == UNICODE_FLAT)
+                --accid;
+            else if (text.at(pos) == '#' || text.at(pos) == UNICODE_SHARP)
+                ++accid;
+            else if (text.at(pos) == UNICODE_DOUBLE_SHARP)
+                accid += 2;
+            else
+                break;
+        }
+        pitch = TransPitch(pname, accid, 4);
+        return true;
+    }
+
+} // namespace
+
 //----------------------------------------------------------------------------
 // Harm
 //----------------------------------------------------------------------------
@@ -97,62 +163,26 @@ void Harm::SetChordDef(ChordDef *chordDef)
 
 bool Harm::GetRootPitch(TransPitch &pitch, unsigned int &pos) const
 {
-    const Text *textObject = vrv_cast<const Text *>(this->FindDescendantByType(TEXT, 1));
-    if (!textObject) return false;
-    std::u32string text = textObject->GetText();
-
-    if (text.length() > pos && text.at(pos) >= 'A' && text.at(pos) <= 'G') {
-        int pname = (text.at(pos) - 'C' + 7) % 7;
-        int accid = 0;
-        for (pos++; pos < text.length(); pos++) {
-            if (text.at(pos) == UNICODE_DOUBLE_FLAT) {
-                accid -= 2;
-            }
-            else if (text.at(pos) == 'b' || text.at(pos) == UNICODE_FLAT) {
-                accid--;
-            }
-            else if (text.at(pos) == '#' || text.at(pos) == UNICODE_SHARP) {
-                accid++;
-            }
-            else if (text.at(pos) == UNICODE_DOUBLE_SHARP) {
-                accid += 2;
-            }
-            else {
-                break;
-            }
-        }
-        pitch = TransPitch(pname, accid, 4);
-        return true;
-    }
+    const std::u32string text = this->GetTextContent();
+    if (ParseHarmonyPitch(text, pitch, pos)) return true;
     LogWarning("Failed to extract a pitch.");
     return false;
 }
 
 void Harm::SetRootPitch(const TransPitch &pitch, unsigned int endPos)
 {
-    Text *textObject = vrv_cast<Text *>(this->FindDescendantByType(TEXT, 1));
-    if (!textObject) return;
-    std::u32string text = textObject->GetText();
-
-    if (text.length() > endPos) {
-        textObject->SetText(pitch.GetPitchString() + &text.at(endPos));
-    }
-    else {
-        textObject->SetText(pitch.GetPitchString());
-    }
+    ReplaceHarmonyText(this, 0, endPos, pitch.GetPitchString());
 }
 
 bool Harm::GetBassPitch(TransPitch &pitch) const
 {
-    const Text *textObject = vrv_cast<const Text *>(this->FindDescendantByType(TEXT, 1));
-    if (!textObject) return false;
-    std::u32string text = textObject->GetText();
+    const std::u32string text = this->GetTextContent();
     if (!text.length()) return false;
 
     for (unsigned int pos = 0; pos < text.length(); pos++) {
         if (text.at(pos) == U'/') {
             pos++;
-            return this->GetRootPitch(pitch, pos);
+            return ParseHarmonyPitch(text, pitch, pos);
         }
     }
     return false;
@@ -160,18 +190,20 @@ bool Harm::GetBassPitch(TransPitch &pitch) const
 
 void Harm::SetBassPitch(const TransPitch &pitch)
 {
-    Text *textObject = vrv_cast<Text *>(this->FindDescendantByType(TEXT, 1));
-    if (!textObject) return;
-    std::u32string text = textObject->GetText();
-    unsigned int pos;
-    for (pos = 0; pos < text.length(); pos++) {
-        if (text.at(pos) == U'/') {
-            break;
-        }
-    }
+    const std::u32string text = this->GetTextContent();
+    const size_t slash = text.find(U'/');
+    if (slash == std::u32string::npos) return;
+    unsigned int end = static_cast<unsigned int>(slash + 1);
+    TransPitch ignored;
+    if (!ParseHarmonyPitch(text, ignored, end)) return;
+    ReplaceHarmonyText(this, slash + 1, end, pitch.GetPitchString());
+}
 
-    text = text.substr(0, pos) + U"/" + pitch.GetPitchString();
-    textObject->SetText(text);
+std::u32string Harm::GetTextContent() const
+{
+    std::u32string result;
+    for (const Text *text : GetHarmonyTextNodes(this)) result += text->GetText();
+    return result;
 }
 
 //----------------------------------------------------------------------------
