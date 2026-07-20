@@ -8,18 +8,21 @@
   </meiHead>
   <music>
     <body>
-      <mdiv>
+      <mdiv xml:id="core-mdiv">
         <score>
           <scoreDef page.width="600" page.height="900" page.leftmar="50" page.rightmar="50"
               page.topmar="50" page.botmar="50" text.fam="Times" text.size="12pt">
             <staffGrp>
-              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2" trans.semi="-2"/>
             </staffGrp>
           </scoreDef>
           <section>
             <measure n="1" xml:id="measure-1">
               <staff n="1"><layer n="1"><note xml:id="note-1" pname="c" oct="4" dur="1"/></layer></staff>
-              <harm xml:id="harm-1" staff="1" startid="#note-1">C<rend rend="sup">7</rend></harm>
+              <harm xml:id="harm-sounding" type="sounding-chord" staff="1" startid="#note-1">F<rend rend="sup">7</rend></harm>
+              <harm xml:id="harm-1" type="guitar-chord-shape" staff="1" startid="#note-1">D<rend xml:id="chord-extension" rend="sup">7</rend></harm>
+              <harm xml:id="harm-wide" staff="1" startid="#note-1">ExtraordinarilyWideChord</harm>
+              <dir type="guitar-capo capo-3" staff="1" tstamp="1">Capo III</dir>
             </measure>
             <div xml:id="flow-div" n="2" type="later-verses" label="Later verses"
                 xml:lang="de" corresp="#harm-1" synch="#note-1">
@@ -39,7 +42,7 @@
                   fontfam="Times" fontsize="11pt" fontstyle="normal" fontweight="normal">
                 <head xml:id="stanza-head">2.</head>
                 <l xml:id="flow-line" n="1" rhythm="8 8 4">
-                  <stack xml:id="stack-left" delim="|" align="left" corresp="#harm-1" synch="#note-1">C<rend xml:id="chord-extension" rend="sup">7</rend>|<syl xml:id="syl-when" synch="#note-1" corresp="#harm-1">When</syl></stack>
+                  <syl xml:id="syl-when" synch="#note-1"><stack xml:id="stack-left" delim="|" align="left"><ptr xml:id="ptr-harm-1" target="#harm-1"/>|When</stack></syl>
                   <syl xml:id="syl-hap" wordpos="i" con="d">hap</syl>
                   <syl xml:id="syl-py" wordpos="t">py</syl>
                   <stack xml:id="stack-center" delim="|" align="center">G|days</stack>
@@ -48,7 +51,7 @@
                 </l>
                 <l xml:id="connector-line" n="2">
                   <syl xml:id="joined-first" con="d" wordpos="i">ha</syl><syl xml:id="joined-last" wordpos="t">ben</syl>
-                  <stack xml:id="wide-connector-stack" delim="|" align="left">ExtraordinarilyWideChord|<syl xml:id="wide-first" con="d" wordpos="i">Teu</syl></stack><syl xml:id="wide-last" wordpos="t">fel</syl>
+                  <syl xml:id="wide-first" con="d" wordpos="i"><stack xml:id="wide-connector-stack" delim="|" align="left"><ptr xml:id="ptr-harm-wide" target="#harm-wide"/>|Teu</stack></syl><syl xml:id="wide-last" wordpos="t">fel</syl>
                 </l>
               </lg>
             </div>

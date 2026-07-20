@@ -15,6 +15,8 @@
 #include "doc.h"
 #include "editorial.h"
 #include "fig.h"
+#include "harm.h"
+#include "ptr.h"
 #include "rend.h"
 #include "svg.h"
 #include "syl.h"
@@ -43,6 +45,7 @@ TextFlowLayout::TextFlowLayout(
 std::u32string TextFlowLayout::GetText(Object *object) const
 {
     if (object->Is(TEXT)) return vrv_cast<Text *>(object)->GetText();
+    if (Harm *harm = this->GetHarm(object)) return harm->GetTextContent();
     std::u32string value;
     for (Object *child : object->GetChildren()) value += this->GetText(child);
     return value;
@@ -123,6 +126,12 @@ int TextFlowLayout::MeasureObject(Object *object, const FontInfo &inheritedFont,
 {
     if (object->Is(TEXT)) return this->MeasureText(vrv_cast<Text *>(object)->GetText(), inheritedFont);
 
+    if (Harm *harm = this->GetHarm(object)) {
+        int width = 0;
+        for (Object *child : harm->GetChildren()) width += this->MeasureObject(child, inheritedFont, inheritedPointSize);
+        return width;
+    }
+
     FontInfo font = this->GetStyledFont(object, inheritedFont, inheritedPointSize);
     const int pointSize = (font.GetPointSize() > 0) ? font.GetPointSize() : inheritedPointSize;
     int width = 0;
@@ -139,10 +148,24 @@ bool TextFlowLayout::PreservesWhitespace(const Object *object) const
     return false;
 }
 
+Harm *TextFlowLayout::GetHarm(Object *object) const
+{
+    if (!object || !object->Is(PTR)) return nullptr;
+    Ptr *ptr = vrv_cast<Ptr *>(object);
+    return dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc));
+}
+
 Syl *TextFlowLayout::GetSyl(Object *object) const
 {
     if (object->Is(SYL)) return vrv_cast<Syl *>(object);
     if (object->Is(STACK)) return vrv_cast<Syl *>(object->FindDescendantByType(SYL));
+    return nullptr;
+}
+
+Stack *TextFlowLayout::GetStack(Object *object) const
+{
+    if (object->Is(STACK)) return vrv_cast<Stack *>(object);
+    if (object->Is(SYL)) return vrv_cast<Stack *>(object->FindDescendantByType(STACK));
     return nullptr;
 }
 
@@ -249,9 +272,10 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
         TextFlowUnit unit;
         unit.object = object;
         unit.syl = this->GetSyl(object);
-        if (object->Is(STACK)) {
-            unit.stackRows = this->BuildStackRows(object);
-            unit.metrics.width = this->PositionStackRows(object, unit.stackRows);
+        unit.stack = this->GetStack(object);
+        if (unit.stack) {
+            unit.stackRows = this->BuildStackRows(unit.stack);
+            unit.metrics.width = this->PositionStackRows(unit.stack, unit.stackRows);
             unit.metrics.rowCount = std::max(1, static_cast<int>(unit.stackRows.size()));
             for (const TextFlowStackRow &row : unit.stackRows) {
                 int segmentX = row.x;
@@ -264,6 +288,11 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
                     }
                     segmentX += segment.width;
                 }
+            }
+            if (unit.syl == object && !unit.stackRows.empty()) {
+                const TextFlowStackRow &lyricRow = unit.stackRows.back();
+                unit.lyricX = lyricRow.x;
+                unit.lyricWidth = lyricRow.width;
             }
         }
         else {

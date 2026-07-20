@@ -293,6 +293,7 @@ enum ClassId : uint16_t {
     FIGURE,
     LB,
     NUM,
+    PTR,
     REND,
     STACK,
     SYMBOL,
@@ -370,6 +371,7 @@ class Neume;
 class Object;
 class PlistInterface;
 class Point;
+class Ptr;
 class Staff;
 class Stack;
 class Option;

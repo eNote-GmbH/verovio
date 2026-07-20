@@ -133,6 +133,7 @@ class Plica;
 class PlistInterface;
 class PositionInterface;
 class Proport;
+class Ptr;
 class Quilisma;
 class Rdg;
 class Ref;
@@ -386,6 +387,7 @@ private:
     void WriteDiv(pugi::xml_node currentNode, Div *div);
     void WriteTextFlowElement(pugi::xml_node currentNode, TextFlowElement *element);
     void WriteTextFlowTableElement(pugi::xml_node currentNode, TextFlowTableElement *element);
+    void WritePtr(pugi::xml_node currentNode, Ptr *ptr);
     void WriteStack(pugi::xml_node currentNode, Stack *stack);
     void WriteStaffGrp(pugi::xml_node currentNode, StaffGrp *staffGrp);
     void WriteStaffDef(pugi::xml_node currentNode, StaffDef *staffDef);
@@ -742,6 +744,7 @@ private:
     bool ReadTextFlowElement(Object *parent, pugi::xml_node element, ClassId classId);
     bool ReadTextFlowTableElement(Object *parent, pugi::xml_node element, ClassId classId);
     bool ReadTextFlowSyl(Object *parent, pugi::xml_node syl);
+    bool ReadPtr(Object *parent, pugi::xml_node ptr);
     bool ReadStack(Object *parent, pugi::xml_node stack);
     bool ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode);
     bool ReadRunningChildren(Object *parent, pugi::xml_node parentNode, Object *filter = NULL);

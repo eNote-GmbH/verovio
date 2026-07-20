@@ -81,7 +81,7 @@ void Syl::Reset()
 
 bool Syl::IsSupportedChild(ClassId classId)
 {
-    static const std::vector<ClassId> supported{ REND, TEXT };
+    static const std::vector<ClassId> supported{ REND, STACK, TEXT };
 
     if (std::find(supported.begin(), supported.end(), classId) != supported.end()) {
         return true;

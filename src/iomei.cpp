@@ -123,6 +123,7 @@
 #include "pitchinflection.h"
 #include "plica.h"
 #include "proport.h"
+#include "ptr.h"
 #include "quilisma.h"
 #include "rdg.h"
 #include "ref.h"
@@ -920,6 +921,10 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
     else if (object->Is(NUM)) {
         m_currentNode = m_currentNode.append_child("num");
         this->WriteNum(m_currentNode, vrv_cast<Num *>(object));
+    }
+    else if (object->Is(PTR)) {
+        m_currentNode = m_currentNode.append_child("ptr");
+        this->WritePtr(m_currentNode, vrv_cast<Ptr *>(object));
     }
     else if (object->Is(REND)) {
         m_currentNode = m_currentNode.append_child("rend");
@@ -1981,6 +1986,14 @@ void MEIOutput::WriteStack(pugi::xml_node currentNode, Stack *stack)
     stack->WriteWhitespace(currentNode);
     if (stack->HasDelimiter()) currentNode.append_attribute("delim") = stack->GetDelimiter().c_str();
     if (stack->HasAlignment()) currentNode.append_attribute("align") = stack->GetAlignment().c_str();
+}
+
+void MEIOutput::WritePtr(pugi::xml_node currentNode, Ptr *ptr)
+{
+    assert(ptr);
+
+    this->WriteTextElement(currentNode, ptr);
+    ptr->WritePointing(currentNode);
 }
 
 void MEIOutput::WritePgFoot(pugi::xml_node currentNode, PgFoot *pgFoot)
@@ -4297,6 +4310,9 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
         else if (element == "rend") {
             return true;
         }
+        else if (element == "stack") {
+            return true;
+        }
         else {
             return false;
         }
@@ -5775,6 +5791,17 @@ bool MEIInput::ReadStack(Object *parent, pugi::xml_node stack)
     return this->ReadTextFlowChildren(vrvStack, stack);
 }
 
+bool MEIInput::ReadPtr(Object *parent, pugi::xml_node ptr)
+{
+    Ptr *vrvPtr = new Ptr();
+    this->ReadTextElement(ptr, vrvPtr);
+    vrvPtr->ReadPointing(ptr);
+
+    parent->AddChild(vrvPtr);
+    this->ReadUnsupportedAttr(ptr, vrvPtr);
+    return true;
+}
+
 bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
 {
     bool preserveWhitespace = false;
@@ -5841,6 +5868,8 @@ bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
             success = this->ReadLb(parent, current);
         else if (name == "num")
             success = this->ReadNum(parent, current);
+        else if (name == "ptr")
+            success = this->ReadPtr(parent, current);
         else if (name == "rend")
             success = this->ReadRend(parent, current);
         else if (name == "symbol")
@@ -8208,8 +8237,14 @@ bool MEIInput::ReadTextChildren(Object *parent, pugi::xml_node parentNode, Objec
         else if (elementName == "num") {
             success = this->ReadNum(parent, xmlElement);
         }
+        else if (elementName == "ptr") {
+            success = this->ReadPtr(parent, xmlElement);
+        }
         else if (elementName == "rend") {
             success = this->ReadRend(parent, xmlElement);
+        }
+        else if (elementName == "stack") {
+            success = this->ReadStack(parent, xmlElement);
         }
         else if (elementName == "svg") {
             success = this->ReadSvg(parent, xmlElement);

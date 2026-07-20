@@ -959,154 +959,100 @@
               <lg n="2" type="later-verse" staff="1" layer="1" place="below" xml:id="tusk-lg-verse-2">
                 <head>2.</head>
                 <l n="1" type="verse-line" xml:id="tusk-l-verse-2-line-1">
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-20" synch="#tusk-note-23" xml:id="tusk-stack-verse-2-line-1-001">D|<syl xml:id="tusk-syl-verse-2-line-1-001" synch="#tusk-note-23 #tusk-harm-19 #tusk-harm-20" corresp="#tusk-harm-19 #tusk-harm-20">Wenn</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-001" synch="#tusk-note-23"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-001"><ptr target="#tusk-harm-20"/>|Wenn</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-002" synch="#tusk-note-24">wir</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-22" synch="#tusk-note-25" xml:id="tusk-stack-verse-2-line-1-003">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-1-003" synch="#tusk-note-25 #tusk-harm-21 #tusk-harm-22" corresp="#tusk-harm-21 #tusk-harm-22">dich</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-24" synch="#tusk-note-26" xml:id="tusk-stack-verse-2-line-1-004">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-004" synch="#tusk-note-26 #tusk-harm-23 #tusk-harm-24" corresp="#tusk-harm-23 #tusk-harm-24">ha</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-003" synch="#tusk-note-25"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-003"><ptr target="#tusk-harm-22"/>|dich</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-004" synch="#tusk-note-26"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-004"><ptr target="#tusk-harm-24"/>|ha</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-005" synch="#tusk-note-27">ben,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-26" synch="#tusk-note-28" xml:id="tusk-stack-verse-2-line-1-006">D|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-006" synch="#tusk-note-28 #tusk-harm-25 #tusk-harm-26" corresp="#tusk-harm-25 #tusk-harm-26">kann</syl>
-                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-006" synch="#tusk-note-28"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-006"><ptr target="#tusk-harm-26"/>|kann</stack></syl>
                   <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-007" synch="#tusk-note-29">uns</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-28" synch="#tusk-note-30" xml:id="tusk-stack-verse-2-line-1-008">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-1-008" synch="#tusk-note-30 #tusk-harm-27 #tusk-harm-28" corresp="#tusk-harm-27 #tusk-harm-28">nicht</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-30" synch="#tusk-note-31" xml:id="tusk-stack-verse-2-line-1-009">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-009" synch="#tusk-note-31 #tusk-harm-29 #tusk-harm-30" corresp="#tusk-harm-29 #tusk-harm-30">scha</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-008" synch="#tusk-note-30"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-008"><ptr target="#tusk-harm-28"/>|nicht</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-009" synch="#tusk-note-31"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-009"><ptr target="#tusk-harm-30"/>|scha</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-010" synch="#tusk-note-32">den</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-32" synch="#tusk-note-33" xml:id="tusk-stack-verse-2-line-1-011">D/F♯|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-011" synch="#tusk-note-33 #tusk-harm-31 #tusk-harm-32" corresp="#tusk-harm-31 #tusk-harm-32">Teu</syl>
-                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-011" synch="#tusk-note-33"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-011"><ptr target="#tusk-harm-32"/>|Teu</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-012" synch="#tusk-note-34">fel,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-34" synch="#tusk-note-35" xml:id="tusk-stack-verse-2-line-1-013">Bm<rend rend="sup">7</rend>|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-013" synch="#tusk-note-35 #tusk-harm-33 #tusk-harm-34" corresp="#tusk-harm-33 #tusk-harm-34">Welt,</syl>
-                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-013" synch="#tusk-note-35"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-013"><ptr target="#tusk-harm-34"/>|Welt,</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-014" synch="#tusk-note-37">Sünd</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-36" synch="#tusk-note-38" xml:id="tusk-stack-verse-2-line-1-015">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-015" synch="#tusk-note-38 #tusk-harm-35 #tusk-harm-36" corresp="#tusk-harm-35 #tusk-harm-36">o</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-015" synch="#tusk-note-38"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-015"><ptr target="#tusk-harm-36"/>|o</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-016" synch="#tusk-note-39">der</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-38" synch="#tusk-note-40" xml:id="tusk-stack-verse-2-line-1-017">D|<syl xml:id="tusk-syl-verse-2-line-1-017" synch="#tusk-note-40 #tusk-harm-37 #tusk-harm-38" corresp="#tusk-harm-37 #tusk-harm-38">Tod.</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-40" synch="#tusk-note-41" xml:id="tusk-stack-verse-2-line-1-018">D|<syl xml:id="tusk-syl-verse-2-line-1-018" synch="#tusk-note-41 #tusk-harm-39 #tusk-harm-40" corresp="#tusk-harm-39 #tusk-harm-40">Drum</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-42" synch="#tusk-note-42" xml:id="tusk-stack-verse-2-line-1-019">C|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-019" synch="#tusk-note-42 #tusk-harm-41 #tusk-harm-42" corresp="#tusk-harm-41 #tusk-harm-42">wir</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-44" synch="#tusk-note-43" xml:id="tusk-stack-verse-2-line-1-020">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-1-020" synch="#tusk-note-43 #tusk-harm-43 #tusk-harm-44" corresp="#tusk-harm-43 #tusk-harm-44">dich</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-46" synch="#tusk-note-44" xml:id="tusk-stack-verse-2-line-1-021">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-021" synch="#tusk-note-44 #tusk-harm-45 #tusk-harm-46" corresp="#tusk-harm-45 #tusk-harm-46">eh</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-017" synch="#tusk-note-40"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-017"><ptr target="#tusk-harm-38"/>|Tod.</stack></syl>
+                  <syl xml:id="tusk-syl-verse-2-line-1-018" synch="#tusk-note-41"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-018"><ptr target="#tusk-harm-40"/>|Drum</stack></syl>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-019" synch="#tusk-note-42"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-019"><ptr target="#tusk-harm-42"/>|wir</stack></syl>
+                  <syl xml:id="tusk-syl-verse-2-line-1-020" synch="#tusk-note-43"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-020"><ptr target="#tusk-harm-44"/>|dich</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-021" synch="#tusk-note-44"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-021"><ptr target="#tusk-harm-46"/>|eh</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-022" synch="#tusk-note-45">ren,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-48" synch="#tusk-note-46" xml:id="tusk-stack-verse-2-line-1-023">G|<syl xml:id="tusk-syl-verse-2-line-1-023" synch="#tusk-note-46 #tusk-harm-47 #tusk-harm-48" corresp="#tusk-harm-47 #tusk-harm-48">dein</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-50" synch="#tusk-note-47" xml:id="tusk-stack-verse-2-line-1-024">C|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-024" synch="#tusk-note-47 #tusk-harm-49 #tusk-harm-50" corresp="#tusk-harm-49 #tusk-harm-50">Lob</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-52" synch="#tusk-note-48" xml:id="tusk-stack-verse-2-line-1-025">D<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-025" synch="#tusk-note-48 #tusk-harm-51 #tusk-harm-52" corresp="#tusk-harm-51 #tusk-harm-52">ver</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-54" synch="#tusk-note-49" xml:id="tusk-stack-verse-2-line-1-026">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-026" synch="#tusk-note-49 #tusk-harm-53 #tusk-harm-54" corresp="#tusk-harm-53 #tusk-harm-54">meh</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-023" synch="#tusk-note-46"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-023"><ptr target="#tusk-harm-48"/>|dein</stack></syl>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-024" synch="#tusk-note-47"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-024"><ptr target="#tusk-harm-50"/>|Lob</stack></syl>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-025" synch="#tusk-note-48"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-025"><ptr target="#tusk-harm-52"/>|ver</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-026" synch="#tusk-note-49"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-026"><ptr target="#tusk-harm-54"/>|meh</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-027" synch="#tusk-note-50">ren</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-56" synch="#tusk-note-51" xml:id="tusk-stack-verse-2-line-1-028">D|<syl xml:id="tusk-syl-verse-2-line-1-028" synch="#tusk-note-51 #tusk-harm-55 #tusk-harm-56" corresp="#tusk-harm-55 #tusk-harm-56">mit</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-028" synch="#tusk-note-51"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-028"><ptr target="#tusk-harm-56"/>|mit</stack></syl>
                   <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-029" synch="#tusk-note-52">hel</syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-030" synch="#tusk-note-53">lem</syl>
                   <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-031" synch="#tusk-note-54">Schal</syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-032" synch="#tusk-note-55">le,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-58" synch="#tusk-note-56" xml:id="tusk-stack-verse-2-line-1-033">Am<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-033" synch="#tusk-note-56 #tusk-harm-57 #tusk-harm-58" corresp="#tusk-harm-57 #tusk-harm-58">freu</syl>
-                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-033" synch="#tusk-note-56"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-033"><ptr target="#tusk-harm-58"/>|freu</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-034" synch="#tusk-note-57">en</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-60" synch="#tusk-note-58" xml:id="tusk-stack-verse-2-line-1-035">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-1-035" synch="#tusk-note-58 #tusk-harm-59 #tusk-harm-60" corresp="#tusk-harm-59 #tusk-harm-60">uns</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-62" synch="#tusk-note-59" xml:id="tusk-stack-verse-2-line-1-036">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-036" synch="#tusk-note-59 #tusk-harm-61 #tusk-harm-62" corresp="#tusk-harm-61 #tusk-harm-62">a</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-035" synch="#tusk-note-58"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-035"><ptr target="#tusk-harm-60"/>|uns</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-036" synch="#tusk-note-59"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-036"><ptr target="#tusk-harm-62"/>|a</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-037" synch="#tusk-note-60">le</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-64" synch="#tusk-note-61" xml:id="tusk-stack-verse-2-line-1-038">Em|<syl xml:id="tusk-syl-verse-2-line-1-038" synch="#tusk-note-61 #tusk-harm-63 #tusk-harm-64" corresp="#tusk-harm-63 #tusk-harm-64">zu</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-1-038" synch="#tusk-note-61"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-038"><ptr target="#tusk-harm-64"/>|zu</stack></syl>
                   <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-1-039" synch="#tusk-note-62">die</syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-040" synch="#tusk-note-63">ser</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-66" synch="#tusk-note-64" xml:id="tusk-stack-verse-2-line-1-041">A<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-041" synch="#tusk-note-64 #tusk-harm-65 #tusk-harm-66" corresp="#tusk-harm-65 #tusk-harm-66">Stun</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-041" synch="#tusk-note-64"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-041"><ptr target="#tusk-harm-66"/>|Stun</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-042" synch="#tusk-note-66">de.</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-68" synch="#tusk-note-67" xml:id="tusk-stack-verse-2-line-1-043">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-043" synch="#tusk-note-67 #tusk-harm-67 #tusk-harm-68" corresp="#tusk-harm-67 #tusk-harm-68">Hal</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-043" synch="#tusk-note-67"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-043"><ptr target="#tusk-harm-68"/>|Hal</stack></syl>
                   <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-044" synch="#tusk-note-68">le</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-70" synch="#tusk-note-69" xml:id="tusk-stack-verse-2-line-1-045">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-045" synch="#tusk-note-69 #tusk-harm-69 #tusk-harm-70" corresp="#tusk-harm-69 #tusk-harm-70">lu</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-72" synch="#tusk-note-70" xml:id="tusk-stack-verse-2-line-1-046">D|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-046" synch="#tusk-note-70 #tusk-harm-71 #tusk-harm-72" corresp="#tusk-harm-71 #tusk-harm-72">ja.</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-045" synch="#tusk-note-69"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-045"><ptr target="#tusk-harm-70"/>|lu</stack></syl>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-046" synch="#tusk-note-70"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-046"><ptr target="#tusk-harm-72"/>|ja.</stack></syl>
                 </l>
                 <l n="2" type="verse-line" xml:id="tusk-l-verse-2-line-2">
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-20" synch="#tusk-note-23" xml:id="tusk-stack-verse-2-line-2-001">D|<syl xml:id="tusk-syl-verse-2-line-2-001" synch="#tusk-note-23 #tusk-harm-19 #tusk-harm-20" corresp="#tusk-harm-19 #tusk-harm-20">Du</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-001" synch="#tusk-note-23"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-001"><ptr target="#tusk-harm-20"/>|Du</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-002" synch="#tusk-note-24">hast's</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-22" synch="#tusk-note-25" xml:id="tusk-stack-verse-2-line-2-003">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-2-003" synch="#tusk-note-25 #tusk-harm-21 #tusk-harm-22" corresp="#tusk-harm-21 #tusk-harm-22">in</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-24" synch="#tusk-note-26" xml:id="tusk-stack-verse-2-line-2-004">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-004" synch="#tusk-note-26 #tusk-harm-23 #tusk-harm-24" corresp="#tusk-harm-23 #tusk-harm-24">Hän</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-003" synch="#tusk-note-25"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-003"><ptr target="#tusk-harm-22"/>|in</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-004" synch="#tusk-note-26"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-004"><ptr target="#tusk-harm-24"/>|Hän</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-005" synch="#tusk-note-27">den,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-26" synch="#tusk-note-28" xml:id="tusk-stack-verse-2-line-2-006">D|<syl xml:id="tusk-syl-verse-2-line-2-006" synch="#tusk-note-28 #tusk-harm-25 #tusk-harm-26" corresp="#tusk-harm-25 #tusk-harm-26">kannst</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-006" synch="#tusk-note-28"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-006"><ptr target="#tusk-harm-26"/>|kannst</stack></syl>
                   <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-007" synch="#tusk-note-29">al</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-28" synch="#tusk-note-30" xml:id="tusk-stack-verse-2-line-2-008">Dsus<rend rend="sup">4</rend>|<syl xml:id="tusk-syl-verse-2-line-2-008" synch="#tusk-note-30 #tusk-harm-27 #tusk-harm-28" corresp="#tusk-harm-27 #tusk-harm-28">les</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-30" synch="#tusk-note-31" xml:id="tusk-stack-verse-2-line-2-009">D|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-009" synch="#tusk-note-31 #tusk-harm-29 #tusk-harm-30" corresp="#tusk-harm-29 #tusk-harm-30">wen</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-008" synch="#tusk-note-30"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-008"><ptr target="#tusk-harm-28"/>|les</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-009" synch="#tusk-note-31"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-009"><ptr target="#tusk-harm-30"/>|wen</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-010" synch="#tusk-note-32">den,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-32" synch="#tusk-note-33" xml:id="tusk-stack-verse-2-line-2-011">D/F♯|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-011" synch="#tusk-note-33 #tusk-harm-31 #tusk-harm-32" corresp="#tusk-harm-31 #tusk-harm-32">wie</syl>
-                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-011" synch="#tusk-note-33"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-011"><ptr target="#tusk-harm-32"/>|wie</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-012" synch="#tusk-note-34">nur</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-34" synch="#tusk-note-35" xml:id="tusk-stack-verse-2-line-2-013">Bm<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-013" synch="#tusk-note-35 #tusk-harm-33 #tusk-harm-34" corresp="#tusk-harm-33 #tusk-harm-34">hei</syl>
-                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-013" synch="#tusk-note-35"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-013"><ptr target="#tusk-harm-34"/>|hei</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-014" synch="#tusk-note-37">ßen</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-36" synch="#tusk-note-38" xml:id="tusk-stack-verse-2-line-2-015">A|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-015" synch="#tusk-note-38 #tusk-harm-35 #tusk-harm-36" corresp="#tusk-harm-35 #tusk-harm-36">mag</syl>
-                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-015" synch="#tusk-note-38"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-015"><ptr target="#tusk-harm-36"/>|mag</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-016" synch="#tusk-note-39">die</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-38" synch="#tusk-note-40" xml:id="tusk-stack-verse-2-line-2-017">D|<syl xml:id="tusk-syl-verse-2-line-2-017" synch="#tusk-note-40 #tusk-harm-37 #tusk-harm-38" corresp="#tusk-harm-37 #tusk-harm-38">Not.</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-40" synch="#tusk-note-41" xml:id="tusk-stack-verse-2-line-2-018">D|<syl xml:id="tusk-syl-verse-2-line-2-018" synch="#tusk-note-41 #tusk-harm-39 #tusk-harm-40" corresp="#tusk-harm-39 #tusk-harm-40">Wir</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-42" synch="#tusk-note-42" xml:id="tusk-stack-verse-2-line-2-019">C|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-019" synch="#tusk-note-42 #tusk-harm-41 #tusk-harm-42" corresp="#tusk-harm-41 #tusk-harm-42">ju</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-44" synch="#tusk-note-43" xml:id="tusk-stack-verse-2-line-2-020">D<rend rend="sup">7</rend>|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-020" synch="#tusk-note-43 #tusk-harm-43 #tusk-harm-44" corresp="#tusk-harm-43 #tusk-harm-44">bi</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-46" synch="#tusk-note-44" xml:id="tusk-stack-verse-2-line-2-021">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-021" synch="#tusk-note-44 #tusk-harm-45 #tusk-harm-46" corresp="#tusk-harm-45 #tusk-harm-46">lie</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-017" synch="#tusk-note-40"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-017"><ptr target="#tusk-harm-38"/>|Not.</stack></syl>
+                  <syl xml:id="tusk-syl-verse-2-line-2-018" synch="#tusk-note-41"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-018"><ptr target="#tusk-harm-40"/>|Wir</stack></syl>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-019" synch="#tusk-note-42"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-019"><ptr target="#tusk-harm-42"/>|ju</stack></syl>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-020" synch="#tusk-note-43"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-020"><ptr target="#tusk-harm-44"/>|bi</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-021" synch="#tusk-note-44"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-021"><ptr target="#tusk-harm-46"/>|lie</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-022" synch="#tusk-note-45">ren</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-48" synch="#tusk-note-46" xml:id="tusk-stack-verse-2-line-2-023">G|<syl xml:id="tusk-syl-verse-2-line-2-023" synch="#tusk-note-46 #tusk-harm-47 #tusk-harm-48" corresp="#tusk-harm-47 #tusk-harm-48">und</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-50" synch="#tusk-note-47" xml:id="tusk-stack-verse-2-line-2-024">C|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-024" synch="#tusk-note-47 #tusk-harm-49 #tusk-harm-50" corresp="#tusk-harm-49 #tusk-harm-50">tri</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-52" synch="#tusk-note-48" xml:id="tusk-stack-verse-2-line-2-025">D<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-025" synch="#tusk-note-48 #tusk-harm-51 #tusk-harm-52" corresp="#tusk-harm-51 #tusk-harm-52">um</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-54" synch="#tusk-note-49" xml:id="tusk-stack-verse-2-line-2-026">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-026" synch="#tusk-note-49 #tusk-harm-53 #tusk-harm-54" corresp="#tusk-harm-53 #tusk-harm-54">phie</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-023" synch="#tusk-note-46"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-023"><ptr target="#tusk-harm-48"/>|und</stack></syl>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-024" synch="#tusk-note-47"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-024"><ptr target="#tusk-harm-50"/>|tri</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-025" synch="#tusk-note-48"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-025"><ptr target="#tusk-harm-52"/>|um</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-026" synch="#tusk-note-49"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-026"><ptr target="#tusk-harm-54"/>|phie</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-027" synch="#tusk-note-50">ren,</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-56" synch="#tusk-note-51" xml:id="tusk-stack-verse-2-line-2-028">D|<syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-028" synch="#tusk-note-51 #tusk-harm-55 #tusk-harm-56" corresp="#tusk-harm-55 #tusk-harm-56">lie</syl>
-                  </stack>
+                  <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-028" synch="#tusk-note-51"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-028"><ptr target="#tusk-harm-56"/>|lie</stack></syl>
                   <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-029" synch="#tusk-note-52">ben</syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-030" synch="#tusk-note-53">und</syl>
                   <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-031" synch="#tusk-note-54">lo</syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-032" synch="#tusk-note-55">ben</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-58" synch="#tusk-note-56" xml:id="tusk-stack-verse-2-line-2-033">Am<rend rend="sup">7</rend>|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-033" synch="#tusk-note-56 #tusk-harm-57 #tusk-harm-58" corresp="#tusk-harm-57 #tusk-harm-58">dein</syl>
-                  </stack>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-033" synch="#tusk-note-56"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-033"><ptr target="#tusk-harm-58"/>|dein</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-034" synch="#tusk-note-57">Macht</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-60" synch="#tusk-note-58" xml:id="tusk-stack-verse-2-line-2-035">D<rend rend="sup">7</rend>|<syl xml:id="tusk-syl-verse-2-line-2-035" synch="#tusk-note-58 #tusk-harm-59 #tusk-harm-60" corresp="#tusk-harm-59 #tusk-harm-60">dort</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-62" synch="#tusk-note-59" xml:id="tusk-stack-verse-2-line-2-036">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-036" synch="#tusk-note-59 #tusk-harm-61 #tusk-harm-62" corresp="#tusk-harm-61 #tusk-harm-62">dro</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-035" synch="#tusk-note-58"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-035"><ptr target="#tusk-harm-60"/>|dort</stack></syl>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-036" synch="#tusk-note-59"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-036"><ptr target="#tusk-harm-62"/>|dro</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-037" synch="#tusk-note-60">ben</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-64" synch="#tusk-note-61" xml:id="tusk-stack-verse-2-line-2-038">Em|<syl xml:id="tusk-syl-verse-2-line-2-038" synch="#tusk-note-61 #tusk-harm-63 #tusk-harm-64" corresp="#tusk-harm-63 #tusk-harm-64">mit</syl>
-                  </stack>
+                  <syl xml:id="tusk-syl-verse-2-line-2-038" synch="#tusk-note-61"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-038"><ptr target="#tusk-harm-64"/>|mit</stack></syl>
                   <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-039" synch="#tusk-note-62">Herz</syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-040" synch="#tusk-note-63">und</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-66" synch="#tusk-note-64" xml:id="tusk-stack-verse-2-line-2-041">A<rend rend="sup">7</rend>|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-041" synch="#tusk-note-64 #tusk-harm-65 #tusk-harm-66" corresp="#tusk-harm-65 #tusk-harm-66">Mun</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-041" synch="#tusk-note-64"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-041"><ptr target="#tusk-harm-66"/>|Mun</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-042" synch="#tusk-note-66">de.</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-68" synch="#tusk-note-67" xml:id="tusk-stack-verse-2-line-2-043">G|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-043" synch="#tusk-note-67 #tusk-harm-67 #tusk-harm-68" corresp="#tusk-harm-67 #tusk-harm-68">Hal</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-043" synch="#tusk-note-67"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-043"><ptr target="#tusk-harm-68"/>|Hal</stack></syl>
                   <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-044" synch="#tusk-note-68">le</syl>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-70" synch="#tusk-note-69" xml:id="tusk-stack-verse-2-line-2-045">A|<syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-045" synch="#tusk-note-69 #tusk-harm-69 #tusk-harm-70" corresp="#tusk-harm-69 #tusk-harm-70">lu</syl>
-                  </stack>
-                  <stack type="chord-over-syllable" delim="|" align="left" corresp="#tusk-harm-74" synch="#tusk-note-71" xml:id="tusk-stack-verse-2-line-2-046">D/F♯|<syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-046" synch="#tusk-note-71 #tusk-harm-73 #tusk-harm-74" corresp="#tusk-harm-73 #tusk-harm-74">ja.</syl>
-                  </stack>
+                  <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-2-045" synch="#tusk-note-69"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-045"><ptr target="#tusk-harm-70"/>|lu</stack></syl>
+                  <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-046" synch="#tusk-note-71"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-046"><ptr target="#tusk-harm-74"/>|ja.</stack></syl>
                 </l>
               </lg>
             </div>

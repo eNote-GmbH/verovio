@@ -15,6 +15,7 @@
 #include <functional>
 #include <iostream>
 #include <math.h>
+#include <memory>
 #include <sstream>
 
 //----------------------------------------------------------------------------
@@ -28,12 +29,14 @@
 #include "fb.h"
 #include "fig.h"
 #include "graphic.h"
+#include "harm.h"
 #include "lb.h"
 #include "num.h"
 #include "options.h"
 #include "page.h"
 #include "pgfoot.h"
 #include "pghead.h"
+#include "ptr.h"
 #include "rend.h"
 #include "smufl.h"
 #include "staff.h"
@@ -731,6 +734,16 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             this->DrawTextChildren(dc, syl, params);
             dc->EndTextGraphic(syl, this);
         }
+        else if (object->Is(PTR)) {
+            Ptr *ptr = vrv_cast<Ptr *>(object);
+            Harm *target = dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc));
+            dc->StartTextGraphic(ptr, "", ptr->GetID());
+            if (target) {
+                std::unique_ptr<Harm> copy(vrv_cast<Harm *>(target->Clone()));
+                this->DrawTextChildren(dc, copy.get(), params);
+            }
+            dc->EndTextGraphic(ptr, this);
+        }
         else if (object->IsTextElement()) {
             this->DrawTextElement(dc, vrv_cast<TextElement *>(object), params);
         }
@@ -783,9 +796,23 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                 const TextFlowUnit &unit = result.units.at(placement.item);
                 const int itemX = phraseOriginX + placement.x;
                 const int baselineY = phraseCursorY - (row.rowCount - 1) * phraseLineHeight;
-                if (unit.object && unit.object->Is(STACK)) {
-                    drawStack(vrv_cast<Stack *>(unit.object), unit, itemX, phraseCursorY, row.rowCount,
-                        phraseFont.GetPointSize(), phraseLineHeight);
+                if (unit.stack) {
+                    if (unit.syl == unit.object) {
+                        TextFlowSyl *textFlowSyl = dynamic_cast<TextFlowSyl *>(unit.syl);
+                        const int lyricY = phraseCursorY - (unit.metrics.rowCount - 1) * phraseLineHeight;
+                        if (textFlowSyl) {
+                            textFlowSyl->SetTextFlowDrawingX(itemX + unit.lyricX);
+                            textFlowSyl->SetTextFlowDrawingY(lyricY);
+                        }
+                        dc->StartTextGraphic(unit.syl, "", unit.syl->GetID());
+                        drawStack(unit.stack, unit, itemX, phraseCursorY, row.rowCount, phraseFont.GetPointSize(),
+                            phraseLineHeight);
+                        dc->EndTextGraphic(unit.syl, this);
+                    }
+                    else {
+                        drawStack(unit.stack, unit, itemX, phraseCursorY, row.rowCount, phraseFont.GetPointSize(),
+                            phraseLineHeight);
+                    }
                     continue;
                 }
 

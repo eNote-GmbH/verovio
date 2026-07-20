@@ -17,7 +17,9 @@ namespace vrv {
 
 class DeviceContext;
 class Doc;
+class Harm;
 class Object;
+class Stack;
 class Syl;
 class Table;
 class TableCaption;
@@ -60,6 +62,7 @@ struct TextFlowUnit {
     bool textOverride = false;
     bool joinsPrevious = false;
     Syl *syl = nullptr;
+    Stack *stack = nullptr;
     int lyricX = 0;
     int lyricWidth = 0;
     std::vector<TextFlowStackRow> stackRows;
@@ -156,7 +159,9 @@ private:
     FontInfo GetStyledFont(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
     FontInfo GetBlockFont(Object *block) const;
     bool PreservesWhitespace(const Object *object) const;
+    Harm *GetHarm(Object *object) const;
     Syl *GetSyl(Object *object) const;
+    Stack *GetStack(Object *object) const;
     std::vector<TextFlowStackRow> BuildStackRows(Object *stack) const;
     int PositionStackRows(Object *stack, std::vector<TextFlowStackRow> &rows) const;
     int GetRightDigitAnchor(const TextFlowStackRow &row) const;
