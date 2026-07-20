@@ -81,6 +81,8 @@ public:
     FunctorCode VisitTempo(Tempo *tempo) override;
     FunctorCode VisitTuplet(Tuplet *tuplet) override;
     FunctorCode VisitTurn(Turn *turn) override;
+    FunctorCode VisitVolta(Volta *volta) override;
+    FunctorCode VisitRefrain(Refrain *refrain) override;
     FunctorCode VisitVerse(Verse *verse) override;
     ///@}
 

@@ -214,6 +214,7 @@
 #import <VerovioFramework/ref.h>
 #import <VerovioFramework/reg.h>
 #import <VerovioFramework/reh.h>
+#import <VerovioFramework/refrain.h>
 #import <VerovioFramework/rend.h>
 #import <VerovioFramework/repeatmark.h>
 #import <VerovioFramework/resetfunctor.h>
@@ -274,7 +275,9 @@
 #import <VerovioFramework/tuplet.h>
 #import <VerovioFramework/turn.h>
 #import <VerovioFramework/unclear.h>
+#import <VerovioFramework/volta.h>
 #import <VerovioFramework/verse.h>
+#import <VerovioFramework/verselike.h>
 #import <VerovioFramework/verticalaligner.h>
 #import <VerovioFramework/view.h>
 #import <VerovioFramework/vrv.h>

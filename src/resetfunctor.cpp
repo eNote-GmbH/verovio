@@ -29,6 +29,7 @@
 #include "offsetinterface.h"
 #include "ossia.h"
 #include "page.h"
+#include "refrain.h"
 #include "repeatmark.h"
 #include "rest.h"
 #include "runningelement.h"
@@ -44,6 +45,8 @@
 #include "tuplet.h"
 #include "turn.h"
 #include "verse.h"
+#include "verselike.h"
+#include "volta.h"
 
 //----------------------------------------------------------------------------
 
@@ -571,12 +574,29 @@ FunctorCode ResetDataFunctor::VisitTurn(Turn *turn)
     return FUNCTOR_CONTINUE;
 }
 
+FunctorCode ResetDataFunctor::VisitVolta(Volta *volta)
+{
+    this->VisitLayerElement(volta);
+    volta->ResetDrawingVoltaN();
+
+    return FUNCTOR_CONTINUE;
+}
+
 FunctorCode ResetDataFunctor::VisitVerse(Verse *verse)
 {
     // Call parent one too
     this->VisitLayerElement(verse);
 
     verse->SetDrawingLabelAbbr(NULL);
+    verse->ResetDrawingDirectSylTrack();
+
+    return FUNCTOR_CONTINUE;
+}
+
+FunctorCode ResetDataFunctor::VisitRefrain(Refrain *refrain)
+{
+    this->VisitLayerElement(refrain);
+    refrain->ResetDrawingDirectSylTrack();
 
     return FUNCTOR_CONTINUE;
 }

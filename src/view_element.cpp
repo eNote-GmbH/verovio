@@ -47,6 +47,7 @@
 #include "multirpt.h"
 #include "note.h"
 #include "options.h"
+#include "refrain.h"
 #include "rest.h"
 #include "smufl.h"
 #include "staff.h"
@@ -58,6 +59,8 @@
 #include "tie.h"
 #include "tuplet.h"
 #include "verse.h"
+#include "verselike.h"
+#include "volta.h"
 #include "vrv.h"
 #include "zone.h"
 
@@ -225,8 +228,11 @@ void View::DrawLayerElement(DeviceContext *dc, LayerElement *element, Layer *lay
         dc->EndGraphic(element, this);
         layer->AddToDrawingList(element);
     }
-    else if (element->Is(VERSE)) {
-        this->DrawVerse(dc, element, layer, staff, measure);
+    else if (element->Is(VOLTA)) {
+        this->DrawVolta(dc, element, layer, staff, measure);
+    }
+    else if (element->IsAnyOf(std::array{ REFRAIN, VERSE })) {
+        this->DrawVerseLike(dc, element, layer, staff, measure);
     }
     else {
         // This should never happen
@@ -1812,7 +1818,8 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     }
 
     if (!m_doc->IsFacs() && !m_doc->IsTranscription() && !m_doc->IsNeumeLines()) {
-        syl->SetDrawingYRel(this->GetSylYRel(syl->m_drawingVerseN, staff, syl->m_drawingVersePlace));
+        syl->SetDrawingYRel(
+            this->GetSylYRel(syl->m_drawingVerseN, staff, syl->m_drawingVersePlace, syl->m_drawingVoltaN));
     }
 
     dc->StartGraphic(syl, "", syl->GetID());
@@ -1825,6 +1832,14 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     int y = syl->GetDrawingY();
 
     this->CalcOffset(dc, x, y);
+
+    syl->ResetDrawingTextInkBounds();
+    const std::u32string sylText = syl->GetText();
+    if (!sylText.empty()) {
+        TextExtend inkExtent;
+        dc->GetTextExtent(sylText, &inkExtent, false);
+        syl->SetDrawingTextInkBounds(y + inkExtent.m_ascent, y - inkExtent.m_descent);
+    }
 
     TextDrawingParams params;
     params.m_x = x;
@@ -1882,7 +1897,19 @@ void View::DrawSyl(DeviceContext *dc, LayerElement *element, Layer *layer, Staff
     dc->EndGraphic(syl, this);
 }
 
-void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Staff *staff, Measure *measure)
+void View::DrawVolta(DeviceContext *dc, LayerElement *element, Layer *layer, Staff *staff, Measure *measure)
+{
+    assert(dc);
+    assert(element);
+    Volta *volta = vrv_cast<Volta *>(element);
+    assert(volta);
+
+    dc->StartGraphic(volta, "", volta->GetID());
+    this->DrawLayerChildren(dc, volta, layer, staff, measure);
+    dc->EndGraphic(volta, this);
+}
+
+void View::DrawVerseLike(DeviceContext *dc, LayerElement *element, Layer *layer, Staff *staff, Measure *measure)
 {
     assert(dc);
     assert(element);
@@ -1890,11 +1917,12 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
     assert(staff);
     assert(measure);
 
-    Verse *verse = vrv_cast<Verse *>(element);
-    assert(verse);
+    VerseLike *verseLike = dynamic_cast<VerseLike *>(element);
+    assert(verseLike);
+    Verse *verse = dynamic_cast<Verse *>(verseLike);
 
-    Label *label = vrv_cast<Label *>(verse->FindDescendantByType(LABEL, 1));
-    LabelAbbr *labelAbbr = verse->GetDrawingLabelAbbr();
+    Label *label = verse ? vrv_cast<Label *>(verse->FindDescendantByType(LABEL, 1)) : NULL;
+    LabelAbbr *labelAbbr = verse ? verse->GetDrawingLabelAbbr() : NULL;
 
     if (label || labelAbbr) {
 
@@ -1926,8 +1954,9 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
         labelTxt.SetPointSize(pointSize);
 
         TextDrawingParams params;
-        params.m_x = verse->GetDrawingX() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
-        params.m_y = staff->GetDrawingY() + this->GetSylYRel(std::max(1, verse->GetN()), staff, verse->GetPlace());
+        params.m_x = verseLike->GetDrawingX() - m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        params.m_y
+            = staff->GetDrawingY() + this->GetSylYRel(verseLike->GetDrawingVerseN(), staff, verseLike->GetPlace());
         params.m_staffSize = staff->m_drawingStaffSize;
         params.m_pointSize = labelTxt.GetPointSize();
 
@@ -1945,11 +1974,72 @@ void View::DrawVerse(DeviceContext *dc, LayerElement *element, Layer *layer, Sta
         dc->ResetFont();
     }
 
-    dc->StartGraphic(verse, "", verse->GetID());
+    dc->StartGraphic(verseLike, "", verseLike->GetID());
+    this->DrawLayerChildren(dc, verseLike, layer, staff, measure);
 
-    this->DrawLayerChildren(dc, verse, layer, staff, measure);
+    if ((verseLike->GetVoltaCount() > 1) && verseLike->HasVoltasym()
+        && (verseLike->GetVoltasym() != voltaGroupingSym_VOLTASYM_none)) {
+        bool hasContentBounds = false;
+        int yTop = 0;
+        int yBottom = 0;
+        for (Object *object : verseLike->FindAllDescendantsByType(VOLTA)) {
+            for (Object *sylObject : object->FindAllDescendantsByType(SYL)) {
+                Syl *syl = vrv_cast<Syl *>(sylObject);
+                assert(syl);
+                if (!syl->HasDrawingTextInkBounds()) continue;
+                if (!hasContentBounds) {
+                    yTop = syl->GetDrawingTextInkTop();
+                    yBottom = syl->GetDrawingTextInkBottom();
+                    hasContentBounds = true;
+                }
+                else {
+                    yTop = std::max(yTop, syl->GetDrawingTextInkTop());
+                    yBottom = std::min(yBottom, syl->GetDrawingTextInkBottom());
+                }
+            }
+        }
+        if (!hasContentBounds) {
+            const int verseN = verseLike->GetDrawingVerseN();
+            const auto [firstVoltaTrack, lastVoltaTrack] = verseLike->GetVoltaDrawingRange();
+            const int directTrackOffset = verseLike->HasDrawingDirectSylTrack() ? 1 : 0;
+            const int firstVoltaLine = firstVoltaTrack + directTrackOffset;
+            const int lastVoltaLine = lastVoltaTrack + directTrackOffset;
+            const auto getLineY = [this, staff, verseLike, verseN](int line) {
+                if (verseLike->Is(REFRAIN)) {
+                    return staff->GetDrawingY() + this->GetSylYRel(verseN + line - 1, staff, verseLike->GetPlace());
+                }
+                return staff->GetDrawingY() + this->GetSylYRel(verseN, staff, verseLike->GetPlace(), line);
+            };
+            const int firstY = getLineY(firstVoltaLine);
+            const int lastY = getLineY(lastVoltaLine);
+            FontInfo *lyricFont = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize);
+            yTop = std::max(firstY, lastY) + m_doc->GetTextGlyphHeight(L'I', lyricFont, false);
+            yBottom = std::min(firstY, lastY) + m_doc->GetTextGlyphDescender(L'q', lyricFont, false);
+        }
+        const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        const int x = verseLike->GetDrawingX() - unit;
 
-    dc->EndGraphic(verse, this);
+        dc->StartCustomGraphic("voltaGroupingSym");
+        switch (verseLike->GetVoltasym()) {
+            case voltaGroupingSym_VOLTASYM_brace:
+                this->DrawBrace(dc, x, yTop, yBottom, staff->m_drawingStaffSize, true);
+                break;
+            case voltaGroupingSym_VOLTASYM_bracket:
+                this->DrawBracket(dc, x, yTop, yBottom, staff->m_drawingStaffSize);
+                break;
+            case voltaGroupingSym_VOLTASYM_bracketsq:
+                this->DrawBracketSq(dc, x - unit, yTop, yBottom, staff->m_drawingStaffSize);
+                break;
+            case voltaGroupingSym_VOLTASYM_line:
+                this->DrawVerticalLine(
+                    dc, yTop, yBottom, x - unit, m_doc->GetDrawingStaffLineWidth(staff->m_drawingStaffSize));
+                break;
+            default: break;
+        }
+        dc->EndCustomGraphic();
+    }
+
+    dc->EndGraphic(verseLike, this);
 }
 
 //----------------------------------------------------------------------------
@@ -2160,7 +2250,7 @@ int View::GetFYRel(F *f, Staff *staff)
     return y;
 }
 
-int View::GetSylYRel(int verseN, Staff *staff, data_STAFFREL place)
+int View::GetSylYRel(int verseN, Staff *staff, data_STAFFREL place, int voltaN)
 {
     assert(staff);
 
@@ -2181,11 +2271,12 @@ int View::GetSylYRel(int verseN, Staff *staff, data_STAFFREL place)
     // above the staff
     if (place == STAFFREL_above) {
         y = alignment->GetOverflowAbove()
-            - (alignment->GetVersePositionAbove(verseN, verseCollapse)) * (verseHeight + margin) - (height);
+            - (alignment->GetVersePositionAbove(verseN, verseCollapse, voltaN)) * (verseHeight + margin) - (height);
     }
     else {
         y = -alignment->GetStaffHeight() - alignment->GetOverflowBelow()
-            + alignment->GetVersePositionBelow(verseN, verseCollapse) * (verseHeight + margin) + verseHeight - height;
+            + alignment->GetVersePositionBelow(verseN, verseCollapse, voltaN) * (verseHeight + margin) + verseHeight
+            - height;
     }
 
     return y;

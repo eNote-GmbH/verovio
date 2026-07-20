@@ -96,6 +96,7 @@
 #include "pitchinflection.h"
 #include "plica.h"
 #include "proport.h"
+#include "refrain.h"
 #include "reh.h"
 #include "rend.h"
 #include "repeatmark.h"
@@ -130,6 +131,7 @@
 #include "tuplet.h"
 #include "turn.h"
 #include "verse.h"
+#include "volta.h"
 #include "zone.h"
 
 namespace vrv {
@@ -1386,6 +1388,26 @@ FunctorCode FunctorInterface::VisitTupletNum(TupletNum *tupletNum)
 FunctorCode FunctorInterface::VisitTupletNumEnd(TupletNum *tupletNum)
 {
     return this->VisitLayerElementEnd(tupletNum);
+}
+
+FunctorCode FunctorInterface::VisitVolta(Volta *volta)
+{
+    return this->VisitLayerElement(volta);
+}
+
+FunctorCode FunctorInterface::VisitVoltaEnd(Volta *volta)
+{
+    return this->VisitLayerElementEnd(volta);
+}
+
+FunctorCode FunctorInterface::VisitRefrain(Refrain *refrain)
+{
+    return this->VisitLayerElement(refrain);
+}
+
+FunctorCode FunctorInterface::VisitRefrainEnd(Refrain *refrain)
+{
+    return this->VisitLayerElementEnd(refrain);
 }
 
 FunctorCode FunctorInterface::VisitVerse(Verse *verse)
@@ -2900,6 +2922,26 @@ FunctorCode ConstFunctorInterface::VisitTupletNum(const TupletNum *tupletNum)
 FunctorCode ConstFunctorInterface::VisitTupletNumEnd(const TupletNum *tupletNum)
 {
     return this->VisitLayerElementEnd(tupletNum);
+}
+
+FunctorCode ConstFunctorInterface::VisitVolta(const Volta *volta)
+{
+    return this->VisitLayerElement(volta);
+}
+
+FunctorCode ConstFunctorInterface::VisitVoltaEnd(const Volta *volta)
+{
+    return this->VisitLayerElementEnd(volta);
+}
+
+FunctorCode ConstFunctorInterface::VisitRefrain(const Refrain *refrain)
+{
+    return this->VisitLayerElement(refrain);
+}
+
+FunctorCode ConstFunctorInterface::VisitRefrainEnd(const Refrain *refrain)
+{
+    return this->VisitLayerElementEnd(refrain);
 }
 
 FunctorCode ConstFunctorInterface::VisitVerse(const Verse *verse)

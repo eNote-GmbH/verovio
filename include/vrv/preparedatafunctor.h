@@ -690,7 +690,7 @@ public:
      * @name Constructors, destructors
      */
     ///@{
-    PrepareLyricsFunctor();
+    PrepareLyricsFunctor(int voltaTrack = 0);
     virtual ~PrepareLyricsFunctor() = default;
     ///@}
 
@@ -722,6 +722,8 @@ private:
     LayerElement *m_lastNoteOrChord;
     // The penultimate Note or Chord
     LayerElement *m_penultimateNoteOrChord;
+    // 0 for direct <verse>/<syl>, otherwise the normalized volta alternative.
+    int m_voltaTrack;
 };
 
 //----------------------------------------------------------------------------
