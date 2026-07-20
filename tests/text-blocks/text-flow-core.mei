@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Text-flow regression</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef page.width="600" page.height="900" page.leftmar="50" page.rightmar="50"
+              page.topmar="50" page.botmar="50" text.fam="Times" text.size="12pt">
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1" xml:id="measure-1">
+              <staff n="1"><layer n="1"><note xml:id="note-1" pname="c" oct="4" dur="1"/></layer></staff>
+              <harm xml:id="harm-1" staff="1" startid="#note-1">C<rend rend="sup">7</rend></harm>
+            </measure>
+            <div xml:id="flow-div" n="2" type="later-verses" label="Later verses"
+                xml:lang="de" corresp="#harm-1" synch="#note-1">
+              <head xml:id="flow-head" fontweight="bold">Weitere <rend fontstyle="italic">Strophen</rend></head>
+              <p xml:id="flow-paragraph">
+                Pretty-print indentation is normalized into ordinary prose. This deliberately long
+                paragraph must wrap inside the narrow page width.<lb xml:id="hard-break"/>Hard break.
+              </p>
+              <p xml:id="preserved-space" xml:space="preserve">two  spaces</p>
+              <div xml:id="nested-div" type="translation">
+                <p xml:id="nested-paragraph"><rend fontsize="80%">Nested division text</rend></p>
+              </div>
+              <rend xml:id="mixed-legacy-rend">Mixed legacy rend content</rend>
+              <fig xml:id="mixed-legacy-fig"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10"/></svg></fig>
+              <div xml:id="nested-legacy-div"><rend xml:id="nested-legacy-rend">Nested legacy div content</rend></div>
+              <lg xml:id="flow-lg" n="2" staff="1" layer="1" place="below"
+                  fontfam="Times" fontsize="11pt" fontstyle="normal" fontweight="normal">
+                <head xml:id="stanza-head">2.</head>
+                <l xml:id="flow-line" n="1" rhythm="8 8 4">
+                  <stack xml:id="stack-left" delim="|" align="left" corresp="#harm-1" synch="#note-1">C<rend xml:id="chord-extension" rend="sup">7</rend>|<syl xml:id="syl-when" synch="#note-1" corresp="#harm-1">When</syl></stack>
+                  <syl xml:id="syl-hap" wordpos="i" con="d">hap</syl>
+                  <syl xml:id="syl-py" wordpos="t">py</syl>
+                  <stack xml:id="stack-center" delim="|" align="center">G|days</stack>
+                  <stack xml:id="stack-right" delim="|" align="right">Am|come</stack>
+                  <stack xml:id="stack-rightdigit" delim="|" align="rightdigit">D7|home.</stack>
+                </l>
+                <l xml:id="connector-line" n="2">
+                  <syl xml:id="joined-first" con="d" wordpos="i">ha</syl><syl xml:id="joined-last" wordpos="t">ben</syl>
+                  <stack xml:id="wide-connector-stack" delim="|" align="left">ExtraordinarilyWideChord|<syl xml:id="wide-first" con="d" wordpos="i">Teu</syl></stack><syl xml:id="wide-last" wordpos="t">fel</syl>
+                </l>
+              </lg>
+            </div>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

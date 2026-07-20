@@ -9,7 +9,10 @@
 
 //----------------------------------------------------------------------------
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <functional>
 #include <iostream>
 #include <math.h>
 #include <sstream>
@@ -35,9 +38,12 @@
 #include "smufl.h"
 #include "staff.h"
 #include "svg.h"
+#include "syl.h"
 #include "symbol.h"
 #include "system.h"
 #include "text.h"
+#include "textflow.h"
+#include "textflowlayout.h"
 #include "vrv.h"
 
 namespace vrv {
@@ -373,10 +379,14 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
         }
     }
 
-    FontInfo rendFont;
+    FontInfo rendFont = dc->HasFont() ? *dc->GetFont() : FontInfo();
     bool customFont = false;
     if (rend->HasFontname()) {
         rendFont.SetFaceName(rend->GetFontname().c_str());
+        customFont = true;
+    }
+    else if (rend->HasFontfam()) {
+        rendFont.SetFaceName(rend->GetFontfam().c_str());
         customFont = true;
     }
     if (rend->HasFontsize()) {
@@ -451,7 +461,12 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
 
     // Do not render enclosings if the content is empty
     if (rend->HasEnclosure()) {
-        params.m_enclosedRend.push_back(rend);
+        const FontInfo *font = dc->GetFont();
+        const int fontBottom = params.m_y + m_doc->GetTextGlyphDescender(U'p', font, false);
+        const int hTop = m_doc->GetTextGlyphDescender(U'h', font, false) + m_doc->GetTextGlyphHeight(U'h', font, false);
+        const int tTop = m_doc->GetTextGlyphDescender(U't', font, false) + m_doc->GetTextGlyphHeight(U't', font, false);
+        const int fontTop = params.m_y + std::max(hTop, tTop);
+        params.m_enclosedRend.push_back({ rend, fontBottom, fontTop });
         params.m_x = rend->GetContentRight() + m_doc->GetDrawingUnit(100);
         params.m_explicitPosition = true;
         params.m_enclose = rend->GetRend();
@@ -642,26 +657,25 @@ void View::DrawRunningElements(DeviceContext *dc, Page *page)
     }
 
     RunningElement *header = page->GetHeader();
+    const ScoreDefInterface *textStyle = &page->m_drawingScoreDef;
     if (header) {
-        this->DrawTextLayoutElement(dc, header);
+        this->DrawTextLayoutElement(dc, header, textStyle);
     }
     RunningElement *footer = page->GetFooter();
     if (footer) {
-        this->DrawTextLayoutElement(dc, footer);
+        this->DrawTextLayoutElement(dc, footer, textStyle);
     }
 }
 
-void View::DrawTextLayoutElement(DeviceContext *dc, TextLayoutElement *textLayoutElement)
+void View::DrawTextLayoutElement(
+    DeviceContext *dc, TextLayoutElement *textLayoutElement, const ScoreDefInterface *textStyle)
 {
     assert(dc);
     assert(textLayoutElement);
 
     dc->StartGraphic(textLayoutElement, "", textLayoutElement->GetID());
 
-    FontInfo textElementFont;
-    if (!dc->UseGlobalStyling()) {
-        textElementFont.SetFaceName(m_doc->GetResources().GetTextFont());
-    }
+    FontInfo textElementFont = m_doc->GetDrawingTextFont(100, textStyle);
 
     TextDrawingParams params;
 
@@ -686,7 +700,169 @@ void View::DrawTextLayoutElement(DeviceContext *dc, TextLayoutElement *textLayou
 
 void View::DrawDiv(DeviceContext *dc, Div *div, System *system)
 {
-    this->DrawTextLayoutElement(dc, div);
+    if (div->HasTextFlow()) {
+        this->DrawTextFlow(dc, div, system);
+        return;
+    }
+    this->DrawTextLayoutElement(dc, div, system ? system->GetDrawingScoreDef() : nullptr);
+}
+
+void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
+{
+    assert(dc);
+    assert(div);
+
+    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
+    dc->SetFont(&textFlowFont);
+
+    const int lineHeight = m_doc->GetTextLineHeight(dc->GetFont(), false);
+    const int availableWidth = m_doc->m_drawingPageContentWidth;
+    const int originX = div->GetDrawingX();
+    const int originY = div->GetDrawingY();
+
+    const auto drawInlineObject = [&](Object *object, TextDrawingParams &params) {
+        if (object->Is(SYL)) {
+            Syl *syl = vrv_cast<Syl *>(object);
+            if (TextFlowSyl *textFlowSyl = dynamic_cast<TextFlowSyl *>(syl)) {
+                textFlowSyl->SetTextFlowDrawingX(params.m_x);
+                textFlowSyl->SetTextFlowDrawingY(params.m_y);
+            }
+            dc->StartTextGraphic(syl, "", syl->GetID());
+            this->DrawTextChildren(dc, syl, params);
+            dc->EndTextGraphic(syl, this);
+        }
+        else if (object->IsTextElement()) {
+            this->DrawTextElement(dc, vrv_cast<TextElement *>(object), params);
+        }
+    };
+
+    const auto drawStack = [&](Stack *stack, const TextFlowUnit &unit, int x, int y, int containingRows, int pointSize,
+                               int stackLineHeight) {
+        stack->SetTextFlowDrawingX(x);
+        stack->SetTextFlowDrawingY(y);
+        dc->StartGraphic(stack, "", stack->GetID());
+        for (size_t rowIndex = 0; rowIndex < unit.stackRows.size(); ++rowIndex) {
+            const TextFlowStackRow &row = unit.stackRows[rowIndex];
+            const int rowX = x + row.x;
+
+            const int rowY = y + (containingRows - unit.metrics.rowCount) * stackLineHeight
+                - static_cast<int>(rowIndex) * stackLineHeight;
+            dc->StartText(this->ToDeviceContextX(rowX), this->ToDeviceContextY(rowY), HORIZONTALALIGNMENT_left);
+            TextDrawingParams params;
+            params.m_x = rowX;
+            params.m_y = rowY;
+            params.m_width = unit.metrics.width;
+            params.m_pointSize = pointSize;
+            params.m_laidOut = false;
+            for (const TextFlowSegment &segment : row.segments) {
+                if (segment.textOverride)
+                    this->DrawTextString(dc, segment.text, params);
+                else
+                    drawInlineObject(segment.object, params);
+            }
+            dc->EndText();
+        }
+        dc->EndGraphic(stack, this);
+    };
+
+    const auto drawPhrase = [&](const TextFlowLayoutResult &result, int phraseOriginX, int phraseOriginY) {
+        FontInfo phraseFont = result.font;
+        const int phraseLineHeight = result.lineHeight;
+        int phraseCursorY = phraseOriginY;
+        dc->SetFont(&phraseFont);
+
+        for (const TextFlowUnit &unit : result.units) {
+            if (unit.metrics.hardBreak && unit.object) {
+                dc->StartGraphic(unit.object, "", unit.object->GetID());
+                dc->EndGraphic(unit.object, this);
+            }
+        }
+
+        for (const TextFlowRow &row : result.rows) {
+            for (const TextFlowPlacedItem &placement : row.items) {
+                const TextFlowUnit &unit = result.units.at(placement.item);
+                const int itemX = phraseOriginX + placement.x;
+                const int baselineY = phraseCursorY - (row.rowCount - 1) * phraseLineHeight;
+                if (unit.object && unit.object->Is(STACK)) {
+                    drawStack(vrv_cast<Stack *>(unit.object), unit, itemX, phraseCursorY, row.rowCount,
+                        phraseFont.GetPointSize(), phraseLineHeight);
+                    continue;
+                }
+
+                dc->StartText(
+                    this->ToDeviceContextX(itemX), this->ToDeviceContextY(baselineY), HORIZONTALALIGNMENT_left);
+                TextDrawingParams params;
+                params.m_x = itemX;
+                params.m_y = baselineY;
+                params.m_width = unit.metrics.width;
+                params.m_pointSize = phraseFont.GetPointSize();
+                params.m_laidOut = false;
+                if (unit.textOverride)
+                    this->DrawTextString(dc, unit.text, params);
+                else if (unit.object)
+                    drawInlineObject(unit.object, params);
+                dc->EndText();
+            }
+            const size_t rowIndex = static_cast<size_t>(&row - result.rows.data());
+            for (const TextFlowConnector &connector : result.connectors) {
+                if (connector.row != rowIndex) continue;
+                const std::string connectorId = connector.syl ? connector.syl->GetID() + "-connector" : "";
+                dc->StartCustomGraphic("sylConnector", "", connectorId);
+                dc->StartText(this->ToDeviceContextX(phraseOriginX + connector.x),
+                    this->ToDeviceContextY(phraseCursorY - (row.rowCount - 1) * phraseLineHeight),
+                    HORIZONTALALIGNMENT_left);
+                TextDrawingParams hyphenParams;
+                this->DrawTextString(dc, U"-", hyphenParams);
+                dc->EndText();
+                dc->EndCustomGraphic();
+            }
+            phraseCursorY -= std::max(1, row.rowCount) * phraseLineHeight;
+        }
+        dc->ResetFont();
+    };
+
+    const TextFlowDocumentLayoutResult *flow = div->GetTextFlowDocumentLayout(availableWidth);
+    if (!flow) {
+        TextFlowLayout layout(m_doc, dc, textFlowFont, availableWidth, lineHeight);
+        flow = &div->CacheTextFlowDocumentLayout(layout.LayoutFlow(div));
+    }
+
+    std::function<void(const TextFlowLayoutNode &, int, int)> drawNode;
+    drawNode = [&](const TextFlowLayoutNode &node, int parentX, int parentY) {
+        const int x = parentX + node.x;
+        const int y = parentY - node.y;
+        if (TextFlowElement *element = dynamic_cast<TextFlowElement *>(node.object)) {
+            element->SetTextFlowDrawingX(x);
+            element->SetTextFlowDrawingY(y);
+        }
+        if (TextFlowTableElement *element = dynamic_cast<TextFlowTableElement *>(node.object)) {
+            element->SetTextFlowDrawingX(x);
+            element->SetTextFlowDrawingY(y);
+        }
+
+        const bool grouped = node.object && (node.kind != TextFlowLayoutNodeKind::Figure);
+        if (grouped) dc->StartGraphic(node.object, "", node.object->GetID());
+        switch (node.kind) {
+            case TextFlowLayoutNodeKind::Phrase: drawPhrase(node.phrase, x, y); break;
+            case TextFlowLayoutNodeKind::Figure: {
+                Fig *fig = vrv_cast<Fig *>(node.object);
+                fig->SetDrawingXRel(x - fig->GetParent()->GetDrawingX());
+                fig->SetDrawingYRel(y - fig->GetParent()->GetDrawingY());
+                TextDrawingParams params;
+                this->DrawFig(dc, fig, params);
+                break;
+            }
+            default:
+                for (const TextFlowLayoutNode &child : node.children) drawNode(child, x, y);
+                break;
+        }
+        if (grouped) dc->EndGraphic(node.object, this);
+    };
+
+    drawNode(flow->layout, originX, originY);
+    div->SetTextFlowSize(flow->width, flow->height);
+
+    dc->ResetFont();
 }
 
 } // namespace vrv

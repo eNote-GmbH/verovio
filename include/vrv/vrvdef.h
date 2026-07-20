@@ -165,6 +165,18 @@ enum ClassId : uint16_t {
     PGHEAD,
     RUNNING_ELEMENT_max,
     TEXT_LAYOUT_ELEMENT_max,
+    // Ids for text-flow block elements
+    TEXT_FLOW_ELEMENT,
+    HEAD,
+    P,
+    LG,
+    L,
+    TABLE,
+    CAPTION,
+    TR,
+    TD,
+    TH,
+    TEXT_FLOW_ELEMENT_max,
     // Ids for PageElement child classes
     PAGE_ELEMENT,
     PAGE_MILESTONE_END,
@@ -280,6 +292,7 @@ enum ClassId : uint16_t {
     LB,
     NUM,
     REND,
+    STACK,
     SYMBOL,
     TEXT,
     TEXT_ELEMENT_max,
@@ -335,6 +348,18 @@ class GraceAligner;
 class InterfaceComparison;
 class LayerElement;
 class LedgerLine;
+class TextFlowElement;
+class TextFlowTableElement;
+class TableCell;
+class Head;
+class Paragraph;
+class LineGroup;
+class Line;
+class Table;
+class TableCaption;
+class TableRow;
+class Td;
+class Th;
 class LinkingInterface;
 class Liquescent;
 class Nc;
@@ -344,6 +369,7 @@ class Object;
 class PlistInterface;
 class Point;
 class Staff;
+class Stack;
 class Option;
 class TextElement;
 class TimePointInterface;

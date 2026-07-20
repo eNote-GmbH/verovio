@@ -121,6 +121,7 @@
 #include "tabgrp.h"
 #include "tempo.h"
 #include "text.h"
+#include "textflow.h"
 #include "textlayoutelement.h"
 #include "tie.h"
 #include "timestamp.h"
@@ -405,6 +406,96 @@ FunctorCode FunctorInterface::VisitDiv(Div *div)
 FunctorCode FunctorInterface::VisitDivEnd(Div *div)
 {
     return this->VisitTextLayoutElementEnd(div);
+}
+
+FunctorCode FunctorInterface::VisitHead(Head *head)
+{
+    return this->VisitObject(head);
+}
+
+FunctorCode FunctorInterface::VisitHeadEnd(Head *head)
+{
+    return this->VisitObjectEnd(head);
+}
+
+FunctorCode FunctorInterface::VisitParagraph(Paragraph *paragraph)
+{
+    return this->VisitObject(paragraph);
+}
+
+FunctorCode FunctorInterface::VisitParagraphEnd(Paragraph *paragraph)
+{
+    return this->VisitObjectEnd(paragraph);
+}
+
+FunctorCode FunctorInterface::VisitLineGroup(LineGroup *lineGroup)
+{
+    return this->VisitObject(lineGroup);
+}
+
+FunctorCode FunctorInterface::VisitLineGroupEnd(LineGroup *lineGroup)
+{
+    return this->VisitObjectEnd(lineGroup);
+}
+
+FunctorCode FunctorInterface::VisitLine(Line *line)
+{
+    return this->VisitObject(line);
+}
+
+FunctorCode FunctorInterface::VisitLineEnd(Line *line)
+{
+    return this->VisitObjectEnd(line);
+}
+
+FunctorCode FunctorInterface::VisitTable(Table *table)
+{
+    return this->VisitObject(table);
+}
+
+FunctorCode FunctorInterface::VisitTableEnd(Table *table)
+{
+    return this->VisitObjectEnd(table);
+}
+
+FunctorCode FunctorInterface::VisitTableCaption(TableCaption *caption)
+{
+    return this->VisitObject(caption);
+}
+
+FunctorCode FunctorInterface::VisitTableCaptionEnd(TableCaption *caption)
+{
+    return this->VisitObjectEnd(caption);
+}
+
+FunctorCode FunctorInterface::VisitTableRow(TableRow *row)
+{
+    return this->VisitObject(row);
+}
+
+FunctorCode FunctorInterface::VisitTableRowEnd(TableRow *row)
+{
+    return this->VisitObjectEnd(row);
+}
+
+FunctorCode FunctorInterface::VisitTd(Td *td)
+{
+    return this->VisitObject(td);
+}
+
+FunctorCode FunctorInterface::VisitTdEnd(Td *td)
+{
+    return this->VisitObjectEnd(td);
+}
+
+FunctorCode FunctorInterface::VisitTh(Th *th)
+{
+    return this->VisitObject(th);
+}
+
+FunctorCode FunctorInterface::VisitThEnd(Th *th)
+{
+    return this->VisitObjectEnd(th);
 }
 
 FunctorCode FunctorInterface::VisitRunningElement(RunningElement *runningElement)
@@ -1217,6 +1308,16 @@ FunctorCode FunctorInterface::VisitSylEnd(Syl *syl)
     return this->VisitLayerElementEnd(syl);
 }
 
+FunctorCode FunctorInterface::VisitTextFlowSyl(TextFlowSyl *syl)
+{
+    return this->VisitObject(syl);
+}
+
+FunctorCode FunctorInterface::VisitTextFlowSylEnd(TextFlowSyl *syl)
+{
+    return this->VisitObjectEnd(syl);
+}
+
 FunctorCode FunctorInterface::VisitSyllable(Syllable *syllable)
 {
     return this->VisitLayerElement(syllable);
@@ -1365,6 +1466,16 @@ FunctorCode FunctorInterface::VisitRend(Rend *rend)
 FunctorCode FunctorInterface::VisitRendEnd(Rend *rend)
 {
     return this->VisitTextElementEnd(rend);
+}
+
+FunctorCode FunctorInterface::VisitStack(Stack *stack)
+{
+    return this->VisitTextElement(stack);
+}
+
+FunctorCode FunctorInterface::VisitStackEnd(Stack *stack)
+{
+    return this->VisitTextElementEnd(stack);
 }
 
 FunctorCode FunctorInterface::VisitSvg(Svg *svg)
@@ -1809,6 +1920,96 @@ FunctorCode ConstFunctorInterface::VisitDiv(const Div *div)
 FunctorCode ConstFunctorInterface::VisitDivEnd(const Div *div)
 {
     return this->VisitTextLayoutElementEnd(div);
+}
+
+FunctorCode ConstFunctorInterface::VisitHead(const Head *head)
+{
+    return this->VisitObject(head);
+}
+
+FunctorCode ConstFunctorInterface::VisitHeadEnd(const Head *head)
+{
+    return this->VisitObjectEnd(head);
+}
+
+FunctorCode ConstFunctorInterface::VisitParagraph(const Paragraph *paragraph)
+{
+    return this->VisitObject(paragraph);
+}
+
+FunctorCode ConstFunctorInterface::VisitParagraphEnd(const Paragraph *paragraph)
+{
+    return this->VisitObjectEnd(paragraph);
+}
+
+FunctorCode ConstFunctorInterface::VisitLineGroup(const LineGroup *lineGroup)
+{
+    return this->VisitObject(lineGroup);
+}
+
+FunctorCode ConstFunctorInterface::VisitLineGroupEnd(const LineGroup *lineGroup)
+{
+    return this->VisitObjectEnd(lineGroup);
+}
+
+FunctorCode ConstFunctorInterface::VisitLine(const Line *line)
+{
+    return this->VisitObject(line);
+}
+
+FunctorCode ConstFunctorInterface::VisitLineEnd(const Line *line)
+{
+    return this->VisitObjectEnd(line);
+}
+
+FunctorCode ConstFunctorInterface::VisitTable(const Table *table)
+{
+    return this->VisitObject(table);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableEnd(const Table *table)
+{
+    return this->VisitObjectEnd(table);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableCaption(const TableCaption *caption)
+{
+    return this->VisitObject(caption);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableCaptionEnd(const TableCaption *caption)
+{
+    return this->VisitObjectEnd(caption);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableRow(const TableRow *row)
+{
+    return this->VisitObject(row);
+}
+
+FunctorCode ConstFunctorInterface::VisitTableRowEnd(const TableRow *row)
+{
+    return this->VisitObjectEnd(row);
+}
+
+FunctorCode ConstFunctorInterface::VisitTd(const Td *td)
+{
+    return this->VisitObject(td);
+}
+
+FunctorCode ConstFunctorInterface::VisitTdEnd(const Td *td)
+{
+    return this->VisitObjectEnd(td);
+}
+
+FunctorCode ConstFunctorInterface::VisitTh(const Th *th)
+{
+    return this->VisitObject(th);
+}
+
+FunctorCode ConstFunctorInterface::VisitThEnd(const Th *th)
+{
+    return this->VisitObjectEnd(th);
 }
 
 FunctorCode ConstFunctorInterface::VisitRunningElement(const RunningElement *runningElement)
@@ -2621,6 +2822,16 @@ FunctorCode ConstFunctorInterface::VisitSylEnd(const Syl *syl)
     return this->VisitLayerElementEnd(syl);
 }
 
+FunctorCode ConstFunctorInterface::VisitTextFlowSyl(const TextFlowSyl *syl)
+{
+    return this->VisitObject(syl);
+}
+
+FunctorCode ConstFunctorInterface::VisitTextFlowSylEnd(const TextFlowSyl *syl)
+{
+    return this->VisitObjectEnd(syl);
+}
+
 FunctorCode ConstFunctorInterface::VisitSyllable(const Syllable *syllable)
 {
     return this->VisitLayerElement(syllable);
@@ -2769,6 +2980,16 @@ FunctorCode ConstFunctorInterface::VisitRend(const Rend *rend)
 FunctorCode ConstFunctorInterface::VisitRendEnd(const Rend *rend)
 {
     return this->VisitTextElementEnd(rend);
+}
+
+FunctorCode ConstFunctorInterface::VisitStack(const Stack *stack)
+{
+    return this->VisitTextElement(stack);
+}
+
+FunctorCode ConstFunctorInterface::VisitStackEnd(const Stack *stack)
+{
+    return this->VisitTextElementEnd(stack);
 }
 
 FunctorCode ConstFunctorInterface::VisitSvg(const Svg *svg)

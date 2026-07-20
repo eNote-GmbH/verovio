@@ -8,6 +8,8 @@
 #ifndef __VRV_DIV_H__
 #define __VRV_DIV_H__
 
+#include "linkinginterface.h"
+#include "textflowlayout.h"
 #include "textlayoutelement.h"
 
 namespace vrv {
@@ -21,7 +23,12 @@ namespace vrv {
  * The current implementation accepts rend as child of div, which is not valid
  * See https://github.com/music-encoding/music-encoding/issues/1189
  */
-class Div : public TextLayoutElement {
+class Div : public TextLayoutElement,
+            public LinkingInterface,
+            public AttLabelled,
+            public AttLang,
+            public AttNNumberLike,
+            public AttWhitespace {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
@@ -49,6 +56,21 @@ public:
     int GetDrawingX() const override;
     int GetDrawingY() const override;
     ///@}
+
+    bool IsSupportedChild(ClassId classId) override;
+
+    LinkingInterface *GetLinkingInterface() override { return vrv_cast<LinkingInterface *>(this); }
+    const LinkingInterface *GetLinkingInterface() const override { return vrv_cast<const LinkingInterface *>(this); }
+
+    bool HasTextFlow() const;
+    void ResetTextFlowLayout();
+    void SetTextFlowSize(int width, int height);
+    const TextFlowLayoutResult *GetTextFlowLayout(const Object *block) const;
+    const TextFlowLayoutResult &CacheTextFlowLayout(TextFlowLayoutResult result);
+    const TextFlowDocumentLayoutResult *GetTextFlowDocumentLayout(int availableWidth) const;
+    const TextFlowDocumentLayoutResult &CacheTextFlowDocumentLayout(TextFlowDocumentLayoutResult result);
+    int GetTextFlowHeight() const { return m_textFlowHeight; }
+    int GetTextFlowWidth() const { return m_textFlowWidth; }
 
     /**
      * @name Get and set the X and Y drawing relative positions
@@ -104,6 +126,11 @@ private:
      * A flag indicating that the div should be displayed inline
      */
     bool m_drawingInline;
+
+    int m_textFlowHeight;
+    int m_textFlowWidth;
+    std::vector<TextFlowLayoutResult> m_textFlowLayouts;
+    std::vector<TextFlowDocumentLayoutResult> m_textFlowDocumentLayouts;
 };
 
 } // namespace vrv

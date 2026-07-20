@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "doc.h"
+#include "editorial.h"
 #include "functor.h"
 #include "vrv.h"
 
@@ -25,8 +26,13 @@ namespace vrv {
 
 static const ClassRegistrar<Div> s_factory("div", DIV);
 
-Div::Div() : TextLayoutElement(DIV)
+Div::Div() : TextLayoutElement(DIV), LinkingInterface(), AttLabelled(), AttLang(), AttNNumberLike(), AttWhitespace()
 {
+    this->RegisterInterface(LinkingInterface::GetAttClasses(), LinkingInterface::IsInterface());
+    this->RegisterAttClass(ATT_LABELLED);
+    this->RegisterAttClass(ATT_LANG);
+    this->RegisterAttClass(ATT_NNUMBERLIKE);
+    this->RegisterAttClass(ATT_WHITESPACE);
     this->Reset();
 }
 
@@ -35,8 +41,72 @@ Div::~Div() {}
 void Div::Reset()
 {
     TextLayoutElement::Reset();
+    LinkingInterface::Reset();
+    this->ResetLabelled();
+    this->ResetLang();
+    this->ResetNNumberLike();
+    this->ResetWhitespace();
 
     m_drawingInline = false;
+    m_drawingXRel = 0;
+    m_drawingYRel = 0;
+    this->ResetTextFlowLayout();
+}
+
+bool Div::IsSupportedChild(ClassId classId)
+{
+    if ((classId == DIV) || Object::IsTextFlowElement(classId)) return true;
+    return TextLayoutElement::IsSupportedChild(classId);
+}
+
+bool Div::HasTextFlow() const
+{
+    for (const Object *child : this->GetChildren()) {
+        if (child->Is(DIV) || child->IsTextFlowElement()) return true;
+    }
+    return false;
+}
+
+void Div::ResetTextFlowLayout()
+{
+    m_textFlowHeight = 0;
+    m_textFlowWidth = 0;
+    m_textFlowLayouts.clear();
+    m_textFlowDocumentLayouts.clear();
+}
+
+void Div::SetTextFlowSize(int width, int height)
+{
+    m_textFlowWidth = width;
+    m_textFlowHeight = height;
+}
+
+const TextFlowLayoutResult *Div::GetTextFlowLayout(const Object *block) const
+{
+    for (const TextFlowLayoutResult &result : m_textFlowLayouts) {
+        if (result.block == block) return &result;
+    }
+    return nullptr;
+}
+
+const TextFlowLayoutResult &Div::CacheTextFlowLayout(TextFlowLayoutResult result)
+{
+    m_textFlowLayouts.push_back(std::move(result));
+    return m_textFlowLayouts.back();
+}
+
+const TextFlowDocumentLayoutResult *Div::GetTextFlowDocumentLayout(int availableWidth) const
+{
+    for (const TextFlowDocumentLayoutResult &result : m_textFlowDocumentLayouts) {
+        if (result.availableWidth == availableWidth) return &result;
+    }
+    return nullptr;
+}
+
+const TextFlowDocumentLayoutResult &Div::CacheTextFlowDocumentLayout(TextFlowDocumentLayoutResult result)
+{
+    m_textFlowDocumentLayouts.push_back(std::move(result));
+    return m_textFlowDocumentLayouts.back();
 }
 
 int Div::GetDrawingX() const
@@ -73,6 +143,8 @@ int Div::GetTotalHeight(const Doc *doc) const
 {
     assert(doc);
 
+    if (this->HasTextFlow()) return m_textFlowHeight;
+
     int height = this->GetContentHeight();
 
     return height;
@@ -80,6 +152,7 @@ int Div::GetTotalHeight(const Doc *doc) const
 
 int Div::GetTotalWidth(const Doc *doc) const
 {
+    if (this->HasTextFlow()) return (m_textFlowWidth > 0) ? m_textFlowWidth : doc->m_drawingPageContentWidth;
     if (!m_drawingInline) {
         return (doc->m_drawingPageContentWidth);
     }
