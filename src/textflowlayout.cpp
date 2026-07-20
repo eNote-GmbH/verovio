@@ -128,7 +128,8 @@ int TextFlowLayout::MeasureObject(Object *object, const FontInfo &inheritedFont,
 
     if (Harm *harm = this->GetHarm(object)) {
         int width = 0;
-        for (Object *child : harm->GetChildren()) width += this->MeasureObject(child, inheritedFont, inheritedPointSize);
+        for (Object *child : harm->GetChildren())
+            width += this->MeasureObject(child, inheritedFont, inheritedPointSize);
         return width;
     }
 
