@@ -107,6 +107,7 @@ Harm::Harm()
     , AttHarmVis()
     , AttLang()
     , AttNNumberLike()
+    , AttVerticalGroup()
 {
     this->RegisterInterface(TextDirInterface::GetAttClasses(), TextDirInterface::IsInterface());
     this->RegisterInterface(TimeSpanningInterface::GetAttClasses(), TimeSpanningInterface::IsInterface());
@@ -114,6 +115,7 @@ Harm::Harm()
     this->RegisterAttClass(ATT_HARMVIS);
     this->RegisterAttClass(ATT_LANG);
     this->RegisterAttClass(ATT_NNUMBERLIKE);
+    this->RegisterAttClass(ATT_VERTICALGROUP);
 
     this->Reset();
 }
@@ -130,6 +132,7 @@ void Harm::Reset()
     this->ResetLang();
     this->ResetNNumberLike();
     this->ResetChordDef();
+    this->ResetVerticalGroup();
 }
 
 bool Harm::IsSupportedChild(ClassId classId)

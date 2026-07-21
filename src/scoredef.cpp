@@ -325,7 +325,6 @@ void ScoreDef::ReplaceDrawingValues(const ScoreDef *newScoreDef)
     m_insertScoreDef = false;
     m_setAsDrawing = true;
     this->ReplaceStaffItemOrders(newScoreDef);
-
     if (newScoreDef->HasLyricFam()) this->SetLyricFam(newScoreDef->GetLyricFam());
     if (newScoreDef->HasLyricName()) this->SetLyricName(newScoreDef->GetLyricName());
     if (newScoreDef->HasLyricStyle()) this->SetLyricStyle(newScoreDef->GetLyricStyle());

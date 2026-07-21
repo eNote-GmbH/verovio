@@ -34,7 +34,8 @@ class Harm : public ControlElement,
              public AttHarmLog,
              public AttHarmVis,
              public AttLang,
-             public AttNNumberLike {
+             public AttNNumberLike,
+             public AttVerticalGroup {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
