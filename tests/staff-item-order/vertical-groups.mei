@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+   <meiHead>
+      <fileDesc>
+         <titleStmt><title>Vertical groups</title></titleStmt>
+         <pubStmt/>
+      </fileDesc>
+   </meiHead>
+   <music>
+      <body>
+         <mdiv>
+            <score>
+               <scoreDef aboveorder="harm dynam dir tempo fermata" meter.count="4" meter.unit="4">
+                  <staffGrp>
+                     <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+                  </staffGrp>
+               </scoreDef>
+               <section>
+                  <measure n="1">
+                     <staff n="1">
+                        <layer n="1">
+                           <note xml:id="vg-n1" pname="c" oct="4" dur="4"/>
+                           <note xml:id="vg-n2" pname="d" oct="4" dur="4"/>
+                           <note xml:id="vg-n3" pname="e" oct="4" dur="4"/>
+                           <note xml:id="vg-n4" pname="f" oct="4" dur="4"/>
+                        </layer>
+                     </staff>
+                     <harm xml:id="vg-harm" staff="1" startid="#vg-n1" place="above" vgrp="1">Harmony</harm>
+                     <dynam xml:id="vg-dynam" staff="1" startid="#vg-n1" place="above" vgrp="1">Dynamic</dynam>
+                     <dir xml:id="vg-dir" staff="1" startid="#vg-n1" place="above" vgrp="1">Direction</dir>
+                     <tempo xml:id="vg-tempo" staff="1" startid="#vg-n1" place="above" vgrp="1">Tempo</tempo>
+                     <fermata xml:id="vg-fermata" staff="1" startid="#vg-n1" place="above" vgrp="2"/>
+                     <breath xml:id="vg-breath" staff="1" startid="#vg-n1" place="above" vgrp="3"/>
+                     <caesura xml:id="vg-caesura" staff="1" startid="#vg-n1" place="above" vgrp="4"/>
+                     <cpMark xml:id="vg-cpmark" staff="1" startid="#vg-n1" endid="#vg-n4" place="above" vgrp="5">Coda</cpMark>
+                     <fing xml:id="vg-fing" staff="1" startid="#vg-n1" place="above" vgrp="6">1</fing>
+                     <hairpin xml:id="vg-hairpin" staff="1" startid="#vg-n1" endid="#vg-n4" form="cres" place="above" vgrp="7"/>
+                     <mordent xml:id="vg-mordent" staff="1" startid="#vg-n1" place="above" vgrp="8"/>
+                     <octave xml:id="vg-octave" staff="1" startid="#vg-n1" endid="#vg-n4" dis="8" dis.place="above" vgrp="9"/>
+                     <ornam xml:id="vg-ornam" staff="1" startid="#vg-n1" place="above" vgrp="10">Ornament</ornam>
+                     <pedal xml:id="vg-pedal" staff="1" startid="#vg-n1" place="below" dir="down" vgrp="11"/>
+                     <repeatMark xml:id="vg-repeatmark" staff="1" startid="#vg-n1" place="above" vgrp="12" func="fine">Fine</repeatMark>
+                     <trill xml:id="vg-trill" staff="1" startid="#vg-n1" place="above" vgrp="13"/>
+                     <turn xml:id="vg-turn" staff="1" startid="#vg-n1" place="above" vgrp="14"/>
+                  </measure>
+               </section>
+            </score>
+         </mdiv>
+      </body>
+   </music>
+</mei>

@@ -88,6 +88,13 @@ namespace {
         if (order.empty()) return defaults;
 
         std::vector<StaffItemStep> steps;
+        // Endings are structural staff-adjacent anchors and cannot be named in data.STAFFITEM. Position them before
+        // the configurable categories so the latter stack outside the volta bracket.
+        const auto ending = std::find_if(
+            defaults.begin(), defaults.end(), [](const StaffItemStep &step) { return step.classId == ENDING; });
+        assert(ending != defaults.end());
+        steps.push_back(*ending);
+
         std::set<data_STAFFITEM> used;
         for (const data_STAFFITEM item : order) {
             if (!used.insert(item).second) continue;
@@ -101,6 +108,7 @@ namespace {
             }
         }
         for (const StaffItemStep &step : defaults) {
+            if (step.classId == ENDING) continue;
             if ((step.item == STAFFITEM_dir) && (used.contains(STAFFITEM_dir) || used.contains(STAFFITEM_stageDir))) {
                 if (!used.contains(STAFFITEM_dir)) steps.push_back({ STAFFITEM_dir, DIR, true });
                 if (!used.contains(STAFFITEM_stageDir)) steps.push_back({ STAFFITEM_stageDir, DIR, true });
@@ -264,10 +272,13 @@ namespace {
             }
         }
 
+        // Activate the same local rank across the system before moving to the next one. A measure-first traversal can
+        // make a shared vgrp oscillate when an item in the following measure is staff-nearer than an already active
+        // item in the preceding measure.
         std::stable_sort(
             result.begin(), result.end(), [](const StaffItemPositioner &left, const StaffItemPositioner &right) {
-                if (left.measureIndex != right.measureIndex) return left.measureIndex < right.measureIndex;
                 if (left.stepIndex != right.stepIndex) return left.stepIndex < right.stepIndex;
+                if (left.measureIndex != right.measureIndex) return left.measureIndex < right.measureIndex;
                 return left.positionerIndex < right.positionerIndex;
             });
         return result;
@@ -739,9 +750,19 @@ void AdjustFloatingPositionersFunctor::AdjustOrderedPlace(
 {
     ArrayOfBoundingBoxes &overflowBoxes = (place == STAFFREL_above) ? staffAlignment->GetBBoxesAboveForModification()
                                                                     : staffAlignment->GetBBoxesBelowForModification();
-    const ArrayOfBoundingBoxes baseBoxes = overflowBoxes;
     const std::vector<StaffItemPositioner> positioners
         = BuildStaffItemPositioners(staffAlignment, place, includeWithin, true);
+    std::set<const BoundingBox *> rebuiltPositioners;
+    for (const StaffItemPositioner &entry : positioners) {
+        rebuiltPositioners.insert(entry.positioner);
+    }
+
+    ArrayOfBoundingBoxes baseBoxes;
+    // Ordered positioners can already occur in the alignment overflow list. Rebuild them once from their local ranks
+    // while retaining native stacks and curves as collision anchors.
+    std::copy_if(overflowBoxes.begin(), overflowBoxes.end(), std::back_inserter(baseBoxes),
+        [&rebuiltPositioners](const BoundingBox *bbox) { return !rebuiltPositioners.contains(bbox); });
+    overflowBoxes = baseBoxes;
 
     m_includeWithin = includeWithin;
     for (const StaffItemPositioner &entry : positioners) {

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Staff item order</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef aboveorder="harm dynam dir" beloworder="dir dynam harm"
+                    betweenorder="harm dynam dir" meter.count="4" meter.unit="4">
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+              <staffDef n="2" lines="5" clef.shape="F" clef.line="4"
+                        aboveorder="dir dynam harm" beloworder="harm dir"
+                        betweenorder="dir harm"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="n1" pname="c" oct="4" dur="2"/>
+                  <note xml:id="n1-end" pname="d" oct="4" dur="2"/>
+                </layer>
+              </staff>
+              <staff n="2">
+                <layer n="1"><note xml:id="n2" pname="c" oct="3" dur="1"/></layer>
+              </staff>
+              <harm xml:id="above-harm-1" staff="1" startid="#n1" place="above">C major</harm>
+              <dynam xml:id="above-dynam-1" staff="1" startid="#n1" place="above">fortissimo</dynam>
+              <dir xml:id="above-dir-1" staff="1" startid="#n1" place="above">direction</dir>
+              <harm xml:id="below-harm-1" staff="1" startid="#n1" place="below">C major</harm>
+              <dynam xml:id="below-dynam-1" staff="1" startid="#n1" place="below">fortissimo</dynam>
+              <dir xml:id="below-dir-1" staff="1" startid="#n1" place="below">direction</dir>
+              <harm xml:id="above-harm-2" staff="2" startid="#n2" place="above">C major</harm>
+              <dynam xml:id="above-dynam-2" staff="2" startid="#n2" place="above">fortissimo</dynam>
+              <dir xml:id="above-dir-2" staff="2" startid="#n2" place="above">direction</dir>
+              <harm xml:id="between-harm" staff="1" startid="#n1" place="between">C major</harm>
+              <dynam xml:id="between-dynam" staff="1" startid="#n1" place="between">fortissimo</dynam>
+              <dir xml:id="between-dir" staff="1" startid="#n1" place="between">direction</dir>
+              <dynam xml:id="group-dynam" staff="1" startid="#n1-end" place="above" vgrp="7">piano</dynam>
+              <hairpin xml:id="group-hairpin" staff="1" startid="#n1" endid="#n1-end"
+                       place="above" form="cres" vgrp="7"/>
+            </measure>
+            <scoreDef>
+              <staffGrp>
+                <staffDef n="1" aboveorder="dir dynam harm"/>
+              </staffGrp>
+            </scoreDef>
+            <measure n="2">
+              <staff n="1">
+                <layer n="1"><note xml:id="later-n1" pname="c" oct="4" dur="1"/></layer>
+              </staff>
+              <staff n="2">
+                <layer n="1"><note pname="c" oct="3" dur="1"/></layer>
+              </staff>
+              <harm xml:id="later-harm" n="later" staff="1" startid="#later-n1" place="above">C major</harm>
+              <dynam xml:id="later-dynam" staff="1" startid="#later-n1" place="above">fortissimo</dynam>
+              <dir xml:id="later-dir" staff="1" startid="#later-n1" place="above">direction</dir>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

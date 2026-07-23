@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc><titleStmt><title>Ordered ending spacing</title></titleStmt><pubStmt/></fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef aboveorder="harm dir" page.height="1856" page.width="1312"
+              page.topmar="93" page.botmar="93" page.leftmar="93" page.rightmar="93"
+              spacing.system="120" system.leftmar="22" system.rightmar="0" vu.height="0.3201mm">
+            <chordTable>
+              <chordDef xml:id="diagram">
+                <chordMember tab.fing="x" tab.string="6"/>
+                <chordMember tab.fret="3" tab.string="5"/>
+                <chordMember tab.fret="2" tab.string="4"/>
+                <chordMember tab.fing="o" tab.fret="0" tab.string="3"/>
+                <chordMember tab.fret="1" tab.string="2"/>
+                <chordMember tab.fing="o" tab.fret="0" tab.string="1"/>
+              </chordDef>
+            </chordTable>
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2" meter.count="4" meter.unit="4"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="note-1" dur="1" pname="c" oct="4"/>
+                </layer>
+              </staff>
+              <harm staff="1" startid="#note-1" place="above" vgrp="10">C</harm>
+            </measure>
+            <sb/>
+            <ending n="1" type="stop" lendsym="angledown">
+              <measure n="2" width="275vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="note-2" dur="1" pname="d" oct="4">
+                      <verse n="1"><syl>first verse</syl></verse>
+                      <verse n="2"><syl>second verse</syl></verse>
+                    </note>
+                    <note xml:id="note-2b" dur="1" pname="e" oct="4"/>
+                  </layer>
+                </staff>
+                <harm staff="1" startid="#note-2" place="above" vgrp="10">D</harm>
+                <harm n="2" staff="1" startid="#note-2" chordref="#diagram" rendgrid="gridtext">D diagram</harm>
+                <dir staff="1" startid="#note-2" place="above" vgrp="20">ending text</dir>
+                <harm n="1" staff="1" startid="#note-2b" place="above" vgrp="11">E</harm>
+                <harm n="2" staff="1" startid="#note-2b" chordref="#diagram" rendgrid="gridtext">E diagram</harm>
+              </measure>
+            </ending>
+            <ending n="2" type="discontinue" lendsym="none">
+              <measure n="3" width="432vu">
+                <staff n="1">
+                  <layer n="1">
+                    <note xml:id="note-3" dur="1" pname="e" oct="4">
+                      <verse n="3"><label>3.</label><syl>third verse</syl></verse>
+                    </note>
+                    <note xml:id="note-3b" dur="1" pname="f" oct="4"/>
+                  </layer>
+                </staff>
+                <harm staff="1" startid="#note-3" place="above" vgrp="10">E</harm>
+                <harm n="2" staff="1" startid="#note-3" chordref="#diagram" rendgrid="gridtext">E diagram</harm>
+                <harm n="1" staff="1" startid="#note-3b" place="above" vgrp="10">F</harm>
+                <harm n="2" staff="1" startid="#note-3b" chordref="#diagram" rendgrid="gridtext">F diagram</harm>
+              </measure>
+            </ending>
+            <measure n="4" width="341vu">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="note-4a" dur="1" pname="g" oct="4"/>
+                  <note xml:id="note-4b" dur="1" pname="a" oct="4"/>
+                </layer>
+              </staff>
+              <harm n="1" staff="1" startid="#note-4a" place="above" vgrp="10">G</harm>
+              <harm n="2" staff="1" startid="#note-4a" chordref="#diagram" rendgrid="gridtext">G diagram</harm>
+              <harm n="1" staff="1" startid="#note-4b" place="above" vgrp="10">A</harm>
+              <harm n="2" staff="1" startid="#note-4b" chordref="#diagram" rendgrid="gridtext">A diagram</harm>
+            </measure>
+            <measure n="5" width="351vu">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="note-5a" dur="1" pname="b" oct="4"/>
+                  <note xml:id="note-5b" dur="1" pname="c" oct="5"/>
+                </layer>
+              </staff>
+              <harm n="1" staff="1" startid="#note-5a" place="above" vgrp="10">B</harm>
+              <harm n="2" staff="1" startid="#note-5a" chordref="#diagram" rendgrid="gridtext">B diagram</harm>
+              <harm n="1" staff="1" startid="#note-5b" place="above" vgrp="10">C</harm>
+              <harm n="2" staff="1" startid="#note-5b" chordref="#diagram" rendgrid="gridtext">C diagram</harm>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

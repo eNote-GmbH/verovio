@@ -110,6 +110,17 @@ std::string SvgGroup(const std::string &svg, const std::string &id)
     return {};
 }
 
+double FirstRectangleX(const std::string &svg, const std::string &id)
+{
+    const std::string group = SvgGroup(svg, id);
+    size_t position = group.find("<rect ");
+    if (position == std::string::npos) return -1.0;
+    position = group.find(" x=\"", position);
+    if (position == std::string::npos) return -1.0;
+    position += std::string(" x=\"").size();
+    return std::strtod(group.c_str() + position, nullptr);
+}
+
 std::vector<std::string> GlyphReferences(const std::string &svg, const std::string &id)
 {
     const std::string group = SvgGroup(svg, id);
@@ -126,9 +137,8 @@ std::vector<std::string> GlyphReferences(const std::string &svg, const std::stri
     return references;
 }
 
-bool TestHarmonyPointerTransposition(
-    const char *file, const std::string &resourcePath, const std::string &options, const std::string &expectedRoot,
-    const std::string &label)
+bool TestHarmonyPointerTransposition(const char *file, const std::string &resourcePath, const std::string &options,
+    const std::string &expectedRoot, const std::string &label)
 {
     vrv::Toolkit toolkit(false);
     toolkit.SetResourcePath(resourcePath);
@@ -160,7 +170,7 @@ bool TestHarmonyPointerTransposition(
 
 int main(int argc, char **argv)
 {
-    if (argc != 5) return 2;
+    if (argc != 6) return 2;
 
     vrv::Toolkit toolkit(false);
     toolkit.SetResourcePath("../data");
@@ -260,14 +270,14 @@ int main(int argc, char **argv)
 
     const std::string resourcePath = "../data";
     ok &= TestHarmonyPointerTransposition(argv[2], resourcePath, "", "D", "untransposed harmony pointer");
-    ok &= TestHarmonyPointerTransposition(argv[2], resourcePath,
-        R"({"transpose":"M2","transposeCapo":"off"})", "E", "document transposition");
+    ok &= TestHarmonyPointerTransposition(
+        argv[2], resourcePath, R"({"transpose":"M2","transposeCapo":"off"})", "E", "document transposition");
     ok &= TestHarmonyPointerTransposition(argv[2], resourcePath,
         R"({"transposeMdiv":{"core-mdiv":"M2"},"transposeCapo":"off"})", "E", "mdiv transposition");
-    ok &= TestHarmonyPointerTransposition(argv[2], resourcePath, R"({"transposeToSoundingPitch":true})", "C",
-        "sounding-pitch transposition");
-    ok &= TestHarmonyPointerTransposition(argv[2], resourcePath,
-        R"({"transpose":"M2","transposeCapo":"5"})", "D", "capo-aware transposition");
+    ok &= TestHarmonyPointerTransposition(
+        argv[2], resourcePath, R"({"transposeToSoundingPitch":true})", "C", "sounding-pitch transposition");
+    ok &= TestHarmonyPointerTransposition(
+        argv[2], resourcePath, R"({"transpose":"M2","transposeCapo":"5"})", "D", "capo-aware transposition");
 
     vrv::Toolkit legacyToolkit(false);
     legacyToolkit.SetResourcePath("../data");
@@ -328,6 +338,20 @@ int main(int argc, char **argv)
     const std::string cellAttributes = tableToolkit.GetElementAttr("heading-cell");
     ok &= Expect(cellAttributes.find("colspan") != std::string::npos,
         "GetElementAttr did not expose table-cell span attributes");
+
+    vrv::Toolkit enclosureToolkit(false);
+    enclosureToolkit.SetResourcePath("../data");
+    ok &= Expect(enclosureToolkit.LoadFile(argv[5]), "offset text-enclosure fixture did not load");
+    const std::string enclosureSvg = RenderAllPages(enclosureToolkit);
+    const double enclosureX = FirstRectangleX(enclosureSvg, "offset-boxed-dir");
+    const double textX = FirstTranslateXAfter(enclosureSvg, "offset-boxed-rend");
+    ok &= Expect((enclosureX >= 0.0) && (textX >= 0.0) && (textX > enclosureX) && ((textX - enclosureX) < 200.0),
+        "@ho shifted enclosed text without shifting its enclosure");
+    const double mixedEnclosureX = FirstRectangleX(enclosureSvg, "offset-mixed-dir");
+    const double mixedTextX = FirstTranslateXAfter(enclosureSvg, "offset-mixed-boxed-rend");
+    ok &= Expect((mixedEnclosureX >= 0.0) && (mixedTextX >= 0.0) && (mixedTextX > mixedEnclosureX)
+            && ((mixedTextX - mixedEnclosureX) < 200.0),
+        "@ho did not keep a mixed-rend enclosure with its enclosed text");
 
     return ok ? 0 : 1;
 }

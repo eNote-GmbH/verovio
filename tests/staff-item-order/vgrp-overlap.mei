@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc><titleStmt><title>Overlapping cross-measure vgrp</title></titleStmt><pubStmt/></fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef aboveorder="harm dir" meter.count="4" meter.unit="4">
+            <staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1" width="80vu">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="overlap-n1" pname="c" oct="4" dur="2"/>
+                  <note xml:id="overlap-n2" pname="d" oct="4" dur="2"/>
+                </layer>
+              </staff>
+              <harm xml:id="overlap-harm-1" staff="1" startid="#overlap-n1" place="above" vgrp="1">C</harm>
+              <dir xml:id="overlap-dir" staff="1" startid="#overlap-n2" place="above" ho="8vu">A long direction crossing the following barline</dir>
+            </measure>
+            <measure n="2" width="80vu">
+              <staff n="1">
+                <layer n="1"><note xml:id="overlap-n3" pname="e" oct="4" dur="1"/></layer>
+              </staff>
+              <harm xml:id="overlap-harm-2" staff="1" startid="#overlap-n3" place="above" vgrp="1">D</harm>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+   <meiHead><fileDesc><titleStmt><title>Order with cross-measure vgrp</title></titleStmt><pubStmt/></fileDesc></meiHead>
+   <music><body><mdiv><score>
+      <scoreDef meter.count="4" meter.unit="4">
+         <staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2" aboveorder="dynam harm dir"/></staffGrp>
+      </scoreDef>
+      <section>
+         <measure n="1">
+            <staff n="1"><layer n="1">
+               <note xml:id="m1n1" pname="c" oct="4" dur="4"/><note pname="d" oct="4" dur="4"/>
+               <note pname="e" oct="4" dur="4"/><note pname="f" oct="4" dur="4"/>
+            </layer></staff>
+            <dynam xml:id="m1-dynam" staff="1" startid="#m1n1" place="above" vgrp="1">Dynamic</dynam>
+            <harm xml:id="m1-harm" n="1" staff="1" startid="#m1n1" place="above">Harmony</harm>
+            <dir xml:id="m1-dir" staff="1" startid="#m1n1" place="above">Direction</dir>
+         </measure>
+         <scoreDef><staffGrp><staffDef n="1" aboveorder="harm dir dynam"/></staffGrp></scoreDef>
+         <measure n="2">
+            <staff n="1"><layer n="1">
+               <note xml:id="m2n1" pname="c" oct="4" dur="4"/><note pname="d" oct="4" dur="4"/>
+               <note pname="e" oct="4" dur="4"/><note pname="f" oct="4" dur="4"/>
+            </layer></staff>
+            <dynam xml:id="m2-dynam" staff="1" startid="#m2n1" place="above" vgrp="1">Dynamic</dynam>
+            <harm xml:id="m2-harm" n="2" staff="1" startid="#m2n1" place="above">Harmony</harm>
+            <dir xml:id="m2-dir" staff="1" startid="#m2n1" place="above">Direction</dir>
+         </measure>
+      </section>
+   </score></mdiv></body></music>
+</mei>

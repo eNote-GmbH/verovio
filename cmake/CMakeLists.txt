@@ -43,6 +43,7 @@ option(BUILD_FONT_BENCHMARKS    "Build runtime font benchmark harness"          
 option(BUILD_FONT_TESTS         "Build runtime font API tests"                   OFF)
 option(BUILD_TEXT_BLOCK_TESTS   "Build MEI text block tests"                     OFF)
 option(BUILD_TRANSPOSE_CAPO_TESTS "Build guitar capo transposition tests"       OFF)
+option(BUILD_STAFF_ITEM_ORDER_TESTS "Build MEI staff-item order tests"           OFF)
 
 if (NO_HUMDRUM_SUPPORT AND MUSICXML_DEFAULT_HUMDRUM)
     message(FATAL_ERROR "Default MusicXML to Humdrum cannot be enabled by default without Humdrum support")
@@ -299,7 +300,8 @@ if(BUILD_TEXT_BLOCK_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/in-dir-ist-freude.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/text-flow-core.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei
-            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei)
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/offset-enclosure.mei)
     set_tests_properties(text-blocks PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
@@ -310,6 +312,22 @@ if(BUILD_TRANSPOSE_CAPO_TESTS)
     add_test(NAME transpose-capo
         COMMAND transpose-capo-test
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/transpose-capo/fixed-capo.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../data)
+endif()
+
+if(BUILD_STAFF_ITEM_ORDER_TESTS)
+    enable_testing()
+    add_executable(staff-item-order-test ../tests/staff-item-order/staff_item_order.cpp ${all_SRC})
+    add_test(NAME staff-item-order
+        COMMAND staff-item-order-test
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/order.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/partial.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/default.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vertical-groups.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vgrp-change.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vertical-groups-reh.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vgrp-overlap.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/ending-spacing.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 endif()
 
