@@ -11,6 +11,10 @@ let package = Package(
         .library(
             name: "VerovioToolkit",
             targets: ["VerovioToolkit"]
+        ),
+        .library(
+            name: "VerovioCore",
+            targets: ["VerovioCore"]
         )
     ],
     targets: [
@@ -37,7 +41,7 @@ let package = Package(
                 "vendor/harfbuzz/src/verovio-harfbuzz.cc",
                 "vendor/woff2/src/verovio-woff2.cc"
             ],
-            publicHeadersPath: "bindings/swift-core",
+            publicHeadersPath: "include/vrv",
             cxxSettings: [
                 .headerSearchPath("include/crc"),
                 .headerSearchPath("include/hum"),
@@ -67,12 +71,14 @@ let package = Package(
             dependencies: ["VerovioCore"],
             path: ".",
             sources: ["bindings/swift-toolkit"],
-            resources: [.copy("data")]
+            resources: [.copy("data")],
+            swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
         .testTarget(
             name: "VerovioToolkitTests",
             dependencies: ["VerovioToolkit"],
             path: "bindings/swift-toolkit-tests"
         )
-    ]
+    ],
+    cxxLanguageStandard: .cxx20
 )

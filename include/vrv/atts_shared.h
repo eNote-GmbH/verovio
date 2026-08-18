@@ -1,0 +1,1 @@
+../../libmei/dist/atts_shared.h
