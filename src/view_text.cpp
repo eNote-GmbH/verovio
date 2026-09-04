@@ -872,6 +872,16 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     std::function<void(const TextFlowLayoutNode &, int, int, int)> drawNode;
     drawNode = [&](const TextFlowLayoutNode &node, int parentX, int parentY, int parentDocumentY) {
         const int documentY = parentDocumentY + node.y;
+        if (node.kind == TextFlowLayoutNodeKind::PageBreak) {
+            // A pb belongs to the fragment that starts at its boundary. It is
+            // visually empty, but retaining its SVG group makes its original
+            // xml:id addressable without duplicating it on the preceding page.
+            if ((documentY >= fragmentStart) && (documentY < fragmentEnd) && node.object) {
+                dc->StartGraphic(node.object, "", node.object->GetID());
+                dc->EndGraphic(node.object, this);
+            }
+            return;
+        }
         if ((documentY + node.height <= fragmentStart) || (documentY >= fragmentEnd)) return;
         const int x = parentX + node.x;
         const int y = parentY - node.y;

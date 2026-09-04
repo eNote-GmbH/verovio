@@ -50,7 +50,10 @@ FunctorCode ConvertToPageBasedFunctor::VisitDiv(Div *div)
     assert(m_currentSystem);
     div->MoveItselfTo(m_currentSystem);
 
-    return FUNCTOR_CONTINUE;
+    // Text-flow descendants remain semantically owned by the div. In
+    // particular, an inline pb must not be hoisted into the surrounding
+    // system by VisitSystemElement.
+    return div->HasTextFlow() ? FUNCTOR_SIBLINGS : FUNCTOR_CONTINUE;
 }
 
 FunctorCode ConvertToPageBasedFunctor::VisitEditorialElement(EditorialElement *editorialElement)

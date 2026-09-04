@@ -60,7 +60,7 @@ void Div::Reset()
 
 bool Div::IsSupportedChild(ClassId classId)
 {
-    if ((classId == DIV) || Object::IsTextFlowElement(classId)) return true;
+    if ((classId == DIV) || (classId == PB) || Object::IsTextFlowElement(classId)) return true;
     return TextLayoutElement::IsSupportedChild(classId);
 }
 

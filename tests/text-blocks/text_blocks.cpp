@@ -206,6 +206,22 @@ bool TestTextFlowPagination()
             && !atomicOverflow[0].forcedSplit,
         "an oversized atomic unit did not use the documented overflow fallback");
 
+    const auto explicitBreak
+        = TextFlowLayout::Paginate({ TextFlowBreakUnit{ 0, 30, 0, 0 }, TextFlowBreakUnit{ 30, 30, 1, 1 } }, 100, 100);
+    ok &= Expect((explicitBreak.size() == 2) && !explicitBreak[0].startsNewPage && explicitBreak[1].startsNewPage
+            && (explicitBreak[0].endY == explicitBreak[1].startY),
+        "an explicit text-flow page break did not override an unbreakable boundary");
+
+    const auto leadingBreakOnOccupiedPage
+        = TextFlowLayout::Paginate({ TextFlowBreakUnit{ 0, 30, 0, 1 } }, 100, 100, true);
+    ok &= Expect((leadingBreakOnOccupiedPage.size() == 1) && leadingBreakOnOccupiedPage[0].startsNewPage,
+        "a leading text-flow page break did not leave an already occupied page");
+
+    const auto leadingBreakOnEmptyPage
+        = TextFlowLayout::Paginate({ TextFlowBreakUnit{ 0, 30, 0, 1 } }, 100, 100, false);
+    ok &= Expect((leadingBreakOnEmptyPage.size() == 1) && !leadingBreakOnEmptyPage[0].startsNewPage,
+        "a leading text-flow page break created a spurious empty page");
+
     return ok;
 }
 
@@ -413,6 +429,11 @@ int main(int argc, char **argv)
         "the unbreakable token was not preserved alongside an existing @type token");
     ok &= Expect(paginationMei.find("type=\"translation unbreakable\"") != std::string::npos,
         "a nested unbreakable token was not preserved");
+    for (const std::string &id : { "between-text-divs-pb", "div-text-pb", "head-text-pb", "paragraph-text-pb",
+             "line-text-pb", "caption-text-pb", "cell-text-pb", "heading-cell-text-pb" }) {
+        ok &= Expect(paginationMei.find("<pb xml:id=\"" + id + "\"") != std::string::npos,
+            "a text-flow page break did not round-trip: " + id);
+    }
 
     const auto pageContaining = [&](const std::string &id) {
         for (int page = 1; page <= paginationToolkit.GetPageCount(); ++page) {
@@ -437,6 +458,27 @@ int main(int argc, char **argv)
         "a table caption was split from its first row");
     ok &= Expect(pageContaining("pagination-row-2") == pageContaining("pagination-row-3"),
         "rows connected by rowspan were split across pages");
+    ok &= Expect(
+        (pageContaining("div-pb-before") > 0) && (pageContaining("div-pb-before") < pageContaining("div-pb-after")),
+        "a page break between direct div children did not force a new page");
+    ok &= Expect((pageContaining("paragraph-pb-before") > 0)
+            && (pageContaining("paragraph-pb-before") < pageContaining("paragraph-pb-after")),
+        "a page break inside a paragraph did not force a new page");
+    ok &= Expect(
+        (pageContaining("head-pb-before") > 0) && (pageContaining("head-pb-before") < pageContaining("head-pb-after")),
+        "a page break inside a heading did not force a new page");
+    ok &= Expect(
+        (pageContaining("line-pb-before") > 0) && (pageContaining("line-pb-before") < pageContaining("line-pb-after")),
+        "a page break inside a verse line did not force a new page");
+    ok &= Expect(pageContaining("caption-pb-before") == pageContaining("pb-table-row"),
+        "a page break inside a caption split the caption from the first table row");
+    ok &= Expect(pageContaining("pb-table-row") < pageContaining("cell-pb-after"),
+        "a page break inside a table cell did not move its atomic row group to a new page");
+    ok &= Expect(pageContaining("cell-pb-after") < pageContaining("heading-cell-pb-after"),
+        "a page break inside a table heading cell did not move its atomic row group to a new page");
+    ok &= Expect((pageContaining("between-text-divs-pb") == pageContaining("div-pb-before"))
+            && (pageContaining("pagination-row-4") < pageContaining("div-pb-before")),
+        "a page break between text divs did not force the following div onto a new page");
 
     const std::string paginationRoundTrip = paginationToolkit.GetMEI();
     ok &= Expect(paginationRoundTrip.find("continuation-") == std::string::npos,
@@ -457,13 +499,24 @@ int main(int argc, char **argv)
     ok &= Expect(encodedToolkit.SetOptions(R"({"pageWidth":500,"pageHeight":300,"breaks":"encoded"})"),
         "breaks=encoded options were rejected");
     ok &= Expect(encodedToolkit.LoadFile(argv[6]), "pagination fixture did not load with breaks=encoded");
-    ok &= Expect(encodedToolkit.GetPageCount() == 2,
-        "automatic text pagination changed the explicit breaks=encoded page semantics");
+    ok &= Expect(encodedToolkit.GetPageCount() >= 7, "text-flow page breaks were not applied with breaks=encoded");
     const std::string encodedSecondPage = encodedToolkit.RenderToSVG(2);
     ok &= Expect((encodedSecondPage.find("lead-first") != std::string::npos)
             && (encodedSecondPage.find("oversized-row-6") != std::string::npos)
             && (encodedSecondPage.find("pagination-row-4") != std::string::npos),
         "encoded output unexpectedly fragmented text after its explicit page break");
+    const auto encodedPageContaining = [&](const std::string &id) {
+        for (int page = 1; page <= encodedToolkit.GetPageCount(); ++page) {
+            if (encodedToolkit.RenderToSVG(page).find("id=\"" + id + "\"") != std::string::npos) return page;
+        }
+        return 0;
+    };
+    ok &= Expect(encodedPageContaining("div-pb-before") < encodedPageContaining("div-pb-after"),
+        "a div-level text page break was ignored with breaks=encoded");
+    ok &= Expect(encodedPageContaining("paragraph-pb-before") < encodedPageContaining("paragraph-pb-after"),
+        "a paragraph text page break was ignored with breaks=encoded");
+    ok &= Expect(encodedPageContaining("pagination-row-4") < encodedPageContaining("div-pb-before"),
+        "a page break between text divs was ignored with breaks=encoded");
 
     for (const std::string &breakMode : { "line", "smart" }) {
         vrv::Toolkit automaticToolkit(false);
@@ -475,6 +528,16 @@ int main(int argc, char **argv)
         ok &= Expect((automaticToolkit.GetPageCount() > 2) && (automaticSvg.find("kept-div") != std::string::npos)
                 && (automaticSvg.find("continuation-1") != std::string::npos),
             "text pagination was not active for breaks=" + breakMode);
+        const auto automaticPageContaining = [&](const std::string &id) {
+            for (int page = 1; page <= automaticToolkit.GetPageCount(); ++page) {
+                if (automaticToolkit.RenderToSVG(page).find("id=\"" + id + "\"") != std::string::npos) return page;
+            }
+            return 0;
+        };
+        ok &= Expect(automaticPageContaining("pagination-row-4") < automaticPageContaining("div-pb-before"),
+            "a page break between text divs was ignored with breaks=" + breakMode);
+        ok &= Expect(automaticPageContaining("paragraph-pb-before") < automaticPageContaining("paragraph-pb-after"),
+            "a paragraph text page break was ignored with breaks=" + breakMode);
     }
 
     return ok ? 0 : 1;

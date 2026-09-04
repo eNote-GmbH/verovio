@@ -9,6 +9,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "bboxdevicecontext.h"
 #include "div.h"
 #include "doc.h"
 #include "editorial.h"
@@ -23,6 +24,10 @@
 #include "staff.h"
 #include "system.h"
 #include "textflowlayout.h"
+#include "view.h"
+
+#include <algorithm>
+#include <limits>
 
 //----------------------------------------------------------------------------
 
@@ -184,6 +189,21 @@ FunctorCode CastOffSystemsFunctor::VisitSb(Sb *sb)
     }
     // Keep the <sb> in the internal MEI, even if we're not using it to break the system.
     sb->MoveItselfTo(m_currentSystem);
+    return FUNCTOR_SIBLINGS;
+}
+
+FunctorCode CastOffSystemsFunctor::VisitPb(Pb *pb)
+{
+    // Keep an encoded page break at its document position. It starts a new
+    // cast-off system so the vertical page pass can enforce the boundary in
+    // auto and smart modes as well.
+    if (m_currentSystem->GetChildCount() > 0) {
+        m_currentSystem = new System();
+        m_page->AddChild(m_currentSystem);
+    }
+    pb = vrv_cast<Pb *>(m_contentSystem->Relinquish(pb->GetIdx()));
+    assert(pb);
+    m_currentSystem->AddChild(pb);
     return FUNCTOR_SIBLINGS;
 }
 
@@ -370,6 +390,7 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
     const int systemMaxPerPage = m_doc->GetOptions()->m_systemMaxPerPage.GetValue();
     const int systemChildCount = m_currentPage->GetChildCount(SYSTEM);
     const bool systemLimitReached = systemMaxPerPage && (systemMaxPerPage == systemChildCount);
+    const bool encodedPageBreak = system->GetChildCount(PB) > 0;
 
     Div *textDiv = nullptr;
     if ((system->GetChildCount(MEASURE) == 0) && (system->GetChildCount(DIV) == 1)) {
@@ -382,11 +403,12 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
     if (flow && !flow->breakUnits.empty()) {
         const bool pageHasSystems = m_currentPage->GetChildCount(SYSTEM) > 0;
         const int leadingGap = pageHasSystems ? gap : 0;
-        const int firstCapacity
-            = systemLimitReached ? 0 : std::max(0, this->GetAvailableDrawingHeight() - m_usedHeight - leadingGap);
+        const int firstCapacity = (systemLimitReached || (encodedPageBreak && pageHasSystems))
+            ? 0
+            : std::max(0, this->GetAvailableDrawingHeight() - m_usedHeight - leadingGap);
         const int fullCapacity = this->GetAvailableDrawingHeight(false);
         const std::vector<TextFlowPageSlice> slices
-            = TextFlowLayout::Paginate(flow->breakUnits, firstCapacity, fullCapacity);
+            = TextFlowLayout::Paginate(flow->breakUnits, firstCapacity, fullCapacity, pageHasSystems);
 
         if (!slices.empty()) {
             System *sourceSystem = vrv_cast<System *>(m_contentPage->Relinquish(system->GetIdx()));
@@ -441,7 +463,7 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
         }
     }
 
-    if (systemLimitReached
+    if (systemLimitReached || (encodedPageBreak && (systemChildCount > 0))
         || ((systemChildCount > 0) && (m_usedHeight + gap + fullSystemHeight > this->GetAvailableDrawingHeight()))) {
         // If this is the last system in the list, it doesn't fit the page and it's a leftover system (has just one
         // measure) => add the system content to the previous system
@@ -507,11 +529,59 @@ FunctorCode CastOffEncodingFunctor::VisitDiv(Div *div)
 
     // In line-break mode encoded system boundaries are retained, but flowing
     // text still needs its own systems so vertical page cast-off can fragment
-    // each canonical Div. Fully encoded page layout remains untouched.
+    // each canonical Div. In page mode only explicit text-flow pb boundaries
+    // are applied below; height-based automatic pagination remains disabled.
     if (!m_usePages && (m_currentSystem->GetChildCount() > 0)) {
         m_currentPage->AddChild(m_currentSystem);
         m_currentSystem = new System();
     }
+    if (m_usePages && div->HasTextFlow()) {
+        const int availableWidth = m_doc->m_drawingPageContentWidth;
+        const TextFlowDocumentLayoutResult *flow = div->GetTextFlowDocumentLayout(availableWidth);
+        if (!flow) {
+            View view;
+            view.SetDoc(m_doc);
+            BBoxDeviceContext bBoxDC(&view, 0, 0, BBOX_HORIZONTAL_ONLY);
+            bBoxDC.SetResources(&m_doc->GetResources());
+            FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, nullptr);
+            const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
+            TextFlowLayout layout(m_doc, &bBoxDC, textFlowFont, availableWidth, lineHeight);
+            flow = &div->CacheTextFlowDocumentLayout(layout.LayoutFlow(div));
+            div->SetTextFlowSize(flow->width, flow->height);
+        }
+        if (flow && !flow->breakUnits.empty()) {
+            const bool pageHasContent
+                = (m_currentSystem->GetChildCount() > 0) || (m_currentPage->GetChildCount(SYSTEM) > 0);
+            const int unlimitedHeight = std::numeric_limits<int>::max() / 4;
+            const std::vector<TextFlowPageSlice> slices
+                = TextFlowLayout::Paginate(flow->breakUnits, unlimitedHeight, unlimitedHeight, pageHasContent);
+            const bool hasExplicitPageBreak = std::any_of(flow->breakUnits.begin(), flow->breakUnits.end(),
+                [](const TextFlowBreakUnit &unit) { return unit.pageBreaksBefore > 0; });
+            if (hasExplicitPageBreak && !slices.empty()) {
+                const auto startPage = [&]() {
+                    if (m_currentSystem->GetChildCount() > 0) m_currentPage->AddChild(m_currentSystem);
+                    m_currentPage = new Page();
+                    assert(m_doc->GetPages());
+                    m_doc->GetPages()->AddChild(m_currentPage);
+                    m_currentSystem = new System();
+                };
+
+                if (slices.front().startsNewPage) startPage();
+                div->SetTextFlowFragment(nullptr, 0, slices.front().startY, slices.front().endY);
+                div->MoveItselfTo(m_currentSystem);
+                for (size_t i = 1; i < slices.size(); ++i) {
+                    startPage();
+                    Div *continuation = new Div();
+                    continuation->SetID(div->GetID() + "-continuation-" + std::to_string(i));
+                    if (div->HasType()) continuation->SetType(div->GetType());
+                    continuation->SetTextFlowFragment(div, static_cast<int>(i), slices[i].startY, slices[i].endY);
+                    m_currentSystem->AddChild(continuation);
+                }
+                return FUNCTOR_SIBLINGS;
+            }
+        }
+    }
+
     div->MoveItselfTo(m_currentSystem);
 
     return FUNCTOR_SIBLINGS;
@@ -575,7 +645,7 @@ FunctorCode CastOffEncodingFunctor::VisitPb(Pb *pb)
     // This is not very robust but at least make it work when rendering a <mdiv> that does not start with a <pb> (which
     // we cannot force)
     if ((m_currentSystem->GetChildCount(PB) > 0) || (m_currentSystem->GetChildCount(MEASURE) > 0)
-        || (m_currentPage->GetChildCount(SYSTEM) > 0)) {
+        || (m_currentSystem->GetChildCount(DIV) > 0) || (m_currentPage->GetChildCount(SYSTEM) > 0)) {
         m_currentPage->AddChild(m_currentSystem);
         m_currentSystem = new System();
         if (m_usePages) {

@@ -5883,6 +5883,13 @@ bool MEIInput::ReadTextFlowChildren(Object *parent, pugi::xml_node parentNode)
             success = this->ReadTextFlowSyl(parent, current);
         else if (name == "fig")
             success = this->ReadFig(parent, current);
+        else if (name == "pb") {
+            if (parent->IsSupportedChild(PB))
+                success = this->ReadPb(parent, current);
+            else
+                LogWarning("Element <pb> within <%s> is not permitted by MEI and will be ignored",
+                    parent->GetClassName().c_str());
+        }
         else if (name == "lb")
             success = this->ReadLb(parent, current);
         else if (name == "num")

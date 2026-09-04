@@ -79,7 +79,7 @@ bool TextFlowElement::IsSupportedChild(ClassId classId)
     if (this->Is(LG)) {
         return (classId == HEAD) || (classId == L) || (classId == LG) || Object::IsEditorialElement(classId);
     }
-    return (classId == TABLE) || Object::IsTextElement(classId) || (classId == SYL)
+    return (classId == PB) || (classId == TABLE) || Object::IsTextElement(classId) || (classId == SYL)
         || Object::IsEditorialElement(classId);
 }
 
@@ -222,10 +222,10 @@ bool TextFlowTableElement::IsSupportedChild(ClassId classId)
     }
     if (this->Is(TR)) return (classId == TD) || (classId == TH) || Object::IsEditorialElement(classId);
     if (this->Is(TD) || this->Is(TH)) {
-        return (classId == TABLE) || (classId == P) || (classId == LG) || (classId == L)
+        return (classId == PB) || (classId == TABLE) || (classId == P) || (classId == LG) || (classId == L)
             || Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
     }
-    return Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
+    return (classId == PB) || Object::IsTextElement(classId) || (classId == SYL) || Object::IsEditorialElement(classId);
 }
 
 FunctorCode TextFlowTableElement::Accept(Functor &functor)

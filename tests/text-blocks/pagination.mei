@@ -44,6 +44,22 @@
                 <tr xml:id="pagination-row-4"><td>Fourth row</td><td>Last cell</td></tr>
               </table>
             </div>
+            <pb xml:id="between-text-divs-pb"/>
+            <div xml:id="explicit-div-breaks">
+              <p xml:id="div-pb-before">Before direct div page break.</p>
+              <pb xml:id="div-text-pb" n="direct-div"/>
+              <head xml:id="div-pb-after"><rend xml:id="head-pb-before">After direct div page break.</rend><pb xml:id="head-text-pb"/><rend xml:id="head-pb-after">After heading page break.</rend></head>
+              <p xml:id="paragraph-with-pb"><rend xml:id="paragraph-pb-before">Before paragraph page break.</rend><pb xml:id="paragraph-text-pb"/><rend xml:id="paragraph-pb-after">After paragraph page break.</rend></p>
+              <lg xml:id="line-group-with-pb">
+                <l xml:id="line-with-pb"><rend xml:id="line-pb-before">Before line page break.</rend><pb xml:id="line-text-pb"/><rend xml:id="line-pb-after">After line page break.</rend></l>
+              </lg>
+              <table xml:id="page-break-table">
+                <caption><rend xml:id="caption-pb-before">Caption before page break.</rend><pb xml:id="caption-text-pb"/><rend xml:id="caption-pb-after">Caption after page break.</rend></caption>
+                <tr xml:id="pb-table-row"><td>First atomic row.</td></tr>
+                <tr xml:id="cell-pb-row"><td><rend xml:id="cell-pb-before">Before cell page break.</rend><pb xml:id="cell-text-pb"/><rend xml:id="cell-pb-after">After cell page break.</rend></td></tr>
+                <tr xml:id="heading-cell-pb-row"><th><rend xml:id="heading-cell-pb-before">Before heading-cell page break.</rend><pb xml:id="heading-cell-text-pb"/><rend xml:id="heading-cell-pb-after">After heading-cell page break.</rend></th></tr>
+              </table>
+            </div>
           </section>
         </score>
       </mdiv>
