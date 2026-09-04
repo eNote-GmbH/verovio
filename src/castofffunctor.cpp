@@ -9,6 +9,7 @@
 
 //----------------------------------------------------------------------------
 
+#include "bboxdevicecontext.h"
 #include "div.h"
 #include "doc.h"
 #include "editorial.h"
@@ -22,6 +23,11 @@
 #include "score.h"
 #include "staff.h"
 #include "system.h"
+#include "textflowlayout.h"
+#include "view.h"
+
+#include <algorithm>
+#include <limits>
 
 //----------------------------------------------------------------------------
 
@@ -186,6 +192,21 @@ FunctorCode CastOffSystemsFunctor::VisitSb(Sb *sb)
     return FUNCTOR_SIBLINGS;
 }
 
+FunctorCode CastOffSystemsFunctor::VisitPb(Pb *pb)
+{
+    // Keep an encoded page break at its document position. It starts a new
+    // cast-off system so the vertical page pass can enforce the boundary in
+    // auto and smart modes as well.
+    if (m_currentSystem->GetChildCount() > 0) {
+        m_currentSystem = new System();
+        m_page->AddChild(m_currentSystem);
+    }
+    pb = vrv_cast<Pb *>(m_contentSystem->Relinquish(pb->GetIdx()));
+    assert(pb);
+    m_currentSystem->AddChild(pb);
+    return FUNCTOR_SIBLINGS;
+}
+
 FunctorCode CastOffSystemsFunctor::VisitScoreDef(ScoreDef *scoreDef)
 {
     // Since the functor returns FUNCTOR_SIBLINGS we should never go lower than the system children
@@ -279,7 +300,10 @@ CastOffPagesFunctor::CastOffPagesFunctor(Page *contentPage, Doc *doc, Page *curr
     m_contentPage = contentPage;
     m_currentPage = currentPage;
     m_firstCastOffPage = true;
-    m_shift = VRV_UNSET;
+    m_usedHeight = 0;
+    m_previousSystemY = 0;
+    m_previousSystemHeight = 0;
+    m_hasPreviousSystem = false;
     m_pageHeight = 0;
     m_pgHeadHeight = 0;
     m_pgFootHeight = 0;
@@ -299,6 +323,21 @@ FunctorCode CastOffPagesFunctor::VisitPageEnd(Page *page)
     m_pendingPageElements.clear();
 
     return FUNCTOR_CONTINUE;
+}
+
+void CastOffPagesFunctor::FlushPendingPageElements()
+{
+    for (Object *pendingElement : m_pendingPageElements) m_currentPage->AddChild(pendingElement);
+    m_pendingPageElements.clear();
+}
+
+void CastOffPagesFunctor::StartNewPage()
+{
+    m_currentPage = new Page();
+    assert(m_doc->GetPages());
+    m_doc->GetPages()->AddChild(m_currentPage);
+    m_firstCastOffPage = false;
+    m_usedHeight = 0;
 }
 
 FunctorCode CastOffPagesFunctor::VisitPageElement(PageElement *pageElement)
@@ -342,16 +381,90 @@ FunctorCode CastOffPagesFunctor::VisitScore(Score *score)
 
 FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
 {
-    // Check if this is the first system
-    if (m_shift == VRV_UNSET) {
-        m_shift = system->GetDrawingYRel();
+    const int systemY = system->GetDrawingYRel();
+    const int fullSystemHeight = system->GetHeight();
+    int gap = 0;
+    if (m_hasPreviousSystem) {
+        gap = std::max(0, m_previousSystemY - m_previousSystemHeight - systemY);
     }
-
     const int systemMaxPerPage = m_doc->GetOptions()->m_systemMaxPerPage.GetValue();
     const int systemChildCount = m_currentPage->GetChildCount(SYSTEM);
-    if ((systemMaxPerPage && (systemMaxPerPage == systemChildCount))
-        || ((systemChildCount > 0)
-            && (m_shift - system->GetDrawingYRel() + system->GetHeight() > this->GetAvailableDrawingHeight()))) {
+    const bool systemLimitReached = systemMaxPerPage && (systemMaxPerPage == systemChildCount);
+    const bool encodedPageBreak = system->GetChildCount(PB) > 0;
+
+    Div *textDiv = nullptr;
+    if ((system->GetChildCount(MEASURE) == 0) && (system->GetChildCount(DIV) == 1)) {
+        textDiv = vrv_cast<Div *>(system->GetFirst(DIV));
+        if (!textDiv || !textDiv->HasTextFlow()) textDiv = nullptr;
+    }
+
+    const TextFlowDocumentLayoutResult *flow
+        = textDiv ? textDiv->GetTextFlowDocumentLayout(m_doc->m_drawingPageContentWidth) : nullptr;
+    if (flow && !flow->breakUnits.empty()) {
+        const bool pageHasSystems = m_currentPage->GetChildCount(SYSTEM) > 0;
+        const int leadingGap = pageHasSystems ? gap : 0;
+        const int firstCapacity = (systemLimitReached || (encodedPageBreak && pageHasSystems))
+            ? 0
+            : std::max(0, this->GetAvailableDrawingHeight() - m_usedHeight - leadingGap);
+        const int fullCapacity = this->GetAvailableDrawingHeight(false);
+        const std::vector<TextFlowPageSlice> slices
+            = TextFlowLayout::Paginate(flow->breakUnits, firstCapacity, fullCapacity, pageHasSystems);
+
+        if (!slices.empty()) {
+            System *sourceSystem = vrv_cast<System *>(m_contentPage->Relinquish(system->GetIdx()));
+            assert(sourceSystem);
+            Div *sourceDiv = vrv_cast<Div *>(sourceSystem->GetFirst(DIV));
+            assert(sourceDiv);
+            bool forcedSplit = false;
+            bool overflow = false;
+
+            for (size_t i = 0; i < slices.size(); ++i) {
+                const TextFlowPageSlice &slice = slices[i];
+                if (slice.startsNewPage) this->StartNewPage();
+
+                System *fragmentSystem = nullptr;
+                if (i == 0) {
+                    fragmentSystem = sourceSystem;
+                    sourceDiv->SetTextFlowFragment(nullptr, 0, slice.startY, slice.endY);
+                    this->FlushPendingPageElements();
+                }
+                else {
+                    fragmentSystem = new System();
+                    Div *continuation = new Div();
+                    continuation->SetID(sourceDiv->GetID() + "-continuation-" + std::to_string(i));
+                    if (sourceDiv->HasType()) continuation->SetType(sourceDiv->GetType());
+                    continuation->SetTextFlowFragment(sourceDiv, static_cast<int>(i), slice.startY, slice.endY);
+                    fragmentSystem->AddChild(continuation);
+                }
+                m_currentPage->AddChild(fragmentSystem);
+
+                const int sliceHeight = slice.endY - slice.startY;
+                if ((i == 0) && !slice.startsNewPage && pageHasSystems)
+                    m_usedHeight += leadingGap + sliceHeight;
+                else
+                    m_usedHeight = sliceHeight;
+
+                forcedSplit = forcedSplit || slice.forcedSplit;
+                overflow = overflow || slice.overflow;
+            }
+            if (forcedSplit) {
+                LogWarning("Unbreakable text block '%s' exceeds a page and was split at a safe inner boundary",
+                    sourceDiv->GetID().c_str());
+            }
+            if (overflow) {
+                LogWarning("Atomic text-flow content in '%s' exceeds the available page height and will overflow",
+                    sourceDiv->GetID().c_str());
+            }
+
+            m_previousSystemY = systemY;
+            m_previousSystemHeight = flow->height;
+            m_hasPreviousSystem = true;
+            return FUNCTOR_SIBLINGS;
+        }
+    }
+
+    if (systemLimitReached || (encodedPageBreak && (systemChildCount > 0))
+        || ((systemChildCount > 0) && (m_usedHeight + gap + fullSystemHeight > this->GetAvailableDrawingHeight()))) {
         // If this is the last system in the list, it doesn't fit the page and it's a leftover system (has just one
         // measure) => add the system content to the previous system
         Object *nextSystem = m_contentPage->GetNext(system, SYSTEM);
@@ -364,18 +477,12 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
             return FUNCTOR_SIBLINGS;
         }
 
-        m_currentPage = new Page();
-        assert(m_doc->GetPages());
-        m_doc->GetPages()->AddChild(m_currentPage);
-        m_shift = system->GetDrawingYRel();
-        m_firstCastOffPage = false;
+        this->StartNewPage();
+        gap = 0;
     }
 
     // First add all pending objects
-    for (Object *pendingElement : m_pendingPageElements) {
-        m_currentPage->AddChild(pendingElement);
-    }
-    m_pendingPageElements.clear();
+    this->FlushPendingPageElements();
 
     // Special case where we use the Relinquish method.
     // We want to move the system to the currentPage. However, we cannot use DetachChild
@@ -384,14 +491,23 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
     system = vrv_cast<System *>(m_contentPage->Relinquish(system->GetIdx()));
     assert(system);
     m_currentPage->AddChild(system);
+    m_usedHeight += gap + fullSystemHeight;
+    m_previousSystemY = systemY;
+    m_previousSystemHeight = fullSystemHeight;
+    m_hasPreviousSystem = true;
 
     return FUNCTOR_SIBLINGS;
 }
 
 int CastOffPagesFunctor::GetAvailableDrawingHeight() const
 {
+    return this->GetAvailableDrawingHeight(m_firstCastOffPage);
+}
+
+int CastOffPagesFunctor::GetAvailableDrawingHeight(bool firstPage) const
+{
     const int pageHeadAndFootHeight
-        = m_firstCastOffPage ? (m_pgHeadHeight + m_pgFootHeight) : (m_pgHead2Height + m_pgFoot2Height);
+        = firstPage ? (m_pgHeadHeight + m_pgFootHeight) : (m_pgHead2Height + m_pgFoot2Height);
     return m_pageHeight - pageHeadAndFootHeight;
 }
 
@@ -410,6 +526,62 @@ CastOffEncodingFunctor::CastOffEncodingFunctor(Doc *doc, Page *currentPage, bool
 FunctorCode CastOffEncodingFunctor::VisitDiv(Div *div)
 {
     assert(m_currentSystem);
+
+    // In line-break mode encoded system boundaries are retained, but flowing
+    // text still needs its own systems so vertical page cast-off can fragment
+    // each canonical Div. In page mode only explicit text-flow pb boundaries
+    // are applied below; height-based automatic pagination remains disabled.
+    if (!m_usePages && (m_currentSystem->GetChildCount() > 0)) {
+        m_currentPage->AddChild(m_currentSystem);
+        m_currentSystem = new System();
+    }
+    if (m_usePages && div->HasTextFlow()) {
+        const int availableWidth = m_doc->m_drawingPageContentWidth;
+        const TextFlowDocumentLayoutResult *flow = div->GetTextFlowDocumentLayout(availableWidth);
+        if (!flow) {
+            View view;
+            view.SetDoc(m_doc);
+            BBoxDeviceContext bBoxDC(&view, 0, 0, BBOX_HORIZONTAL_ONLY);
+            bBoxDC.SetResources(&m_doc->GetResources());
+            FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, nullptr);
+            const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
+            TextFlowLayout layout(m_doc, &bBoxDC, textFlowFont, availableWidth, lineHeight);
+            flow = &div->CacheTextFlowDocumentLayout(layout.LayoutFlow(div));
+            div->SetTextFlowSize(flow->width, flow->height);
+        }
+        if (flow && !flow->breakUnits.empty()) {
+            const bool pageHasContent
+                = (m_currentSystem->GetChildCount() > 0) || (m_currentPage->GetChildCount(SYSTEM) > 0);
+            const int unlimitedHeight = std::numeric_limits<int>::max() / 4;
+            const std::vector<TextFlowPageSlice> slices
+                = TextFlowLayout::Paginate(flow->breakUnits, unlimitedHeight, unlimitedHeight, pageHasContent);
+            const bool hasExplicitPageBreak = std::any_of(flow->breakUnits.begin(), flow->breakUnits.end(),
+                [](const TextFlowBreakUnit &unit) { return unit.pageBreaksBefore > 0; });
+            if (hasExplicitPageBreak && !slices.empty()) {
+                const auto startPage = [&]() {
+                    if (m_currentSystem->GetChildCount() > 0) m_currentPage->AddChild(m_currentSystem);
+                    m_currentPage = new Page();
+                    assert(m_doc->GetPages());
+                    m_doc->GetPages()->AddChild(m_currentPage);
+                    m_currentSystem = new System();
+                };
+
+                if (slices.front().startsNewPage) startPage();
+                div->SetTextFlowFragment(nullptr, 0, slices.front().startY, slices.front().endY);
+                div->MoveItselfTo(m_currentSystem);
+                for (size_t i = 1; i < slices.size(); ++i) {
+                    startPage();
+                    Div *continuation = new Div();
+                    continuation->SetID(div->GetID() + "-continuation-" + std::to_string(i));
+                    if (div->HasType()) continuation->SetType(div->GetType());
+                    continuation->SetTextFlowFragment(div, static_cast<int>(i), slices[i].startY, slices[i].endY);
+                    m_currentSystem->AddChild(continuation);
+                }
+                return FUNCTOR_SIBLINGS;
+            }
+        }
+    }
+
     div->MoveItselfTo(m_currentSystem);
 
     return FUNCTOR_SIBLINGS;
@@ -473,7 +645,7 @@ FunctorCode CastOffEncodingFunctor::VisitPb(Pb *pb)
     // This is not very robust but at least make it work when rendering a <mdiv> that does not start with a <pb> (which
     // we cannot force)
     if ((m_currentSystem->GetChildCount(PB) > 0) || (m_currentSystem->GetChildCount(MEASURE) > 0)
-        || (m_currentPage->GetChildCount(SYSTEM) > 0)) {
+        || (m_currentSystem->GetChildCount(DIV) > 0) || (m_currentPage->GetChildCount(SYSTEM) > 0)) {
         m_currentPage->AddChild(m_currentSystem);
         m_currentSystem = new System();
         if (m_usePages) {
@@ -604,10 +776,18 @@ FunctorCode UnCastOffFunctor::VisitScore(Score *score)
 
 FunctorCode UnCastOffFunctor::VisitSystem(System *system)
 {
-    // Just move all the content of the system to the continuous one
-    // Use the MoveChildrenFrom method that moves and relinquishes them
-    // See Object::Relinquish
-    m_currentSystem->MoveChildrenFrom(system);
+    // Generated text-flow continuations have no semantic content and must not
+    // leak back into score-based MEI.
+    const ArrayOfObjects children = system->GetChildrenForModification();
+    for (Object *child : children) {
+        Div *div = dynamic_cast<Div *>(child);
+        if (div && div->IsTextFlowContinuation()) {
+            system->DeleteChild(div);
+            continue;
+        }
+        if (div) div->ResetTextFlowFragment();
+        child->MoveItselfTo(m_currentSystem);
+    }
 
     return FUNCTOR_CONTINUE;
 }

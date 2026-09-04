@@ -976,6 +976,7 @@
                   <syl con="d" wordpos="m" xml:id="tusk-syl-verse-2-line-1-015" synch="#tusk-note-38"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-015"><ptr target="#tusk-harm-36"/>|o</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-016" synch="#tusk-note-39">der</syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-017" synch="#tusk-note-40"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-017"><ptr target="#tusk-harm-38"/>|Tod.</stack></syl>
+                  <lb/>
                   <syl xml:id="tusk-syl-verse-2-line-1-018" synch="#tusk-note-41"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-018"><ptr target="#tusk-harm-40"/>|Drum</stack></syl>
                   <syl wordpos="t" xml:id="tusk-syl-verse-2-line-1-019" synch="#tusk-note-42"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-019"><ptr target="#tusk-harm-42"/>|wir</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-1-020" synch="#tusk-note-43"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-1-020"><ptr target="#tusk-harm-44"/>|dich</stack></syl>
@@ -1024,6 +1025,7 @@
                   <syl wordpos="t" xml:id="tusk-syl-verse-2-line-2-015" synch="#tusk-note-38"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-015"><ptr target="#tusk-harm-36"/>|mag</stack></syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-016" synch="#tusk-note-39">die</syl>
                   <syl xml:id="tusk-syl-verse-2-line-2-017" synch="#tusk-note-40"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-017"><ptr target="#tusk-harm-38"/>|Not.</stack></syl>
+                  <lb/>
                   <syl xml:id="tusk-syl-verse-2-line-2-018" synch="#tusk-note-41"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-018"><ptr target="#tusk-harm-40"/>|Wir</stack></syl>
                   <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-019" synch="#tusk-note-42"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-019"><ptr target="#tusk-harm-42"/>|ju</stack></syl>
                   <syl con="d" wordpos="i" xml:id="tusk-syl-verse-2-line-2-020" synch="#tusk-note-43"><stack type="chord-over-syllable" delim="|" align="left" xml:id="tusk-stack-verse-2-line-2-020"><ptr target="#tusk-harm-44"/>|bi</stack></syl>

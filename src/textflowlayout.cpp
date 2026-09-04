@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <limits>
+#include <sstream>
 
 #include "devicecontext.h"
 #include "div.h"
@@ -25,6 +27,23 @@
 #include "vrv.h"
 
 namespace vrv {
+
+namespace {
+
+    bool HasTypeToken(const Object *object, const std::string &token)
+    {
+        const AttTyped *typed = dynamic_cast<const AttTyped *>(object);
+        if (!typed || !typed->HasType()) return false;
+
+        std::istringstream stream(typed->GetType());
+        std::string value;
+        while (stream >> value) {
+            if (value == token) return true;
+        }
+        return false;
+    }
+
+} // namespace
 
 TextFlowLayout::TextFlowLayout(
     Doc *doc, DeviceContext *deviceContext, const FontInfo &baseFont, int availableWidth, int lineHeight, int staffSize)
@@ -443,6 +462,13 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
     if (bold) baseFont.SetWeight(FONTWEIGHT_bold);
     TextFlowLayout nestedLayout(m_doc, m_deviceContext, baseFont, width, m_lineHeight, m_staffSize);
 
+    if (object->Is(PB)) {
+        node.kind = TextFlowLayoutNodeKind::PageBreak;
+        node.width = 0;
+        node.height = 0;
+        return node;
+    }
+
     if (object->Is(TABLE)) {
         node.kind = TextFlowLayoutNodeKind::Table;
         Table *table = vrv_cast<Table *>(object);
@@ -484,6 +510,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
                 cellNode.y = cell.y - rowY;
                 cellNode.width = cell.width;
                 cellNode.height = cell.height;
+                cellNode.span = cell.rowspan;
                 rowNode.children.push_back(std::move(cellNode));
             }
             node.children.push_back(std::move(rowNode));
@@ -520,13 +547,13 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
         };
         for (Object *child : object->GetChildren()) {
             if (!child) continue;
-            if (child->Is(TABLE)) {
+            if (child->Is(TABLE) || child->Is(PB)) {
                 interrupted = true;
                 flush();
-                TextFlowLayoutNode tableNode = nestedLayout.LayoutFlowNode(child, width, bold);
-                tableNode.y = cursorY;
-                cursorY += tableNode.height;
-                node.children.push_back(std::move(tableNode));
+                TextFlowLayoutNode childNode = nestedLayout.LayoutFlowNode(child, width, bold);
+                childNode.y = cursorY;
+                cursorY += childNode.height;
+                node.children.push_back(std::move(childNode));
             }
             else {
                 inlineChildren.push_back(child);
@@ -542,7 +569,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
         }
         else {
             node.kind = TextFlowLayoutNodeKind::Flow;
-            node.height = std::max(m_lineHeight, cursorY);
+            node.height = cursorY;
         }
         return node;
     }
@@ -565,7 +592,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
     };
     for (Object *child : object->GetChildren()) {
         if (!child) continue;
-        if (!child->IsAnyOf(std::array{ DIV, HEAD, P, LG, L, TABLE, FIG })) {
+        if (!child->IsAnyOf(std::array{ DIV, HEAD, P, LG, L, TABLE, FIG, PB })) {
             inlineChildren.push_back(child);
             continue;
         }
@@ -589,7 +616,197 @@ TextFlowDocumentLayoutResult TextFlowLayout::LayoutFlow(Object *root) const
     result.layout = this->LayoutFlowNode(root, m_availableWidth, false);
     result.width = result.layout.width;
     result.height = result.layout.height;
+    int pendingPageBreaks = 0;
+    this->CollectBreakUnits(result.layout, 0, result.breakUnits, pendingPageBreaks);
     return result;
+}
+
+void TextFlowLayout::CollectBreakUnits(
+    const TextFlowLayoutNode &node, int parentY, std::vector<TextFlowBreakUnit> &units, int &pendingPageBreaks) const
+{
+    const int nodeY = parentY + node.y;
+    const size_t firstUnit = units.size();
+
+    const auto addUnit = [&](int y, int height) {
+        units.push_back({ y, height, 0, pendingPageBreaks });
+        pendingPageBreaks = 0;
+    };
+    const std::function<int(const TextFlowLayoutNode &)> countPageBreaks = [&](const TextFlowLayoutNode &current) {
+        int count = (current.kind == TextFlowLayoutNodeKind::PageBreak) ? 1 : 0;
+        for (const TextFlowLayoutNode &child : current.children) count += countPageBreaks(child);
+        return count;
+    };
+
+    if (node.kind == TextFlowLayoutNodeKind::PageBreak) {
+        ++pendingPageBreaks;
+    }
+    else if (node.kind == TextFlowLayoutNodeKind::Phrase) {
+        int rowY = nodeY;
+        for (const TextFlowRow &row : node.phrase.rows) {
+            const int height = std::max(1, row.rowCount) * node.phrase.lineHeight;
+            addUnit(rowY, height);
+            rowY += height;
+        }
+    }
+    else if (node.kind == TextFlowLayoutNodeKind::Figure) {
+        if (node.height > 0) addUnit(nodeY, node.height);
+    }
+    else if (node.kind == TextFlowLayoutNodeKind::Table) {
+        const TextFlowLayoutNode *caption = nullptr;
+        std::vector<const TextFlowLayoutNode *> rows;
+        for (const TextFlowLayoutNode &child : node.children) {
+            if (child.kind == TextFlowLayoutNodeKind::Row)
+                rows.push_back(&child);
+            else if (child.object && child.object->Is(CAPTION))
+                caption = &child;
+        }
+
+        size_t row = 0;
+        while (row < rows.size()) {
+            size_t end = row + 1;
+            for (size_t cursor = row; cursor < end; ++cursor) {
+                for (const TextFlowLayoutNode &cell : rows[cursor]->children) {
+                    end = std::max(end, std::min(rows.size(), cursor + std::max(1, cell.span)));
+                }
+            }
+            const int startY = (row == 0 && caption) ? nodeY : nodeY + rows[row]->y;
+            const TextFlowLayoutNode *last = rows[end - 1];
+            const int endY = nodeY + last->y + last->height;
+            if ((row == 0) && caption) pendingPageBreaks += countPageBreaks(*caption);
+            for (size_t cursor = row; cursor < end; ++cursor) pendingPageBreaks += countPageBreaks(*rows[cursor]);
+            addUnit(startY, std::max(0, endY - startY));
+            row = end;
+        }
+        if (rows.empty() && caption) {
+            pendingPageBreaks += countPageBreaks(*caption);
+            addUnit(nodeY + caption->y, caption->height);
+        }
+    }
+    else {
+        for (const TextFlowLayoutNode &child : node.children)
+            this->CollectBreakUnits(child, nodeY, units, pendingPageBreaks);
+        if ((units.size() == firstUnit) && (node.height > 0)) addUnit(nodeY, node.height);
+    }
+
+    if (HasTypeToken(node.object, "unbreakable")) {
+        for (size_t i = firstUnit + 1; i < units.size(); ++i) ++units[i].keepDepth;
+    }
+}
+
+std::vector<TextFlowPageSlice> TextFlowLayout::Paginate(
+    const std::vector<TextFlowBreakUnit> &units, int firstPageHeight, int fullPageHeight, bool firstPageHasContent)
+{
+    std::vector<TextFlowPageSlice> slices;
+    if (units.empty()) return slices;
+
+    firstPageHeight = std::max(0, firstPageHeight);
+    fullPageHeight = std::max(1, fullPageHeight);
+    std::vector<bool> breakBefore(units.size(), false);
+    std::vector<bool> forcedUnit(units.size(), false);
+    std::vector<bool> moveFreshBefore(units.size(), false);
+    breakBefore[0] = true;
+    for (size_t i = 1; i < units.size(); ++i)
+        breakBefore[i] = (units[i].keepDepth == 0) || (units[i].pageBreaksBefore > 0);
+
+    // Relax oversized keep groups one nesting level at a time. This makes an
+    // outer overheight block splittable without tearing apart a smaller
+    // nested unbreakable block.
+    bool relaxed = true;
+    while (relaxed) {
+        relaxed = false;
+        size_t groupStart = 0;
+        while (groupStart < units.size()) {
+            size_t groupEnd = groupStart + 1;
+            while ((groupEnd < units.size()) && !breakBefore[groupEnd]) ++groupEnd;
+            const int startY = units[groupStart].y;
+            const int endY = units[groupEnd - 1].y + units[groupEnd - 1].height;
+            const int groupHeight = endY - startY;
+            const bool fitsInitialPage = (groupStart == 0) && (groupHeight <= firstPageHeight);
+            if (!fitsInitialPage && (groupHeight > fullPageHeight) && (groupEnd > groupStart + 1)) {
+                moveFreshBefore[groupStart] = true;
+                int shallowestKeep = std::numeric_limits<int>::max();
+                for (size_t i = groupStart + 1; i < groupEnd; ++i) {
+                    shallowestKeep = std::min(shallowestKeep, units[i].keepDepth);
+                }
+                for (size_t i = groupStart + 1; i < groupEnd; ++i) {
+                    if (units[i].keepDepth != shallowestKeep) continue;
+                    breakBefore[i] = true;
+                    relaxed = true;
+                }
+                for (size_t i = groupStart; i < groupEnd; ++i) forcedUnit[i] = true;
+            }
+            groupStart = groupEnd;
+        }
+    }
+
+    int capacity = firstPageHeight;
+    bool hasOpenSlice = false;
+    bool nextStartsNewPage = false;
+
+    const auto startNewPage = [&]() {
+        hasOpenSlice = false;
+        nextStartsNewPage = true;
+        capacity = fullPageHeight;
+    };
+    const auto place = [&](int startY, int endY, bool forcedSplit, bool overflow) {
+        if (!hasOpenSlice) {
+            slices.push_back({ startY, endY, nextStartsNewPage, forcedSplit, overflow });
+            hasOpenSlice = true;
+            nextStartsNewPage = false;
+        }
+        else {
+            slices.back().endY = endY;
+            slices.back().forcedSplit = slices.back().forcedSplit || forcedSplit;
+            slices.back().overflow = slices.back().overflow || overflow;
+        }
+    };
+
+    size_t index = 0;
+
+    while (index < units.size()) {
+        size_t end = index + 1;
+        while ((end < units.size()) && !breakBefore[end]) ++end;
+
+        const int groupStart = units[index].y;
+        const int groupEnd = units[end - 1].y + units[end - 1].height;
+        const int groupHeight = std::max(0, groupEnd - groupStart);
+        const bool forcedSplit
+            = std::any_of(forcedUnit.begin() + index, forcedUnit.begin() + end, [](bool forced) { return forced; });
+        if (units[index].pageBreaksBefore > 0) {
+            if (hasOpenSlice || firstPageHasContent) startNewPage();
+            firstPageHasContent = false;
+        }
+        if (moveFreshBefore[index] && (hasOpenSlice || (capacity != fullPageHeight))) startNewPage();
+        const int candidateHeight = hasOpenSlice ? groupEnd - slices.back().startY : groupHeight;
+        if (candidateHeight <= capacity) {
+            place(groupStart, groupEnd, forcedSplit, false);
+            index = end;
+            continue;
+        }
+        if (groupHeight <= fullPageHeight) {
+            startNewPage();
+            place(groupStart, groupEnd, forcedSplit, false);
+            index = end;
+            continue;
+        }
+
+        // A keep group taller than an empty page first moves to a fresh page,
+        // then falls back to its otherwise safe inner unit boundaries.
+        if ((candidateHeight > capacity) && (hasOpenSlice || (capacity != fullPageHeight))) startNewPage();
+
+        while (index < end) {
+            const int unitStart = units[index].y;
+            const int unitEnd = unitStart + units[index].height;
+            int unitCandidateHeight = hasOpenSlice ? unitEnd - slices.back().startY : units[index].height;
+            if ((unitCandidateHeight > capacity) && hasOpenSlice) {
+                startNewPage();
+                unitCandidateHeight = units[index].height;
+            }
+            place(unitStart, unitEnd, forcedSplit, unitCandidateHeight > capacity);
+            ++index;
+        }
+    }
+    return slices;
 }
 
 TextFlowTableLayoutResult TextFlowLayout::LayoutTable(Table *table) const

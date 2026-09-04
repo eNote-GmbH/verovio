@@ -72,6 +72,16 @@ public:
     int GetTextFlowHeight() const { return m_textFlowHeight; }
     int GetTextFlowWidth() const { return m_textFlowWidth; }
 
+    bool IsTextFlowContinuation() const { return m_textFlowSource != nullptr; }
+    bool HasTextFlowFragment() const { return m_textFlowFragmentStart >= 0; }
+    Div *GetTextFlowSource() { return m_textFlowSource ? m_textFlowSource : this; }
+    const Div *GetTextFlowSource() const { return m_textFlowSource ? m_textFlowSource : this; }
+    int GetTextFlowFragmentStart() const { return m_textFlowFragmentStart; }
+    int GetTextFlowFragmentEnd() const { return m_textFlowFragmentEnd; }
+    int GetTextFlowFragmentIndex() const { return m_textFlowFragmentIndex; }
+    void SetTextFlowFragment(Div *source, int index, int startY, int endY);
+    void ResetTextFlowFragment();
+
     /**
      * @name Get and set the X and Y drawing relative positions
      */
@@ -131,6 +141,10 @@ private:
     int m_textFlowWidth;
     std::vector<TextFlowLayoutResult> m_textFlowLayouts;
     std::vector<TextFlowDocumentLayoutResult> m_textFlowDocumentLayouts;
+    Div *m_textFlowSource;
+    int m_textFlowFragmentIndex;
+    int m_textFlowFragmentStart;
+    int m_textFlowFragmentEnd;
 };
 
 } // namespace vrv

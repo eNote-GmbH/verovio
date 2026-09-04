@@ -9,6 +9,7 @@
 
 //----------------------------------------------------------------------------
 
+#include <algorithm>
 #include <cassert>
 
 //----------------------------------------------------------------------------
@@ -50,17 +51,22 @@ void Div::Reset()
     m_drawingInline = false;
     m_drawingXRel = 0;
     m_drawingYRel = 0;
+    m_textFlowSource = nullptr;
+    m_textFlowFragmentIndex = 0;
+    m_textFlowFragmentStart = -1;
+    m_textFlowFragmentEnd = -1;
     this->ResetTextFlowLayout();
 }
 
 bool Div::IsSupportedChild(ClassId classId)
 {
-    if ((classId == DIV) || Object::IsTextFlowElement(classId)) return true;
+    if ((classId == DIV) || (classId == PB) || Object::IsTextFlowElement(classId)) return true;
     return TextLayoutElement::IsSupportedChild(classId);
 }
 
 bool Div::HasTextFlow() const
 {
+    if (m_textFlowSource) return true;
     for (const Object *child : this->GetChildren()) {
         if (child->Is(DIV) || child->IsTextFlowElement()) return true;
     }
@@ -97,6 +103,7 @@ const TextFlowLayoutResult &Div::CacheTextFlowLayout(TextFlowLayoutResult result
 
 const TextFlowDocumentLayoutResult *Div::GetTextFlowDocumentLayout(int availableWidth) const
 {
+    if (m_textFlowSource) return m_textFlowSource->GetTextFlowDocumentLayout(availableWidth);
     for (const TextFlowDocumentLayoutResult &result : m_textFlowDocumentLayouts) {
         if (result.availableWidth == availableWidth) return &result;
     }
@@ -105,8 +112,26 @@ const TextFlowDocumentLayoutResult *Div::GetTextFlowDocumentLayout(int available
 
 const TextFlowDocumentLayoutResult &Div::CacheTextFlowDocumentLayout(TextFlowDocumentLayoutResult result)
 {
+    if (m_textFlowSource) return m_textFlowSource->CacheTextFlowDocumentLayout(std::move(result));
     m_textFlowDocumentLayouts.push_back(std::move(result));
     return m_textFlowDocumentLayouts.back();
+}
+
+void Div::SetTextFlowFragment(Div *source, int index, int startY, int endY)
+{
+    assert(!source || source != this);
+    m_textFlowSource = source;
+    m_textFlowFragmentIndex = index;
+    m_textFlowFragmentStart = std::max(0, startY);
+    m_textFlowFragmentEnd = std::max(m_textFlowFragmentStart, endY);
+}
+
+void Div::ResetTextFlowFragment()
+{
+    m_textFlowSource = nullptr;
+    m_textFlowFragmentIndex = 0;
+    m_textFlowFragmentStart = -1;
+    m_textFlowFragmentEnd = -1;
 }
 
 int Div::GetDrawingX() const
@@ -143,6 +168,8 @@ int Div::GetTotalHeight(const Doc *doc) const
 {
     assert(doc);
 
+    if (this->HasTextFlowFragment()) return m_textFlowFragmentEnd - m_textFlowFragmentStart;
+    if (m_textFlowSource) return m_textFlowSource->GetTextFlowHeight();
     if (this->HasTextFlow()) return m_textFlowHeight;
 
     int height = this->GetContentHeight();
@@ -152,6 +179,7 @@ int Div::GetTotalHeight(const Doc *doc) const
 
 int Div::GetTotalWidth(const Doc *doc) const
 {
+    if (m_textFlowSource) return m_textFlowSource->GetTotalWidth(doc);
     if (this->HasTextFlow()) return (m_textFlowWidth > 0) ? m_textFlowWidth : doc->m_drawingPageContentWidth;
     if (!m_drawingInline) {
         return (doc->m_drawingPageContentWidth);

@@ -55,6 +55,7 @@ public:
     FunctorCode VisitMeasure(Measure *measure) override;
     FunctorCode VisitPageElement(PageElement *pageElement) override;
     FunctorCode VisitPageMilestone(PageMilestoneEnd *pageMilestoneEnd) override;
+    FunctorCode VisitPb(Pb *pb) override;
     FunctorCode VisitSb(Sb *sb) override;
     FunctorCode VisitScoreDef(ScoreDef *scoreDef) override;
     FunctorCode VisitSystem(System *system) override;
@@ -140,6 +141,9 @@ private:
      * Returns the available height for system drawing on the current page
      */
     int GetAvailableDrawingHeight() const;
+    int GetAvailableDrawingHeight(bool firstPage) const;
+    void StartNewPage();
+    void FlushPendingPageElements();
 
 public:
     //
@@ -150,8 +154,10 @@ private:
     Page *m_currentPage;
     // Indicates whether the current page is the first
     bool m_firstCastOffPage;
-    // The cumulated shift (m_drawingYRel of the first system of the current page)
-    int m_shift;
+    int m_usedHeight;
+    int m_previousSystemY;
+    int m_previousSystemHeight;
+    bool m_hasPreviousSystem;
     // The page heights
     int m_pageHeight;
     int m_pgHeadHeight;

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc><titleStmt><title>Text-flow pagination regression</title></titleStmt><pubStmt/></fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef page.width="500" page.height="300" page.leftmar="30" page.rightmar="30"
+              page.topmar="30" page.botmar="30" text.fam="Times" text.size="12pt">
+            <staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1"><staff n="1"><layer n="1"><note xml:id="pagination-note" pname="c" oct="4" dur="1"/></layer></staff></measure>
+            <pb xml:id="pagination-explicit-page-break"/>
+            <div xml:id="lead-div">
+              <p xml:id="lead-first">Lead row one.<lb/>Lead row two.<lb/>Lead row three.</p>
+            </div>
+            <div xml:id="kept-div" type="notice unbreakable">
+              <p xml:id="kept-first">Kept row one.</p>
+              <p xml:id="kept-last">Kept row two.</p>
+            </div>
+            <div xml:id="nested-keep-div">
+              <p xml:id="nested-filler">Filler row one.<lb/>Filler row two.<lb/>Filler row three.</p>
+              <p xml:id="nested-kept-paragraph" type="translation unbreakable"><rend xml:id="nested-kept-first">Nested keep row one.</rend><lb/><rend xml:id="nested-kept-last">Nested keep row two.</rend></p>
+            </div>
+            <div xml:id="oversized-keep-div" type="appendix unbreakable">
+              <p xml:id="oversized-row-1">Oversized row one.</p>
+              <p xml:id="oversized-row-2">Oversized row two.</p>
+              <div xml:id="oversized-nested-keep" type="subgroup unbreakable">
+                <p xml:id="oversized-row-3">Oversized row three.</p>
+                <p xml:id="oversized-row-4">Oversized row four.</p>
+              </div>
+              <p xml:id="oversized-row-5">Oversized row five.</p>
+              <p xml:id="oversized-row-6">Oversized row six.</p>
+            </div>
+            <div xml:id="pagination-table-div">
+              <table xml:id="pagination-table">
+                <caption xml:id="pagination-caption">Caption stays with first row</caption>
+                <tr xml:id="pagination-row-1"><td>First row</td></tr>
+                <tr xml:id="pagination-row-2"><td xml:id="pagination-rowspan" rowspan="2">Rows two and three</td><td>Second row</td></tr>
+                <tr xml:id="pagination-row-3"><td>Third row</td></tr>
+                <tr xml:id="pagination-row-4"><td>Fourth row</td><td>Last cell</td></tr>
+              </table>
+            </div>
+            <pb xml:id="between-text-divs-pb"/>
+            <div xml:id="explicit-div-breaks">
+              <p xml:id="div-pb-before">Before direct div page break.</p>
+              <pb xml:id="div-text-pb" n="direct-div"/>
+              <head xml:id="div-pb-after"><rend xml:id="head-pb-before">After direct div page break.</rend><pb xml:id="head-text-pb"/><rend xml:id="head-pb-after">After heading page break.</rend></head>
+              <p xml:id="paragraph-with-pb"><rend xml:id="paragraph-pb-before">Before paragraph page break.</rend><pb xml:id="paragraph-text-pb"/><rend xml:id="paragraph-pb-after">After paragraph page break.</rend></p>
+              <lg xml:id="line-group-with-pb">
+                <l xml:id="line-with-pb"><rend xml:id="line-pb-before">Before line page break.</rend><pb xml:id="line-text-pb"/><rend xml:id="line-pb-after">After line page break.</rend></l>
+              </lg>
+              <table xml:id="page-break-table">
+                <caption><rend xml:id="caption-pb-before">Caption before page break.</rend><pb xml:id="caption-text-pb"/><rend xml:id="caption-pb-after">Caption after page break.</rend></caption>
+                <tr xml:id="pb-table-row"><td>First atomic row.</td></tr>
+                <tr xml:id="cell-pb-row"><td><rend xml:id="cell-pb-before">Before cell page break.</rend><pb xml:id="cell-text-pb"/><rend xml:id="cell-pb-after">After cell page break.</rend></td></tr>
+                <tr xml:id="heading-cell-pb-row"><th><rend xml:id="heading-cell-pb-before">Before heading-cell page break.</rend><pb xml:id="heading-cell-text-pb"/><rend xml:id="heading-cell-pb-after">After heading-cell page break.</rend></th></tr>
+              </table>
+            </div>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

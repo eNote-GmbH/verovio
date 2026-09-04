@@ -112,7 +112,7 @@ struct TextFlowTableLayoutResult {
     int height = 0;
 };
 
-enum class TextFlowLayoutNodeKind { Flow, Phrase, Table, Row, Cell, Figure };
+enum class TextFlowLayoutNodeKind { Flow, Phrase, Table, Row, Cell, Figure, PageBreak };
 
 struct TextFlowLayoutNode {
     Object *object = nullptr;
@@ -123,7 +123,23 @@ struct TextFlowLayoutNode {
     int y = 0;
     int width = 0;
     int height = 0;
+    int span = 1;
     bool bold = false;
+};
+
+struct TextFlowBreakUnit {
+    int y = 0;
+    int height = 0;
+    int keepDepth = 0;
+    int pageBreaksBefore = 0;
+};
+
+struct TextFlowPageSlice {
+    int startY = 0;
+    int endY = 0;
+    bool startsNewPage = false;
+    bool forcedSplit = false;
+    bool overflow = false;
 };
 
 struct TextFlowDocumentLayoutResult {
@@ -132,6 +148,7 @@ struct TextFlowDocumentLayoutResult {
     int availableWidth = 0;
     int width = 0;
     int height = 0;
+    std::vector<TextFlowBreakUnit> breakUnits;
 };
 
 /**
@@ -152,6 +169,10 @@ public:
     /** Exposed for small deterministic unit tests of the line breaker. */
     static std::vector<TextFlowRow> Wrap(const std::vector<TextFlowItemMetrics> &items, int availableWidth);
 
+    /** Split vertical text-flow units into page-sized slices. */
+    static std::vector<TextFlowPageSlice> Paginate(const std::vector<TextFlowBreakUnit> &units, int firstPageHeight,
+        int fullPageHeight, bool firstPageHasContent = false);
+
 private:
     std::u32string GetText(Object *object) const;
     int MeasureText(const std::u32string &text, const FontInfo &font) const;
@@ -169,6 +190,8 @@ private:
     std::vector<TextFlowUnit> MakeUnits(Object *block, const std::vector<Object *> &children) const;
     TextFlowLayoutResult LayoutInline(Object *block, const std::vector<Object *> &children) const;
     TextFlowLayoutNode LayoutFlowNode(Object *object, int width, bool bold) const;
+    void CollectBreakUnits(const TextFlowLayoutNode &node, int parentY, std::vector<TextFlowBreakUnit> &units,
+        int &pendingPageBreaks) const;
     std::vector<TextFlowRow> WrapUnits(const std::vector<TextFlowUnit> &units) const;
     std::vector<TextFlowConnector> PositionConnectors(
         const std::vector<TextFlowUnit> &units, std::vector<TextFlowRow> &rows) const;
