@@ -355,6 +355,10 @@ std::string MEIOutput::Export()
 
 bool MEIOutput::WriteObject(Object *object)
 {
+    // Page cast-off creates empty Div wrappers for visual text-flow
+    // continuations. They are not part of the canonical MEI tree.
+    if (object->Is(DIV) && vrv_cast<Div *>(object)->IsTextFlowContinuation()) return true;
+
     if (this->IsScoreBasedMEI() && this->HasFilter()) {
         if (!this->ProcessScoreBasedFilter(object)) {
             return true;
@@ -1089,6 +1093,8 @@ bool MEIOutput::WriteObjectInternal(Object *object, bool useCustomScoreDef)
 
 bool MEIOutput::WriteObjectEnd(Object *object)
 {
+    if (object->Is(DIV) && vrv_cast<Div *>(object)->IsTextFlowContinuation()) return true;
+
     if (this->IsScoreBasedMEI()) {
         // In score-based MEI, page, pages and system are not written.
         if (object->IsAnyOf(std::array{ PAGE, PAGES, SYSTEM })) {

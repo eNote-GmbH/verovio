@@ -722,6 +722,8 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     const int availableWidth = m_doc->m_drawingPageContentWidth;
     const int originX = div->GetDrawingX();
     const int originY = div->GetDrawingY();
+    Div *sourceDiv = div->GetTextFlowSource();
+    const int fragmentStart = div->HasTextFlowFragment() ? div->GetTextFlowFragmentStart() : 0;
 
     const auto drawInlineObject = [&](Object *object, TextDrawingParams &params) {
         if (object->Is(SYL)) {
@@ -778,20 +780,38 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
         dc->EndGraphic(stack, this);
     };
 
-    const auto drawPhrase = [&](const TextFlowLayoutResult &result, int phraseOriginX, int phraseOriginY) {
+    const TextFlowDocumentLayoutResult *flow = sourceDiv->GetTextFlowDocumentLayout(availableWidth);
+    if (!flow) {
+        TextFlowLayout layout(m_doc, dc, textFlowFont, availableWidth, lineHeight);
+        flow = &sourceDiv->CacheTextFlowDocumentLayout(layout.LayoutFlow(sourceDiv));
+    }
+    const int fragmentEnd = div->HasTextFlowFragment() ? div->GetTextFlowFragmentEnd() : flow->height;
+
+    std::function<void(const TextFlowLayoutResult &, int, int, int)> drawPhrase;
+    drawPhrase = [&](const TextFlowLayoutResult &result, int phraseOriginX, int phraseOriginY, int phraseDocumentY) {
         FontInfo phraseFont = result.font;
         const int phraseLineHeight = result.lineHeight;
         int phraseCursorY = phraseOriginY;
+        int rowDocumentY = phraseDocumentY;
         dc->SetFont(&phraseFont);
 
-        for (const TextFlowUnit &unit : result.units) {
-            if (unit.metrics.hardBreak && unit.object) {
-                dc->StartGraphic(unit.object, "", unit.object->GetID());
-                dc->EndGraphic(unit.object, this);
+        if (phraseDocumentY >= fragmentStart) {
+            for (const TextFlowUnit &unit : result.units) {
+                if (unit.metrics.hardBreak && unit.object) {
+                    dc->StartGraphic(unit.object, "", unit.object->GetID());
+                    dc->EndGraphic(unit.object, this);
+                }
             }
         }
 
         for (const TextFlowRow &row : result.rows) {
+            const int rowHeight = std::max(1, row.rowCount) * phraseLineHeight;
+            const bool drawRow = (rowDocumentY < fragmentEnd) && (rowDocumentY + rowHeight > fragmentStart);
+            if (!drawRow) {
+                phraseCursorY -= rowHeight;
+                rowDocumentY += rowHeight;
+                continue;
+            }
             for (const TextFlowPlacedItem &placement : row.items) {
                 const TextFlowUnit &unit = result.units.at(placement.item);
                 const int itemX = phraseOriginX + placement.x;
@@ -843,19 +863,16 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                 dc->EndText();
                 dc->EndCustomGraphic();
             }
-            phraseCursorY -= std::max(1, row.rowCount) * phraseLineHeight;
+            phraseCursorY -= rowHeight;
+            rowDocumentY += rowHeight;
         }
         dc->ResetFont();
     };
 
-    const TextFlowDocumentLayoutResult *flow = div->GetTextFlowDocumentLayout(availableWidth);
-    if (!flow) {
-        TextFlowLayout layout(m_doc, dc, textFlowFont, availableWidth, lineHeight);
-        flow = &div->CacheTextFlowDocumentLayout(layout.LayoutFlow(div));
-    }
-
-    std::function<void(const TextFlowLayoutNode &, int, int)> drawNode;
-    drawNode = [&](const TextFlowLayoutNode &node, int parentX, int parentY) {
+    std::function<void(const TextFlowLayoutNode &, int, int, int)> drawNode;
+    drawNode = [&](const TextFlowLayoutNode &node, int parentX, int parentY, int parentDocumentY) {
+        const int documentY = parentDocumentY + node.y;
+        if ((documentY + node.height <= fragmentStart) || (documentY >= fragmentEnd)) return;
         const int x = parentX + node.x;
         const int y = parentY - node.y;
         if (TextFlowElement *element = dynamic_cast<TextFlowElement *>(node.object)) {
@@ -868,9 +885,15 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
         }
 
         const bool grouped = node.object && (node.kind != TextFlowLayoutNodeKind::Figure);
-        if (grouped) dc->StartGraphic(node.object, "", node.object->GetID());
+        if (grouped) {
+            std::string id = node.object->GetID();
+            if ((documentY < fragmentStart) && div->HasTextFlowFragment()) {
+                id += "-continuation-" + std::to_string(div->GetTextFlowFragmentIndex());
+            }
+            dc->StartGraphic(node.object, "", id);
+        }
         switch (node.kind) {
-            case TextFlowLayoutNodeKind::Phrase: drawPhrase(node.phrase, x, y); break;
+            case TextFlowLayoutNodeKind::Phrase: drawPhrase(node.phrase, x, y, documentY); break;
             case TextFlowLayoutNodeKind::Figure: {
                 Fig *fig = vrv_cast<Fig *>(node.object);
                 fig->SetDrawingXRel(x - fig->GetParent()->GetDrawingX());
@@ -880,14 +903,14 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                 break;
             }
             default:
-                for (const TextFlowLayoutNode &child : node.children) drawNode(child, x, y);
+                for (const TextFlowLayoutNode &child : node.children) drawNode(child, x, y, documentY);
                 break;
         }
         if (grouped) dc->EndGraphic(node.object, this);
     };
 
-    drawNode(flow->layout, originX, originY);
-    div->SetTextFlowSize(flow->width, flow->height);
+    drawNode(flow->layout, originX, originY + fragmentStart, 0);
+    sourceDiv->SetTextFlowSize(flow->width, flow->height);
 
     dc->ResetFont();
 }

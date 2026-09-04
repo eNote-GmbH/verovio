@@ -45,23 +45,37 @@ list(GET SVG_PAGES 0 FIRST_PAGE)
 list(GET SVG_PAGES 1 SECOND_PAGE)
 file(READ "${FIRST_PAGE}" FIRST_SVG)
 file(READ "${SECOND_PAGE}" SECOND_SVG)
-if(FIRST_SVG MATCHES "tusk-div-later-verse-2")
-    message(FATAL_ERROR "Later-verse div rendered before the score had finished")
-endif()
-foreach(REQUIRED_ID tusk-div-later-verse-2 tusk-stack-verse-2-line-1-001 tusk-stack-verse-2-line-2-046)
+foreach(REQUIRED_ID tusk-div-later-verse-2 tusk-stack-verse-2-line-1-001)
+    if(NOT FIRST_SVG MATCHES "${REQUIRED_ID}")
+        message(FATAL_ERROR "The first fitting text fragment was missing from the score page: ${REQUIRED_ID}")
+    endif()
+endforeach()
+foreach(REQUIRED_ID tusk-div-later-verse-2-continuation-1 tusk-stack-verse-2-line-2-046)
     if(NOT SECOND_SVG MATCHES "${REQUIRED_ID}")
-        message(FATAL_ERROR "Later-verse div was missing or split during CLI page cast-off: ${REQUIRED_ID}")
+        message(FATAL_ERROR "The overflowing text fragment was missing from the continuation page: ${REQUIRED_ID}")
     endif()
 endforeach()
 
 # The fixture has a 2100px page with 50px margins (Verovio's SVG viewBox uses
 # ten units per px), so translated drawing origins must remain at or left of
 # the 20500-unit right content boundary.
-string(REGEX MATCHALL "translate\\\(([0-9]+)" X_TRANSLATIONS "${SECOND_SVG}")
+set(ALL_TEXT_SVG "${FIRST_SVG}${SECOND_SVG}")
+string(REGEX MATCHALL "translate\\\(([0-9]+)" X_TRANSLATIONS "${ALL_TEXT_SVG}")
 foreach(TRANSLATION ${X_TRANSLATIONS})
     string(REGEX REPLACE "translate\\\(" "" X "${TRANSLATION}")
     if(X GREATER 20500)
         message(FATAL_ERROR "CLI SVG content exceeded the fixture's right page boundary at x=${X}")
+    endif()
+endforeach()
+
+# The default 2970px page has 50px top and bottom margins. Text-system
+# translations therefore have to remain above the 29200-unit lower content
+# boundary. This catches a visually overflowing final row.
+string(REGEX MATCHALL "translate\\\([^, ]+[, ]+([0-9]+)" XY_TRANSLATIONS "${ALL_TEXT_SVG}")
+foreach(TRANSLATION ${XY_TRANSLATIONS})
+    string(REGEX REPLACE ".*[, ]+([0-9]+)$" "\\1" Y "${TRANSLATION}")
+    if(Y GREATER 29200)
+        message(FATAL_ERROR "CLI SVG content exceeded the page's lower content boundary at y=${Y}")
     endif()
 endforeach()
 
