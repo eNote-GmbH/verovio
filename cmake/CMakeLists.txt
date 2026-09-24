@@ -331,6 +331,7 @@ if(BUILD_STAFF_ITEM_ORDER_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vertical-groups-reh.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vgrp-overlap.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/ending-spacing.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/slur-anchor.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 endif()
 

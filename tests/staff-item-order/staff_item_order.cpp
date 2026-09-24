@@ -20,6 +20,7 @@
 #include "pugixml.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -425,13 +426,44 @@ bool TestRendering(const std::string &orderFixture, const std::string &partialFi
     return ok;
 }
 
+// The highest point (smallest y) of the outer curve of a slur
+int SlurApexY(const pugi::xml_document &document, const std::string &id)
+{
+    const std::string query = "//*[@id='" + id + "']/*[local-name()='path']";
+    std::string path = document.select_node(query.c_str()).node().attribute("d").value();
+    std::replace_if(path.begin(), path.end(), [](char c) { return (c == ',') || std::isalpha(c); }, ' ');
+    std::istringstream values(path);
+    double x[4], y[4];
+    for (int i = 0; i < 4; ++i) values >> x[i] >> y[i];
+    double apex = y[0];
+    for (int step = 0; step <= 100; ++step) {
+        const double t = step / 100.0;
+        const double u = 1.0 - t;
+        apex = std::min(apex, u * u * u * y[0] + 3 * u * u * t * y[1] + 3 * u * t * t * y[2] + t * t * t * y[3]);
+    }
+    return static_cast<int>(apex);
+}
+
+bool TestSlurAnchors(const std::string &fixture, const std::string &resourcePath)
+{
+    // Slurs cannot be named in data.STAFFITEM: ordered categories stack outside them
+    pugi::xml_document document;
+    bool ok = Expect(LoadSVG(fixture, resourcePath, document), "slur anchor fixture did not render");
+    if (!ok) return false;
+    ok &= Expect(TextY(document, "slur-harm") < SlurApexY(document, "harm-slur"),
+        "an ordered harmony collided with the slur below it");
+    ok &= Expect(TextY(document, "slur-reh") < SlurApexY(document, "reh-slur"),
+        "an ordered rehearsal mark collided with the slur below it");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         std::cerr << "usage: staff-item-order-test ORDER PARTIAL DEFAULT VERTICAL_GROUP VGRP_CHANGE REH "
-                     "VGRP_OVERLAP ENDING RESOURCE_PATH\n";
+                     "VGRP_OVERLAP ENDING SLUR_ANCHOR RESOURCE_PATH\n";
         return 2;
     }
 
@@ -440,9 +472,10 @@ int main(int argc, char **argv)
     ok &= TestRegistrationCopyAndReset();
     ok &= TestVerticalGroupClasses();
     ok &= TestResolver();
-    ok &= TestMEIRoundtrip(argv[1], argv[9]);
-    ok &= TestVerticalGroupRoundtrip(argv[4], argv[9]);
-    ok &= TestHistoricRehVerticalGroupRoundtrip(argv[6], argv[9]);
-    ok &= TestRendering(argv[1], argv[2], argv[3], argv[4], argv[5], argv[7], argv[8], argv[9]);
+    ok &= TestMEIRoundtrip(argv[1], argv[10]);
+    ok &= TestVerticalGroupRoundtrip(argv[4], argv[10]);
+    ok &= TestHistoricRehVerticalGroupRoundtrip(argv[6], argv[10]);
+    ok &= TestRendering(argv[1], argv[2], argv[3], argv[4], argv[5], argv[7], argv[8], argv[10]);
+    ok &= TestSlurAnchors(argv[9], argv[10]);
     return ok ? 0 : 1;
 }

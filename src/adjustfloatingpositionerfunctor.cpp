@@ -88,12 +88,16 @@ namespace {
         if (order.empty()) return defaults;
 
         std::vector<StaffItemStep> steps;
-        // Endings are structural staff-adjacent anchors and cannot be named in data.STAFFITEM. Position them before
-        // the configurable categories so the latter stack outside the volta bracket.
-        const auto ending = std::find_if(
-            defaults.begin(), defaults.end(), [](const StaffItemStep &step) { return step.classId == ENDING; });
-        assert(ending != defaults.end());
-        steps.push_back(*ending);
+        // Curves attached to notes stay closest to the staff unless their category is ordered explicitly (slurs and
+        // phrases cannot be named in data.STAFFITEM at all). Endings are structural staff-adjacent anchors that cannot
+        // be named either. Position both before the configurable categories so the latter stack outside them.
+        const auto isAnchor = [&order](const StaffItemStep &step) {
+            if (step.classId == ENDING) return true;
+            const std::array curves{ LV, TIE, SLUR, PHRASE };
+            if (std::find(curves.begin(), curves.end(), step.classId) == curves.end()) return false;
+            return (step.item == STAFFITEM_NONE) || (std::find(order.begin(), order.end(), step.item) == order.end());
+        };
+        std::copy_if(defaults.begin(), defaults.end(), std::back_inserter(steps), isAnchor);
 
         std::set<data_STAFFITEM> used;
         for (const data_STAFFITEM item : order) {
@@ -108,7 +112,7 @@ namespace {
             }
         }
         for (const StaffItemStep &step : defaults) {
-            if (step.classId == ENDING) continue;
+            if (isAnchor(step)) continue;
             if ((step.item == STAFFITEM_dir) && (used.contains(STAFFITEM_dir) || used.contains(STAFFITEM_stageDir))) {
                 if (!used.contains(STAFFITEM_dir)) steps.push_back({ STAFFITEM_dir, DIR, true });
                 if (!used.contains(STAFFITEM_stageDir)) steps.push_back({ STAFFITEM_stageDir, DIR, true });
@@ -118,6 +122,13 @@ namespace {
             }
         }
         return steps;
+    }
+
+    bool IsCurve(const FloatingPositioner *positioner)
+    {
+        assert(positioner);
+        assert(positioner->GetObject());
+        return positioner->GetObject()->IsAnyOf(std::array{ LV, PHRASE, SLUR, TIE });
     }
 
     bool MatchesStaffItemStep(const FloatingPositioner *positioner, const StaffItemStep &step)
@@ -252,7 +263,9 @@ namespace {
         for (int positionerIndex = 0; positionerIndex < static_cast<int>(positioners.size()); ++positionerIndex) {
             FloatingPositioner *positioner = positioners.at(positionerIndex);
             const data_STAFFREL drawingPlace = positioner->GetDrawingPlace();
-            if ((drawingPlace != place) && !(includeWithin && (drawingPlace == STAFFREL_within))) continue;
+            // Curves have no drawing place: they overflow above and below according to their direction
+            const bool curve = IsCurve(positioner) && (place != STAFFREL_between);
+            if (!curve && (drawingPlace != place) && !(includeWithin && (drawingPlace == STAFFREL_within))) continue;
 
             const Measure *measure = GetPositionerMeasure(positioner, fallback);
             const ScoreDef *scoreDef = GetDrawingScoreDef(measure, staff->GetN(), system->GetDrawingScoreDef());
@@ -389,7 +402,11 @@ FunctorCode AdjustFloatingPositionersFunctor::AdjustCurrentPositioners(StaffAlig
             if ((m_staffItem == STAFFITEM_stageDir) != dir->IsStageDir()) continue;
         }
 
-        if (m_place != STAFFREL_NONE) {
+        const bool curveClass = (m_classId == LV) || (m_classId == PHRASE) || (m_classId == SLUR) || (m_classId == TIE);
+        if (curveClass && (m_place != STAFFREL_between)) {
+            // Curves have no drawing place and are registered on the side(s) they overflow below
+        }
+        else if (m_place != STAFFREL_NONE) {
             if ((positioner->GetDrawingPlace() != m_place)
                 && !(m_includeWithin && (positioner->GetDrawingPlace() == STAFFREL_within))) {
                 continue;
@@ -406,7 +423,7 @@ FunctorCode AdjustFloatingPositionersFunctor::AdjustCurrentPositioners(StaffAlig
         if (!positioner->HasContentBB()) continue;
 
         // for slurs and ties we do not need to adjust them, only add them to the overflow boxes if required
-        if ((m_classId == LV) || (m_classId == PHRASE) || (m_classId == SLUR) || (m_classId == TIE)) {
+        if (curveClass) {
 
             assert(positioner->Is(FLOATING_CURVE_POSITIONER));
             FloatingCurvePositioner *curve = vrv_cast<FloatingCurvePositioner *>(positioner);
@@ -420,6 +437,10 @@ FunctorCode AdjustFloatingPositionersFunctor::AdjustCurrentPositioners(StaffAlig
                 assert(interface);
                 interface->GetCrossStaffOverflows(staffAlignment, curve->GetDir(), skipAbove, skipBelow);
             }
+
+            // When the places are adjusted separately, each pass only registers the curve on its own side
+            if (m_place == STAFFREL_above) skipBelow = true;
+            if (m_place == STAFFREL_below) skipAbove = true;
 
             int overflowAbove = 0;
             if (!skipAbove) overflowAbove = staffAlignment->CalcOverflowAbove(positioner);
