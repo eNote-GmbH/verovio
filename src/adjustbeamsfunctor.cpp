@@ -13,6 +13,7 @@
 #include "elementpart.h"
 #include "ftrem.h"
 #include "layer.h"
+#include "note.h"
 #include "rest.h"
 #include "staff.h"
 
@@ -271,16 +272,19 @@ FunctorCode AdjustBeamsFunctor::VisitLayerElement(LayerElement *layerElement)
     if (m_outerFTrem) --beamCount;
     const int currentBeamYLeft = m_y1 + m_beamSlope * (layerElement->GetContentLeft() - m_x1);
     const int currentBeamYRight = m_y1 + m_beamSlope * (layerElement->GetContentRight() - m_x1);
+    const auto [elementBottom, elementTop] = m_isOtherLayer
+        ? this->GetObstacleExtent(layerElement)
+        : std::make_pair(layerElement->GetContentBottom(), layerElement->GetContentTop());
     if (m_directionBias > 0) {
-        leftMargin = layerElement->GetContentTop() - currentBeamYLeft + beamCount * outerBeamInterface->m_beamWidth
+        leftMargin = elementTop - currentBeamYLeft + beamCount * outerBeamInterface->m_beamWidth
             + outerBeamInterface->m_beamWidthBlack;
-        rightMargin = layerElement->GetContentTop() - currentBeamYRight + beamCount * outerBeamInterface->m_beamWidth
+        rightMargin = elementTop - currentBeamYRight + beamCount * outerBeamInterface->m_beamWidth
             + outerBeamInterface->m_beamWidthBlack;
     }
     else {
-        leftMargin = layerElement->GetContentBottom() - currentBeamYLeft - beamCount * outerBeamInterface->m_beamWidth
+        leftMargin = elementBottom - currentBeamYLeft - beamCount * outerBeamInterface->m_beamWidth
             - outerBeamInterface->m_beamWidthBlack;
-        rightMargin = layerElement->GetContentBottom() - currentBeamYRight - beamCount * outerBeamInterface->m_beamWidth
+        rightMargin = elementBottom - currentBeamYRight - beamCount * outerBeamInterface->m_beamWidth
             - outerBeamInterface->m_beamWidthBlack;
     }
 
@@ -382,8 +386,7 @@ int AdjustBeamsFunctor::CalcLayerOverlap(const LayerElement *beamElement) const
     for (const Object *object : collidingElementsList) {
         const LayerElement *layerElement = vrv_cast<const LayerElement *>(object);
         if (!beamElement->HorizontalContentOverlap(object)) continue;
-        const int elementBottom = layerElement->GetContentBottom();
-        const int elementTop = layerElement->GetContentTop();
+        const auto [elementBottom, elementTop] = this->GetObstacleExtent(layerElement);
         if (m_directionBias > 0) {
             // Ensure that there's actual overlap first
             if (elementBottom > yMax) continue;
@@ -422,6 +425,26 @@ int AdjustBeamsFunctor::CalcLayerOverlap(const LayerElement *beamElement) const
     }
     const int adjust = this->AdjustOverlapToHalfUnit(overlap, unit);
     return adjust;
+}
+
+std::pair<int, int> AdjustBeamsFunctor::GetObstacleExtent(const LayerElement *element) const
+{
+    if (!element->IsAnyOf(std::array{ NOTE, CHORD })) {
+        return { element->GetContentBottom(), element->GetContentTop() };
+    }
+
+    ListOfConstObjects notes
+        = element->Is(NOTE) ? ListOfConstObjects{ element } : element->FindAllDescendantsByType(NOTE);
+    int bottom = VRV_UNSET;
+    int top = VRV_UNSET;
+    for (const Object *object : notes) {
+        const Note *note = vrv_cast<const Note *>(object);
+        if (!note->HasSelfBB()) continue;
+        bottom = (bottom == VRV_UNSET) ? note->GetSelfBottom() : std::min(bottom, note->GetSelfBottom());
+        top = (top == VRV_UNSET) ? note->GetSelfTop() : std::max(top, note->GetSelfTop());
+    }
+    if (bottom == VRV_UNSET) return { element->GetContentBottom(), element->GetContentTop() };
+    return { bottom, top };
 }
 
 int AdjustBeamsFunctor::AdjustOverlapToHalfUnit(int overlap, int unit) const

@@ -44,6 +44,7 @@ option(BUILD_FONT_TESTS         "Build runtime font API tests"                  
 option(BUILD_TEXT_BLOCK_TESTS   "Build MEI text block tests"                     OFF)
 option(BUILD_TRANSPOSE_CAPO_TESTS "Build guitar capo transposition tests"       OFF)
 option(BUILD_STAFF_ITEM_ORDER_TESTS "Build MEI staff-item order tests"           OFF)
+option(BUILD_BEAM_LAYER_OVERLAP_TESTS "Build beam and other-layer overlap tests"  OFF)
 
 if (NO_HUMDRUM_SUPPORT AND MUSICXML_DEFAULT_HUMDRUM)
     message(FATAL_ERROR "Default MusicXML to Humdrum cannot be enabled by default without Humdrum support")
@@ -330,6 +331,15 @@ if(BUILD_STAFF_ITEM_ORDER_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vertical-groups-reh.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/vgrp-overlap.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/staff-item-order/ending-spacing.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../data)
+endif()
+
+if(BUILD_BEAM_LAYER_OVERLAP_TESTS)
+    enable_testing()
+    add_executable(beam-layer-overlap-test ../tests/beam-layer-overlap/beam_layer_overlap.cpp ${all_SRC})
+    add_test(NAME beam-layer-overlap
+        COMMAND beam-layer-overlap-test
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/beam-layer-overlap/beat-slash.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 endif()
 
