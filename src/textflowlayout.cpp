@@ -18,6 +18,7 @@
 #include "editorial.h"
 #include "fig.h"
 #include "harm.h"
+#include "options.h"
 #include "ptr.h"
 #include "rend.h"
 #include "svg.h"
@@ -139,6 +140,27 @@ FontInfo TextFlowLayout::GetBlockFont(Object *block) const
         if (font.GetPointSize() > 0) pointSize = font.GetPointSize();
     }
     return font;
+}
+
+int TextFlowLayout::GetLineHeight(const FontInfo &font) const
+{
+    FontInfo measuredFont = font;
+    const int styledLineHeight = m_doc->GetTextLineHeight(&measuredFont, false);
+    return (styledLineHeight > 0) ? styledLineHeight : std::max(1, m_lineHeight);
+}
+
+int TextFlowLayout::GetBlockSpacing(const Object *previous, Object *next) const
+{
+    if (!previous) return 0;
+    const Options *options = m_doc->GetOptions();
+    double factor = 0.0;
+    if (previous->Is(L) && next->Is(L)) {
+        factor = options->m_textFlowLineSpacing.GetValue();
+    }
+    else if (previous->Is(LG) && next->Is(LG)) {
+        factor = options->m_textFlowStanzaSpacing.GetValue();
+    }
+    return static_cast<int>(std::lround(factor * this->GetLineHeight(this->GetBlockFont(next))));
 }
 
 int TextFlowLayout::MeasureObject(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const
@@ -412,23 +434,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
 
 TextFlowLayoutResult TextFlowLayout::Layout(Object *block) const
 {
-    TextFlowLayoutResult result;
-    result.block = block;
-    m_effectiveFont = this->GetBlockFont(block);
-    m_spaceWidth = std::max(1, this->MeasureText(U" ", m_effectiveFont));
-    m_hyphenWidth = std::max(1, this->MeasureText(U"-", m_effectiveFont));
-    result.font = m_effectiveFont;
-    const int styledLineHeight = m_doc->GetTextLineHeight(&m_effectiveFont, false);
-    result.lineHeight = (styledLineHeight > 0) ? styledLineHeight : std::max(1, m_lineHeight);
-    result.units = this->MakeUnits(block);
-
-    result.rows = this->WrapUnits(result.units);
-    result.connectors = this->PositionConnectors(result.units, result.rows);
-    for (const TextFlowRow &row : result.rows) {
-        result.width = std::max(result.width, row.width);
-        result.height += std::max(1, row.rowCount) * result.lineHeight;
-    }
-    return result;
+    return this->LayoutInline(block, block->GetChildren());
 }
 
 TextFlowLayoutResult TextFlowLayout::LayoutInline(Object *block, const std::vector<Object *> &children) const
@@ -439,14 +445,25 @@ TextFlowLayoutResult TextFlowLayout::LayoutInline(Object *block, const std::vect
     m_spaceWidth = std::max(1, this->MeasureText(U" ", m_effectiveFont));
     m_hyphenWidth = std::max(1, this->MeasureText(U"-", m_effectiveFont));
     result.font = m_effectiveFont;
-    const int styledLineHeight = m_doc->GetTextLineHeight(&m_effectiveFont, false);
-    result.lineHeight = (styledLineHeight > 0) ? styledLineHeight : std::max(1, m_lineHeight);
+    result.lineHeight = this->GetLineHeight(m_effectiveFont);
+    result.ascent = std::min(result.lineHeight, m_doc->GetTextGlyphHeight(U'I', &m_effectiveFont, false));
     result.units = this->MakeUnits(block, children);
     result.rows = this->WrapUnits(result.units);
     result.connectors = this->PositionConnectors(result.units, result.rows);
-    for (const TextFlowRow &row : result.rows) {
+
+    // Within a lyric line, stacks are chord lanes over the lyrics and wrapped rows are consecutive lyric lines
+    const Options *options = m_doc->GetOptions();
+    const bool lyricLine = block->Is(L);
+    const double laneFactor = lyricLine ? options->m_textFlowChordLaneSpacing.GetValue() : 0.0;
+    const double rowFactor = lyricLine ? options->m_textFlowLineSpacing.GetValue() : 0.0;
+    const int rowGap = static_cast<int>(std::lround(rowFactor * result.lineHeight));
+    result.lanePitch = result.lineHeight + static_cast<int>(std::lround(laneFactor * result.lineHeight));
+
+    for (TextFlowRow &row : result.rows) {
+        if (&row != &result.rows.front()) result.height += rowGap;
+        row.y = result.height;
         result.width = std::max(result.width, row.width);
-        result.height += std::max(1, row.rowCount) * result.lineHeight;
+        result.height += result.lineHeight + (std::max(1, row.rowCount) - 1) * result.lanePitch;
     }
     return result;
 }
@@ -514,7 +531,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
                 rowNode.children.push_back(std::move(cellNode));
             }
             node.children.push_back(std::move(rowNode));
-            rowY += tableLayout.rowHeights[rowIndex] + tableLayout.gutter;
+            rowY += tableLayout.rowHeights[rowIndex] + tableLayout.rowGutter;
         }
         node.height = tableLayout.height;
         return node;
@@ -577,6 +594,7 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
     node.kind = TextFlowLayoutNodeKind::Flow;
     int cursorY = 0;
     std::vector<Object *> inlineChildren;
+    const Object *previousBlock = nullptr;
     const auto flush = [&]() {
         if (!inlineChildren.empty()) {
             TextFlowLayoutNode fragment;
@@ -594,9 +612,12 @@ TextFlowLayoutNode TextFlowLayout::LayoutFlowNode(Object *object, int width, boo
         if (!child) continue;
         if (!child->IsAnyOf(std::array{ DIV, HEAD, P, LG, L, TABLE, FIG, PB })) {
             inlineChildren.push_back(child);
+            previousBlock = nullptr;
             continue;
         }
         flush();
+        cursorY += nestedLayout.GetBlockSpacing(previousBlock, child);
+        previousBlock = child;
         TextFlowLayoutNode childNode = nestedLayout.LayoutFlowNode(child, width, bold);
         childNode.y = cursorY;
         cursorY += childNode.height;
@@ -641,11 +662,9 @@ void TextFlowLayout::CollectBreakUnits(
         ++pendingPageBreaks;
     }
     else if (node.kind == TextFlowLayoutNodeKind::Phrase) {
-        int rowY = nodeY;
+        // The spacing between rows is not part of either row, so that it vanishes at a page break
         for (const TextFlowRow &row : node.phrase.rows) {
-            const int height = std::max(1, row.rowCount) * node.phrase.lineHeight;
-            addUnit(rowY, height);
-            rowY += height;
+            addUnit(nodeY + row.y, node.phrase.lineHeight + (std::max(1, row.rowCount) - 1) * node.phrase.lanePitch);
         }
     }
     else if (node.kind == TextFlowLayoutNodeKind::Figure) {
@@ -815,6 +834,14 @@ TextFlowTableLayoutResult TextFlowLayout::LayoutTable(Table *table) const
     result.table = table;
     result.width = std::max(0, m_availableWidth);
     result.gutter = std::max(1, m_baseFont.GetPointSize());
+    // Stanzas laid out as table cells are separated vertically by the stanza spacing
+    if (table->FindDescendantByType(LG)) {
+        const double stanzaFactor = m_doc->GetOptions()->m_textFlowStanzaSpacing.GetValue();
+        result.rowGutter = static_cast<int>(std::lround(stanzaFactor * this->GetLineHeight(this->GetBlockFont(table))));
+    }
+    else {
+        result.rowGutter = result.gutter;
+    }
 
     std::vector<TableRow *> rows;
     for (Object *child : table->GetChildren()) {
@@ -874,7 +901,7 @@ void TextFlowLayout::ResolveTableHeights(TextFlowTableLayoutResult &table) const
     }
     for (const TextFlowTableCellLayout &cell : table.cells) {
         if (cell.rowspan <= 1) continue;
-        int available = (cell.rowspan - 1) * table.gutter;
+        int available = (cell.rowspan - 1) * table.rowGutter;
         for (int row = cell.row; row < cell.row + cell.rowspan; ++row) available += table.rowHeights[row];
         int deficit = std::max(0, cell.preferredHeight - available);
         for (int row = 0; row < cell.rowspan && deficit > 0; ++row) {
@@ -887,16 +914,16 @@ void TextFlowLayout::ResolveTableHeights(TextFlowTableLayoutResult &table) const
     table.gridY = table.caption ? table.captionHeight + table.gutter : 0;
     std::vector<int> rowY(table.rowHeights.size(), table.gridY);
     for (size_t row = 1; row < rowY.size(); ++row) {
-        rowY[row] = rowY[row - 1] + table.rowHeights[row - 1] + table.gutter;
+        rowY[row] = rowY[row - 1] + table.rowHeights[row - 1] + table.rowGutter;
     }
     for (TextFlowTableCellLayout &cell : table.cells) {
         cell.y = rowY[cell.row];
-        cell.height = (cell.rowspan - 1) * table.gutter;
+        cell.height = (cell.rowspan - 1) * table.rowGutter;
         for (int row = cell.row; row < cell.row + cell.rowspan; ++row) cell.height += table.rowHeights[row];
     }
     table.height = table.gridY;
     for (int rowHeight : table.rowHeights) table.height += rowHeight;
-    if (!table.rowHeights.empty()) table.height += (static_cast<int>(table.rowHeights.size()) - 1) * table.gutter;
+    if (!table.rowHeights.empty()) table.height += (static_cast<int>(table.rowHeights.size()) - 1) * table.rowGutter;
 }
 
 std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUnit> &units) const

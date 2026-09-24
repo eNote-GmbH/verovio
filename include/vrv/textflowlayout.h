@@ -40,7 +40,10 @@ struct TextFlowPlacedItem {
 struct TextFlowRow {
     std::vector<TextFlowPlacedItem> items;
     int width = 0;
+    /** Number of stacked lanes (e.g., a chord lane above a lyric line) */
     int rowCount = 1;
+    /** Offset of the row's top lane baseline from the top of the phrase */
+    int y = 0;
 };
 
 struct TextFlowSegment {
@@ -84,6 +87,10 @@ struct TextFlowLayoutResult {
     int width = 0;
     int height = 0;
     int lineHeight = 0;
+    /** Baseline distance between the stacked lanes of a row */
+    int lanePitch = 0;
+    /** Distance from the top of a row to the baseline of its top lane */
+    int ascent = 0;
 };
 
 struct TextFlowTableCellLayout {
@@ -105,7 +112,10 @@ struct TextFlowTableLayoutResult {
     std::vector<TextFlowTableCellLayout> cells;
     std::vector<int> rowHeights;
     int columns = 0;
+    /** Horizontal space between columns and below the caption */
     int gutter = 0;
+    /** Vertical space between rows */
+    int rowGutter = 0;
     int captionHeight = 0;
     int gridY = 0;
     int width = 0;
@@ -179,6 +189,8 @@ private:
     int MeasureObject(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
     FontInfo GetStyledFont(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
     FontInfo GetBlockFont(Object *block) const;
+    int GetLineHeight(const FontInfo &font) const;
+    int GetBlockSpacing(const Object *previous, Object *next) const;
     bool PreservesWhitespace(const Object *object) const;
     Harm *GetHarm(Object *object) const;
     Syl *GetSyl(Object *object) const;

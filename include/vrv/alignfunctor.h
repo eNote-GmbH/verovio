@@ -255,7 +255,9 @@ public:
 protected:
     //
 private:
-    //
+    /** The space above a system that is not the first of the page */
+    int GetSystemSpacing(const System *system) const;
+
 public:
     //
 private:

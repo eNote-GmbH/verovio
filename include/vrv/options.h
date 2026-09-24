@@ -775,6 +775,10 @@ public:
     OptionBool m_systemExtendLast;
     OptionInt m_systemMaxPerPage;
     OptionDbl m_textEnclosureThickness;
+    OptionDbl m_textFlowChordLaneSpacing;
+    OptionDbl m_textFlowLineSpacing;
+    OptionDbl m_textFlowScoreMargin;
+    OptionDbl m_textFlowStanzaSpacing;
     OptionString m_textFont;
     OptionDbl m_thickBarlineThickness;
     OptionDbl m_tieEndpointThickness;

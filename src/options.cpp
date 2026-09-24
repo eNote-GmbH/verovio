@@ -1573,6 +1573,26 @@ Options::Options()
     m_textEnclosureThickness.Init(0.2, 0.10, 0.80);
     this->Register(&m_textEnclosureThickness, "textEnclosureThickness", &m_generalLayout);
 
+    m_textFlowChordLaneSpacing.SetInfo("Text flow chord lane spacing",
+        "The space between a chord lane and its lyric line in text blocks, as a multiple of the text line height");
+    m_textFlowChordLaneSpacing.Init(0.0, 0.0, 10.0);
+    this->Register(&m_textFlowChordLaneSpacing, "textFlowChordLaneSpacing", &m_generalLayout);
+
+    m_textFlowLineSpacing.SetInfo("Text flow line spacing",
+        "The space between consecutive lyric lines of a stanza in text blocks, as a multiple of the text line height");
+    m_textFlowLineSpacing.Init(0.0, 0.0, 10.0);
+    this->Register(&m_textFlowLineSpacing, "textFlowLineSpacing", &m_generalLayout);
+
+    m_textFlowScoreMargin.SetInfo("Text flow score margin",
+        "The space between the score and a following text block, as a multiple of the text line height");
+    m_textFlowScoreMargin.Init(1.0, 0.0, 10.0);
+    this->Register(&m_textFlowScoreMargin, "textFlowScoreMargin", &m_generalLayout);
+
+    m_textFlowStanzaSpacing.SetInfo("Text flow stanza spacing",
+        "The space between consecutive stanza blocks, as a multiple of the text line height");
+    m_textFlowStanzaSpacing.Init(1.0, 0.0, 10.0);
+    this->Register(&m_textFlowStanzaSpacing, "textFlowStanzaSpacing", &m_generalLayout);
+
     m_textFont.SetInfo("Text font (deprecated)", "Compatibility alias for the registered runtime text font family");
     m_textFont.Init("Tinos");
     this->Register(&m_textFont, "textFont", &m_generalLayout);

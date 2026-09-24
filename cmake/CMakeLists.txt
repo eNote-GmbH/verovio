@@ -302,7 +302,8 @@ if(BUILD_TEXT_BLOCK_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/legacy-div.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/table-core.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/offset-enclosure.mei
-            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/pagination.mei)
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/pagination.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/text-blocks/stanza-spacing.mei)
     set_tests_properties(text-blocks PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 

@@ -225,11 +225,65 @@ bool TestTextFlowPagination()
     return ok;
 }
 
+struct TextFlowSpacingMetrics {
+    double chordLane = 0.0;
+    double lyricLine = 0.0;
+    double tableStanza = 0.0;
+    double siblingStanza = 0.0;
+    double firstBlock = 0.0;
+};
+
+TextFlowSpacingMetrics MeasureTextFlowSpacing(
+    const char *file, const std::string &resourcePath, const std::string &options)
+{
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    toolkit.SetOptions(options);
+    toolkit.LoadFile(file);
+    const std::string svg = RenderAllPages(toolkit);
+
+    const double chordY = FirstTranslateYAfter(svg, "stanza-1-chord");
+    const double lyricY = FirstTranslateYAfter(svg, "stanza-1-line-1-lyric");
+    TextFlowSpacingMetrics metrics;
+    metrics.chordLane = lyricY - chordY;
+    metrics.lyricLine = FirstTranslateYAfter(svg, "stanza-1-line-2-lyric") - lyricY;
+    metrics.tableStanza
+        = FirstTranslateYAfter(svg, "stanza-2-lyric") - FirstTranslateYAfter(svg, "stanza-1-line-2-lyric");
+    metrics.siblingStanza = FirstTranslateYAfter(svg, "stanza-4-lyric") - FirstTranslateYAfter(svg, "stanza-3-lyric");
+    metrics.firstBlock = FirstTranslateYAfter(svg, "stanza-1-head");
+    return metrics;
+}
+
+bool TestTextFlowSpacing(const char *file, const std::string &resourcePath)
+{
+    const TextFlowSpacingMetrics none = MeasureTextFlowSpacing(file, resourcePath,
+        R"({"textFlowChordLaneSpacing":0,"textFlowLineSpacing":0,"textFlowStanzaSpacing":0,"textFlowScoreMargin":0})");
+    const TextFlowSpacingMetrics spaced = MeasureTextFlowSpacing(file, resourcePath,
+        R"({"textFlowChordLaneSpacing":0.5,"textFlowLineSpacing":1,"textFlowStanzaSpacing":2,"textFlowScoreMargin":3})");
+
+    // Without chord-lane spacing, stacked lanes are exactly one text line apart
+    const double lineHeight = none.chordLane;
+    const auto added = [&](double spacedValue, double noneValue, double factor) {
+        return std::abs((spacedValue - noneValue) - factor * lineHeight) <= 2.0;
+    };
+
+    bool ok = Expect(lineHeight > 0.0, "the chord lane was not rendered above its lyric line");
+    ok &= Expect(std::abs(none.lyricLine - lineHeight) <= 2.0, "unspaced lyric lines were not one line apart");
+    ok &= Expect(added(spaced.chordLane, none.chordLane, 0.5), "textFlowChordLaneSpacing was not applied");
+    ok &= Expect(added(spaced.lyricLine, none.lyricLine, 1.0), "textFlowLineSpacing was not applied");
+    ok &= Expect(added(spaced.tableStanza, none.tableStanza, 2.0),
+        "textFlowStanzaSpacing was not applied between stanza table rows");
+    ok &= Expect(added(spaced.siblingStanza, none.siblingStanza, 2.0),
+        "textFlowStanzaSpacing was not applied between sibling line groups");
+    ok &= Expect(added(spaced.firstBlock, none.firstBlock, 3.0), "textFlowScoreMargin was not applied");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
 {
-    if (argc != 7) return 2;
+    if (argc != 8) return 2;
 
     vrv::Toolkit toolkit(false);
     toolkit.SetResourcePath("../data");
@@ -539,6 +593,8 @@ int main(int argc, char **argv)
         ok &= Expect(automaticPageContaining("paragraph-pb-before") < automaticPageContaining("paragraph-pb-after"),
             "a paragraph text page break was ignored with breaks=" + breakMode);
     }
+
+    ok &= TestTextFlowSpacing(argv[7], resourcePath);
 
     return ok ? 0 : 1;
 }

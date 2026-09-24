@@ -851,8 +851,7 @@ FunctorCode AlignSystemsFunctor::VisitSystem(System *system)
     if (!system->IsFirstInPage()) {
         // const int contentOverflow = m_prevBottomOverflow + systemAligner.GetOverflowAbove(m_doc);
         // const int clefOverflow = m_prevBottomClefOverflow + systemAligner.GetOverflowAbove(m_doc, true);
-        const int unit = m_doc->GetDrawingUnit(100);
-        m_shift -= std::max(m_systemSpacing, 2 * unit);
+        m_shift -= this->GetSystemSpacing(system);
     }
 
     system->SetDrawingYRel(m_shift);
@@ -870,6 +869,22 @@ FunctorCode AlignSystemsFunctor::VisitSystem(System *system)
     m_prevBottomClefOverflow = systemAligner.GetOverflowBelow(m_doc, true);
 
     return FUNCTOR_SIBLINGS;
+}
+
+int AlignSystemsFunctor::GetSystemSpacing(const System *system) const
+{
+    const int unit = m_doc->GetDrawingUnit(100);
+    const int systemSpacing = std::max(m_systemSpacing, 2 * unit);
+
+    // A text block appended to the score is separated from it by the text flow score margin
+    const Div *div = vrv_cast<const Div *>(system->FindDescendantByType(DIV, 1));
+    if (!div || !div->HasTextFlow()) return systemSpacing;
+    const Object *previous = system->GetParent()->GetPrevious(system, SYSTEM);
+    if (!previous || !previous->GetChildCount(MEASURE)) return systemSpacing;
+
+    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system->GetDrawingScoreDef());
+    const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
+    return static_cast<int>(std::lround(m_doc->GetOptions()->m_textFlowScoreMargin.GetValue() * lineHeight));
 }
 
 } // namespace vrv
