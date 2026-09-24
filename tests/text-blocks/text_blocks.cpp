@@ -382,7 +382,11 @@ int main(int argc, char **argv)
     ok &= Expect(coreSvg.find("id=\"joined-last-connector\"") == std::string::npos,
         "an ordinary intra-word syllable boundary rendered an unnecessary hyphen");
     ok &= Expect(coreSvg.find("id=\"wide-last-connector\"") != std::string::npos,
-        "a harmony-created syllable gap did not render its semantic hyphen");
+        "a syllable pushed apart by colliding chords did not render its semantic hyphen");
+    ok &= Expect(coreSvg.find("id=\"overhang-last-connector\"") == std::string::npos,
+        "a chord overhanging the next syllable stretched its word apart");
+    ok &= Expect(CountOccurrences(SvgGroup(coreSvg, "wide-last-connector"), "<use ") > 1,
+        "a wide intra-word gap was not filled with several hyphens");
     ok &= Expect(CountTranslateRowsBetween(coreSvg, "flow-paragraph", "nested-div") >= 3,
         "paragraph did not wrap or honor its hard break");
     ok &= Expect(CountTranslateRowsBetween(coreSvg, "stack-left", "syl-hap") >= 2,

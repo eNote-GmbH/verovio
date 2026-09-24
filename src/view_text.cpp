@@ -846,11 +846,13 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                 if (connector.row != rowIndex) continue;
                 const std::string connectorId = connector.syl ? connector.syl->GetID() + "-connector" : "";
                 dc->StartCustomGraphic("sylConnector", "", connectorId);
-                dc->StartText(this->ToDeviceContextX(phraseOriginX + connector.x), this->ToDeviceContextY(baselineY),
-                    HORIZONTALALIGNMENT_left);
-                TextDrawingParams hyphenParams;
-                this->DrawTextString(dc, U"-", hyphenParams);
-                dc->EndText();
+                for (int x : connector.positions) {
+                    dc->StartText(this->ToDeviceContextX(phraseOriginX + x), this->ToDeviceContextY(baselineY),
+                        HORIZONTALALIGNMENT_left);
+                    TextDrawingParams hyphenParams;
+                    this->DrawTextString(dc, U"-", hyphenParams);
+                    dc->EndText();
+                }
                 dc->EndCustomGraphic();
             }
         }

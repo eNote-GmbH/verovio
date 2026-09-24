@@ -238,6 +238,30 @@ std::vector<TextFlowStackRow> TextFlowLayout::BuildStackRows(Object *object) con
                 { child, U"", false, this->MeasureObject(child, m_effectiveFont, m_effectiveFont.GetPointSize()) });
         }
     }
+
+    // Whitespace at the edges of a lane (e.g., "<ptr/> |Seh") would only widen the lane
+    if (!this->PreservesWhitespace(stack)) {
+        static const std::u32string whitespace = U" \t\n\r";
+        const auto trim = [&](TextFlowSegment &segment, bool leading) {
+            if (!segment.textOverride) return;
+            if (leading) {
+                const size_t first = segment.text.find_first_not_of(whitespace);
+                segment.text.erase(0, (first == std::u32string::npos) ? segment.text.size() : first);
+            }
+            else {
+                const size_t last = segment.text.find_last_not_of(whitespace);
+                segment.text.erase((last == std::u32string::npos) ? 0 : last + 1);
+            }
+            segment.width = segment.text.empty() ? 0 : this->MeasureText(segment.text, m_effectiveFont);
+        };
+        for (TextFlowStackRow &row : rows) {
+            if (row.segments.empty()) continue;
+            trim(row.segments.front(), true);
+            trim(row.segments.back(), false);
+            std::erase_if(row.segments,
+                [](const TextFlowSegment &segment) { return segment.textOverride && segment.text.empty(); });
+        }
+    }
     return rows;
 }
 
@@ -341,6 +365,22 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
             unit.metrics.width = this->MeasureObject(object, m_effectiveFont, m_effectiveFont.GetPointSize());
             if (unit.syl) unit.lyricWidth = unit.metrics.width;
         }
+        unit.lanes.lowerRight = unit.metrics.width;
+        if (unit.stackRows.size() > 1) {
+            // A stack without lyrics (e.g., a chord before the first syllable) keeps its whole footprint
+            const TextFlowStackRow &lower = unit.stackRows.back();
+            if (lower.width > 0) {
+                unit.lanes.lowerLeft = lower.x;
+                unit.lanes.lowerRight = lower.x + lower.width;
+            }
+            unit.lanes.hasUpper = true;
+            unit.lanes.upperLeft = unit.metrics.width;
+            unit.lanes.upperRight = 0;
+            for (auto row = unit.stackRows.begin(); row != std::prev(unit.stackRows.end()); ++row) {
+                unit.lanes.upperLeft = std::min(unit.lanes.upperLeft, row->x);
+                unit.lanes.upperRight = std::max(unit.lanes.upperRight, row->x + row->width);
+            }
+        }
 
         if (previousSyl && unit.syl) {
             unit.joinsPrevious = (previousSyl->GetCon() == sylLog_CON_d)
@@ -362,6 +402,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
         unit.textOverride = true;
         unit.metrics.width = this->MeasureText(text, m_effectiveFont);
         unit.metrics.gapBefore = gapBefore;
+        unit.lanes.lowerRight = unit.metrics.width;
         units.push_back(std::move(unit));
     };
 
@@ -928,17 +969,53 @@ void TextFlowLayout::ResolveTableHeights(TextFlowTableLayoutResult &table) const
 
 std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUnit> &units) const
 {
-    std::vector<TextFlowRow> rows;
-    TextFlowRow row;
-    const auto finishRow = [&]() {
-        if (!row.items.empty() || rows.empty()) rows.push_back(row);
-        row = TextFlowRow();
+    // The lyrics and the chord lanes above them advance independently: a unit is only pushed to the right when
+    // its chord would otherwise collide with the previous one. A pushed syllable within a word leaves room for a
+    // hyphen.
+    struct RowState {
+        TextFlowRow row;
+        int lowerRight = 0;
+        int upperRight = 0;
+        bool hasUpper = false;
     };
-    const auto place = [&](size_t index, int gap) {
+    const int hyphenGap = m_hyphenWidth + m_spaceWidth;
+    const auto place = [&](RowState &state, size_t index, int gap) {
         const TextFlowUnit &unit = units[index];
-        row.items.push_back({ index, row.width + gap });
-        row.width += gap + unit.metrics.width;
-        row.rowCount = std::max(row.rowCount, std::max(1, unit.metrics.rowCount));
+        const TextFlowLanes &lanes = unit.lanes;
+        const int lowerX = state.lowerRight + gap - lanes.lowerLeft;
+        int x = lowerX;
+        if (lanes.hasUpper && state.hasUpper) {
+            x = std::max(x, state.upperRight + m_spaceWidth - lanes.upperLeft);
+        }
+        if ((x > lowerX) && unit.joinsPrevious && (gap == 0)) {
+            x = std::max(x, state.lowerRight + hyphenGap - lanes.lowerLeft);
+        }
+        if (state.row.items.empty()) x = std::max(0, x);
+        state.row.items.push_back({ index, x });
+        state.row.width = std::max(state.row.width, x + unit.metrics.width);
+        state.row.rowCount = std::max(state.row.rowCount, std::max(1, unit.metrics.rowCount));
+        state.lowerRight = x + lanes.lowerRight;
+        if (lanes.hasUpper) {
+            state.upperRight = x + lanes.upperRight;
+            state.hasUpper = true;
+        }
+    };
+
+    std::vector<TextFlowRow> rows;
+    RowState state;
+    const auto finishRow = [&]() {
+        if (!state.row.items.empty() || rows.empty()) rows.push_back(state.row);
+        state = RowState();
+    };
+    const auto wordEnd = [&](size_t start) {
+        size_t end = start + 1;
+        while ((end < units.size()) && !units[end].metrics.hardBreak && units[end].joinsPrevious) ++end;
+        return end;
+    };
+    const auto isChordOnly
+        = [](const TextFlowUnit &unit) { return unit.lanes.hasUpper && (unit.stackRows.back().width == 0); };
+    const auto fits = [&](const RowState &candidate, int trailing) {
+        return (m_availableWidth <= 0) || (candidate.row.width + trailing <= m_availableWidth);
     };
 
     size_t index = 0;
@@ -949,30 +1026,53 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
             continue;
         }
 
-        size_t end = index + 1;
-        while ((end < units.size()) && !units[end].metrics.hardBreak && units[end].joinsPrevious) ++end;
-        int wordWidth = 0;
-        for (size_t i = index; i < end; ++i) wordWidth += units[i].metrics.width;
-        const int wordGap = row.items.empty() ? 0 : units[index].metrics.gapBefore;
+        // A chord without lyrics is kept with the following word, or with the preceding one at the end of a line
+        size_t end = wordEnd(index);
+        while ((end < units.size()) && !units[end].metrics.hardBreak && isChordOnly(units[end - 1])) {
+            end = wordEnd(end);
+        }
+        size_t tail = end;
+        while ((tail < units.size()) && !units[tail].metrics.hardBreak && isChordOnly(units[tail])) ++tail;
+        if ((tail == units.size()) || units[tail].metrics.hardBreak) end = tail;
 
-        if ((m_availableWidth <= 0) || (wordWidth <= m_availableWidth)) {
-            if (!row.items.empty() && (row.width + wordGap + wordWidth > m_availableWidth)) finishRow();
-            for (size_t i = index; i < end; ++i) place(i, (i == index && !row.items.empty()) ? wordGap : 0);
+        const auto gapBefore = [&](const RowState &target, size_t i) {
+            return target.row.items.empty() ? 0 : units[i].metrics.gapBefore;
+        };
+        const auto placeWord = [&](RowState &target) {
+            for (size_t i = index; i < end; ++i) place(target, i, gapBefore(target, i));
+        };
+
+        RowState candidate = state;
+        placeWord(candidate);
+        if (fits(candidate, 0)) {
+            state = std::move(candidate);
         }
         else {
-            if (!row.items.empty()) finishRow();
-            for (size_t i = index; i < end; ++i) {
-                const int trailingConnector = (i + 1 < end) ? m_hyphenWidth : 0;
-                if (!row.items.empty() && (row.width + units[i].metrics.width + trailingConnector > m_availableWidth)) {
-                    row.width += std::min(m_hyphenWidth, std::max(0, m_availableWidth - row.width));
-                    finishRow();
+            if (!state.row.items.empty()) finishRow();
+            candidate = state;
+            placeWord(candidate);
+            if (fits(candidate, 0)) {
+                state = std::move(candidate);
+            }
+            else {
+                // The word is wider than a whole row: break it between syllables, reserving a trailing hyphen
+                for (size_t i = index; i < end; ++i) {
+                    const int trailingConnector = (i + 1 < end) ? m_hyphenWidth : 0;
+                    candidate = state;
+                    place(candidate, i, gapBefore(candidate, i));
+                    if (!state.row.items.empty() && !fits(candidate, trailingConnector)) {
+                        state.row.width += std::min(m_hyphenWidth, std::max(0, m_availableWidth - state.row.width));
+                        finishRow();
+                        candidate = state;
+                        place(candidate, i, 0);
+                    }
+                    state = std::move(candidate);
                 }
-                place(i, 0);
             }
         }
         index = end;
     }
-    if (!row.items.empty() || rows.empty()) finishRow();
+    if (!state.row.items.empty() || rows.empty()) finishRow();
     return rows;
 }
 
@@ -991,23 +1091,28 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
         }
     }
 
+    // As for lyrics under the staff, long gaps within a word get evenly spaced hyphens
+    const int dashSpace = 3 * std::max(1, m_effectiveFont.GetPointSize());
     std::vector<TextFlowConnector> connectors;
     for (size_t i = 1; i < units.size(); ++i) {
         if (!units[i].joinsPrevious || !units[i].syl || !locations[i - 1].found || !locations[i].found) continue;
         const Location &previous = locations[i - 1];
         const Location &current = locations[i];
+        const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
         if (previous.row != current.row) {
-            const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
             const int connectorX = rows[previous.row].width - m_hyphenWidth;
-            if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, connectorX });
+            if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, { connectorX } });
             continue;
         }
-        const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
-        const int currentLeft = current.x + units[i].lyricX;
-        const int gap = currentLeft - previousRight;
-        if (gap >= m_hyphenWidth) {
-            connectors.push_back({ units[i].syl, current.row, previousRight + (gap - m_hyphenWidth) / 2 });
+        const int gap = current.x + units[i].lyricX - previousRight;
+        if (gap < m_hyphenWidth) continue;
+        const int count = std::max(1, gap / dashSpace);
+        TextFlowConnector connector{ units[i].syl, current.row, {} };
+        for (int dash = 0; dash < count; ++dash) {
+            const int center = previousRight + gap * (2 * dash + 1) / (2 * count);
+            connector.positions.push_back(center - m_hyphenWidth / 2);
         }
+        connectors.push_back(std::move(connector));
     }
     return connectors;
 }

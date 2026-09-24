@@ -59,6 +59,18 @@ struct TextFlowStackRow {
     int x = 0;
 };
 
+/**
+ * Horizontal extent of a unit's lanes relative to its left edge. The lower lane
+ * holds the lyrics; the upper lanes of a stack (e.g., chords) may overhang it.
+ */
+struct TextFlowLanes {
+    int lowerLeft = 0;
+    int lowerRight = 0;
+    bool hasUpper = false;
+    int upperLeft = 0;
+    int upperRight = 0;
+};
+
 struct TextFlowUnit {
     Object *object = nullptr;
     std::u32string text;
@@ -69,13 +81,15 @@ struct TextFlowUnit {
     int lyricX = 0;
     int lyricWidth = 0;
     std::vector<TextFlowStackRow> stackRows;
+    TextFlowLanes lanes;
     TextFlowItemMetrics metrics;
 };
 
+/** The hyphens joining a syllable to the previous one within a word */
 struct TextFlowConnector {
     Syl *syl = nullptr;
     size_t row = 0;
-    int x = 0;
+    std::vector<int> positions;
 };
 
 struct TextFlowLayoutResult {

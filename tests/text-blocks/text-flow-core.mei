@@ -51,7 +51,10 @@
                 </l>
                 <l xml:id="connector-line" n="2">
                   <syl xml:id="joined-first" con="d" wordpos="i">ha</syl><syl xml:id="joined-last" wordpos="t">ben</syl>
-                  <syl xml:id="wide-first" con="d" wordpos="i"><stack xml:id="wide-connector-stack" delim="|" align="left"><ptr xml:id="ptr-harm-wide" target="#harm-wide"/>|Teu</stack></syl><syl xml:id="wide-last" wordpos="t">fel</syl>
+                  <syl xml:id="wide-first" con="d" wordpos="i"><stack xml:id="wide-connector-stack" delim="|" align="left"><ptr xml:id="ptr-harm-wide" target="#harm-wide"/>|Teu</stack></syl><syl xml:id="wide-last" wordpos="t"><stack delim="|">G|fel</stack></syl>
+                </l>
+                <l xml:id="overhang-line" n="3">
+                  <syl xml:id="overhang-first" con="d" wordpos="i"><stack delim="|"><ptr target="#harm-wide"/>|Teu</stack></syl><syl xml:id="overhang-last" wordpos="t">fel</syl>
                 </l>
               </lg>
             </div>
