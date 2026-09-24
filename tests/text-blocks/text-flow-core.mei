@@ -56,6 +56,11 @@
                 <l xml:id="overhang-line" n="3">
                   <syl xml:id="overhang-first" con="d" wordpos="i"><stack delim="|"><ptr target="#harm-wide"/>|Teu</stack></syl><syl xml:id="overhang-last" wordpos="t">fel</syl>
                 </l>
+                <l xml:id="interrupted-line" n="4">
+                  <syl xml:id="interrupted-first" con="d" wordpos="i">Le</syl><syl><stack delim="|"><ptr target="#harm-wide"/>|</stack></syl><syl xml:id="interrupted-last" wordpos="t">ben</syl>
+                </l>
+                <l xml:id="split-line-start" n="5"><syl xml:id="split-first" con="d" wordpos="i">Je</syl></l>
+                <l xml:id="split-line-end" n="6"><syl xml:id="split-last" wordpos="t">rusalem</syl></l>
               </lg>
             </div>
           </section>

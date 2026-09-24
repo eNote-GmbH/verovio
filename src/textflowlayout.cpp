@@ -44,6 +44,13 @@ namespace {
         return false;
     }
 
+    // Whether the word of a syllable continues with the next syllable
+    bool ContinuesWord(const Syl *syl)
+    {
+        return (syl->GetCon() == sylLog_CON_d) || (syl->GetWordpos() == sylLog_WORDPOS_i)
+            || (syl->GetWordpos() == sylLog_WORDPOS_m);
+    }
+
 } // namespace
 
 TextFlowLayout::TextFlowLayout(
@@ -332,6 +339,8 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
 {
     std::vector<TextFlowUnit> units;
     Syl *previousSyl = nullptr;
+    // The previous syllable with lyrics, which decides whether a syllable continues a word
+    Syl *previousLyricSyl = nullptr;
     bool pendingSpace = false;
 
     const auto addSemanticUnit = [&](Object *object) {
@@ -383,15 +392,18 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
         }
 
         if (previousSyl && unit.syl) {
-            unit.joinsPrevious = (previousSyl->GetCon() == sylLog_CON_d)
-                || (previousSyl->GetWordpos() == sylLog_WORDPOS_i) || (previousSyl->GetWordpos() == sylLog_WORDPOS_m);
+            unit.joinsPrevious = previousLyricSyl && ContinuesWord(previousLyricSyl);
             unit.metrics.gapBefore = unit.joinsPrevious ? 0 : m_spaceWidth;
         }
         else if (pendingSpace) {
             unit.metrics.gapBefore = m_spaceWidth;
         }
+        // A chord without lyrics is transparent to the word it interrupts: the following syllable joins the one
+        // before the chord
+        const bool chordOnly = unit.IsChordOnly();
         units.push_back(std::move(unit));
         previousSyl = units.back().syl;
+        if (!chordOnly) previousLyricSyl = previousSyl;
         pendingSpace = false;
     };
 
@@ -416,6 +428,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
                 unit.metrics.hardBreak = true;
                 units.push_back(std::move(unit));
                 previousSyl = nullptr;
+                previousLyricSyl = nullptr;
                 pendingSpace = false;
             }
             else if (child->Is(TEXT)) {
@@ -436,6 +449,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
                     }
                     pendingSpace = false;
                     previousSyl = nullptr;
+                    previousLyricSyl = nullptr;
                     continue;
                 }
 
@@ -450,6 +464,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
                         }
                         pendingSpace = true;
                         previousSyl = nullptr;
+                        previousLyricSyl = nullptr;
                     }
                     else {
                         word.push_back(character);
@@ -459,6 +474,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
                     addTextUnit(child, word, pendingSpace ? m_spaceWidth : 0);
                     pendingSpace = false;
                     previousSyl = nullptr;
+                    previousLyricSyl = nullptr;
                 }
             }
             else if (child->Is(SYL) || child->Is(STACK) || child->IsTextElement()) {
@@ -975,6 +991,8 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
     struct RowState {
         TextFlowRow row;
         int lowerRight = 0;
+        // The end of the last lyrics, which chords without lyrics do not advance
+        int lyricRight = 0;
         int upperRight = 0;
         bool hasUpper = false;
     };
@@ -987,20 +1005,22 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
         if (lanes.hasUpper && state.hasUpper) {
             x = std::max(x, state.upperRight + m_spaceWidth - lanes.upperLeft);
         }
-        if ((x > lowerX) && unit.joinsPrevious && (gap == 0)) {
-            x = std::max(x, state.lowerRight + hyphenGap - lanes.lowerLeft);
+        if (unit.joinsPrevious && (gap == 0) && !unit.IsChordOnly() && (x + lanes.lowerLeft > state.lyricRight)) {
+            x = std::max(x, state.lyricRight + hyphenGap - lanes.lowerLeft);
         }
         if (state.row.items.empty()) x = std::max(0, x);
         state.row.items.push_back({ index, x });
         state.row.width = std::max(state.row.width, x + unit.metrics.width);
         state.row.rowCount = std::max(state.row.rowCount, std::max(1, unit.metrics.rowCount));
         state.lowerRight = x + lanes.lowerRight;
+        if (!unit.IsChordOnly()) state.lyricRight = state.lowerRight;
         if (lanes.hasUpper) {
             state.upperRight = x + lanes.upperRight;
             state.hasUpper = true;
         }
     };
 
+    const size_t trailingSyllable = this->GetTrailingSyllable(units);
     std::vector<TextFlowRow> rows;
     RowState state;
     const auto finishRow = [&]() {
@@ -1012,8 +1032,6 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
         while ((end < units.size()) && !units[end].metrics.hardBreak && units[end].joinsPrevious) ++end;
         return end;
     };
-    const auto isChordOnly
-        = [](const TextFlowUnit &unit) { return unit.lanes.hasUpper && (unit.stackRows.back().width == 0); };
     const auto fits = [&](const RowState &candidate, int trailing) {
         return (m_availableWidth <= 0) || (candidate.row.width + trailing <= m_availableWidth);
     };
@@ -1028,11 +1046,11 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
 
         // A chord without lyrics is kept with the following word, or with the preceding one at the end of a line
         size_t end = wordEnd(index);
-        while ((end < units.size()) && !units[end].metrics.hardBreak && isChordOnly(units[end - 1])) {
+        while ((end < units.size()) && !units[end].metrics.hardBreak && units[end - 1].IsChordOnly()) {
             end = wordEnd(end);
         }
         size_t tail = end;
-        while ((tail < units.size()) && !units[tail].metrics.hardBreak && isChordOnly(units[tail])) ++tail;
+        while ((tail < units.size()) && !units[tail].metrics.hardBreak && units[tail].IsChordOnly()) ++tail;
         if ((tail == units.size()) || units[tail].metrics.hardBreak) end = tail;
 
         const auto gapBefore = [&](const RowState &target, size_t i) {
@@ -1041,23 +1059,26 @@ std::vector<TextFlowRow> TextFlowLayout::WrapUnits(const std::vector<TextFlowUni
         const auto placeWord = [&](RowState &target) {
             for (size_t i = index; i < end; ++i) place(target, i, gapBefore(target, i));
         };
+        // The last word of the block may need room for a hyphen continuing it on the next line
+        const int trailing = ((index <= trailingSyllable) && (trailingSyllable < end)) ? hyphenGap : 0;
 
         RowState candidate = state;
         placeWord(candidate);
-        if (fits(candidate, 0)) {
+        if (fits(candidate, trailing)) {
             state = std::move(candidate);
         }
         else {
             if (!state.row.items.empty()) finishRow();
             candidate = state;
             placeWord(candidate);
-            if (fits(candidate, 0)) {
+            if (fits(candidate, trailing)) {
                 state = std::move(candidate);
             }
             else {
                 // The word is wider than a whole row: break it between syllables, reserving a trailing hyphen
                 for (size_t i = index; i < end; ++i) {
-                    const int trailingConnector = (i + 1 < end) ? m_hyphenWidth : 0;
+                    const int trailingConnector
+                        = (i + 1 < end) ? m_hyphenWidth : ((i == trailingSyllable) ? hyphenGap : 0);
                     candidate = state;
                     place(candidate, i, gapBefore(candidate, i));
                     if (!state.row.items.empty() && !fits(candidate, trailingConnector)) {
@@ -1095,10 +1116,14 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
     const int dashSpace = 3 * std::max(1, m_effectiveFont.GetPointSize());
     std::vector<TextFlowConnector> connectors;
     for (size_t i = 1; i < units.size(); ++i) {
-        if (!units[i].joinsPrevious || !units[i].syl || !locations[i - 1].found || !locations[i].found) continue;
-        const Location &previous = locations[i - 1];
+        if (!units[i].joinsPrevious || !units[i].syl || units[i].IsChordOnly()) continue;
+        // Connect to the previous syllable with lyrics, spanning any chords between them
+        size_t p = i - 1;
+        while ((p > 0) && units[p].IsChordOnly()) --p;
+        if (units[p].IsChordOnly() || !locations[p].found || !locations[i].found) continue;
+        const Location &previous = locations[p];
         const Location &current = locations[i];
-        const int previousRight = previous.x + units[i - 1].lyricX + units[i - 1].lyricWidth;
+        const int previousRight = previous.x + units[p].lyricX + units[p].lyricWidth;
         if (previous.row != current.row) {
             const int connectorX = rows[previous.row].width - m_hyphenWidth;
             if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, { connectorX } });
@@ -1114,7 +1139,26 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
         }
         connectors.push_back(std::move(connector));
     }
+
+    const size_t trailingSyllable = this->GetTrailingSyllable(units);
+    if ((trailingSyllable < units.size()) && locations[trailingSyllable].found) {
+        const Location &last = locations[trailingSyllable];
+        const TextFlowUnit &unit = units[trailingSyllable];
+        const int x = last.x + unit.lyricX + unit.lyricWidth + m_spaceWidth / 2;
+        connectors.push_back({ unit.syl, last.row, { x }, true });
+        rows[last.row].width = std::max(rows[last.row].width, x + m_hyphenWidth);
+    }
     return connectors;
+}
+
+size_t TextFlowLayout::GetTrailingSyllable(const std::vector<TextFlowUnit> &units) const
+{
+    for (size_t i = units.size(); i > 0; --i) {
+        const TextFlowUnit &unit = units[i - 1];
+        if (unit.IsChordOnly()) continue;
+        return (unit.syl && ContinuesWord(unit.syl)) ? i - 1 : units.size();
+    }
+    return units.size();
 }
 
 std::vector<TextFlowRow> TextFlowLayout::Wrap(const std::vector<TextFlowItemMetrics> &items, int availableWidth)

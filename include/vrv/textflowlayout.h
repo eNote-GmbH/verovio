@@ -83,6 +83,9 @@ struct TextFlowUnit {
     std::vector<TextFlowStackRow> stackRows;
     TextFlowLanes lanes;
     TextFlowItemMetrics metrics;
+
+    /** A stack with an empty lyric lane, e.g., a chord between two syllables */
+    bool IsChordOnly() const { return lanes.hasUpper && (stackRows.back().width == 0); }
 };
 
 /** The hyphens joining a syllable to the previous one within a word */
@@ -90,6 +93,8 @@ struct TextFlowConnector {
     Syl *syl = nullptr;
     size_t row = 0;
     std::vector<int> positions;
+    /** A hyphen after the last syllable of a line whose word continues on the next line */
+    bool trailing = false;
 };
 
 struct TextFlowLayoutResult {
@@ -219,6 +224,8 @@ private:
     void CollectBreakUnits(const TextFlowLayoutNode &node, int parentY, std::vector<TextFlowBreakUnit> &units,
         int &pendingPageBreaks) const;
     std::vector<TextFlowRow> WrapUnits(const std::vector<TextFlowUnit> &units) const;
+    /** The index of the last syllable if it continues a word beyond the block, or units.size() otherwise */
+    size_t GetTrailingSyllable(const std::vector<TextFlowUnit> &units) const;
     std::vector<TextFlowConnector> PositionConnectors(
         const std::vector<TextFlowUnit> &units, std::vector<TextFlowRow> &rows) const;
 

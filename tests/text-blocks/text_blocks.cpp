@@ -225,6 +225,62 @@ bool TestTextFlowPagination()
     return ok;
 }
 
+// The horizontal extent (left, right) of the first bounding box drawn after the element with the given id
+std::pair<double, double> FirstBoundingBoxX(const std::string &svg, const std::string &id)
+{
+    size_t position = svg.find("id=\"" + id + "\"");
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find("<rect x=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    const double x = std::strtod(svg.c_str() + position + 9, nullptr);
+    position = svg.find(" width=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    return { x, x + std::strtod(svg.c_str() + position + 8, nullptr) };
+}
+
+// The x positions of the glyphs drawn within the element with the given id
+std::vector<double> GlyphXs(const std::string &svg, const std::string &id)
+{
+    const std::string group = SvgGroup(svg, id);
+    std::vector<double> xs;
+    size_t position = 0;
+    while ((position = group.find("translate(", position)) != std::string::npos) {
+        position += std::string("translate(").size();
+        xs.push_back(std::strtod(group.c_str() + position, nullptr));
+    }
+    return xs;
+}
+
+bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePath)
+{
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    bool ok = Expect(toolkit.SetOptions(R"({"svgBoundingBoxes":true})"), "bounding-box option was rejected");
+    ok &= Expect(toolkit.LoadFile(file), "core text-flow fixture did not load");
+    const std::string svg = RenderAllPages(toolkit);
+
+    // A chord without lyrics between two syllables of a word: the hyphens span the gap between the syllables
+    const double firstRight = FirstBoundingBoxX(svg, "interrupted-first").second;
+    const double lastLeft = FirstBoundingBoxX(svg, "interrupted-last").first;
+    const std::vector<double> hyphens = GlyphXs(svg, "interrupted-last-connector");
+    ok &= Expect(hyphens.size() > 1, "the gap left by a chord within a word was not filled with several hyphens");
+    if (hyphens.size() < 2) return false;
+    // With evenly distributed hyphens, the margins before the first and after the last add up to their spacing,
+    // independently of the hyphen width
+    const double spacing = hyphens[1] - hyphens[0];
+    const double margins = (hyphens.front() - firstRight) + (lastLeft - hyphens.back());
+    ok &= Expect((hyphens.front() > firstRight) && (hyphens.back() < lastLeft) && (std::abs(margins - spacing) <= 3.0),
+        "the hyphens were not distributed between the syllables around a chord");
+
+    // A word split across two lines of a stanza ends the first line with a hyphen
+    const std::vector<double> trailing = GlyphXs(svg, "split-first-trailing-connector");
+    ok &= Expect((trailing.size() == 1) && (trailing.front() > FirstBoundingBoxX(svg, "split-first").second),
+        "a word continuing on the next line did not end its line with a hyphen");
+    ok &= Expect(svg.find("id=\"split-last-connector\"") == std::string::npos,
+        "the continuation of a split word was preceded by a hyphen on its own line");
+    return ok;
+}
+
 struct TextFlowSpacingMetrics {
     double chordLane = 0.0;
     double lyricLine = 0.0;
@@ -599,6 +655,7 @@ int main(int argc, char **argv)
     }
 
     ok &= TestTextFlowSpacing(argv[7], resourcePath);
+    ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
 
     return ok ? 0 : 1;
 }

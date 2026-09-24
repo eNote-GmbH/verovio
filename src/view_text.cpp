@@ -844,7 +844,9 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             const size_t rowIndex = static_cast<size_t>(&row - result.rows.data());
             for (const TextFlowConnector &connector : result.connectors) {
                 if (connector.row != rowIndex) continue;
-                const std::string connectorId = connector.syl ? connector.syl->GetID() + "-connector" : "";
+                const std::string connectorId = connector.syl
+                    ? connector.syl->GetID() + (connector.trailing ? "-trailing-connector" : "-connector")
+                    : "";
                 dc->StartCustomGraphic("sylConnector", "", connectorId);
                 for (int x : connector.positions) {
                     dc->StartText(this->ToDeviceContextX(phraseOriginX + x), this->ToDeviceContextY(baselineY),
