@@ -847,6 +847,8 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                     ? connector.syl->GetID() + (connector.trailing ? "-trailing-connector" : "-connector")
                     : "";
                 dc->StartCustomGraphic("sylConnector", "", connectorId);
+                FontInfo connectorFont = connector.font;
+                dc->SetFont(&connectorFont);
                 for (int x : connector.positions) {
                     dc->StartText(this->ToDeviceContextX(phraseOriginX + x), this->ToDeviceContextY(baselineY),
                         HORIZONTALALIGNMENT_left);
@@ -854,6 +856,7 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                     this->DrawTextString(dc, U"-", hyphenParams);
                     dc->EndText();
                 }
+                dc->ResetFont();
                 dc->EndCustomGraphic();
             }
         }

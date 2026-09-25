@@ -1167,18 +1167,22 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
         const Location &previous = locations[p];
         const Location &current = locations[i];
         const int previousRight = previous.x + units[p].lyricX + units[p].lyricWidth;
+        const FontInfo font = this->GetLyricFont(units[p]);
+        const int hyphenWidth = std::max(1, this->MeasureText(U"-", font));
         if (previous.row != current.row) {
-            const int connectorX = rows[previous.row].width - m_hyphenWidth;
-            if (connectorX >= previousRight) connectors.push_back({ units[i].syl, previous.row, { connectorX } });
+            const int connectorX = rows[previous.row].width - hyphenWidth;
+            if (connectorX >= previousRight) {
+                connectors.push_back({ units[i].syl, previous.row, { connectorX }, false, font });
+            }
             continue;
         }
         const int gap = current.x + units[i].lyricX - previousRight;
-        if (gap < m_hyphenWidth) continue;
+        if (gap < hyphenWidth) continue;
         const int count = std::max(1, gap / dashSpace);
-        TextFlowConnector connector{ units[i].syl, current.row, {} };
+        TextFlowConnector connector{ units[i].syl, current.row, {}, false, font };
         for (int dash = 0; dash < count; ++dash) {
             const int center = previousRight + gap * (2 * dash + 1) / (2 * count);
-            connector.positions.push_back(center - m_hyphenWidth / 2);
+            connector.positions.push_back(center - hyphenWidth / 2);
         }
         connectors.push_back(std::move(connector));
     }
@@ -1188,10 +1192,20 @@ std::vector<TextFlowConnector> TextFlowLayout::PositionConnectors(
         const Location &last = locations[trailingSyllable];
         const TextFlowUnit &unit = units[trailingSyllable];
         const int x = last.x + unit.lyricX + unit.lyricWidth + m_spaceWidth / 2;
-        connectors.push_back({ unit.syl, last.row, { x }, true });
-        rows[last.row].width = std::max(rows[last.row].width, x + m_hyphenWidth);
+        const FontInfo font = this->GetLyricFont(unit);
+        connectors.push_back({ unit.syl, last.row, { x }, true, font });
+        rows[last.row].width = std::max(rows[last.row].width, x + this->MeasureText(U"-", font));
     }
     return connectors;
+}
+
+FontInfo TextFlowLayout::GetLyricFont(const TextFlowUnit &unit) const
+{
+    Object *lyrics = unit.syl ? unit.syl : unit.object;
+    if (!lyrics) return m_effectiveFont;
+    const ListOfObjects texts = lyrics->FindAllDescendantsByType(TEXT);
+    if (texts.empty()) return m_effectiveFont;
+    return this->GetBlockFont(texts.back()->GetParent());
 }
 
 size_t TextFlowLayout::GetTrailingSyllable(const std::vector<TextFlowUnit> &units) const

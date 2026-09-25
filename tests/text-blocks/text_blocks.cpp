@@ -266,6 +266,19 @@ std::vector<double> GlyphXs(const std::string &svg, const std::string &id)
     return xs;
 }
 
+// The scale factors of the glyphs drawn within the element with the given id
+std::vector<double> GlyphScales(const std::string &svg, const std::string &id)
+{
+    const std::string group = SvgGroup(svg, id);
+    std::vector<double> scales;
+    size_t position = 0;
+    while ((position = group.find("scale(", position)) != std::string::npos) {
+        position += std::string("scale(").size();
+        scales.push_back(std::strtod(group.c_str() + position, nullptr));
+    }
+    return scales;
+}
+
 bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePath)
 {
     vrv::Toolkit toolkit(false);
@@ -299,6 +312,13 @@ bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePat
     const double largeTop = FirstBoundingBoxY(svg, "large-syl").first;
     ok &= Expect((descenderBottom > 0.0) && (largeTop > 0.0) && (descenderBottom <= largeTop),
         "larger text within a line collided with the line above");
+
+    // Hyphens are drawn in the font of the syllable before them
+    const std::vector<double> syllableScales = GlyphScales(svg, "large-split");
+    const std::vector<double> hyphenScales = GlyphScales(svg, "large-split-trailing-connector");
+    ok &= Expect(!syllableScales.empty() && (hyphenScales.size() == 1)
+            && (std::abs(hyphenScales.front() - syllableScales.front()) < 1e-6),
+        "a hyphen was not drawn in the font of the syllable before it");
     return ok;
 }
 
