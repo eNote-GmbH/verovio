@@ -61,6 +61,8 @@
                 </l>
                 <l xml:id="split-line-start" n="5"><syl xml:id="split-first" con="d" wordpos="i">Je</syl></l>
                 <l xml:id="split-line-end" n="6"><syl xml:id="split-last" wordpos="t">rusalem</syl></l>
+                <l xml:id="descender-line" n="7"><syl xml:id="descender-syl">gypq</syl></l>
+                <l xml:id="large-line" n="8"><syl xml:id="large-syl"><rend fontsize="200%">GROSS</rend></syl></l>
               </lg>
             </div>
           </section>

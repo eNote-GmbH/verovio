@@ -188,6 +188,36 @@ int TextFlowLayout::MeasureObject(Object *object, const FontInfo &inheritedFont,
     return width;
 }
 
+int TextFlowLayout::GetAscent(const FontInfo &font) const
+{
+    FontInfo measuredFont = font;
+    return std::min(this->GetLineHeight(font), m_doc->GetTextGlyphHeight(U'I', &measuredFont, false));
+}
+
+void TextFlowLayout::MeasureExtent(
+    Object *object, const FontInfo &inheritedFont, int inheritedPointSize, int &ascent, int &descent) const
+{
+    if (object->Is(TEXT)) {
+        const int textAscent = this->GetAscent(inheritedFont);
+        ascent = std::max(ascent, textAscent);
+        descent = std::max(descent, this->GetLineHeight(inheritedFont) - textAscent);
+        return;
+    }
+
+    if (Harm *harm = this->GetHarm(object)) {
+        for (Object *child : harm->GetChildren()) {
+            this->MeasureExtent(child, inheritedFont, inheritedPointSize, ascent, descent);
+        }
+        return;
+    }
+
+    FontInfo font = this->GetStyledFont(object, inheritedFont, inheritedPointSize);
+    const int pointSize = (font.GetPointSize() > 0) ? font.GetPointSize() : inheritedPointSize;
+    // Superscripts and subscripts are designed to fit within the line of the surrounding text
+    if (font.GetSupSubScript()) font = inheritedFont;
+    for (Object *child : object->GetChildren()) this->MeasureExtent(child, font, pointSize, ascent, descent);
+}
+
 bool TextFlowLayout::PreservesWhitespace(const Object *object) const
 {
     for (const Object *current = object; current; current = current->GetParent()) {
@@ -401,6 +431,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
         // A chord without lyrics is transparent to the word it interrupts: the following syllable joins the one
         // before the chord
         const bool chordOnly = unit.IsChordOnly();
+        this->MeasureExtent(object, m_effectiveFont, m_effectiveFont.GetPointSize(), unit.ascent, unit.descent);
         units.push_back(std::move(unit));
         previousSyl = units.back().syl;
         if (!chordOnly) previousLyricSyl = previousSyl;
@@ -503,7 +534,6 @@ TextFlowLayoutResult TextFlowLayout::LayoutInline(Object *block, const std::vect
     m_hyphenWidth = std::max(1, this->MeasureText(U"-", m_effectiveFont));
     result.font = m_effectiveFont;
     result.lineHeight = this->GetLineHeight(m_effectiveFont);
-    result.ascent = std::min(result.lineHeight, m_doc->GetTextGlyphHeight(U'I', &m_effectiveFont, false));
     result.units = this->MakeUnits(block, children);
     result.rows = this->WrapUnits(result.units);
     result.connectors = this->PositionConnectors(result.units, result.rows);
@@ -514,13 +544,26 @@ TextFlowLayoutResult TextFlowLayout::LayoutInline(Object *block, const std::vect
     const double laneFactor = lyricLine ? options->m_textFlowChordLaneSpacing.GetValue() : 0.0;
     const double rowFactor = lyricLine ? options->m_textFlowLineSpacing.GetValue() : 0.0;
     const int rowGap = static_cast<int>(std::lround(rowFactor * result.lineHeight));
-    result.lanePitch = result.lineHeight + static_cast<int>(std::lround(laneFactor * result.lineHeight));
+    const int laneGap = static_cast<int>(std::lround(laneFactor * result.lineHeight));
 
+    // Each row is at least as high as a line of the block font and grows with larger text within it
+    const int blockAscent = this->GetAscent(m_effectiveFont);
+    const int blockDescent = result.lineHeight - blockAscent;
     for (TextFlowRow &row : result.rows) {
+        int ascent = blockAscent;
+        int descent = blockDescent;
+        for (const TextFlowPlacedItem &item : row.items) {
+            ascent = std::max(ascent, result.units[item.item].ascent);
+            descent = std::max(descent, result.units[item.item].descent);
+        }
+        row.ascent = ascent;
+        row.lineHeight = ascent + descent;
+        row.lanePitch = row.lineHeight + laneGap;
+
         if (&row != &result.rows.front()) result.height += rowGap;
         row.y = result.height;
         result.width = std::max(result.width, row.width);
-        result.height += result.lineHeight + (std::max(1, row.rowCount) - 1) * result.lanePitch;
+        result.height += row.lineHeight + (std::max(1, row.rowCount) - 1) * row.lanePitch;
     }
     return result;
 }
@@ -721,7 +764,7 @@ void TextFlowLayout::CollectBreakUnits(
     else if (node.kind == TextFlowLayoutNodeKind::Phrase) {
         // The spacing between rows is not part of either row, so that it vanishes at a page break
         for (const TextFlowRow &row : node.phrase.rows) {
-            addUnit(nodeY + row.y, node.phrase.lineHeight + (std::max(1, row.rowCount) - 1) * node.phrase.lanePitch);
+            addUnit(nodeY + row.y, row.lineHeight + (std::max(1, row.rowCount) - 1) * row.lanePitch);
         }
     }
     else if (node.kind == TextFlowLayoutNodeKind::Figure) {

@@ -42,8 +42,14 @@ struct TextFlowRow {
     int width = 0;
     /** Number of stacked lanes (e.g., a chord lane above a lyric line) */
     int rowCount = 1;
-    /** Offset of the row's top lane baseline from the top of the phrase */
+    /** Offset of the top of the row from the top of the phrase */
     int y = 0;
+    /** Distance from the top of the row to the baseline of its top lane */
+    int ascent = 0;
+    /** Height of a single lane, from the fonts actually used in the row */
+    int lineHeight = 0;
+    /** Baseline distance between the stacked lanes of the row */
+    int lanePitch = 0;
 };
 
 struct TextFlowSegment {
@@ -83,6 +89,9 @@ struct TextFlowUnit {
     std::vector<TextFlowStackRow> stackRows;
     TextFlowLanes lanes;
     TextFlowItemMetrics metrics;
+    /** Vertical extent of the unit's text above and below its baseline */
+    int ascent = 0;
+    int descent = 0;
 
     /** A stack with an empty lyric lane, e.g., a chord between two syllables */
     bool IsChordOnly() const { return lanes.hasUpper && (stackRows.back().width == 0); }
@@ -106,10 +115,6 @@ struct TextFlowLayoutResult {
     int width = 0;
     int height = 0;
     int lineHeight = 0;
-    /** Baseline distance between the stacked lanes of a row */
-    int lanePitch = 0;
-    /** Distance from the top of a row to the baseline of its top lane */
-    int ascent = 0;
 };
 
 struct TextFlowTableCellLayout {
@@ -206,6 +211,9 @@ private:
     std::u32string GetText(Object *object) const;
     int MeasureText(const std::u32string &text, const FontInfo &font) const;
     int MeasureObject(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
+    int GetAscent(const FontInfo &font) const;
+    void MeasureExtent(
+        Object *object, const FontInfo &inheritedFont, int inheritedPointSize, int &ascent, int &descent) const;
     FontInfo GetStyledFont(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
     FontInfo GetBlockFont(Object *block) const;
     int GetLineHeight(const FontInfo &font) const;

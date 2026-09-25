@@ -804,10 +804,9 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
         for (const TextFlowRow &row : result.rows) {
             // Only the rows within the page fragment of the div are drawn
             const int rowDocumentY = phraseDocumentY + row.y;
-            const int rowHeight = result.lineHeight + (std::max(1, row.rowCount) - 1) * result.lanePitch;
+            const int rowHeight = row.lineHeight + (std::max(1, row.rowCount) - 1) * row.lanePitch;
             if ((rowDocumentY >= fragmentEnd) || (rowDocumentY + rowHeight <= fragmentStart)) continue;
-            const int baselineY
-                = phraseOriginY - row.y - result.ascent - (std::max(1, row.rowCount) - 1) * result.lanePitch;
+            const int baselineY = phraseOriginY - row.y - row.ascent - (std::max(1, row.rowCount) - 1) * row.lanePitch;
             for (const TextFlowPlacedItem &placement : row.items) {
                 const TextFlowUnit &unit = result.units.at(placement.item);
                 const int itemX = phraseOriginX + placement.x;
@@ -818,11 +817,11 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
                             textFlowSyl->SetTextFlowDrawingY(baselineY);
                         }
                         dc->StartTextGraphic(unit.syl, "", unit.syl->GetID());
-                        drawStack(unit.stack, unit, itemX, baselineY, result.lanePitch, phraseFont.GetPointSize());
+                        drawStack(unit.stack, unit, itemX, baselineY, row.lanePitch, phraseFont.GetPointSize());
                         dc->EndTextGraphic(unit.syl, this);
                     }
                     else {
-                        drawStack(unit.stack, unit, itemX, baselineY, result.lanePitch, phraseFont.GetPointSize());
+                        drawStack(unit.stack, unit, itemX, baselineY, row.lanePitch, phraseFont.GetPointSize());
                     }
                     continue;
                 }

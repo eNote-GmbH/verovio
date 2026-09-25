@@ -238,6 +238,21 @@ std::pair<double, double> FirstBoundingBoxX(const std::string &svg, const std::s
     return { x, x + std::strtod(svg.c_str() + position + 8, nullptr) };
 }
 
+// The vertical extent (top, bottom) of the first bounding box drawn after the element with the given id
+std::pair<double, double> FirstBoundingBoxY(const std::string &svg, const std::string &id)
+{
+    size_t position = svg.find("id=\"" + id + "\"");
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find("<rect x=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find(" y=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    const double y = std::strtod(svg.c_str() + position + 4, nullptr);
+    position = svg.find(" height=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    return { y, y + std::strtod(svg.c_str() + position + 9, nullptr) };
+}
+
 // The x positions of the glyphs drawn within the element with the given id
 std::vector<double> GlyphXs(const std::string &svg, const std::string &id)
 {
@@ -278,6 +293,12 @@ bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePat
         "a word continuing on the next line did not end its line with a hyphen");
     ok &= Expect(svg.find("id=\"split-last-connector\"") == std::string::npos,
         "the continuation of a split word was preceded by a hyphen on its own line");
+
+    // A line grows with larger text within it instead of assuming the height of the block font
+    const double descenderBottom = FirstBoundingBoxY(svg, "descender-syl").second;
+    const double largeTop = FirstBoundingBoxY(svg, "large-syl").first;
+    ok &= Expect((descenderBottom > 0.0) && (largeTop > 0.0) && (descenderBottom <= largeTop),
+        "larger text within a line collided with the line above");
     return ok;
 }
 
