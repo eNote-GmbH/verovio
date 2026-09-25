@@ -2191,7 +2191,9 @@ int Doc::GetFontPointSize(const data_FONTSIZE &fontSize, int staffSize, int inhe
 FontInfo Doc::GetTextFlowFont(const Object *textFlow)
 {
     const Score *score = this->GetCorrespondingScore(textFlow);
-    return this->GetDrawingTextFont(100, score ? score->GetScoreDef() : nullptr);
+    FontInfo font = this->GetDrawingTextFont(100, score ? score->GetScoreDef() : nullptr);
+    font.SetPointSize(std::round(font.GetPointSize() * m_options->m_textFlowScale.GetValue()));
+    return font;
 }
 
 FontInfo Doc::GetDrawingTextFont(int staffSize, const ScoreDefInterface *style, bool lyric)

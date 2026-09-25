@@ -434,6 +434,36 @@ bool TestTextFlowSpacing(const char *file, const std::string &resourcePath)
     return ok;
 }
 
+bool TestTextFlowScale(const char *file, const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &options) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(options);
+        toolkit.LoadFile(file);
+        return RenderAllPages(toolkit);
+    };
+    const std::string plain = render(R"({"textFlowChordLaneSpacing":0})");
+    const std::string scaled = render(R"({"textFlowChordLaneSpacing":0,"textFlowScale":0.8})");
+    const auto scale = [](const std::string &svg, const std::string &id) {
+        const std::vector<double> scales = GlyphScales(svg, id);
+        return scales.empty() ? 0.0 : scales.front();
+    };
+    const auto lineHeight = [](const std::string &svg) {
+        return FirstTranslateYAfter(svg, "stanza-1-line-1-lyric") - FirstTranslateYAfter(svg, "stanza-1-chord");
+    };
+
+    bool ok = Expect(scale(plain, "stanza-1-line-1-lyric") > 0.0, "the text-flow scale fixture was not rendered");
+    ok &= Expect(std::abs(scale(scaled, "stanza-1-line-1-lyric") / scale(plain, "stanza-1-line-1-lyric") - 0.8) < 0.02,
+        "textFlowScale was not applied to text-block lyrics");
+    // The line height, and with it every text-flow spacing, follows the scaled font
+    ok &= Expect(std::abs(lineHeight(scaled) / lineHeight(plain) - 0.8) < 0.02,
+        "textFlowScale was not applied to the text-block line height");
+    ok &= Expect(std::abs(scale(scaled, "harm-1") - scale(plain, "harm-1")) < 1e-6,
+        "textFlowScale changed the size of text in the score");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -756,6 +786,7 @@ int main(int argc, char **argv)
     }
 
     ok &= TestTextFlowSpacing(argv[7], resourcePath);
+    ok &= TestTextFlowScale(argv[7], resourcePath);
     ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
     ok &= TestScoreDefTextSize(resourcePath);
 

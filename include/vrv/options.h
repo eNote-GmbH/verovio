@@ -778,6 +778,7 @@ public:
     OptionDbl m_textFlowBlockSpacing;
     OptionDbl m_textFlowChordLaneSpacing;
     OptionDbl m_textFlowLineSpacing;
+    OptionDbl m_textFlowScale;
     OptionDbl m_textFlowScoreMargin;
     OptionDbl m_textFlowStanzaSpacing;
     OptionString m_textFont;

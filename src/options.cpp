@@ -1593,6 +1593,11 @@ Options::Options()
     m_textFlowScoreMargin.Init(1.0, 0.0, 10.0);
     this->Register(&m_textFlowScoreMargin, "textFlowScoreMargin", &m_generalLayout);
 
+    m_textFlowScale.SetInfo("Text flow scale",
+        "The size of text blocks relative to the text size they would otherwise inherit from the score");
+    m_textFlowScale.Init(1.0, 0.5, 2.0);
+    this->Register(&m_textFlowScale, "textFlowScale", &m_generalLayout);
+
     m_textFlowStanzaSpacing.SetInfo("Text flow stanza spacing",
         "The space between consecutive stanza blocks, as a multiple of the text line height");
     m_textFlowStanzaSpacing.Init(1.0, 0.0, 10.0);
