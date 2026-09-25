@@ -13,6 +13,7 @@
 #include "elementpart.h"
 #include "ftrem.h"
 #include "layer.h"
+#include "note.h"
 #include "rest.h"
 #include "staff.h"
 
@@ -271,16 +272,19 @@ FunctorCode AdjustBeamsFunctor::VisitLayerElement(LayerElement *layerElement)
     if (m_outerFTrem) --beamCount;
     const int currentBeamYLeft = m_y1 + m_beamSlope * (layerElement->GetContentLeft() - m_x1);
     const int currentBeamYRight = m_y1 + m_beamSlope * (layerElement->GetContentRight() - m_x1);
+    const auto [elementBottom, elementTop] = m_isOtherLayer
+        ? this->GetObstacleExtent(layerElement)
+        : std::make_pair(layerElement->GetContentBottom(), layerElement->GetContentTop());
     if (m_directionBias > 0) {
-        leftMargin = layerElement->GetContentTop() - currentBeamYLeft + beamCount * outerBeamInterface->m_beamWidth
+        leftMargin = elementTop - currentBeamYLeft + beamCount * outerBeamInterface->m_beamWidth
             + outerBeamInterface->m_beamWidthBlack;
-        rightMargin = layerElement->GetContentTop() - currentBeamYRight + beamCount * outerBeamInterface->m_beamWidth
+        rightMargin = elementTop - currentBeamYRight + beamCount * outerBeamInterface->m_beamWidth
             + outerBeamInterface->m_beamWidthBlack;
     }
     else {
-        leftMargin = layerElement->GetContentBottom() - currentBeamYLeft - beamCount * outerBeamInterface->m_beamWidth
+        leftMargin = elementBottom - currentBeamYLeft - beamCount * outerBeamInterface->m_beamWidth
             - outerBeamInterface->m_beamWidthBlack;
-        rightMargin = layerElement->GetContentBottom() - currentBeamYRight - beamCount * outerBeamInterface->m_beamWidth
+        rightMargin = elementBottom - currentBeamYRight - beamCount * outerBeamInterface->m_beamWidth
             - outerBeamInterface->m_beamWidthBlack;
     }
 
@@ -311,25 +315,22 @@ FunctorCode AdjustBeamsFunctor::VisitRest(Rest *rest)
     if ((!rest->HasOloc() || !rest->HasPloc()) && !rest->HasLoc()) {
         // constants
         const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        const int oldLoc = rest->GetDrawingLoc();
+        // A rest of another voice on the outer side of the beam is moved out of the way of the beam
+        const int middleLoc = staff->m_drawingLines - 1;
+        const bool outerVoice = (m_directionBias > 0) ? (oldLoc > middleLoc) : (oldLoc < middleLoc);
+        if (m_isOtherLayer && outerVoice) {
+            const int shift = std::abs(rest->Intersects(m_outerBeam, SELF, unit, false));
+            if (shift == 0) return FUNCTOR_CONTINUE;
+            const int locShift = (shift + unit - 1) / unit;
+            this->MoveRest(rest, staff, oldLoc + m_directionBias * (locShift + locShift % 2));
+            return FUNCTOR_CONTINUE;
+        }
         // calculate new and old locations for the rest
         const int locAdjust = (m_directionBias * (overlapMargin - 2 * unit + 1) / unit);
-        const int oldLoc = rest->GetDrawingLoc();
         const int newLoc = oldLoc + locAdjust - locAdjust % 2;
         if (staff->GetChildCount(LAYER) == 1) {
-            rest->SetDrawingLoc(newLoc);
-            rest->SetDrawingYRel(staff->CalcPitchPosYRel(m_doc, newLoc));
-            // If there are dots, adjust their location as well
-            if (rest->GetDots() > 0) {
-                Dots *dots = vrv_cast<Dots *>(rest->FindDescendantByType(DOTS, 1));
-                if (dots) {
-                    std::set<int> &dotLocs = dots->ModifyDotLocsForStaff(staff);
-                    const int dotLoc = (oldLoc % 2) ? oldLoc : oldLoc + 1;
-                    if (std::find(dotLocs.cbegin(), dotLocs.cend(), dotLoc) != dotLocs.cend()) {
-                        dotLocs.erase(dotLoc);
-                        dotLocs.insert(newLoc);
-                    }
-                }
-            }
+            this->MoveRest(rest, staff, newLoc);
             return FUNCTOR_CONTINUE;
         }
     }
@@ -340,6 +341,25 @@ FunctorCode AdjustBeamsFunctor::VisitRest(Rest *rest)
     if (std::abs(adjust) > std::abs(m_overlapMargin)) m_overlapMargin = adjust;
 
     return FUNCTOR_CONTINUE;
+}
+
+void AdjustBeamsFunctor::MoveRest(Rest *rest, Staff *staff, int newLoc) const
+{
+    const int oldLoc = rest->GetDrawingLoc();
+    rest->SetDrawingLoc(newLoc);
+    rest->SetDrawingYRel(staff->CalcPitchPosYRel(m_doc, newLoc));
+    // If there are dots, adjust their location as well
+    if (rest->GetDots() > 0) {
+        Dots *dots = vrv_cast<Dots *>(rest->FindDescendantByType(DOTS, 1));
+        if (dots) {
+            std::set<int> &dotLocs = dots->ModifyDotLocsForStaff(staff);
+            const int dotLoc = (oldLoc % 2) ? oldLoc : oldLoc + 1;
+            if (std::find(dotLocs.cbegin(), dotLocs.cend(), dotLoc) != dotLocs.cend()) {
+                dotLocs.erase(dotLoc);
+                dotLocs.insert(newLoc);
+            }
+        }
+    }
 }
 
 BeamDrawingInterface *AdjustBeamsFunctor::GetOuterBeamInterface() const
@@ -382,8 +402,7 @@ int AdjustBeamsFunctor::CalcLayerOverlap(const LayerElement *beamElement) const
     for (const Object *object : collidingElementsList) {
         const LayerElement *layerElement = vrv_cast<const LayerElement *>(object);
         if (!beamElement->HorizontalContentOverlap(object)) continue;
-        const int elementBottom = layerElement->GetContentBottom();
-        const int elementTop = layerElement->GetContentTop();
+        const auto [elementBottom, elementTop] = this->GetObstacleExtent(layerElement);
         if (m_directionBias > 0) {
             // Ensure that there's actual overlap first
             if (elementBottom > yMax) continue;
@@ -422,6 +441,26 @@ int AdjustBeamsFunctor::CalcLayerOverlap(const LayerElement *beamElement) const
     }
     const int adjust = this->AdjustOverlapToHalfUnit(overlap, unit);
     return adjust;
+}
+
+std::pair<int, int> AdjustBeamsFunctor::GetObstacleExtent(const LayerElement *element) const
+{
+    if (!element->IsAnyOf(std::array{ NOTE, CHORD })) {
+        return { element->GetContentBottom(), element->GetContentTop() };
+    }
+
+    ListOfConstObjects notes
+        = element->Is(NOTE) ? ListOfConstObjects{ element } : element->FindAllDescendantsByType(NOTE);
+    int bottom = VRV_UNSET;
+    int top = VRV_UNSET;
+    for (const Object *object : notes) {
+        const Note *note = vrv_cast<const Note *>(object);
+        if (!note->HasSelfBB()) continue;
+        bottom = (bottom == VRV_UNSET) ? note->GetSelfBottom() : std::min(bottom, note->GetSelfBottom());
+        top = (top == VRV_UNSET) ? note->GetSelfTop() : std::max(top, note->GetSelfTop());
+    }
+    if (bottom == VRV_UNSET) return { element->GetContentBottom(), element->GetContentTop() };
+    return { bottom, top };
 }
 
 int AdjustBeamsFunctor::AdjustOverlapToHalfUnit(int overlap, int unit) const

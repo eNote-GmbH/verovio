@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -225,16 +226,380 @@ bool TestTextFlowPagination()
     return ok;
 }
 
+// The horizontal extent (left, right) of the first bounding box drawn after the element with the given id
+std::pair<double, double> FirstBoundingBoxX(const std::string &svg, const std::string &id)
+{
+    size_t position = svg.find("id=\"" + id + "\"");
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find("<rect x=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    const double x = std::strtod(svg.c_str() + position + 9, nullptr);
+    position = svg.find(" width=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    return { x, x + std::strtod(svg.c_str() + position + 8, nullptr) };
+}
+
+// The vertical extent (top, bottom) of the first bounding box drawn after the element with the given id
+std::pair<double, double> FirstBoundingBoxY(const std::string &svg, const std::string &id)
+{
+    size_t position = svg.find("id=\"" + id + "\"");
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find("<rect x=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    position = svg.find(" y=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    const double y = std::strtod(svg.c_str() + position + 4, nullptr);
+    position = svg.find(" height=\"", position);
+    if (position == std::string::npos) return { -1.0, -1.0 };
+    return { y, y + std::strtod(svg.c_str() + position + 9, nullptr) };
+}
+
+// The x positions of the glyphs drawn within the element with the given id
+std::vector<double> GlyphXs(const std::string &svg, const std::string &id)
+{
+    const std::string group = SvgGroup(svg, id);
+    std::vector<double> xs;
+    size_t position = 0;
+    while ((position = group.find("translate(", position)) != std::string::npos) {
+        position += std::string("translate(").size();
+        xs.push_back(std::strtod(group.c_str() + position, nullptr));
+    }
+    return xs;
+}
+
+// The scale factors of the glyphs drawn within the element with the given id
+std::vector<double> GlyphScales(const std::string &svg, const std::string &id)
+{
+    const std::string group = SvgGroup(svg, id);
+    std::vector<double> scales;
+    size_t position = 0;
+    while ((position = group.find("scale(", position)) != std::string::npos) {
+        position += std::string("scale(").size();
+        scales.push_back(std::strtod(group.c_str() + position, nullptr));
+    }
+    return scales;
+}
+
+bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePath)
+{
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    bool ok = Expect(toolkit.SetOptions(R"({"svgBoundingBoxes":true})"), "bounding-box option was rejected");
+    ok &= Expect(toolkit.LoadFile(file), "core text-flow fixture did not load");
+    const std::string svg = RenderAllPages(toolkit);
+
+    // A chord without lyrics between two syllables of a word: the hyphens span the gap between the syllables
+    const double firstRight = FirstBoundingBoxX(svg, "interrupted-first").second;
+    const double lastLeft = FirstBoundingBoxX(svg, "interrupted-last").first;
+    const std::vector<double> hyphens = GlyphXs(svg, "interrupted-last-connector");
+    ok &= Expect(hyphens.size() > 1, "the gap left by a chord within a word was not filled with several hyphens");
+    if (hyphens.size() < 2) return false;
+    // With evenly distributed hyphens, the margins before the first and after the last add up to their spacing,
+    // independently of the hyphen width
+    const double spacing = hyphens[1] - hyphens[0];
+    const double margins = (hyphens.front() - firstRight) + (lastLeft - hyphens.back());
+    ok &= Expect((hyphens.front() > firstRight) && (hyphens.back() < lastLeft) && (std::abs(margins - spacing) <= 3.0),
+        "the hyphens were not distributed between the syllables around a chord");
+
+    // A word split across two lines of a stanza ends the first line with a hyphen
+    const std::vector<double> trailing = GlyphXs(svg, "split-first-trailing-connector");
+    ok &= Expect((trailing.size() == 1) && (trailing.front() > FirstBoundingBoxX(svg, "split-first").second),
+        "a word continuing on the next line did not end its line with a hyphen");
+    ok &= Expect(svg.find("id=\"split-last-connector\"") == std::string::npos,
+        "the continuation of a split word was preceded by a hyphen on its own line");
+
+    // A line grows with larger text within it instead of assuming the height of the block font
+    const double descenderBottom = FirstBoundingBoxY(svg, "descender-syl").second;
+    const double largeTop = FirstBoundingBoxY(svg, "large-syl").first;
+    ok &= Expect((descenderBottom > 0.0) && (largeTop > 0.0) && (descenderBottom <= largeTop),
+        "larger text within a line collided with the line above");
+
+    // Hyphens are drawn in the font of the syllable before them
+    const std::vector<double> syllableScales = GlyphScales(svg, "large-split");
+    const std::vector<double> hyphenScales = GlyphScales(svg, "large-split-trailing-connector");
+    ok &= Expect(!syllableScales.empty() && (hyphenScales.size() == 1)
+            && (std::abs(hyphenScales.front() - syllableScales.front()) < 1e-6),
+        "a hyphen was not drawn in the font of the syllable before it");
+    return ok;
+}
+
+std::string ScoreDefTextSizeMei(const std::string &scoreDefAttributes)
+{
+    return R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Text sizes</title></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef )"
+        + scoreDefAttributes
+        + R"(><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1">
+<note xml:id="size-note" dur="1" oct="4" pname="c"><verse n="1"><syl xml:id="size-syl">Ly</syl></verse>
+<verse n="2"><syl xml:id="size-pt-syl" fontsize="12pt">Ly</syl></verse></note>
+</layer></staff>
+<harm xml:id="size-harm" staff="1" startid="#size-note">C</harm>
+<reh xml:id="size-reh" staff="1" tstamp="1">A</reh>
+<tempo xml:id="size-tempo" staff="1" tstamp="1">Tempo</tempo>
+<dir xml:id="size-dir" staff="1" tstamp="1" place="below">dir</dir>
+</measure></section></score></mdiv></body></music></mei>)";
+}
+
+bool TestScoreDefTextSize(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &attributes) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.LoadData(ScoreDefTextSizeMei(attributes));
+        return toolkit.RenderToSVG(1);
+    };
+    const std::string plain = render("");
+    const std::string sized = render(R"(text.size="16pt" lyric.size="8pt")");
+    const auto scale = [](const std::string &svg, const std::string &id) {
+        const std::vector<double> scales = GlyphScales(svg, id);
+        return scales.empty() ? 0.0 : scales.front();
+    };
+
+    // The syllable with an absolute size of 12pt is the reference for the sizes in points
+    const double reference = scale(sized, "size-pt-syl");
+    bool ok = Expect(reference > 0.0, "the text-size fixture was not rendered");
+    ok &= Expect(
+        std::abs(reference - scale(plain, "size-pt-syl")) < 1e-6, "syl@fontsize in points depended on the lyric size");
+    // Before, a size in points was taken as a size in drawing units, i.e., about a tenth of the intended size
+    ok &= Expect(
+        scale(plain, "size-pt-syl") > 0.5 * scale(plain, "size-syl"), "syl@fontsize in points was not converted");
+    for (const std::string id : { "size-harm", "size-reh", "size-tempo", "size-dir" }) {
+        ok &= Expect(
+            std::abs(scale(sized, id) / reference - 16.0 / 12.0) < 0.01, "scoreDef@text.size was not applied to " + id);
+    }
+    ok &= Expect(std::abs(scale(sized, "size-syl") / reference - 8.0 / 12.0) < 0.01,
+        "scoreDef@lyric.size was not applied to lyrics");
+    return ok;
+}
+
+struct TextFlowSpacingMetrics {
+    double chordLane = 0.0;
+    double lyricLine = 0.0;
+    double tableStanza = 0.0;
+    double siblingStanza = 0.0;
+    double nextBlock = 0.0;
+    double firstBlock = 0.0;
+};
+
+TextFlowSpacingMetrics MeasureTextFlowSpacing(
+    const char *file, const std::string &resourcePath, const std::string &options)
+{
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    toolkit.SetOptions(options);
+    toolkit.LoadFile(file);
+    const std::string svg = RenderAllPages(toolkit);
+
+    const double chordY = FirstTranslateYAfter(svg, "stanza-1-chord");
+    const double lyricY = FirstTranslateYAfter(svg, "stanza-1-line-1-lyric");
+    TextFlowSpacingMetrics metrics;
+    metrics.chordLane = lyricY - chordY;
+    metrics.lyricLine = FirstTranslateYAfter(svg, "stanza-1-line-2-lyric") - lyricY;
+    metrics.tableStanza
+        = FirstTranslateYAfter(svg, "stanza-2-lyric") - FirstTranslateYAfter(svg, "stanza-1-line-2-lyric");
+    metrics.siblingStanza = FirstTranslateYAfter(svg, "stanza-4-lyric") - FirstTranslateYAfter(svg, "stanza-3-lyric");
+    metrics.nextBlock = FirstTranslateYAfter(svg, "block-lyric") - FirstTranslateYAfter(svg, "stanza-4-lyric");
+    metrics.firstBlock = FirstTranslateYAfter(svg, "stanza-1-head");
+    return metrics;
+}
+
+bool TestTextFlowSpacing(const char *file, const std::string &resourcePath)
+{
+    const TextFlowSpacingMetrics none = MeasureTextFlowSpacing(file, resourcePath,
+        R"({"textFlowChordLaneSpacing":0,"textFlowLineSpacing":0,"textFlowStanzaSpacing":0,"textFlowScoreMargin":0,
+            "textFlowBlockSpacing":0})");
+    const TextFlowSpacingMetrics spaced = MeasureTextFlowSpacing(file, resourcePath,
+        R"({"textFlowChordLaneSpacing":0.5,"textFlowLineSpacing":1,"textFlowStanzaSpacing":2,"textFlowScoreMargin":3,
+            "textFlowBlockSpacing":1.5})");
+
+    // Without chord-lane spacing, stacked lanes are exactly one text line apart
+    const double lineHeight = none.chordLane;
+    const auto added = [&](double spacedValue, double noneValue, double factor) {
+        return std::abs((spacedValue - noneValue) - factor * lineHeight) <= 2.0;
+    };
+
+    bool ok = Expect(lineHeight > 0.0, "the chord lane was not rendered above its lyric line");
+    ok &= Expect(std::abs(none.lyricLine - lineHeight) <= 2.0, "unspaced lyric lines were not one line apart");
+    ok &= Expect(added(spaced.chordLane, none.chordLane, 0.5), "textFlowChordLaneSpacing was not applied");
+    ok &= Expect(added(spaced.lyricLine, none.lyricLine, 1.0), "textFlowLineSpacing was not applied");
+    ok &= Expect(added(spaced.tableStanza, none.tableStanza, 2.0),
+        "textFlowStanzaSpacing was not applied between stanza table rows");
+    ok &= Expect(added(spaced.siblingStanza, none.siblingStanza, 2.0),
+        "textFlowStanzaSpacing was not applied between sibling line groups");
+    ok &= Expect(added(spaced.firstBlock, none.firstBlock, 3.0), "textFlowScoreMargin was not applied");
+    ok &= Expect(
+        added(spaced.nextBlock, none.nextBlock, 1.5), "textFlowBlockSpacing was not applied between text blocks");
+    return ok;
+}
+
+bool TestTextFlowScale(const char *file, const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &options) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(options);
+        toolkit.LoadFile(file);
+        return RenderAllPages(toolkit);
+    };
+    const std::string plain = render(R"({"textFlowChordLaneSpacing":0})");
+    const std::string scaled = render(R"({"textFlowChordLaneSpacing":0,"textFlowScale":0.8})");
+    const auto scale = [](const std::string &svg, const std::string &id) {
+        const std::vector<double> scales = GlyphScales(svg, id);
+        return scales.empty() ? 0.0 : scales.front();
+    };
+    const auto lineHeight = [](const std::string &svg) {
+        return FirstTranslateYAfter(svg, "stanza-1-line-1-lyric") - FirstTranslateYAfter(svg, "stanza-1-chord");
+    };
+
+    bool ok = Expect(scale(plain, "stanza-1-line-1-lyric") > 0.0, "the text-flow scale fixture was not rendered");
+    ok &= Expect(std::abs(scale(scaled, "stanza-1-line-1-lyric") / scale(plain, "stanza-1-line-1-lyric") - 0.8) < 0.02,
+        "textFlowScale was not applied to text-block lyrics");
+    // The line height, and with it every text-flow spacing, follows the scaled font
+    ok &= Expect(std::abs(lineHeight(scaled) / lineHeight(plain) - 0.8) < 0.02,
+        "textFlowScale was not applied to the text-block line height");
+    ok &= Expect(std::abs(scale(scaled, "harm-1") - scale(plain, "harm-1")) < 1e-6,
+        "textFlowScale changed the size of text in the score");
+    return ok;
+}
+
+bool TestStyledHarmonyPointer(const std::string &resourcePath)
+{
+    const std::string mei = R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Styled chords</title></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note xml:id="styled-note" dur="1" oct="4" pname="c"/></layer></staff>
+<harm xml:id="styled-harm" staff="1" startid="#styled-note">Dm</harm>
+</measure>
+<div><lg><l>
+<syl><stack delim="|" align="left"><ptr xml:id="plain-ptr" target="#styled-harm"/>|Ly</stack></syl>
+<syl><stack delim="|" align="left"><rend fontstyle="italic"><ptr xml:id="italic-ptr" target="#styled-harm"/></rend>|ric</stack></syl>
+</l></lg></div>
+</section></score></mdiv></body></music></mei>)";
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    bool ok = Expect(toolkit.LoadData(mei), "the styled chord fixture did not load");
+    const std::string svg = RenderAllPages(toolkit);
+    const std::vector<std::string> harm = GlyphReferences(svg, "styled-harm");
+    const std::vector<std::string> italic = GlyphReferences(svg, "italic-ptr");
+    ok &= Expect(
+        !harm.empty() && (GlyphReferences(svg, "plain-ptr") == harm), "a chord pointer was not drawn as its harm");
+    ok &= Expect(italic.size() == harm.size(), "a chord pointer within <rend> was not drawn");
+    ok &= Expect(italic != harm, "a chord pointer within <rend fontstyle=\"italic\"> was not drawn in italics");
+    const std::string output = toolkit.GetMEI();
+    const size_t pointer = output.find("xml:id=\"italic-ptr\"");
+    const size_t rend = output.rfind("<rend", pointer);
+    ok &= Expect((pointer != std::string::npos) && (rend != std::string::npos)
+            && (output.find("</rend>", rend) > pointer)
+            && (output.substr(rend, pointer - rend).find("fontstyle=\"italic\"") != std::string::npos),
+        "a chord pointer within <rend> was not preserved in the MEI output");
+    return ok;
+}
+
+std::string WhitespaceMei(const std::string &separator)
+{
+    return R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Whitespace</title><composer>Text: A)"
+        + separator + R"(Melody: B</composer></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note dur="1" oct="4" pname="c"/></layer></staff>
+<dir xml:id="whitespace-dir" staff="1" tstamp="1">first)"
+        + separator + R"(second</dir>
+</measure></section></score></mdiv></body></music></mei>)";
+}
+
+bool TestTextWhitespace(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &separator) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(R"({"header":"auto"})");
+        toolkit.LoadData(WhitespaceMei(separator));
+        return toolkit.RenderToSVG(1);
+    };
+    const std::string spaced = render(" ");
+    const std::string broken = render("\n        ");
+    const auto pgHead = [](const std::string &svg) {
+        const size_t begin = svg.find("class=\"pgHead");
+        const size_t end = svg.find("class=\"system", begin);
+        return (begin == std::string::npos) ? std::string() : svg.substr(begin, end - begin);
+    };
+    // The glyphs with their positions, without the document-specific suffix of the glyph ids
+    const auto glyphs = [](const std::string &group) {
+        static const std::regex suffix("-[a-z0-9]+\"");
+        std::vector<std::string> uses;
+        size_t position = 0;
+        while ((position = group.find("<use", position)) != std::string::npos) {
+            const size_t end = group.find("/>", position);
+            uses.push_back(std::regex_replace(group.substr(position, end - position), suffix, "\""));
+            position = end;
+        }
+        return uses;
+    };
+    bool ok = Expect(!glyphs(SvgGroup(spaced, "whitespace-dir")).empty(), "the whitespace fixture was not rendered");
+    ok &= Expect(glyphs(SvgGroup(broken, "whitespace-dir")) == glyphs(SvgGroup(spaced, "whitespace-dir")),
+        "a line break within a text was not drawn as a single space");
+    ok &= Expect(!glyphs(pgHead(spaced)).empty() && (glyphs(pgHead(broken)) == glyphs(pgHead(spaced))),
+        "a line break within a header text was not drawn as a single space");
+    return ok;
+}
+
+bool TestHeaderPersons(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &persons) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(R"({"header":"auto"})");
+        toolkit.LoadData(R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Persons</title>)"
+            + persons + R"(</titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note dur="1" oct="4" pname="c"/></layer></staff></measure></section>
+</score></mdiv></body></music></mei>)");
+        const std::string svg = toolkit.RenderToSVG(1);
+        const size_t begin = svg.find("class=\"pgHead");
+        const size_t end = svg.find("class=\"system", begin);
+        if (begin == std::string::npos) return std::make_pair(size_t(0), size_t(0));
+        const std::string pgHead = svg.substr(begin, end - begin);
+        return std::make_pair(CountOccurrences(pgHead, "<use"), CountOccurrences(pgHead, "class=\"rend\""));
+    };
+    const auto glyphs = [&](const std::string &persons) { return render(persons).first; };
+    const size_t title = glyphs("");
+    const size_t composer = glyphs("<composer>C</composer>");
+    bool ok = Expect(composer > title, "the composer was not drawn in the page header");
+    for (const std::string person : { "arranger", "lyricist" }) {
+        ok &= Expect(glyphs("<composer>C</composer><" + person + ">P</" + person + ">") > composer,
+            "the " + person + " was not drawn in the page header");
+    }
+    ok &= Expect(glyphs(R"(<respStmt><persName role="lyricist">P</persName></respStmt>)") > title,
+        "a person with a role was not drawn in the page header");
+    ok &= Expect(glyphs("<respStmt><persName>P</persName></respStmt>") == title,
+        "a person without a role was drawn in the page header");
+    ok &= Expect(render("<composer/><respStmt><persName/></respStmt>").second == render("").second,
+        "empty persons added groups to the page header");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
 {
-    if (argc != 7) return 2;
+    if (argc != 8) return 2;
 
     vrv::Toolkit toolkit(false);
     toolkit.SetResourcePath("../data");
 
     bool ok = TestTextFlowPagination();
+    // A page height at which the later verses start below the score and continue on the next page
+    ok &= Expect(toolkit.SetOptions(R"({"pageHeight":2850})"), "text-block fixture options were rejected");
     ok &= Expect(toolkit.LoadFile(argv[1]), "text-block fixture did not load");
 
     const std::string mei = toolkit.GetMEI();
@@ -328,7 +693,11 @@ int main(int argc, char **argv)
     ok &= Expect(coreSvg.find("id=\"joined-last-connector\"") == std::string::npos,
         "an ordinary intra-word syllable boundary rendered an unnecessary hyphen");
     ok &= Expect(coreSvg.find("id=\"wide-last-connector\"") != std::string::npos,
-        "a harmony-created syllable gap did not render its semantic hyphen");
+        "a syllable pushed apart by colliding chords did not render its semantic hyphen");
+    ok &= Expect(coreSvg.find("id=\"overhang-last-connector\"") == std::string::npos,
+        "a chord overhanging the next syllable stretched its word apart");
+    ok &= Expect(CountOccurrences(SvgGroup(coreSvg, "wide-last-connector"), "<use ") > 1,
+        "a wide intra-word gap was not filled with several hyphens");
     ok &= Expect(CountTranslateRowsBetween(coreSvg, "flow-paragraph", "nested-div") >= 3,
         "paragraph did not wrap or honor its hard break");
     ok &= Expect(CountTranslateRowsBetween(coreSvg, "stack-left", "syl-hap") >= 2,
@@ -539,6 +908,14 @@ int main(int argc, char **argv)
         ok &= Expect(automaticPageContaining("paragraph-pb-before") < automaticPageContaining("paragraph-pb-after"),
             "a paragraph text page break was ignored with breaks=" + breakMode);
     }
+
+    ok &= TestTextFlowSpacing(argv[7], resourcePath);
+    ok &= TestTextFlowScale(argv[7], resourcePath);
+    ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
+    ok &= TestScoreDefTextSize(resourcePath);
+    ok &= TestStyledHarmonyPointer(resourcePath);
+    ok &= TestTextWhitespace(resourcePath);
+    ok &= TestHeaderPersons(resourcePath);
 
     return ok ? 0 : 1;
 }

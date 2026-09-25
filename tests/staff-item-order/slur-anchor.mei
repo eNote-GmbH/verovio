@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Slurs below ordered staff items</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef aboveorder="fermata harm reh tempo">
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="harm-slur-start" dur="4" oct="5" pname="c"/>
+                  <note dur="4" oct="5" pname="e"/>
+                  <note dur="4" oct="5" pname="g"/>
+                  <note xml:id="harm-slur-end" dur="4" oct="5" pname="e"/>
+                </layer>
+              </staff>
+              <slur xml:id="harm-slur" staff="1" startid="#harm-slur-start" endid="#harm-slur-end" curvedir="above"/>
+              <harm xml:id="slur-harm" staff="1" tstamp="2">Eb/F</harm>
+            </measure>
+            <measure n="2">
+              <staff n="1">
+                <layer n="1">
+                  <note xml:id="reh-slur-start" dur="4" oct="5" pname="c"/>
+                  <note dur="4" oct="5" pname="e"/>
+                  <note dur="4" oct="5" pname="g"/>
+                  <note xml:id="reh-slur-end" dur="4" oct="5" pname="e"/>
+                </layer>
+              </staff>
+              <slur xml:id="reh-slur" staff="1" startid="#reh-slur-start" endid="#reh-slur-end" curvedir="above"/>
+              <reh xml:id="slur-reh" staff="1" tstamp="3">A</reh>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

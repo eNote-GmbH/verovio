@@ -59,6 +59,15 @@ private:
      */
     int CalcLayerOverlap(const LayerElement *beamElement) const;
 
+    /**
+     * The vertical extent (bottom, top) of another layer's element that a beam has to clear.
+     * Only the heads of notes and chords count: their stems and articulations may cross the beam.
+     */
+    std::pair<int, int> GetObstacleExtent(const LayerElement *element) const;
+
+    // Moves a rest (and its dots) to a new staff location
+    void MoveRest(Rest *rest, Staff *staff, int newLoc) const;
+
     // Rounds the overlap to the closest multiple of a half unit
     int AdjustOverlapToHalfUnit(int overlap, int unit) const;
 

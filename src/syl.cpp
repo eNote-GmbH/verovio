@@ -126,16 +126,8 @@ FontInfo Syl::GetDrawingFont(Doc *doc, int staffSize) const
             drawingFont.SetFaceName(typography->GetFontfam());
         }
         if (typography->HasFontsize()) {
-            const data_FONTSIZE fontSize = typography->GetFontsize();
-            if (fontSize.GetType() == FONTSIZE_fontSizeNumeric) {
-                drawingFont.SetPointSize(fontSize.GetFontSizeNumeric());
-            }
-            else if (fontSize.GetType() == FONTSIZE_term) {
-                drawingFont.SetPointSize(drawingFont.GetPointSize() * fontSize.GetPercentForTerm() / 100);
-            }
-            else if (fontSize.GetType() == FONTSIZE_percent) {
-                drawingFont.SetPointSize(drawingFont.GetPointSize() * fontSize.GetPercent() / 100);
-            }
+            drawingFont.SetPointSize(
+                doc->GetFontPointSize(typography->GetFontsize(), staffSize, drawingFont.GetPointSize()));
         }
         if (typography->HasFontweight()) drawingFont.SetWeight(typography->GetFontweight());
         if (typography->HasFontstyle()) drawingFont.SetStyle(typography->GetFontstyle());

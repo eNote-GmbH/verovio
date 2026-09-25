@@ -543,7 +543,7 @@ FunctorCode CastOffEncodingFunctor::VisitDiv(Div *div)
             view.SetDoc(m_doc);
             BBoxDeviceContext bBoxDC(&view, 0, 0, BBOX_HORIZONTAL_ONLY);
             bBoxDC.SetResources(&m_doc->GetResources());
-            FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, nullptr);
+            FontInfo textFlowFont = m_doc->GetTextFlowFont(div);
             const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
             TextFlowLayout layout(m_doc, &bBoxDC, textFlowFont, availableWidth, lineHeight);
             flow = &div->CacheTextFlowDocumentLayout(layout.LayoutFlow(div));

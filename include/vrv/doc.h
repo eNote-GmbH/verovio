@@ -257,6 +257,15 @@ public:
     FontInfo *GetFingeringFont(int staffSize);
     ///@}
 
+    /** The base font of a text-flow block, from the text style of the score it belongs to */
+    FontInfo GetTextFlowFont(const Object *textFlow);
+
+    /**
+     * Convert an MEI font size to a point size in drawing units. Numeric sizes follow their unit (vu scales with the
+     * staff size), percentages and named sizes are relative to the inherited point size.
+     */
+    int GetFontPointSize(const data_FONTSIZE &fontSize, int staffSize, int inheritedPointSize) const;
+
     /**
      * Get the ratio between the lyric font size and the music font size.
      * This is used when the music font is used within text.

@@ -4035,6 +4035,10 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
         else if (element == "num") {
             return true;
         }
+        // Pointers to chords in text blocks can be styled, e.g., <rend fontstyle="italic"><ptr/></rend>
+        else if (element == "ptr") {
+            return (filterParent->GetFirstAncestor(STACK) != nullptr);
+        }
         else if (element == "rend") {
             return true;
         }
@@ -8498,6 +8502,8 @@ bool MEIInput::ReadText(Object *parent, pugi::xml_node text, bool trimLeft, bool
 
     assert(text.text());
     std::u32string str = UTF8to32(text.text().as_string());
+    // Line breaks and indentation within the text are layout of the XML file only
+    if (!PreservesWhitespace(parent)) str = CollapseWhitespace(str);
     if (trimLeft) str = this->LeftTrim(str);
     if (trimRight) str = this->RightTrim(str);
 

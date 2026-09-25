@@ -381,6 +381,7 @@ protected:
     void DrawFig(DeviceContext *dc, Fig *fig, TextDrawingParams &params);
     void DrawLb(DeviceContext *dc, Lb *lb, TextDrawingParams &params);
     void DrawNum(DeviceContext *dc, Num *num, TextDrawingParams &params);
+    void DrawPtr(DeviceContext *dc, Ptr *ptr, TextDrawingParams &params);
     void DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params);
     void DrawGraphic(DeviceContext *dc, Graphic *graphic, TextDrawingParams &params, int staffSize, bool dimin);
     void DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params, int staffSize, bool dimin);
@@ -728,15 +729,9 @@ protected:
     ScoreDef m_drawingScoreDef;
 
 private:
-    /** Convert a numeric MEI font size to Verovio drawing units. */
-    int ConvertFontSizeNumeric(const data_FONTSIZE &fontSize, int staffSize) const;
-
     //----------------//
     // Static members //
     //----------------//
-
-    /** Convert a font size in printer points to Verovio drawing units. */
-    static int ConvertFontPointSize(double pointSize);
 
     /** @name Internal values for storing temporary values for ligatures */
     ///@{

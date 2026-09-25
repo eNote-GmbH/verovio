@@ -1816,13 +1816,10 @@ void View::DrawControlElementText(DeviceContext *dc, ControlElement *element, Me
         params.m_x = x;
         params.m_y = y;
         params.m_staffSize = staffSize;
-        params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo dirTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextStyle())) {
-            dirTxt.SetStyle(FONTSTYLE_italic);
-        }
+        params.m_pointSize = dirTxt.GetPointSize();
 
         int xAdjust = 0;
         const bool isBetweenStaves = (place == STAFFREL_between)
@@ -1897,19 +1894,14 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
         params.m_x = x;
         params.m_y = y;
         params.m_staffSize = staffSize;
-        params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo dynamTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextStyle())) {
-            dynamTxt.SetStyle(FONTSTYLE_italic);
-        }
+        params.m_pointSize = dynamTxt.GetPointSize();
 
         if (dynam->HasEnclose()) {
             params.m_textEnclose = dynam->GetEnclose();
         }
-
-        dynamTxt.SetPointSize(params.m_pointSize);
 
         if (dynam->GetPlace() == STAFFREL_between) {
             if (lineCount > 1) {
@@ -2000,8 +1992,6 @@ void View::DrawFb(DeviceContext *dc, Staff *staff, Fb *fb, TextDrawingParams &pa
     FontInfo fontDim = m_doc->GetDrawingTextFont(staff->m_drawingStaffSize, staff->m_drawingStaffDef);
     const int lineHeight = m_doc->GetTextLineHeight(&fontDim, false);
     const int startX = params.m_x;
-
-    fontDim.SetPointSize(m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize());
 
     dc->SetFont(&fontDim);
 
@@ -2375,10 +2365,8 @@ void View::DrawHarm(DeviceContext *dc, Harm *harm, Measure *measure, System *sys
             this->DrawFb(dc, staff, dynamic_cast<Fb *>(harm->GetFirst()), params);
         }
         else {
-            params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
-
             FontInfo harmTxt = m_doc->GetDrawingTextFont(staffSize, staff->m_drawingStaffDef);
-            harmTxt.SetPointSize(params.m_pointSize);
+            params.m_pointSize = harmTxt.GetPointSize();
 
             if (mode.m_drawText) {
                 if (mode.m_drawGrid) params.m_lineStartX = params.m_x;
@@ -2797,14 +2785,10 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
         params.m_x = x;
         params.m_y = y;
         params.m_staffSize = staffSize;
-        params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo rehTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextWeight())) {
-            rehTxt.SetWeight(FONTWEIGHT_bold);
-        }
-        rehTxt.SetPointSize(params.m_pointSize);
+        params.m_pointSize = rehTxt.GetPointSize();
 
         dc->SetFont(&rehTxt);
 
@@ -2917,14 +2901,10 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
         params.m_x = x;
         params.m_y = y;
         params.m_staffSize = staffSize;
-        params.m_pointSize = m_doc->GetDrawingLyricFont(staffSize)->GetPointSize();
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo tempoTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextWeight())) {
-            tempoTxt.SetWeight(FONTWEIGHT_bold);
-        }
-        tempoTxt.SetPointSize(params.m_pointSize);
+        params.m_pointSize = tempoTxt.GetPointSize();
 
         if (tempo->GetPlace() == STAFFREL_between) {
             if (lineCount > 1) {

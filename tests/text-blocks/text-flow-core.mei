@@ -51,8 +51,20 @@
                 </l>
                 <l xml:id="connector-line" n="2">
                   <syl xml:id="joined-first" con="d" wordpos="i">ha</syl><syl xml:id="joined-last" wordpos="t">ben</syl>
-                  <syl xml:id="wide-first" con="d" wordpos="i"><stack xml:id="wide-connector-stack" delim="|" align="left"><ptr xml:id="ptr-harm-wide" target="#harm-wide"/>|Teu</stack></syl><syl xml:id="wide-last" wordpos="t">fel</syl>
+                  <syl xml:id="wide-first" con="d" wordpos="i"><stack xml:id="wide-connector-stack" delim="|" align="left"><ptr xml:id="ptr-harm-wide" target="#harm-wide"/>|Teu</stack></syl><syl xml:id="wide-last" wordpos="t"><stack delim="|">G|fel</stack></syl>
                 </l>
+                <l xml:id="overhang-line" n="3">
+                  <syl xml:id="overhang-first" con="d" wordpos="i"><stack delim="|"><ptr target="#harm-wide"/>|Teu</stack></syl><syl xml:id="overhang-last" wordpos="t">fel</syl>
+                </l>
+                <l xml:id="interrupted-line" n="4">
+                  <syl xml:id="interrupted-first" con="d" wordpos="i">Le</syl><syl><stack delim="|"><ptr target="#harm-wide"/>|</stack></syl><syl xml:id="interrupted-last" wordpos="t">ben</syl>
+                </l>
+                <l xml:id="split-line-start" n="5"><syl xml:id="split-first" con="d" wordpos="i">Je</syl></l>
+                <l xml:id="split-line-end" n="6"><syl xml:id="split-last" wordpos="t">rusalem</syl></l>
+                <l xml:id="descender-line" n="7"><syl xml:id="descender-syl">gypq</syl></l>
+                <l xml:id="large-line" n="8"><syl xml:id="large-syl"><rend fontsize="200%">GROSS</rend></syl></l>
+                <l xml:id="large-split-line" n="9"><syl xml:id="large-split" con="d" wordpos="i"><rend fontsize="200%">Je</rend></syl></l>
+                <l xml:id="large-split-end" n="10"><syl wordpos="t">rusalem</syl></l>
               </lg>
             </div>
           </section>
