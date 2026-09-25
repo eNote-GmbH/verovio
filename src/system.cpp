@@ -9,6 +9,7 @@
 
 //----------------------------------------------------------------------------
 
+#include <algorithm>
 #include <cassert>
 
 //----------------------------------------------------------------------------
@@ -406,6 +407,33 @@ bool System::IsLastOfMdiv() const
     assert(this->GetParent());
     const Object *nextSibling = this->GetParent()->GetNext(this);
     return (nextSibling && nextSibling->IsPageElement());
+}
+
+bool System::IsLastMeasureSystemOfMdiv() const
+{
+    const Object *page = this->GetParent();
+    assert(page);
+    const Object *current = this;
+    while (page) {
+        const ArrayOfConstObjects &children = page->GetChildren();
+        auto it = children.begin();
+        if (current) {
+            it = std::find(children.begin(), children.end(), current);
+            if (it != children.end()) ++it;
+        }
+        for (; it != children.end(); ++it) {
+            const Object *next = *it;
+            // The end of the mdiv (or of the score) - nothing but text-only systems in between
+            if (next->IsPageElement()) return true;
+            if (next->Is(SYSTEM) && next->FindDescendantByType(MEASURE)) return false;
+        }
+        // Reached the end of the page: carry on with the next one
+        const Object *pages = page->GetParent();
+        page = pages ? pages->GetNext(page, PAGE) : NULL;
+        current = NULL;
+    }
+    // End of the document
+    return true;
 }
 
 bool System::IsFirstOfSelection() const

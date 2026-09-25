@@ -122,9 +122,9 @@ FunctorCode JustifyXFunctor::VisitSystem(System *system)
         LogWarning("\tDrawing justifiable width: %d", system->m_drawingJustifiableWidth);
     }
 
-    // Check if we are on the last system of an mdiv.
+    // Check if we are on the last system of an mdiv, ignoring text-only systems after it.
     // Do not justify it if the non-justified width is less than a specified percent.
-    if (system->IsLastOfMdiv() || system->IsLastOfSelection()) {
+    if (system->IsLastMeasureSystemOfMdiv() || system->IsLastOfSelection()) {
         double minLastJust = m_doc->GetOptions()->m_minLastJustification.GetValue();
         if ((minLastJust > 0.0) && (m_justifiableRatio > (1.0 / minLastJust))) {
             return FUNCTOR_SIBLINGS;
