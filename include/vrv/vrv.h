@@ -83,6 +83,18 @@ std::string ExtractIDFragment(std::string refID);
 std::string ConcatenateIDs(const ListOfConstObjects &objects);
 
 /**
+ * Replace every run of XML whitespace (space, tab, line feed, carriage return) with a single space.
+ * Other spaces, such as non-breaking spaces, are kept.
+ */
+std::u32string CollapseWhitespace(const std::u32string &text);
+
+/**
+ * Check if the whitespace of the text within the object is preserved, i.e., if the object or its closest ancestor
+ * with @xml:space has the value "preserve"
+ */
+bool PreservesWhitespace(const Object *object);
+
+/**
  * Utility for converting UTF32 (std::u32string) to UTF-8
  */
 std::string UTF32to8(const std::u32string &in);

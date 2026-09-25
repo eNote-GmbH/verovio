@@ -517,10 +517,9 @@ void SvgDeviceContext::StartPage()
     if (this->UseGlobalStyling()) {
         m_currentNode = m_currentNode.append_child("style");
         m_currentNode.append_attribute("type") = "text/css";
-        std::string css = "g.ending, g.fing, g.reh, g.tempo {font-weight:bold;} "
-                          "g.dir, g.dynam, g.mNum {font-style:italic;}"
-                          "g.label {font-weight:normal;} "
-                          "ellipse, path, polygon, polyline, rect {stroke:currentColor} ";
+        // Text is drawn as glyph outlines, which CSS font properties cannot style: its weight and style come from the
+        // fonts selected while drawing, as for the layout
+        std::string css = "ellipse, path, polygon, polyline, rect {stroke:currentColor} ";
         // bounding box css - for debugging
         // css += " g.bounding-box{stroke:red; stroke-width:10} "
         //        "g.content-bounding-box{stroke:blue; stroke-width:10}";

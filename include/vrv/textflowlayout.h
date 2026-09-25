@@ -40,7 +40,16 @@ struct TextFlowPlacedItem {
 struct TextFlowRow {
     std::vector<TextFlowPlacedItem> items;
     int width = 0;
+    /** Number of stacked lanes (e.g., a chord lane above a lyric line) */
     int rowCount = 1;
+    /** Offset of the top of the row from the top of the phrase */
+    int y = 0;
+    /** Distance from the top of the row to the baseline of its top lane */
+    int ascent = 0;
+    /** Height of a single lane, from the fonts actually used in the row */
+    int lineHeight = 0;
+    /** Baseline distance between the stacked lanes of the row */
+    int lanePitch = 0;
 };
 
 struct TextFlowSegment {
@@ -56,6 +65,18 @@ struct TextFlowStackRow {
     int x = 0;
 };
 
+/**
+ * Horizontal extent of a unit's lanes relative to its left edge. The lower lane
+ * holds the lyrics; the upper lanes of a stack (e.g., chords) may overhang it.
+ */
+struct TextFlowLanes {
+    int lowerLeft = 0;
+    int lowerRight = 0;
+    bool hasUpper = false;
+    int upperLeft = 0;
+    int upperRight = 0;
+};
+
 struct TextFlowUnit {
     Object *object = nullptr;
     std::u32string text;
@@ -66,13 +87,25 @@ struct TextFlowUnit {
     int lyricX = 0;
     int lyricWidth = 0;
     std::vector<TextFlowStackRow> stackRows;
+    TextFlowLanes lanes;
     TextFlowItemMetrics metrics;
+    /** Vertical extent of the unit's text above and below its baseline */
+    int ascent = 0;
+    int descent = 0;
+
+    /** A stack with an empty lyric lane, e.g., a chord between two syllables */
+    bool IsChordOnly() const { return lanes.hasUpper && (stackRows.back().width == 0); }
 };
 
+/** The hyphens joining a syllable to the previous one within a word */
 struct TextFlowConnector {
     Syl *syl = nullptr;
     size_t row = 0;
-    int x = 0;
+    std::vector<int> positions;
+    /** A hyphen after the last syllable of a line whose word continues on the next line */
+    bool trailing = false;
+    /** The font of the syllable before the hyphens */
+    FontInfo font;
 };
 
 struct TextFlowLayoutResult {
@@ -105,7 +138,10 @@ struct TextFlowTableLayoutResult {
     std::vector<TextFlowTableCellLayout> cells;
     std::vector<int> rowHeights;
     int columns = 0;
+    /** Horizontal space between columns and below the caption */
     int gutter = 0;
+    /** Vertical space between rows */
+    int rowGutter = 0;
     int captionHeight = 0;
     int gridY = 0;
     int width = 0;
@@ -177,9 +213,13 @@ private:
     std::u32string GetText(Object *object) const;
     int MeasureText(const std::u32string &text, const FontInfo &font) const;
     int MeasureObject(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
+    int GetAscent(const FontInfo &font) const;
+    void MeasureExtent(
+        Object *object, const FontInfo &inheritedFont, int inheritedPointSize, int &ascent, int &descent) const;
     FontInfo GetStyledFont(Object *object, const FontInfo &inheritedFont, int inheritedPointSize) const;
     FontInfo GetBlockFont(Object *block) const;
-    bool PreservesWhitespace(const Object *object) const;
+    int GetLineHeight(const FontInfo &font) const;
+    int GetBlockSpacing(const Object *previous, Object *next) const;
     Harm *GetHarm(Object *object) const;
     Syl *GetSyl(Object *object) const;
     Stack *GetStack(Object *object) const;
@@ -193,6 +233,10 @@ private:
     void CollectBreakUnits(const TextFlowLayoutNode &node, int parentY, std::vector<TextFlowBreakUnit> &units,
         int &pendingPageBreaks) const;
     std::vector<TextFlowRow> WrapUnits(const std::vector<TextFlowUnit> &units) const;
+    /** The index of the last syllable if it continues a word beyond the block, or units.size() otherwise */
+    size_t GetTrailingSyllable(const std::vector<TextFlowUnit> &units) const;
+    /** The font in which the lyrics of a unit end */
+    FontInfo GetLyricFont(const TextFlowUnit &unit) const;
     std::vector<TextFlowConnector> PositionConnectors(
         const std::vector<TextFlowUnit> &units, std::vector<TextFlowRow> &rows) const;
 

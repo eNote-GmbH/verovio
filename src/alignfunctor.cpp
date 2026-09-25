@@ -851,8 +851,7 @@ FunctorCode AlignSystemsFunctor::VisitSystem(System *system)
     if (!system->IsFirstInPage()) {
         // const int contentOverflow = m_prevBottomOverflow + systemAligner.GetOverflowAbove(m_doc);
         // const int clefOverflow = m_prevBottomClefOverflow + systemAligner.GetOverflowAbove(m_doc, true);
-        const int unit = m_doc->GetDrawingUnit(100);
-        m_shift -= std::max(m_systemSpacing, 2 * unit);
+        m_shift -= this->GetSystemSpacing(system);
     }
 
     system->SetDrawingYRel(m_shift);
@@ -870,6 +869,39 @@ FunctorCode AlignSystemsFunctor::VisitSystem(System *system)
     m_prevBottomClefOverflow = systemAligner.GetOverflowBelow(m_doc, true);
 
     return FUNCTOR_SIBLINGS;
+}
+
+int AlignSystemsFunctor::GetSystemSpacing(const System *system) const
+{
+    const int unit = m_doc->GetDrawingUnit(100);
+    const int systemSpacing = std::max(m_systemSpacing, 2 * unit);
+
+    // A text block is separated from the score before it by the score margin and from a text block before it by the
+    // block spacing
+    const auto getTextBlock = [](const Object *object) -> const Div * {
+        const Div *div = vrv_cast<const Div *>(object->FindDescendantByType(DIV, 1));
+        return (div && div->HasTextFlow()) ? div : nullptr;
+    };
+    const Div *textBlock = getTextBlock(system);
+    if (!textBlock) return systemSpacing;
+    const Object *previous = system->GetParent()->GetPrevious(system, SYSTEM);
+    if (!previous) return systemSpacing;
+
+    const Options *options = m_doc->GetOptions();
+    double factor = 0.0;
+    if (previous->GetChildCount(MEASURE)) {
+        factor = options->m_textFlowScoreMargin.GetValue();
+    }
+    else if (getTextBlock(previous)) {
+        factor = options->m_textFlowBlockSpacing.GetValue();
+    }
+    else {
+        return systemSpacing;
+    }
+
+    FontInfo textFlowFont = m_doc->GetTextFlowFont(textBlock->GetTextFlowSource());
+    const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
+    return static_cast<int>(std::lround(factor * lineHeight));
 }
 
 } // namespace vrv

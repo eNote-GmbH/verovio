@@ -53,6 +53,9 @@ public:
     InterfaceId IsInterface() const override { return INTERFACE_SCOREDEF; }
     ///@}
 
+    /** Take over the lyric and text style attributes (family, name, size, style, and weight) that are set in other */
+    void ReplaceTextStyle(const ScoreDefInterface *other);
+
 private:
     //
 public:

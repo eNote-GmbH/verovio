@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt><title>Stanza spacing regression</title></titleStmt>
+      <pubStmt/>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+        <score>
+          <scoreDef text.fam="Times" text.size="12pt">
+            <staffGrp>
+              <staffDef n="1" lines="5" clef.shape="G" clef.line="2"/>
+            </staffGrp>
+          </scoreDef>
+          <section>
+            <measure n="1">
+              <staff n="1"><layer n="1"><note xml:id="note-1" pname="c" oct="5" dur="1"><verse n="1"><syl>Ah</syl></verse></note></layer></staff>
+              <harm xml:id="harm-1" staff="1" startid="#note-1">D</harm>
+            </measure>
+            <div type="verse-textblocks" xml:id="stanza-div">
+              <table xml:id="stanza-table">
+                <tr>
+                  <td n="1">
+                    <l xml:id="stanza-1-head">Strophe 1:</l>
+                    <lg xml:id="stanza-1">
+                      <l xml:id="stanza-1-line-1">
+                        <syl><stack xml:id="stanza-1-chord" delim="|" align="left"><ptr target="#harm-1"/>|Ly</stack></syl>
+                        <syl xml:id="stanza-1-line-1-lyric">ric</syl>
+                      </l>
+                      <l xml:id="stanza-1-line-2"><syl xml:id="stanza-1-line-2-lyric">Line</syl></l>
+                    </lg>
+                  </td>
+                </tr>
+                <tr>
+                  <td n="2">
+                    <lg xml:id="stanza-2"><l><syl xml:id="stanza-2-lyric">Next</syl></l></lg>
+                  </td>
+                </tr>
+              </table>
+              <lg xml:id="stanza-3"><l><syl xml:id="stanza-3-lyric">Sibling</syl></l></lg>
+              <lg xml:id="stanza-4"><l><syl xml:id="stanza-4-lyric">Sibling</syl></l></lg>
+            </div>
+            <div type="verse-textblocks" xml:id="block-div">
+              <lg xml:id="stanza-5"><l><syl xml:id="block-lyric">Next block</syl></l></lg>
+            </div>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

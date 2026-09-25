@@ -38,6 +38,7 @@
 #define GIT_COMMIT "[undefined]"
 #endif
 
+#include "atts_shared.h"
 #include "object.h"
 #include "vrvdef.h"
 
@@ -251,6 +252,31 @@ std::string ExtractIDFragment(std::string refID)
         refID = refID.substr(pos + 1);
     }
     return refID;
+}
+
+std::u32string CollapseWhitespace(const std::u32string &text)
+{
+    const auto isWhitespace = [](char32_t character) {
+        return (character == U' ') || (character == U'\t') || (character == U'\n') || (character == U'\r');
+    };
+    std::u32string collapsed;
+    collapsed.reserve(text.size());
+    for (char32_t character : text) {
+        if (!isWhitespace(character))
+            collapsed.push_back(character);
+        else if (collapsed.empty() || (collapsed.back() != U' '))
+            collapsed.push_back(U' ');
+    }
+    return collapsed;
+}
+
+bool PreservesWhitespace(const Object *object)
+{
+    for (const Object *current = object; current; current = current->GetParent()) {
+        const AttWhitespace *whitespace = dynamic_cast<const AttWhitespace *>(current);
+        if (whitespace && whitespace->HasSpace()) return (whitespace->GetSpace() == "preserve");
+    }
+    return false;
 }
 
 std::string ConcatenateIDs(const ListOfConstObjects &objects)

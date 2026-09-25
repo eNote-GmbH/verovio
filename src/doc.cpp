@@ -10,6 +10,7 @@
 //----------------------------------------------------------------------------
 
 #include <cassert>
+#include <cmath>
 #include <math.h>
 #include <ranges>
 
@@ -2168,11 +2169,46 @@ FontInfo *Doc::GetDrawingLyricFont(int staffSize)
     return &m_drawingLyricFont;
 }
 
+int Doc::GetFontPointSize(const data_FONTSIZE &fontSize, int staffSize, int inheritedPointSize) const
+{
+    switch (fontSize.GetType()) {
+        case FONTSIZE_fontSizeNumeric: {
+            if (fontSize.GetFontSizeNumericType() == FONTSIZENUMERIC_vu) {
+                return static_cast<int>(std::lround(fontSize.GetFontSizeNumeric() * this->GetDrawingUnit(staffSize)));
+            }
+            constexpr double millimetersPerInch = 25.4;
+            constexpr double pointsPerInch = 72.0;
+            constexpr double drawingUnitsPerMillimeter = 10.0 * DEFINITION_FACTOR;
+            return static_cast<int>(std::lround(
+                fontSize.GetFontSizeNumeric() * millimetersPerInch * drawingUnitsPerMillimeter / pointsPerInch));
+        }
+        case FONTSIZE_term: return inheritedPointSize * fontSize.GetPercentForTerm() / 100;
+        case FONTSIZE_percent: return inheritedPointSize * fontSize.GetPercent() / 100;
+        default: return inheritedPointSize;
+    }
+}
+
+FontInfo Doc::GetTextFlowFont(const Object *textFlow)
+{
+    const Score *score = this->GetCorrespondingScore(textFlow);
+    FontInfo font = this->GetDrawingTextFont(100, score ? score->GetScoreDef() : nullptr);
+    font.SetPointSize(std::round(font.GetPointSize() * m_options->m_textFlowScale.GetValue()));
+    return font;
+}
+
 FontInfo Doc::GetDrawingTextFont(int staffSize, const ScoreDefInterface *style, bool lyric)
 {
     FontInfo font = *this->GetDrawingLyricFont(staffSize);
     font.SetFaceName(this->GetResources().GetTextFont());
     if (!style) return font;
+
+    // The size is relative to the default lyric size for the staff
+    if (lyric && style->HasLyricSize()) {
+        font.SetPointSize(this->GetFontPointSize(style->GetLyricSize(), staffSize, font.GetPointSize()));
+    }
+    else if (!lyric && style->HasTextSize()) {
+        font.SetPointSize(this->GetFontPointSize(style->GetTextSize(), staffSize, font.GetPointSize()));
+    }
 
     if (lyric) {
         if (style->HasLyricName()) {

@@ -240,6 +240,11 @@ void View::DrawTextElement(DeviceContext *dc, TextElement *element, TextDrawingP
         assert(num);
         this->DrawNum(dc, num, params);
     }
+    else if (element->Is(PTR)) {
+        Ptr *ptr = vrv_cast<Ptr *>(element);
+        assert(ptr);
+        this->DrawPtr(dc, ptr, params);
+    }
     else if (element->Is(REND)) {
         Rend *rend = vrv_cast<Rend *>(element);
         assert(rend);
@@ -366,6 +371,21 @@ void View::DrawFig(DeviceContext *dc, Fig *fig, TextDrawingParams &params)
     dc->EndGraphic(fig, this);
 }
 
+void View::DrawPtr(DeviceContext *dc, Ptr *ptr, TextDrawingParams &params)
+{
+    assert(dc);
+    assert(ptr);
+
+    dc->StartTextGraphic(ptr, "", ptr->GetID());
+    // A pointer to a harm (e.g., a chord in a text block) is drawn with the text of the harm. The harm is drawn from a
+    // copy so that the bounding boxes of its text in the score are left untouched.
+    if (Harm *target = dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc))) {
+        std::unique_ptr<Harm> copy(vrv_cast<Harm *>(target->Clone()));
+        this->DrawTextChildren(dc, copy.get(), params);
+    }
+    dc->EndTextGraphic(ptr, this);
+}
+
 void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
 {
     assert(dc);
@@ -393,17 +413,7 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
         customFont = true;
     }
     if (rend->HasFontsize()) {
-        data_FONTSIZE *fs = rend->GetFontsizeAlternate();
-        if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            rendFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
-        }
-        else if (fs->GetType() == FONTSIZE_term) {
-            const int percent = fs->GetPercentForTerm();
-            rendFont.SetPointSize(params.m_pointSize * percent / 100);
-        }
-        else if (fs->GetType() == FONTSIZE_percent) {
-            rendFont.SetPointSize(params.m_pointSize * fs->GetPercent() / 100);
-        }
+        rendFont.SetPointSize(m_doc->GetFontPointSize(rend->GetFontsize(), params.m_staffSize, params.m_pointSize));
         customFont = true;
         // Also pass it to the children
         params.m_pointSize = rendFont.GetPointSize();
@@ -611,17 +621,7 @@ void View::DrawSymbol(DeviceContext *dc, Symbol *symbol, TextDrawingParams &para
     FontInfo symbolFont;
 
     if (symbol->HasFontsize()) {
-        data_FONTSIZE *fs = symbol->GetFontsizeAlternate();
-        if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            symbolFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
-        }
-        else if (fs->GetType() == FONTSIZE_term) {
-            const int percent = fs->GetPercentForTerm();
-            symbolFont.SetPointSize(params.m_pointSize * percent / 100);
-        }
-        else if (fs->GetType() == FONTSIZE_percent) {
-            symbolFont.SetPointSize(params.m_pointSize * fs->GetPercent() / 100);
-        }
+        symbolFont.SetPointSize(m_doc->GetFontPointSize(symbol->GetFontsize(), params.m_staffSize, params.m_pointSize));
     }
     if (symbol->HasFontstyle()) {
         symbolFont.SetStyle(symbol->GetFontstyle());
@@ -688,9 +688,7 @@ void View::DrawTextLayoutElement(
     params.m_width = textLayoutElement->GetTotalWidth(m_doc);
     params.m_alignment = HORIZONTALALIGNMENT_NONE;
     params.m_laidOut = true;
-    params.m_pointSize = m_doc->GetDrawingLyricFont(100)->GetPointSize();
-
-    textElementFont.SetPointSize(params.m_pointSize);
+    params.m_pointSize = textElementFont.GetPointSize();
 
     dc->SetFont(&textElementFont);
 
@@ -715,7 +713,7 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     assert(dc);
     assert(div);
 
-    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
+    FontInfo textFlowFont = m_doc->GetTextFlowFont(div->GetTextFlowSource());
     dc->SetFont(&textFlowFont);
 
     const int lineHeight = m_doc->GetTextLineHeight(dc->GetFont(), false);
@@ -736,49 +734,39 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             this->DrawTextChildren(dc, syl, params);
             dc->EndTextGraphic(syl, this);
         }
-        else if (object->Is(PTR)) {
-            Ptr *ptr = vrv_cast<Ptr *>(object);
-            Harm *target = dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc));
-            dc->StartTextGraphic(ptr, "", ptr->GetID());
-            if (target) {
-                std::unique_ptr<Harm> copy(vrv_cast<Harm *>(target->Clone()));
-                this->DrawTextChildren(dc, copy.get(), params);
-            }
-            dc->EndTextGraphic(ptr, this);
-        }
         else if (object->IsTextElement()) {
             this->DrawTextElement(dc, vrv_cast<TextElement *>(object), params);
         }
     };
 
-    const auto drawStack = [&](Stack *stack, const TextFlowUnit &unit, int x, int y, int containingRows, int pointSize,
-                               int stackLineHeight) {
-        stack->SetTextFlowDrawingX(x);
-        stack->SetTextFlowDrawingY(y);
-        dc->StartGraphic(stack, "", stack->GetID());
-        for (size_t rowIndex = 0; rowIndex < unit.stackRows.size(); ++rowIndex) {
-            const TextFlowStackRow &row = unit.stackRows[rowIndex];
-            const int rowX = x + row.x;
-
-            const int rowY = y + (containingRows - unit.metrics.rowCount) * stackLineHeight
-                - static_cast<int>(rowIndex) * stackLineHeight;
-            dc->StartText(this->ToDeviceContextX(rowX), this->ToDeviceContextY(rowY), HORIZONTALALIGNMENT_left);
-            TextDrawingParams params;
-            params.m_x = rowX;
-            params.m_y = rowY;
-            params.m_width = unit.metrics.width;
-            params.m_pointSize = pointSize;
-            params.m_laidOut = false;
-            for (const TextFlowSegment &segment : row.segments) {
-                if (segment.textOverride)
-                    this->DrawTextString(dc, segment.text, params);
-                else
-                    drawInlineObject(segment.object, params);
-            }
-            dc->EndText();
-        }
-        dc->EndGraphic(stack, this);
-    };
+    // Stack lanes are bottom-aligned on the lyric baseline of the containing row
+    const auto drawStack
+        = [&](Stack *stack, const TextFlowUnit &unit, int x, int bottomY, int lanePitch, int pointSize) {
+              const int laneCount = static_cast<int>(unit.stackRows.size());
+              stack->SetTextFlowDrawingX(x);
+              stack->SetTextFlowDrawingY(bottomY + (laneCount - 1) * lanePitch);
+              dc->StartGraphic(stack, "", stack->GetID());
+              for (int rowIndex = 0; rowIndex < laneCount; ++rowIndex) {
+                  const TextFlowStackRow &row = unit.stackRows[rowIndex];
+                  const int rowX = x + row.x;
+                  const int rowY = bottomY + (laneCount - 1 - rowIndex) * lanePitch;
+                  dc->StartText(this->ToDeviceContextX(rowX), this->ToDeviceContextY(rowY), HORIZONTALALIGNMENT_left);
+                  TextDrawingParams params;
+                  params.m_x = rowX;
+                  params.m_y = rowY;
+                  params.m_width = unit.metrics.width;
+                  params.m_pointSize = pointSize;
+                  params.m_laidOut = false;
+                  for (const TextFlowSegment &segment : row.segments) {
+                      if (segment.textOverride)
+                          this->DrawTextString(dc, segment.text, params);
+                      else
+                          drawInlineObject(segment.object, params);
+                  }
+                  dc->EndText();
+              }
+              dc->EndGraphic(stack, this);
+          };
 
     const TextFlowDocumentLayoutResult *flow = sourceDiv->GetTextFlowDocumentLayout(availableWidth);
     if (!flow) {
@@ -790,9 +778,6 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     std::function<void(const TextFlowLayoutResult &, int, int, int)> drawPhrase;
     drawPhrase = [&](const TextFlowLayoutResult &result, int phraseOriginX, int phraseOriginY, int phraseDocumentY) {
         FontInfo phraseFont = result.font;
-        const int phraseLineHeight = result.lineHeight;
-        int phraseCursorY = phraseOriginY;
-        int rowDocumentY = phraseDocumentY;
         dc->SetFont(&phraseFont);
 
         if (phraseDocumentY >= fragmentStart) {
@@ -805,33 +790,26 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
         }
 
         for (const TextFlowRow &row : result.rows) {
-            const int rowHeight = std::max(1, row.rowCount) * phraseLineHeight;
-            const bool drawRow = (rowDocumentY < fragmentEnd) && (rowDocumentY + rowHeight > fragmentStart);
-            if (!drawRow) {
-                phraseCursorY -= rowHeight;
-                rowDocumentY += rowHeight;
-                continue;
-            }
+            // Only the rows within the page fragment of the div are drawn
+            const int rowDocumentY = phraseDocumentY + row.y;
+            const int rowHeight = row.lineHeight + (std::max(1, row.rowCount) - 1) * row.lanePitch;
+            if ((rowDocumentY >= fragmentEnd) || (rowDocumentY + rowHeight <= fragmentStart)) continue;
+            const int baselineY = phraseOriginY - row.y - row.ascent - (std::max(1, row.rowCount) - 1) * row.lanePitch;
             for (const TextFlowPlacedItem &placement : row.items) {
                 const TextFlowUnit &unit = result.units.at(placement.item);
                 const int itemX = phraseOriginX + placement.x;
-                const int baselineY = phraseCursorY - (row.rowCount - 1) * phraseLineHeight;
                 if (unit.stack) {
                     if (unit.syl == unit.object) {
-                        TextFlowSyl *textFlowSyl = dynamic_cast<TextFlowSyl *>(unit.syl);
-                        const int lyricY = phraseCursorY - (unit.metrics.rowCount - 1) * phraseLineHeight;
-                        if (textFlowSyl) {
+                        if (TextFlowSyl *textFlowSyl = dynamic_cast<TextFlowSyl *>(unit.syl)) {
                             textFlowSyl->SetTextFlowDrawingX(itemX + unit.lyricX);
-                            textFlowSyl->SetTextFlowDrawingY(lyricY);
+                            textFlowSyl->SetTextFlowDrawingY(baselineY);
                         }
                         dc->StartTextGraphic(unit.syl, "", unit.syl->GetID());
-                        drawStack(unit.stack, unit, itemX, phraseCursorY, row.rowCount, phraseFont.GetPointSize(),
-                            phraseLineHeight);
+                        drawStack(unit.stack, unit, itemX, baselineY, row.lanePitch, phraseFont.GetPointSize());
                         dc->EndTextGraphic(unit.syl, this);
                     }
                     else {
-                        drawStack(unit.stack, unit, itemX, phraseCursorY, row.rowCount, phraseFont.GetPointSize(),
-                            phraseLineHeight);
+                        drawStack(unit.stack, unit, itemX, baselineY, row.lanePitch, phraseFont.GetPointSize());
                     }
                     continue;
                 }
@@ -853,18 +831,22 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             const size_t rowIndex = static_cast<size_t>(&row - result.rows.data());
             for (const TextFlowConnector &connector : result.connectors) {
                 if (connector.row != rowIndex) continue;
-                const std::string connectorId = connector.syl ? connector.syl->GetID() + "-connector" : "";
+                const std::string connectorId = connector.syl
+                    ? connector.syl->GetID() + (connector.trailing ? "-trailing-connector" : "-connector")
+                    : "";
                 dc->StartCustomGraphic("sylConnector", "", connectorId);
-                dc->StartText(this->ToDeviceContextX(phraseOriginX + connector.x),
-                    this->ToDeviceContextY(phraseCursorY - (row.rowCount - 1) * phraseLineHeight),
-                    HORIZONTALALIGNMENT_left);
-                TextDrawingParams hyphenParams;
-                this->DrawTextString(dc, U"-", hyphenParams);
-                dc->EndText();
+                FontInfo connectorFont = connector.font;
+                dc->SetFont(&connectorFont);
+                for (int x : connector.positions) {
+                    dc->StartText(this->ToDeviceContextX(phraseOriginX + x), this->ToDeviceContextY(baselineY),
+                        HORIZONTALALIGNMENT_left);
+                    TextDrawingParams hyphenParams;
+                    this->DrawTextString(dc, U"-", hyphenParams);
+                    dc->EndText();
+                }
+                dc->ResetFont();
                 dc->EndCustomGraphic();
             }
-            phraseCursorY -= rowHeight;
-            rowDocumentY += rowHeight;
         }
         dc->ResetFont();
     };
