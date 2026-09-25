@@ -315,25 +315,22 @@ FunctorCode AdjustBeamsFunctor::VisitRest(Rest *rest)
     if ((!rest->HasOloc() || !rest->HasPloc()) && !rest->HasLoc()) {
         // constants
         const int unit = m_doc->GetDrawingUnit(staff->m_drawingStaffSize);
+        const int oldLoc = rest->GetDrawingLoc();
+        // A rest of another voice on the outer side of the beam is moved out of the way of the beam
+        const int middleLoc = staff->m_drawingLines - 1;
+        const bool outerVoice = (m_directionBias > 0) ? (oldLoc > middleLoc) : (oldLoc < middleLoc);
+        if (m_isOtherLayer && outerVoice) {
+            const int shift = std::abs(rest->Intersects(m_outerBeam, SELF, unit, false));
+            if (shift == 0) return FUNCTOR_CONTINUE;
+            const int locShift = (shift + unit - 1) / unit;
+            this->MoveRest(rest, staff, oldLoc + m_directionBias * (locShift + locShift % 2));
+            return FUNCTOR_CONTINUE;
+        }
         // calculate new and old locations for the rest
         const int locAdjust = (m_directionBias * (overlapMargin - 2 * unit + 1) / unit);
-        const int oldLoc = rest->GetDrawingLoc();
         const int newLoc = oldLoc + locAdjust - locAdjust % 2;
         if (staff->GetChildCount(LAYER) == 1) {
-            rest->SetDrawingLoc(newLoc);
-            rest->SetDrawingYRel(staff->CalcPitchPosYRel(m_doc, newLoc));
-            // If there are dots, adjust their location as well
-            if (rest->GetDots() > 0) {
-                Dots *dots = vrv_cast<Dots *>(rest->FindDescendantByType(DOTS, 1));
-                if (dots) {
-                    std::set<int> &dotLocs = dots->ModifyDotLocsForStaff(staff);
-                    const int dotLoc = (oldLoc % 2) ? oldLoc : oldLoc + 1;
-                    if (std::find(dotLocs.cbegin(), dotLocs.cend(), dotLoc) != dotLocs.cend()) {
-                        dotLocs.erase(dotLoc);
-                        dotLocs.insert(newLoc);
-                    }
-                }
-            }
+            this->MoveRest(rest, staff, newLoc);
             return FUNCTOR_CONTINUE;
         }
     }
@@ -344,6 +341,25 @@ FunctorCode AdjustBeamsFunctor::VisitRest(Rest *rest)
     if (std::abs(adjust) > std::abs(m_overlapMargin)) m_overlapMargin = adjust;
 
     return FUNCTOR_CONTINUE;
+}
+
+void AdjustBeamsFunctor::MoveRest(Rest *rest, Staff *staff, int newLoc) const
+{
+    const int oldLoc = rest->GetDrawingLoc();
+    rest->SetDrawingLoc(newLoc);
+    rest->SetDrawingYRel(staff->CalcPitchPosYRel(m_doc, newLoc));
+    // If there are dots, adjust their location as well
+    if (rest->GetDots() > 0) {
+        Dots *dots = vrv_cast<Dots *>(rest->FindDescendantByType(DOTS, 1));
+        if (dots) {
+            std::set<int> &dotLocs = dots->ModifyDotLocsForStaff(staff);
+            const int dotLoc = (oldLoc % 2) ? oldLoc : oldLoc + 1;
+            if (std::find(dotLocs.cbegin(), dotLocs.cend(), dotLoc) != dotLocs.cend()) {
+                dotLocs.erase(dotLoc);
+                dotLocs.insert(newLoc);
+            }
+        }
+    }
 }
 
 BeamDrawingInterface *AdjustBeamsFunctor::GetOuterBeamInterface() const

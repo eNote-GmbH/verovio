@@ -341,6 +341,7 @@ if(BUILD_BEAM_LAYER_OVERLAP_TESTS)
     add_test(NAME beam-layer-overlap
         COMMAND beam-layer-overlap-test
             ${CMAKE_CURRENT_SOURCE_DIR}/../tests/beam-layer-overlap/beat-slash.mei
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tests/beam-layer-overlap/beat-slash-rest.mei
             ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 endif()
 

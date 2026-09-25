@@ -65,6 +65,9 @@ private:
      */
     std::pair<int, int> GetObstacleExtent(const LayerElement *element) const;
 
+    // Moves a rest (and its dots) to a new staff location
+    void MoveRest(Rest *rest, Staff *staff, int newLoc) const;
+
     // Rounds the overlap to the closest multiple of a half unit
     int AdjustOverlapToHalfUnit(int overlap, int unit) const;
 
