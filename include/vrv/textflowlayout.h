@@ -220,7 +220,6 @@ private:
     FontInfo GetBlockFont(Object *block) const;
     int GetLineHeight(const FontInfo &font) const;
     int GetBlockSpacing(const Object *previous, Object *next) const;
-    bool PreservesWhitespace(const Object *object) const;
     Harm *GetHarm(Object *object) const;
     Syl *GetSyl(Object *object) const;
     Stack *GetStack(Object *object) const;

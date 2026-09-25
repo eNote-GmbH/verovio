@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -499,6 +500,56 @@ bool TestStyledHarmonyPointer(const std::string &resourcePath)
     return ok;
 }
 
+std::string WhitespaceMei(const std::string &separator)
+{
+    return R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Whitespace</title><composer>Text: A)"
+        + separator + R"(Melody: B</composer></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note dur="1" oct="4" pname="c"/></layer></staff>
+<dir xml:id="whitespace-dir" staff="1" tstamp="1">first)"
+        + separator + R"(second</dir>
+</measure></section></score></mdiv></body></music></mei>)";
+}
+
+bool TestTextWhitespace(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &separator) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(R"({"header":"auto"})");
+        toolkit.LoadData(WhitespaceMei(separator));
+        return toolkit.RenderToSVG(1);
+    };
+    const std::string spaced = render(" ");
+    const std::string broken = render("\n        ");
+    const auto pgHead = [](const std::string &svg) {
+        const size_t begin = svg.find("class=\"pgHead");
+        const size_t end = svg.find("class=\"system", begin);
+        return (begin == std::string::npos) ? std::string() : svg.substr(begin, end - begin);
+    };
+    // The glyphs with their positions, without the document-specific suffix of the glyph ids
+    const auto glyphs = [](const std::string &group) {
+        static const std::regex suffix("-[a-z0-9]+\"");
+        std::vector<std::string> uses;
+        size_t position = 0;
+        while ((position = group.find("<use", position)) != std::string::npos) {
+            const size_t end = group.find("/>", position);
+            uses.push_back(std::regex_replace(group.substr(position, end - position), suffix, "\""));
+            position = end;
+        }
+        return uses;
+    };
+    bool ok = Expect(!glyphs(SvgGroup(spaced, "whitespace-dir")).empty(), "the whitespace fixture was not rendered");
+    ok &= Expect(glyphs(SvgGroup(broken, "whitespace-dir")) == glyphs(SvgGroup(spaced, "whitespace-dir")),
+        "a line break within a text was not drawn as a single space");
+    ok &= Expect(!glyphs(pgHead(spaced)).empty() && (glyphs(pgHead(broken)) == glyphs(pgHead(spaced))),
+        "a line break within a header text was not drawn as a single space");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -825,6 +876,7 @@ int main(int argc, char **argv)
     ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
     ok &= TestScoreDefTextSize(resourcePath);
     ok &= TestStyledHarmonyPointer(resourcePath);
+    ok &= TestTextWhitespace(resourcePath);
 
     return ok ? 0 : 1;
 }

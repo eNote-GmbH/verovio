@@ -199,15 +199,6 @@ void TextFlowLayout::MeasureExtent(
     for (Object *child : object->GetChildren()) this->MeasureExtent(child, font, pointSize, ascent, descent);
 }
 
-bool TextFlowLayout::PreservesWhitespace(const Object *object) const
-{
-    for (const Object *current = object; current; current = current->GetParent()) {
-        const AttWhitespace *whitespace = dynamic_cast<const AttWhitespace *>(current);
-        if (whitespace && whitespace->HasSpace()) return whitespace->GetSpace() == "preserve";
-    }
-    return false;
-}
-
 Harm *TextFlowLayout::GetHarm(Object *object) const
 {
     if (!object || !object->Is(PTR)) return nullptr;
@@ -258,7 +249,7 @@ std::vector<TextFlowStackRow> TextFlowLayout::BuildStackRows(Object *object) con
     }
 
     // Whitespace at the edges of a lane (e.g., "<ptr/> |Seh") would only widen the lane
-    if (!this->PreservesWhitespace(stack)) {
+    if (!PreservesWhitespace(stack)) {
         static const std::u32string whitespace = U" \t\n\r";
         const auto trim = [&](TextFlowSegment &segment, bool leading) {
             if (!segment.textOverride) return;
@@ -445,7 +436,7 @@ std::vector<TextFlowUnit> TextFlowLayout::MakeUnits(Object *block, const std::ve
             }
             else if (child->Is(TEXT)) {
                 std::u32string value = vrv_cast<Text *>(child)->GetText();
-                if (this->PreservesWhitespace(child)) {
+                if (PreservesWhitespace(child)) {
                     std::replace(value.begin(), value.end(), U'\t', U' ');
                     size_t begin = 0;
                     while (begin <= value.size()) {
