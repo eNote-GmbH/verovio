@@ -69,7 +69,7 @@ void Rend::Reset()
 
 bool Rend::IsSupportedChild(ClassId classId)
 {
-    static const std::vector<ClassId> supported{ LB, NUM, REND, SYMBOL, TEXT };
+    static const std::vector<ClassId> supported{ LB, NUM, PTR, REND, SYMBOL, TEXT };
 
     if (std::find(supported.begin(), supported.end(), classId) != supported.end()) {
         return true;

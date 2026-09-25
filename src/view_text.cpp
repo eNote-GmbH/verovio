@@ -240,6 +240,11 @@ void View::DrawTextElement(DeviceContext *dc, TextElement *element, TextDrawingP
         assert(num);
         this->DrawNum(dc, num, params);
     }
+    else if (element->Is(PTR)) {
+        Ptr *ptr = vrv_cast<Ptr *>(element);
+        assert(ptr);
+        this->DrawPtr(dc, ptr, params);
+    }
     else if (element->Is(REND)) {
         Rend *rend = vrv_cast<Rend *>(element);
         assert(rend);
@@ -364,6 +369,21 @@ void View::DrawFig(DeviceContext *dc, Fig *fig, TextDrawingParams &params)
     }
 
     dc->EndGraphic(fig, this);
+}
+
+void View::DrawPtr(DeviceContext *dc, Ptr *ptr, TextDrawingParams &params)
+{
+    assert(dc);
+    assert(ptr);
+
+    dc->StartTextGraphic(ptr, "", ptr->GetID());
+    // A pointer to a harm (e.g., a chord in a text block) is drawn with the text of the harm. The harm is drawn from a
+    // copy so that the bounding boxes of its text in the score are left untouched.
+    if (Harm *target = dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc))) {
+        std::unique_ptr<Harm> copy(vrv_cast<Harm *>(target->Clone()));
+        this->DrawTextChildren(dc, copy.get(), params);
+    }
+    dc->EndTextGraphic(ptr, this);
 }
 
 void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
@@ -713,16 +733,6 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
             dc->StartTextGraphic(syl, "", syl->GetID());
             this->DrawTextChildren(dc, syl, params);
             dc->EndTextGraphic(syl, this);
-        }
-        else if (object->Is(PTR)) {
-            Ptr *ptr = vrv_cast<Ptr *>(object);
-            Harm *target = dynamic_cast<Harm *>(ptr->GetTargetObject(m_doc));
-            dc->StartTextGraphic(ptr, "", ptr->GetID());
-            if (target) {
-                std::unique_ptr<Harm> copy(vrv_cast<Harm *>(target->Clone()));
-                this->DrawTextChildren(dc, copy.get(), params);
-            }
-            dc->EndTextGraphic(ptr, this);
         }
         else if (object->IsTextElement()) {
             this->DrawTextElement(dc, vrv_cast<TextElement *>(object), params);

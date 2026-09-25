@@ -464,6 +464,41 @@ bool TestTextFlowScale(const char *file, const std::string &resourcePath)
     return ok;
 }
 
+bool TestStyledHarmonyPointer(const std::string &resourcePath)
+{
+    const std::string mei = R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Styled chords</title></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note xml:id="styled-note" dur="1" oct="4" pname="c"/></layer></staff>
+<harm xml:id="styled-harm" staff="1" startid="#styled-note">Dm</harm>
+</measure>
+<div><lg><l>
+<syl><stack delim="|" align="left"><ptr xml:id="plain-ptr" target="#styled-harm"/>|Ly</stack></syl>
+<syl><stack delim="|" align="left"><rend fontstyle="italic"><ptr xml:id="italic-ptr" target="#styled-harm"/></rend>|ric</stack></syl>
+</l></lg></div>
+</section></score></mdiv></body></music></mei>)";
+    vrv::Toolkit toolkit(false);
+    toolkit.SetResourcePath(resourcePath);
+    bool ok = Expect(toolkit.LoadData(mei), "the styled chord fixture did not load");
+    const std::string svg = RenderAllPages(toolkit);
+    const std::vector<std::string> harm = GlyphReferences(svg, "styled-harm");
+    const std::vector<std::string> italic = GlyphReferences(svg, "italic-ptr");
+    ok &= Expect(
+        !harm.empty() && (GlyphReferences(svg, "plain-ptr") == harm), "a chord pointer was not drawn as its harm");
+    ok &= Expect(italic.size() == harm.size(), "a chord pointer within <rend> was not drawn");
+    ok &= Expect(italic != harm, "a chord pointer within <rend fontstyle=\"italic\"> was not drawn in italics");
+    const std::string output = toolkit.GetMEI();
+    const size_t pointer = output.find("xml:id=\"italic-ptr\"");
+    const size_t rend = output.rfind("<rend", pointer);
+    ok &= Expect((pointer != std::string::npos) && (rend != std::string::npos)
+            && (output.find("</rend>", rend) > pointer)
+            && (output.substr(rend, pointer - rend).find("fontstyle=\"italic\"") != std::string::npos),
+        "a chord pointer within <rend> was not preserved in the MEI output");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -789,6 +824,7 @@ int main(int argc, char **argv)
     ok &= TestTextFlowScale(argv[7], resourcePath);
     ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
     ok &= TestScoreDefTextSize(resourcePath);
+    ok &= TestStyledHarmonyPointer(resourcePath);
 
     return ok ? 0 : 1;
 }

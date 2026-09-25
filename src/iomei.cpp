@@ -4035,6 +4035,10 @@ bool MEIInput::IsAllowed(std::string element, Object *filterParent)
         else if (element == "num") {
             return true;
         }
+        // Pointers to chords in text blocks can be styled, e.g., <rend fontstyle="italic"><ptr/></rend>
+        else if (element == "ptr") {
+            return (filterParent->GetFirstAncestor(STACK) != nullptr);
+        }
         else if (element == "rend") {
             return true;
         }

@@ -381,6 +381,7 @@ protected:
     void DrawFig(DeviceContext *dc, Fig *fig, TextDrawingParams &params);
     void DrawLb(DeviceContext *dc, Lb *lb, TextDrawingParams &params);
     void DrawNum(DeviceContext *dc, Num *num, TextDrawingParams &params);
+    void DrawPtr(DeviceContext *dc, Ptr *ptr, TextDrawingParams &params);
     void DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params);
     void DrawGraphic(DeviceContext *dc, Graphic *graphic, TextDrawingParams &params, int staffSize, bool dimin);
     void DrawSvg(DeviceContext *dc, Svg *svg, TextDrawingParams &params, int staffSize, bool dimin);
