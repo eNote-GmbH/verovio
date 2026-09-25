@@ -457,6 +457,75 @@ bool TestSlurAnchors(const std::string &fixture, const std::string &resourcePath
     return ok;
 }
 
+// Eight measures with a boxed, left-aligned rehearsal mark at the start of the given measure
+std::string RehOverflowMei(int rehMeasure, const std::string &rehText)
+{
+    std::string measures;
+    for (int n = 1; n <= 8; ++n) {
+        measures += "<measure xml:id=\"reh-m" + std::to_string(n) + "\" n=\"" + std::to_string(n)
+            + "\"><staff n=\"1\"><layer n=\"1\">";
+        for (const char *pname : { "c", "d", "e", "f" }) {
+            measures += std::string("<note dur=\"4\" oct=\"4\" pname=\"") + pname + "\"/>";
+        }
+        measures += "</layer></staff>";
+        if (n == rehMeasure) {
+            measures += "<reh xml:id=\"overflow-reh\" staff=\"1\" tstamp=\"1\"><rend halign=\"left\" rend=\"box\">"
+                + rehText + "</rend></reh>";
+        }
+        measures += "</measure>";
+    }
+    return R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Rehearsal overflow</title></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2" meter.count="4" meter.unit="4"/></staffGrp></scoreDef>
+<section>)"
+        + measures + "</section></score></mdiv></body></music></mei>";
+}
+
+// The index of the system containing the element with the given id and whether the element starts the system
+std::pair<int, bool> SystemPosition(const pugi::xml_document &document, const std::string &id)
+{
+    int index = 0;
+    for (const pugi::xpath_node &system : document.select_nodes("//*[@class='system']")) {
+        const pugi::xpath_node_set measures = system.node().select_nodes(".//*[@class='measure']");
+        for (const pugi::xpath_node &measure : measures) {
+            if (measure.node().attribute("id").as_string() == id) return { index, measure == measures.first() };
+        }
+        ++index;
+    }
+    return { -1, false };
+}
+
+bool TestRehearsalOverflow(const std::string &resourcePath)
+{
+    const auto render = [&](int rehMeasure, const std::string &rehText, pugi::xml_document &document) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(R"({"pageWidth":1500,"adjustPageHeight":true})");
+        return toolkit.LoadData(RehOverflowMei(rehMeasure, rehText))
+            && document.load_string(toolkit.RenderToSVG(1).c_str());
+    };
+
+    // The last measure of the first system with a rehearsal mark that fits
+    pugi::xml_document fitting;
+    bool ok = Expect(render(1, "A", fitting), "the rehearsal overflow fixture did not render");
+    int lastMeasure = 0;
+    for (int n = 1; n <= 8; ++n) {
+        if (SystemPosition(fitting, "reh-m" + std::to_string(n)).first == 0) lastMeasure = n;
+    }
+    ok &= Expect((lastMeasure > 1) && (lastMeasure < 8), "the rehearsal overflow fixture did not fill a first system");
+    if (!ok) return false;
+
+    // A rehearsal mark there that would overflow the system moves its measure to the next system
+    pugi::xml_document overflowing;
+    ok &= Expect(render(lastMeasure, "Intro 2 / Interlude / Outro", overflowing),
+        "the overflowing rehearsal fixture did not render");
+    ok &= Expect(SystemPosition(overflowing, "reh-m" + std::to_string(lastMeasure)) == std::make_pair(1, true),
+        "a rehearsal mark overflowing the system did not move its measure to the next system");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -477,5 +546,6 @@ int main(int argc, char **argv)
     ok &= TestHistoricRehVerticalGroupRoundtrip(argv[6], argv[10]);
     ok &= TestRendering(argv[1], argv[2], argv[3], argv[4], argv[5], argv[7], argv[8], argv[10]);
     ok &= TestSlurAnchors(argv[9], argv[10]);
+    ok &= TestRehearsalOverflow(argv[10]);
     return ok ? 0 : 1;
 }
