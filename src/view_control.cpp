@@ -1820,9 +1820,6 @@ void View::DrawControlElementText(DeviceContext *dc, ControlElement *element, Me
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo dirTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextStyle())) {
-            dirTxt.SetStyle(FONTSTYLE_italic);
-        }
 
         int xAdjust = 0;
         const bool isBetweenStaves = (place == STAFFREL_between)
@@ -1901,9 +1898,6 @@ void View::DrawDynam(DeviceContext *dc, Dynam *dynam, Measure *measure, System *
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo dynamTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextStyle())) {
-            dynamTxt.SetStyle(FONTSTYLE_italic);
-        }
 
         if (dynam->HasEnclose()) {
             params.m_textEnclose = dynam->GetEnclose();
@@ -2801,9 +2795,6 @@ void View::DrawReh(DeviceContext *dc, Reh *reh, Measure *measure, System *system
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo rehTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextWeight())) {
-            rehTxt.SetWeight(FONTWEIGHT_bold);
-        }
         rehTxt.SetPointSize(params.m_pointSize);
 
         dc->SetFont(&rehTxt);
@@ -2921,9 +2912,6 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
 
         const ScoreDefInterface *textStyle = staff->m_drawingStaffDef;
         FontInfo tempoTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-        if (!dc->UseGlobalStyling() && (!textStyle || !textStyle->HasTextWeight())) {
-            tempoTxt.SetWeight(FONTWEIGHT_bold);
-        }
         tempoTxt.SetPointSize(params.m_pointSize);
 
         if (tempo->GetPlace() == STAFFREL_between) {

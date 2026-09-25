@@ -353,8 +353,8 @@ bool TestRendering(const std::string &orderFixture, const std::string &partialFi
     pugi::xml_document legacy;
     ok &= Expect(LoadSVG(defaultFixture, resourcePath, legacy), "legacy rendering fixture did not render");
     if (legacy) {
-        ok &= Expect(TextY(legacy, "default-harm") == 3253 && TextY(legacy, "default-dynam") == 2807
-                && TextY(legacy, "default-dir") == 2721,
+        ok &= Expect(TextY(legacy, "default-harm") == 3169 && TextY(legacy, "default-dynam") == 2806
+                && TextY(legacy, "default-dir") == 2679,
             "the no-attribute legacy between layout changed");
 
         std::string unrelatedDirection = ReadFile(defaultFixture);
