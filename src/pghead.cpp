@@ -98,11 +98,15 @@ bool PgHead::GenerateFromMEIHeader(const pugi::xml_document &header)
         this->AddChild(titleRend);
     }
 
-    nodeSet
-        = header.select_nodes("//fileDesc/titleStmt/composer|arranger|lyricist|respStmt/persName[contains('lyricist "
-                              "translator composer harmonizer arranger', @role)]");
+    // Each alternative of the union needs the full path, a bare name would be looked up from the document root
+    nodeSet = header.select_nodes(
+        "//fileDesc/titleStmt/*[self::composer or self::arranger or self::lyricist]"
+        "|//fileDesc/titleStmt/respStmt/persName[@role and contains('lyricist translator composer "
+        "harmonizer arranger', @role)]");
 
     for (auto node : nodeSet) {
+        const std::u32string person = HeaderText(node.node());
+        if (person.empty()) continue;
         Rend *personRend = new Rend();
         std::string role = node.node().attribute("role").as_string();
         std::string name = node.node().name();
@@ -116,7 +120,7 @@ bool PgHead::GenerateFromMEIHeader(const pugi::xml_document &header)
         personRend->SetValign(VERTICALALIGNMENT_bottom);
         personRend->SetLabel(role);
         Text *personText = new Text();
-        personText->SetText(HeaderText(node.node()));
+        personText->SetText(person);
         personRend->SetLang(node.node().attribute("xml:lang").as_string());
         personRend->AddChild(personText);
         this->AddChild(personRend);

@@ -550,6 +550,44 @@ bool TestTextWhitespace(const std::string &resourcePath)
     return ok;
 }
 
+bool TestHeaderPersons(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &persons) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.SetOptions(R"({"header":"auto"})");
+        toolkit.LoadData(R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Persons</title>)"
+            + persons + R"(</titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1"><note dur="1" oct="4" pname="c"/></layer></staff></measure></section>
+</score></mdiv></body></music></mei>)");
+        const std::string svg = toolkit.RenderToSVG(1);
+        const size_t begin = svg.find("class=\"pgHead");
+        const size_t end = svg.find("class=\"system", begin);
+        if (begin == std::string::npos) return std::make_pair(size_t(0), size_t(0));
+        const std::string pgHead = svg.substr(begin, end - begin);
+        return std::make_pair(CountOccurrences(pgHead, "<use"), CountOccurrences(pgHead, "class=\"rend\""));
+    };
+    const auto glyphs = [&](const std::string &persons) { return render(persons).first; };
+    const size_t title = glyphs("");
+    const size_t composer = glyphs("<composer>C</composer>");
+    bool ok = Expect(composer > title, "the composer was not drawn in the page header");
+    for (const std::string person : { "arranger", "lyricist" }) {
+        ok &= Expect(glyphs("<composer>C</composer><" + person + ">P</" + person + ">") > composer,
+            "the " + person + " was not drawn in the page header");
+    }
+    ok &= Expect(glyphs(R"(<respStmt><persName role="lyricist">P</persName></respStmt>)") > title,
+        "a person with a role was not drawn in the page header");
+    ok &= Expect(glyphs("<respStmt><persName>P</persName></respStmt>") == title,
+        "a person without a role was drawn in the page header");
+    ok &= Expect(render("<composer/><respStmt><persName/></respStmt>").second == render("").second,
+        "empty persons added groups to the page header");
+    return ok;
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -877,6 +915,7 @@ int main(int argc, char **argv)
     ok &= TestScoreDefTextSize(resourcePath);
     ok &= TestStyledHarmonyPointer(resourcePath);
     ok &= TestTextWhitespace(resourcePath);
+    ok &= TestHeaderPersons(resourcePath);
 
     return ok ? 0 : 1;
 }
