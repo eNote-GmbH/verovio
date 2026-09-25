@@ -393,17 +393,7 @@ void View::DrawRend(DeviceContext *dc, Rend *rend, TextDrawingParams &params)
         customFont = true;
     }
     if (rend->HasFontsize()) {
-        data_FONTSIZE *fs = rend->GetFontsizeAlternate();
-        if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            rendFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
-        }
-        else if (fs->GetType() == FONTSIZE_term) {
-            const int percent = fs->GetPercentForTerm();
-            rendFont.SetPointSize(params.m_pointSize * percent / 100);
-        }
-        else if (fs->GetType() == FONTSIZE_percent) {
-            rendFont.SetPointSize(params.m_pointSize * fs->GetPercent() / 100);
-        }
+        rendFont.SetPointSize(m_doc->GetFontPointSize(rend->GetFontsize(), params.m_staffSize, params.m_pointSize));
         customFont = true;
         // Also pass it to the children
         params.m_pointSize = rendFont.GetPointSize();
@@ -611,17 +601,7 @@ void View::DrawSymbol(DeviceContext *dc, Symbol *symbol, TextDrawingParams &para
     FontInfo symbolFont;
 
     if (symbol->HasFontsize()) {
-        data_FONTSIZE *fs = symbol->GetFontsizeAlternate();
-        if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-            symbolFont.SetPointSize(this->ConvertFontSizeNumeric(*fs, params.m_staffSize));
-        }
-        else if (fs->GetType() == FONTSIZE_term) {
-            const int percent = fs->GetPercentForTerm();
-            symbolFont.SetPointSize(params.m_pointSize * percent / 100);
-        }
-        else if (fs->GetType() == FONTSIZE_percent) {
-            symbolFont.SetPointSize(params.m_pointSize * fs->GetPercent() / 100);
-        }
+        symbolFont.SetPointSize(m_doc->GetFontPointSize(symbol->GetFontsize(), params.m_staffSize, params.m_pointSize));
     }
     if (symbol->HasFontstyle()) {
         symbolFont.SetStyle(symbol->GetFontstyle());
@@ -688,9 +668,7 @@ void View::DrawTextLayoutElement(
     params.m_width = textLayoutElement->GetTotalWidth(m_doc);
     params.m_alignment = HORIZONTALALIGNMENT_NONE;
     params.m_laidOut = true;
-    params.m_pointSize = m_doc->GetDrawingLyricFont(100)->GetPointSize();
-
-    textElementFont.SetPointSize(params.m_pointSize);
+    params.m_pointSize = textElementFont.GetPointSize();
 
     dc->SetFont(&textElementFont);
 
@@ -715,7 +693,7 @@ void View::DrawTextFlow(DeviceContext *dc, Div *div, System *system)
     assert(dc);
     assert(div);
 
-    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system ? system->GetDrawingScoreDef() : nullptr);
+    FontInfo textFlowFont = m_doc->GetTextFlowFont(div->GetTextFlowSource());
     dc->SetFont(&textFlowFont);
 
     const int lineHeight = m_doc->GetTextLineHeight(dc->GetFont(), false);

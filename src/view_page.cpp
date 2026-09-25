@@ -512,7 +512,6 @@ void View::DrawLabels(
     const ScoreDefInterface *textStyle = labelStaffDef ? static_cast<const ScoreDefInterface *>(labelStaffDef)
                                                        : static_cast<const ScoreDefInterface *>(scoreDef);
     FontInfo labelTxt = m_doc->GetDrawingTextFont(staffSize, textStyle);
-    labelTxt.SetPointSize(m_doc->GetDrawingLyricFont(staffSize)->GetPointSize());
 
     int lineCount = graphic->GetChildCount(LB) + 1;
     if (lineCount > 1) {
@@ -1156,17 +1155,8 @@ void View::DrawMNum(DeviceContext *dc, MNum *mnum, Measure *measure, System *sys
         params.m_staffSize = staff->m_drawingStaffSize;
         const int basePointSize = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize();
         if (mnum->HasFontsize()) {
-            data_FONTSIZE *fs = mnum->GetFontsizeAlternate();
-            if (fs->GetType() == FONTSIZE_fontSizeNumeric) {
-                mnumTxt.SetPointSize(this->ConvertFontSizeNumeric(*fs, staff->m_drawingStaffSize));
-            }
-            else if (fs->GetType() == FONTSIZE_term) {
-                const int percent = fs->GetPercentForTerm();
-                mnumTxt.SetPointSize(basePointSize * percent / 100);
-            }
-            else if (fs->GetType() == FONTSIZE_percent) {
-                mnumTxt.SetPointSize(basePointSize * fs->GetPercent() / 100);
-            }
+            mnumTxt.SetPointSize(
+                m_doc->GetFontPointSize(mnum->GetFontsize(), staff->m_drawingStaffSize, basePointSize));
         }
         else {
             mnumTxt.SetPointSize(m_doc->GetDrawingLyricFont(80)->GetPointSize());

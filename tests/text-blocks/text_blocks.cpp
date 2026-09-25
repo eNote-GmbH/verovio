@@ -322,6 +322,58 @@ bool TestInterruptedWordHyphens(const char *file, const std::string &resourcePat
     return ok;
 }
 
+std::string ScoreDefTextSizeMei(const std::string &scoreDefAttributes)
+{
+    return R"(<?xml version="1.0" encoding="UTF-8"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+<meiHead><fileDesc><titleStmt><title>Text sizes</title></titleStmt><pubStmt/></fileDesc></meiHead>
+<music><body><mdiv><score>
+<scoreDef )"
+        + scoreDefAttributes
+        + R"(><staffGrp><staffDef n="1" lines="5" clef.shape="G" clef.line="2"/></staffGrp></scoreDef>
+<section><measure n="1"><staff n="1"><layer n="1">
+<note xml:id="size-note" dur="1" oct="4" pname="c"><verse n="1"><syl xml:id="size-syl">Ly</syl></verse>
+<verse n="2"><syl xml:id="size-pt-syl" fontsize="12pt">Ly</syl></verse></note>
+</layer></staff>
+<harm xml:id="size-harm" staff="1" startid="#size-note">C</harm>
+<reh xml:id="size-reh" staff="1" tstamp="1">A</reh>
+<tempo xml:id="size-tempo" staff="1" tstamp="1">Tempo</tempo>
+<dir xml:id="size-dir" staff="1" tstamp="1" place="below">dir</dir>
+</measure></section></score></mdiv></body></music></mei>)";
+}
+
+bool TestScoreDefTextSize(const std::string &resourcePath)
+{
+    const auto render = [&](const std::string &attributes) {
+        vrv::Toolkit toolkit(false);
+        toolkit.SetResourcePath(resourcePath);
+        toolkit.LoadData(ScoreDefTextSizeMei(attributes));
+        return toolkit.RenderToSVG(1);
+    };
+    const std::string plain = render("");
+    const std::string sized = render(R"(text.size="16pt" lyric.size="8pt")");
+    const auto scale = [](const std::string &svg, const std::string &id) {
+        const std::vector<double> scales = GlyphScales(svg, id);
+        return scales.empty() ? 0.0 : scales.front();
+    };
+
+    // The syllable with an absolute size of 12pt is the reference for the sizes in points
+    const double reference = scale(sized, "size-pt-syl");
+    bool ok = Expect(reference > 0.0, "the text-size fixture was not rendered");
+    ok &= Expect(
+        std::abs(reference - scale(plain, "size-pt-syl")) < 1e-6, "syl@fontsize in points depended on the lyric size");
+    // Before, a size in points was taken as a size in drawing units, i.e., about a tenth of the intended size
+    ok &= Expect(
+        scale(plain, "size-pt-syl") > 0.5 * scale(plain, "size-syl"), "syl@fontsize in points was not converted");
+    for (const std::string id : { "size-harm", "size-reh", "size-tempo", "size-dir" }) {
+        ok &= Expect(
+            std::abs(scale(sized, id) / reference - 16.0 / 12.0) < 0.01, "scoreDef@text.size was not applied to " + id);
+    }
+    ok &= Expect(std::abs(scale(sized, "size-syl") / reference - 8.0 / 12.0) < 0.01,
+        "scoreDef@lyric.size was not applied to lyrics");
+    return ok;
+}
+
 struct TextFlowSpacingMetrics {
     double chordLane = 0.0;
     double lyricLine = 0.0;
@@ -392,6 +444,8 @@ int main(int argc, char **argv)
     toolkit.SetResourcePath("../data");
 
     bool ok = TestTextFlowPagination();
+    // A page height at which the later verses start below the score and continue on the next page
+    ok &= Expect(toolkit.SetOptions(R"({"pageHeight":2850})"), "text-block fixture options were rejected");
     ok &= Expect(toolkit.LoadFile(argv[1]), "text-block fixture did not load");
 
     const std::string mei = toolkit.GetMEI();
@@ -703,6 +757,7 @@ int main(int argc, char **argv)
 
     ok &= TestTextFlowSpacing(argv[7], resourcePath);
     ok &= TestInterruptedWordHyphens(argv[2], resourcePath);
+    ok &= TestScoreDefTextSize(resourcePath);
 
     return ok ? 0 : 1;
 }

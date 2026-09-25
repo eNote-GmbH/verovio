@@ -325,14 +325,7 @@ void ScoreDef::ReplaceDrawingValues(const ScoreDef *newScoreDef)
     m_insertScoreDef = false;
     m_setAsDrawing = true;
     this->ReplaceStaffItemOrders(newScoreDef);
-    if (newScoreDef->HasLyricFam()) this->SetLyricFam(newScoreDef->GetLyricFam());
-    if (newScoreDef->HasLyricName()) this->SetLyricName(newScoreDef->GetLyricName());
-    if (newScoreDef->HasLyricStyle()) this->SetLyricStyle(newScoreDef->GetLyricStyle());
-    if (newScoreDef->HasLyricWeight()) this->SetLyricWeight(newScoreDef->GetLyricWeight());
-    if (newScoreDef->HasTextFam()) this->SetTextFam(newScoreDef->GetTextFam());
-    if (newScoreDef->HasTextName()) this->SetTextName(newScoreDef->GetTextName());
-    if (newScoreDef->HasTextStyle()) this->SetTextStyle(newScoreDef->GetTextStyle());
-    if (newScoreDef->HasTextWeight()) this->SetTextWeight(newScoreDef->GetTextWeight());
+    this->ReplaceTextStyle(newScoreDef);
 
     int redrawFlags = 0;
     const Clef *clef = NULL;
@@ -387,14 +380,7 @@ void ScoreDef::ReplaceDrawingValues(const StaffDef *newStaffDef)
 
     // if found, replace attributes
     if (staffDef) {
-        if (newStaffDef->HasLyricFam()) staffDef->SetLyricFam(newStaffDef->GetLyricFam());
-        if (newStaffDef->HasLyricName()) staffDef->SetLyricName(newStaffDef->GetLyricName());
-        if (newStaffDef->HasLyricStyle()) staffDef->SetLyricStyle(newStaffDef->GetLyricStyle());
-        if (newStaffDef->HasLyricWeight()) staffDef->SetLyricWeight(newStaffDef->GetLyricWeight());
-        if (newStaffDef->HasTextFam()) staffDef->SetTextFam(newStaffDef->GetTextFam());
-        if (newStaffDef->HasTextName()) staffDef->SetTextName(newStaffDef->GetTextName());
-        if (newStaffDef->HasTextStyle()) staffDef->SetTextStyle(newStaffDef->GetTextStyle());
-        if (newStaffDef->HasTextWeight()) staffDef->SetTextWeight(newStaffDef->GetTextWeight());
+        staffDef->ReplaceTextStyle(newStaffDef);
         if (staffDef->ReplaceStaffItemOrders(newStaffDef)) m_setAsDrawing = true;
         if (newStaffDef->HasClefInfo()) {
             staffDef->SetDrawClef(true);

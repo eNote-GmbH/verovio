@@ -72,4 +72,20 @@ void ScoreDefInterface::Reset()
     this->ResetSystems();
 }
 
+void ScoreDefInterface::ReplaceTextStyle(const ScoreDefInterface *other)
+{
+    assert(other);
+
+    if (other->HasLyricFam()) this->SetLyricFam(other->GetLyricFam());
+    if (other->HasLyricName()) this->SetLyricName(other->GetLyricName());
+    if (other->HasLyricSize()) this->SetLyricSize(other->GetLyricSize());
+    if (other->HasLyricStyle()) this->SetLyricStyle(other->GetLyricStyle());
+    if (other->HasLyricWeight()) this->SetLyricWeight(other->GetLyricWeight());
+    if (other->HasTextFam()) this->SetTextFam(other->GetTextFam());
+    if (other->HasTextName()) this->SetTextName(other->GetTextName());
+    if (other->HasTextSize()) this->SetTextSize(other->GetTextSize());
+    if (other->HasTextStyle()) this->SetTextStyle(other->GetTextStyle());
+    if (other->HasTextWeight()) this->SetTextWeight(other->GetTextWeight());
+}
+
 } // namespace vrv

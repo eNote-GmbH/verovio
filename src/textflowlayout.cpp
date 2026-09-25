@@ -100,26 +100,7 @@ FontInfo TextFlowLayout::GetStyledFont(Object *object, const FontInfo &inherited
         font.SetFaceName(typography->GetFontfam().c_str());
 
     if (typography->HasFontsize()) {
-        data_FONTSIZE *fontSize = typography->GetFontsizeAlternate();
-        if (fontSize->GetType() == FONTSIZE_fontSizeNumeric) {
-            if (fontSize->GetFontSizeNumericType() == FONTSIZENUMERIC_vu) {
-                font.SetPointSize(
-                    static_cast<int>(std::lround(fontSize->GetFontSizeNumeric() * m_doc->GetDrawingUnit(m_staffSize))));
-            }
-            else {
-                constexpr double millimetersPerInch = 25.4;
-                constexpr double pointsPerInch = 72.0;
-                constexpr double drawingUnitsPerMillimeter = 10.0 * DEFINITION_FACTOR;
-                font.SetPointSize(static_cast<int>(std::lround(
-                    fontSize->GetFontSizeNumeric() * millimetersPerInch * drawingUnitsPerMillimeter / pointsPerInch)));
-            }
-        }
-        else if (fontSize->GetType() == FONTSIZE_term) {
-            font.SetPointSize(inheritedPointSize * fontSize->GetPercentForTerm() / 100);
-        }
-        else if (fontSize->GetType() == FONTSIZE_percent) {
-            font.SetPointSize(inheritedPointSize * fontSize->GetPercent() / 100);
-        }
+        font.SetPointSize(m_doc->GetFontPointSize(typography->GetFontsize(), m_staffSize, inheritedPointSize));
     }
     if (typography->HasFontstyle()) font.SetStyle(typography->GetFontstyle());
     if (typography->HasFontweight()) font.SetWeight(typography->GetFontweight());

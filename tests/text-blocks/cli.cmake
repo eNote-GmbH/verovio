@@ -26,8 +26,10 @@ endif()
 
 # Rendering the exported file validates that the generated XML is parseable by
 # the public CLI and produces usable SVG, rather than merely creating a file.
+# The page height lets the later verses start below the score and continue on
+# the next page.
 execute_process(
-    COMMAND "${VEROVIO}" -r "${RESOURCES}" -a -o "${SVG_BASE}" "${EXPORTED_MEI}"
+    COMMAND "${VEROVIO}" -r "${RESOURCES}" -a --page-height 2850 -o "${SVG_BASE}" "${EXPORTED_MEI}"
     RESULT_VARIABLE RENDER_RESULT
 )
 if(NOT RENDER_RESULT EQUAL 0)

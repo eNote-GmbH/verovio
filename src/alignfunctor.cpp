@@ -878,11 +878,12 @@ int AlignSystemsFunctor::GetSystemSpacing(const System *system) const
 
     // A text block is separated from the score before it by the score margin and from a text block before it by the
     // block spacing
-    const auto isTextBlock = [](const Object *object) {
+    const auto getTextBlock = [](const Object *object) -> const Div * {
         const Div *div = vrv_cast<const Div *>(object->FindDescendantByType(DIV, 1));
-        return div && div->HasTextFlow();
+        return (div && div->HasTextFlow()) ? div : nullptr;
     };
-    if (!isTextBlock(system)) return systemSpacing;
+    const Div *textBlock = getTextBlock(system);
+    if (!textBlock) return systemSpacing;
     const Object *previous = system->GetParent()->GetPrevious(system, SYSTEM);
     if (!previous) return systemSpacing;
 
@@ -891,14 +892,14 @@ int AlignSystemsFunctor::GetSystemSpacing(const System *system) const
     if (previous->GetChildCount(MEASURE)) {
         factor = options->m_textFlowScoreMargin.GetValue();
     }
-    else if (isTextBlock(previous)) {
+    else if (getTextBlock(previous)) {
         factor = options->m_textFlowBlockSpacing.GetValue();
     }
     else {
         return systemSpacing;
     }
 
-    FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system->GetDrawingScoreDef());
+    FontInfo textFlowFont = m_doc->GetTextFlowFont(textBlock->GetTextFlowSource());
     const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
     return static_cast<int>(std::lround(factor * lineHeight));
 }
