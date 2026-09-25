@@ -463,8 +463,16 @@ FunctorCode CastOffPagesFunctor::VisitSystem(System *system)
         }
     }
 
-    if (systemLimitReached || (encodedPageBreak && (systemChildCount > 0))
-        || ((systemChildCount > 0) && (m_usedHeight + gap + fullSystemHeight > this->GetAvailableDrawingHeight()))) {
+    // A system without measures or text - e.g. one holding only the end milestones of the sections
+    // after a trailing <div> - takes no space and must never start a page of its own, which would
+    // otherwise stay blank.
+    const bool isEmptySystem
+        = !encodedPageBreak && !system->FindDescendantByType(MEASURE) && !system->FindDescendantByType(DIV);
+
+    if (!isEmptySystem
+        && (systemLimitReached || (encodedPageBreak && (systemChildCount > 0))
+            || ((systemChildCount > 0)
+                && (m_usedHeight + gap + fullSystemHeight > this->GetAvailableDrawingHeight())))) {
         // If this is the last system in the list, it doesn't fit the page and it's a leftover system (has just one
         // measure) => add the system content to the previous system
         Object *nextSystem = m_contentPage->GetNext(system, SYSTEM);
