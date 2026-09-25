@@ -43,6 +43,9 @@
               <lg xml:id="stanza-3"><l><syl xml:id="stanza-3-lyric">Sibling</syl></l></lg>
               <lg xml:id="stanza-4"><l><syl xml:id="stanza-4-lyric">Sibling</syl></l></lg>
             </div>
+            <div type="verse-textblocks" xml:id="block-div">
+              <lg xml:id="stanza-5"><l><syl xml:id="block-lyric">Next block</syl></l></lg>
+            </div>
           </section>
         </score>
       </mdiv>

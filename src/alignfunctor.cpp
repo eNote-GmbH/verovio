@@ -876,15 +876,31 @@ int AlignSystemsFunctor::GetSystemSpacing(const System *system) const
     const int unit = m_doc->GetDrawingUnit(100);
     const int systemSpacing = std::max(m_systemSpacing, 2 * unit);
 
-    // A text block appended to the score is separated from it by the text flow score margin
-    const Div *div = vrv_cast<const Div *>(system->FindDescendantByType(DIV, 1));
-    if (!div || !div->HasTextFlow()) return systemSpacing;
+    // A text block is separated from the score before it by the score margin and from a text block before it by the
+    // block spacing
+    const auto isTextBlock = [](const Object *object) {
+        const Div *div = vrv_cast<const Div *>(object->FindDescendantByType(DIV, 1));
+        return div && div->HasTextFlow();
+    };
+    if (!isTextBlock(system)) return systemSpacing;
     const Object *previous = system->GetParent()->GetPrevious(system, SYSTEM);
-    if (!previous || !previous->GetChildCount(MEASURE)) return systemSpacing;
+    if (!previous) return systemSpacing;
+
+    const Options *options = m_doc->GetOptions();
+    double factor = 0.0;
+    if (previous->GetChildCount(MEASURE)) {
+        factor = options->m_textFlowScoreMargin.GetValue();
+    }
+    else if (isTextBlock(previous)) {
+        factor = options->m_textFlowBlockSpacing.GetValue();
+    }
+    else {
+        return systemSpacing;
+    }
 
     FontInfo textFlowFont = m_doc->GetDrawingTextFont(100, system->GetDrawingScoreDef());
     const int lineHeight = m_doc->GetTextLineHeight(&textFlowFont, false);
-    return static_cast<int>(std::lround(m_doc->GetOptions()->m_textFlowScoreMargin.GetValue() * lineHeight));
+    return static_cast<int>(std::lround(factor * lineHeight));
 }
 
 } // namespace vrv

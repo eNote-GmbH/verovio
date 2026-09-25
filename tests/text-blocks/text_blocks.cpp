@@ -286,6 +286,7 @@ struct TextFlowSpacingMetrics {
     double lyricLine = 0.0;
     double tableStanza = 0.0;
     double siblingStanza = 0.0;
+    double nextBlock = 0.0;
     double firstBlock = 0.0;
 };
 
@@ -306,6 +307,7 @@ TextFlowSpacingMetrics MeasureTextFlowSpacing(
     metrics.tableStanza
         = FirstTranslateYAfter(svg, "stanza-2-lyric") - FirstTranslateYAfter(svg, "stanza-1-line-2-lyric");
     metrics.siblingStanza = FirstTranslateYAfter(svg, "stanza-4-lyric") - FirstTranslateYAfter(svg, "stanza-3-lyric");
+    metrics.nextBlock = FirstTranslateYAfter(svg, "block-lyric") - FirstTranslateYAfter(svg, "stanza-4-lyric");
     metrics.firstBlock = FirstTranslateYAfter(svg, "stanza-1-head");
     return metrics;
 }
@@ -313,9 +315,11 @@ TextFlowSpacingMetrics MeasureTextFlowSpacing(
 bool TestTextFlowSpacing(const char *file, const std::string &resourcePath)
 {
     const TextFlowSpacingMetrics none = MeasureTextFlowSpacing(file, resourcePath,
-        R"({"textFlowChordLaneSpacing":0,"textFlowLineSpacing":0,"textFlowStanzaSpacing":0,"textFlowScoreMargin":0})");
+        R"({"textFlowChordLaneSpacing":0,"textFlowLineSpacing":0,"textFlowStanzaSpacing":0,"textFlowScoreMargin":0,
+            "textFlowBlockSpacing":0})");
     const TextFlowSpacingMetrics spaced = MeasureTextFlowSpacing(file, resourcePath,
-        R"({"textFlowChordLaneSpacing":0.5,"textFlowLineSpacing":1,"textFlowStanzaSpacing":2,"textFlowScoreMargin":3})");
+        R"({"textFlowChordLaneSpacing":0.5,"textFlowLineSpacing":1,"textFlowStanzaSpacing":2,"textFlowScoreMargin":3,
+            "textFlowBlockSpacing":1.5})");
 
     // Without chord-lane spacing, stacked lanes are exactly one text line apart
     const double lineHeight = none.chordLane;
@@ -332,6 +336,8 @@ bool TestTextFlowSpacing(const char *file, const std::string &resourcePath)
     ok &= Expect(added(spaced.siblingStanza, none.siblingStanza, 2.0),
         "textFlowStanzaSpacing was not applied between sibling line groups");
     ok &= Expect(added(spaced.firstBlock, none.firstBlock, 3.0), "textFlowScoreMargin was not applied");
+    ok &= Expect(
+        added(spaced.nextBlock, none.nextBlock, 1.5), "textFlowBlockSpacing was not applied between text blocks");
     return ok;
 }
 

@@ -1573,6 +1573,11 @@ Options::Options()
     m_textEnclosureThickness.Init(0.2, 0.10, 0.80);
     this->Register(&m_textEnclosureThickness, "textEnclosureThickness", &m_generalLayout);
 
+    m_textFlowBlockSpacing.SetInfo(
+        "Text flow block spacing", "The space between consecutive text blocks, as a multiple of the text line height");
+    m_textFlowBlockSpacing.Init(1.0, 0.0, 10.0);
+    this->Register(&m_textFlowBlockSpacing, "textFlowBlockSpacing", &m_generalLayout);
+
     m_textFlowChordLaneSpacing.SetInfo("Text flow chord lane spacing",
         "The space between a chord lane and its lyric line in text blocks, as a multiple of the text line height");
     m_textFlowChordLaneSpacing.Init(0.0, 0.0, 10.0);
