@@ -118,7 +118,8 @@ FunctorCode CalcAlignmentXPosFunctor::VisitMeasureAligner(MeasureAligner *measur
 FunctorCode CalcAlignmentXPosFunctor::VisitSystem(System *system)
 {
     const double ratio = system->EstimateJustificationRatio(m_doc);
-    if ((!system->IsLastOfMdiv() && !system->IsLastOfSelection()) || (ratio < m_estimatedJustificationRatio)) {
+    if ((!system->IsLastMeasureSystemOfMdiv() && !system->IsLastOfSelection())
+        || (ratio < m_estimatedJustificationRatio)) {
         m_estimatedJustificationRatio = ratio;
     }
 

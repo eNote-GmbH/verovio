@@ -159,6 +159,12 @@ public:
     ///@}
 
     /**
+     * Like IsLastOfMdiv(), but skipping the systems without measures that follow (e.g. the systems of
+     * a text-flow <div> after the music), also across page ends.
+     */
+    bool IsLastMeasureSystemOfMdiv() const;
+
+    /**
      * Estimate the justification ratio from the castoff system widths and the desired page width
      */
     double EstimateJustificationRatio(const Doc *doc) const;
