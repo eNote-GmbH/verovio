@@ -408,7 +408,7 @@ AttBarring::AttBarring() : Att()
 
 void AttBarring::ResetBarring()
 {
-    m_barLen = 0.0;
+    m_barLen = -1.0;
     m_barMethod = BARMETHOD_NONE;
     m_barPlace = MEI_UNSET;
 }
@@ -454,7 +454,7 @@ bool AttBarring::WriteBarring(pugi::xml_node element)
 
 bool AttBarring::HasBarLen() const
 {
-    return (m_barLen != 0.0);
+    return (m_barLen != -1.0);
 }
 
 bool AttBarring::HasBarMethod() const

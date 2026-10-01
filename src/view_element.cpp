@@ -456,6 +456,12 @@ void View::DrawBarLine(DeviceContext *dc, LayerElement *element, Layer *layer, S
     StaffDef *drawingStaffDef = staff->m_drawingStaffDef;
     // Determine the method
     assert(drawingStaffDef);
+    // A bar line length of zero leaves nothing to draw on this staff
+    const auto [hasLength, length] = barLine->GetLengthFromContext(drawingStaffDef);
+    if (hasLength && (length == 0.0)) {
+        barLine->SetEmptyBB();
+        return;
+    }
     auto [hasMethod, method] = barLine->GetMethodFromContext(drawingStaffDef);
     if (barLine->HasMethod()) {
         method = barLine->GetMethod();

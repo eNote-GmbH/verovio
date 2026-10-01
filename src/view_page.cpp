@@ -722,6 +722,14 @@ void View::DrawBarLines(DeviceContext *dc, Measure *measure, StaffGrp *staffGrp,
             continue;
         }
 
+        // A bar line length of zero leaves nothing to draw on this staff, repeat dots included.
+        // Also break a bar line drawn through the staves so it does not cross this staff.
+        const auto [hasBarLen, barLen] = barLine->GetLengthFromContext(staffDef);
+        if (hasBarLen && (barLen == 0.0)) {
+            yBottomPrevious = VRV_UNSET;
+            continue;
+        }
+
         // Determine the method
         const auto [hasMethod, method] = barLine->GetMethodFromContext(staffDef);
         const bool methodMensur = hasMethod && (method == BARMETHOD_mensur);

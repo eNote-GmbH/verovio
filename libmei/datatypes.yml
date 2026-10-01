@@ -225,6 +225,10 @@ modules:
         att.articulation:
             artic:
                 type: data_ARTICULATION_List
+        att.barring:
+            bar.len:
+                type: double
+                default: -1.0
         att.curvature:
             bulge:
                 type: data_BULGE
