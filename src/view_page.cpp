@@ -1123,6 +1123,20 @@ void View::DrawMNum(DeviceContext *dc, MNum *mnum, Measure *measure, System *sys
     assert(mnum);
 
     Staff *staff = system->GetTopVisibleStaff(true);
+    // If the top staff has invisible staff lines (@lines.visible="false", e.g. a rhythm "kicks" staff above
+    // the melody), use the first staff below it that has visible lines instead: such a staff is only present
+    // in some systems, and the measure number would otherwise jump between the two from system to system.
+    if (staff && staff->m_drawingStaffDef && (staff->m_drawingStaffDef->GetLinesVisible() == BOOLEAN_false)) {
+        for (Object *child : system->m_systemAligner.GetChildren()) {
+            StaffAlignment *alignment = vrv_cast<StaffAlignment *>(child);
+            assert(alignment);
+            Staff *candidate = alignment->GetStaff();
+            if (!candidate || candidate->IsOssia() || !candidate->m_drawingStaffDef) continue;
+            if (candidate->m_drawingStaffDef->GetLinesVisible() == BOOLEAN_false) continue;
+            staff = candidate;
+            break;
+        }
+    }
     if (staff) {
         // Only one FloatingPositioner on the top (visible) staff
         if (!system->SetCurrentFloatingPositioner(staff->GetN(), mnum, staff, staff)) {
