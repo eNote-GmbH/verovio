@@ -238,6 +238,11 @@ bool Toolkit::SetResourcePath(const std::string &path)
     if (m_options->m_fontFallback.IsSet()) {
         resources.SetFallbackFont(m_options->m_fontFallback.GetStrValue());
     }
+    if (m_options->m_harmAccidFont.IsSet() && !m_options->m_harmAccidFont.GetValue().empty()) {
+        if (!resources.LoadMusicFont(m_options->m_harmAccidFont.GetValue())) {
+            LogWarning("Harm accidental font '%s' could not be loaded", m_options->m_harmAccidFont.GetValue().c_str());
+        }
+    }
     if (m_options->m_textFont.IsSet() && !m_options->m_fontText.IsSet()) {
         success = this->SetTextFont(m_options->m_textFont.GetValue()) && success;
     }
@@ -1557,6 +1562,17 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     if (json.has<jsonxx::String>("fontFallback")) {
         Resources &resources = m_doc.GetResourcesForModification();
         resources.SetFallbackFont(m_options->m_fontFallback.GetStrValue());
+        if (this->GetPageCount() > 0) m_fontLayoutInvalid = true;
+    }
+    if (jsonMap.contains("harmAccidFont")) {
+        Resources &resources = m_doc.GetResourcesForModification();
+        const std::string harmAccidFont = m_options->m_harmAccidFont.GetValue();
+        if (!harmAccidFont.empty() && !resources.LoadMusicFont(harmAccidFont)) {
+            LogWarning("Harm accidental font '%s' could not be loaded", harmAccidFont.c_str());
+        }
+        if (this->GetPageCount() > 0) m_fontLayoutInvalid = true;
+    }
+    if (jsonMap.contains("harmAccidScale")) {
         if (this->GetPageCount() > 0) m_fontLayoutInvalid = true;
     }
     if (json.has<jsonxx::String>("fontText")) {

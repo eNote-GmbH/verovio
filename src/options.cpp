@@ -1368,6 +1368,16 @@ Options::Options()
     m_handwrittenFont.SetValue("Petaluma");
     this->Register(&m_handwrittenFont, "handwrittenFont", &m_generalLayout);
 
+    m_harmAccidFont.SetInfo("Harm accidental font",
+        "The music font used for the accidentals in harmonic indications (empty for the current music font)");
+    m_harmAccidFont.Init("");
+    this->Register(&m_harmAccidFont, "harmAccidFont", &m_generalLayout);
+
+    m_harmAccidScale.SetInfo(
+        "Harm accidental scale", "The scaling factor applied to the accidentals in harmonic indications");
+    m_harmAccidScale.Init(1.0, 0.5, 3.0);
+    this->Register(&m_harmAccidScale, "harmAccidScale", &m_generalLayout);
+
     m_harmDist.SetInfo("Harm dist", "The default distance from the staff of harmonic indications");
     m_harmDist.Init(1.0, 0.5, 16.0);
     this->Register(&m_harmDist, "harmDist", &m_generalLayout);
