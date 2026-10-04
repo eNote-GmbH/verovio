@@ -188,21 +188,32 @@ void View::DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDraw
             else if (accid == U"\u266F" || accid == U"\uE262") { // MUSIC or SMUFL SHARP SIGN
                 smuflAccid.push_back(SMUFL_EA66_figbassSharp);
             }
-            else if (accid == U"\uE264") { // SMUFL DOUBLE FLAT SIGN
+            else if (accid == U"\uE264" || accid == U"\U0001D12B") { // SMUFL or MUSIC DOUBLE FLAT SIGN
                 smuflAccid.push_back(SMUFL_EA63_figbassDoubleFlat);
             }
-            else if (accid == U"\uE263") { // SMUFL DOUBLE SHARP SIGN
+            else if (accid == U"\uE263" || accid == U"\U0001D12A") { // SMUFL or MUSIC DOUBLE SHARP SIGN
                 smuflAccid.push_back(SMUFL_EA67_figbassDoubleSharp);
             }
             else {
                 smuflAccid += accid;
             }
 
+            const Resources &resources = m_doc->GetResources();
             FontInfo vrvTxt;
-            vrvTxt.SetPointSize(dc->GetFont()->GetPointSize() * m_doc->GetMusicToLyricFontSizeRatio());
-            vrvTxt.SetFaceName(m_doc->GetResources().GetCurrentFont());
-            bool isFallbackNeeded = (m_doc->GetResources()).IsSmuflFallbackNeeded(smuflAccid);
-            vrvTxt.SetSmuflWithFallback(isFallbackNeeded);
+            vrvTxt.SetPointSize(dc->GetFont()->GetPointSize() * m_doc->GetMusicToLyricFontSizeRatio()
+                * m_options->m_harmAccidScale.GetValue());
+            // Use the dedicated harm accidental font if one is set and has the glyph - this keeps the accidentals
+            // identical whatever the music font is. Otherwise use the current music font, as before.
+            const std::string harmAccidFont = m_options->m_harmAccidFont.GetValue();
+            if (!harmAccidFont.empty() && resources.HasGlyphInFont(harmAccidFont, smuflAccid.front())) {
+                vrvTxt.SetFaceName(harmAccidFont);
+                vrvTxt.SetSmuflWithFallback(false);
+            }
+            else {
+                vrvTxt.SetFaceName(resources.GetCurrentFont());
+                bool isFallbackNeeded = resources.IsSmuflFallbackNeeded(smuflAccid);
+                vrvTxt.SetSmuflWithFallback(isFallbackNeeded);
+            }
             dc->SetFont(&vrvTxt);
             dc->DrawText(UTF32to8(smuflAccid), smuflAccid);
             dc->ResetFont();

@@ -88,6 +88,10 @@ public:
     bool SetCurrentFont(const std::string &fontName, bool allowLoading = false);
     std::string GetCurrentFont() const { return m_currentFontName; }
     bool IsFontLoaded(const std::string &fontName) const;
+    /** Load a music font without selecting it (e.g., for the harm accidental font) */
+    bool LoadMusicFont(const std::string &fontName);
+    /** Check if a loaded music font itself has a glyph (i.e., without relying on any fallback) */
+    bool HasGlyphInFont(const std::string &fontName, char32_t smuflCode) const;
     ///@}
 
     /**

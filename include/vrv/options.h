@@ -726,6 +726,8 @@ public:
     OptionDbl m_hairpinSize;
     OptionDbl m_hairpinThickness;
     OptionArray m_handwrittenFont;
+    OptionString m_harmAccidFont;
+    OptionDbl m_harmAccidScale;
     OptionDbl m_harmDist;
     OptionDbl m_justificationBraceGroup;
     OptionDbl m_justificationBracketGroup;

@@ -208,6 +208,25 @@ bool Resources::IsFontLoaded(const std::string &fontName) const
     return m_loadedFonts.contains(fontName) || m_fontStore.HasFace(FontStore::Kind::Music, fontName);
 }
 
+bool Resources::LoadMusicFont(const std::string &fontName)
+{
+    if (fontName.empty()) return false;
+    if (this->IsFontLoaded(fontName)) return true;
+    m_cachedGlyph.reset();
+    // LoadFont also fails for a Bravura / Leipzig data set that does not have every default SMuFL glyph, but
+    // the glyphs it does have are loaded and usable - callers check the ones they need with HasGlyphInFont
+    this->LoadFont(fontName);
+    return this->IsFontLoaded(fontName);
+}
+
+bool Resources::HasGlyphInFont(const std::string &fontName, char32_t smuflCode) const
+{
+    if (m_fontStore.GetGlyphMetrics(FontStore::Kind::Music, fontName, smuflCode)) return true;
+    const auto font = m_loadedFonts.find(fontName);
+    if (font == m_loadedFonts.end()) return false;
+    return font->second.GetGlyphTable().contains(smuflCode);
+}
+
 bool Resources::AddCustom(const std::vector<std::string> &extraFonts)
 {
     bool success = true;
