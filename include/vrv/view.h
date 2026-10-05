@@ -574,6 +574,7 @@ protected:
     void DrawTextString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
     void DrawDirString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
     void DrawDynamString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params, Rend *rend);
+    bool DrawHarmAccidAsText(DeviceContext *dc, char32_t accid);
     void DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params);
     void DrawSmuflLine(DeviceContext *dc, Point orig, int length, int staffSize, bool dimin, char32_t fill,
         char32_t start = 0, char32_t end = 0);

@@ -728,6 +728,7 @@ public:
     OptionArray m_handwrittenFont;
     OptionString m_harmAccidFont;
     OptionDbl m_harmAccidScale;
+    OptionString m_harmAccidTextFont;
     OptionDbl m_harmDist;
     OptionDbl m_justificationBraceGroup;
     OptionDbl m_justificationBracketGroup;

@@ -1575,6 +1575,14 @@ bool Toolkit::SetOptions(const std::string &jsonOptions)
     if (jsonMap.contains("harmAccidScale")) {
         if (this->GetPageCount() > 0) m_fontLayoutInvalid = true;
     }
+    if (jsonMap.contains("harmAccidTextFont")) {
+        const std::string harmAccidTextFont = m_options->m_harmAccidTextFont.GetValue();
+        if (!harmAccidTextFont.empty()
+            && !m_doc.GetResources().GetFontStore().HasFace(FontStore::Kind::Text, harmAccidTextFont)) {
+            LogWarning("Harm accidental text font '%s' has not been registered", harmAccidTextFont.c_str());
+        }
+        if (this->GetPageCount() > 0) m_fontLayoutInvalid = true;
+    }
     if (json.has<jsonxx::String>("fontText")) {
         Resources &resources = m_doc.GetResourcesForModification();
         resources.SetTextFont(m_options->m_fontText.GetValue());
