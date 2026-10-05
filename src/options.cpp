@@ -1378,6 +1378,12 @@ Options::Options()
     m_harmAccidScale.Init(1.0, 0.5, 3.0);
     this->Register(&m_harmAccidScale, "harmAccidScale", &m_generalLayout);
 
+    m_harmAccidTextFont.SetInfo("Harm accidental text font",
+        "A registered text font with the SMuFL accidentals (U+E260 to U+E264), used to draw the accidentals in "
+        "harmonic indications as text, at the size of the surrounding text (empty for music font glyphs)");
+    m_harmAccidTextFont.Init("");
+    this->Register(&m_harmAccidTextFont, "harmAccidTextFont", &m_generalLayout);
+
     m_harmDist.SetInfo("Harm dist", "The default distance from the staff of harmonic indications");
     m_harmDist.Init(1.0, 0.5, 16.0);
     this->Register(&m_harmDist, "harmDist", &m_generalLayout);

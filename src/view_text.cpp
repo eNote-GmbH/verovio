@@ -161,6 +161,48 @@ void View::DrawDynamString(DeviceContext *dc, const std::u32string &str, TextDra
     }
 }
 
+bool View::DrawHarmAccidAsText(DeviceContext *dc, char32_t accid)
+{
+    assert(dc);
+    assert(dc->HasFont());
+
+    const std::string textFont = m_options->m_harmAccidTextFont.GetValue();
+    if (textFont.empty()) return false;
+
+    char32_t glyph = 0;
+    switch (accid) {
+        case U'\u266D': // MUSIC FLAT SIGN
+        case U'\uE260': glyph = SMUFL_E260_accidentalFlat; break;
+        case U'\u266E': // MUSIC NATURAL SIGN
+        case U'\uE261': glyph = SMUFL_E261_accidentalNatural; break;
+        case U'\u266F': // MUSIC SHARP SIGN
+        case U'\uE262': glyph = SMUFL_E262_accidentalSharp; break;
+        case U'\U0001D12A': // MUSICAL SYMBOL DOUBLE SHARP
+        case U'\uE263': glyph = SMUFL_E263_accidentalDoubleSharp; break;
+        case U'\U0001D12B': // MUSICAL SYMBOL DOUBLE FLAT
+        case U'\uE264': glyph = SMUFL_E264_accidentalDoubleFlat; break;
+        default: return false;
+    }
+
+    const FontStore &fontStore = m_doc->GetResources().GetFontStore();
+    if (!fontStore.GetGlyphMetrics(FontStore::Kind::Text, textFont, glyph)) return false;
+
+    // A text run in the accidental font - upright and regular whatever the harm text is
+    FontInfo accidTxt = *dc->GetFont();
+    accidTxt.SetFaceName(textFont);
+    accidTxt.SetSmuflFont(SMUFL_NONE);
+    accidTxt.SetStyle(FONTSTYLE_normal);
+    accidTxt.SetWeight(FONTWEIGHT_normal);
+    accidTxt.SetPointSize(dc->GetFont()->GetPointSize() * m_options->m_harmAccidScale.GetValue());
+
+    const std::u32string text(1, glyph);
+    dc->SetFont(&accidTxt);
+    dc->DrawText(UTF32to8(text), text);
+    dc->ResetFont();
+
+    return true;
+}
+
 void View::DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDrawingParams &params)
 {
     assert(dc);
@@ -178,6 +220,13 @@ void View::DrawHarmString(DeviceContext *dc, const std::u32string &str, TextDraw
         if (pos == prevPos || pos < str.length()) {
             // Then the accidental
             std::u32string accid = str.substr(pos, 1);
+
+            // With a harm accidental text font, draw the accidental as a text glyph of that font, at the size of
+            // the surrounding text. This applies only if the font is registered and has the glyph.
+            if (this->DrawHarmAccidAsText(dc, accid.front())) {
+                prevPos = pos + 1;
+                continue;
+            }
             std::u32string smuflAccid;
             if (accid == U"\u266D" || accid == U"\uE260") { // MUSIC or SMUFL FLAT SIGN
                 smuflAccid.push_back(SMUFL_EA64_figbassFlat);
