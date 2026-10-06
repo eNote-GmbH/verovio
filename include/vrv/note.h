@@ -66,6 +66,7 @@ class Note : public LayerElement,
              public AttStemsCmn,
              public AttStringtab,
              public AttTiePresent,
+             public AttTypography,
              public AttVisibility {
 public:
     /**
@@ -188,6 +189,13 @@ public:
      * Returns a single integer representing pitch and octave.
      */
     int GetDiatonicPitch() const;
+
+    /**
+     * Return the staff size to use for the notehead glyph (drawing and metrics).
+     * This is the staff size scaled by a relative @fontsize (percent or term) on the note.
+     * Absolute values of @fontsize are ignored, and so is @fontsize on chord notes.
+     */
+    int GetNoteheadStaffSize(int staffSize) const;
 
     /**
      * Get the stem up / stem down attachment point.

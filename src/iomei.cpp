@@ -3103,6 +3103,7 @@ void MEIOutput::WriteNote(pugi::xml_node currentNode, Note *note)
     note->WriteStemsCmn(currentNode);
     note->WriteStringtab(currentNode);
     note->WriteTiePresent(currentNode);
+    note->WriteTypography(currentNode);
     note->WriteVisibility(currentNode);
 }
 
@@ -7978,6 +7979,7 @@ bool MEIInput::ReadNote(Object *parent, pugi::xml_node note)
     vrvNote->ReadStemsCmn(note);
     vrvNote->ReadStringtab(note);
     vrvNote->ReadTiePresent(note);
+    vrvNote->ReadTypography(note);
     vrvNote->ReadVisibility(note);
 
     InstArticulation artic;

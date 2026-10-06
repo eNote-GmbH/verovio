@@ -606,6 +606,7 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
     data_DURATION dur = DURATION_4;
     const Staff *staff = this->GetAncestorStaff();
     bool isMensuralDur = false;
+    int staffSize = staff->m_drawingStaffSize;
     if (this->Is(NOTE)) {
         const Note *note = vrv_cast<const Note *>(this);
         assert(note);
@@ -616,6 +617,8 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
         }
         else {
             code = note->GetNoteheadGlyph(dur);
+            // The notehead can be scaled with @fontsize
+            staffSize = note->GetNoteheadStaffSize(staffSize);
         }
     }
     else if (this->Is(CHORD)) {
@@ -655,7 +658,7 @@ int LayerElement::GetDrawingRadius(const Doc *doc, bool isInLigature) const
     // Maybe this can be refactored with a distinct method for radius in mensural notation.
     assert(code);
 
-    return doc->GetGlyphWidth(code, staff->m_drawingStaffSize, this->GetDrawingCueSize()) / 2;
+    return doc->GetGlyphWidth(code, staffSize, this->GetDrawingCueSize()) / 2;
 }
 
 Fraction LayerElement::GetAlignmentDuration(

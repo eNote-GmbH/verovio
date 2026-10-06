@@ -1538,16 +1538,19 @@ void View::DrawNote(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
                 dc->SetCustomGraphicColor(note->GetHeadColor());
             }
 
-            this->DrawSmuflCode(dc, x, y, fontNo, staff->m_drawingStaffSize, drawingCueSize, true);
+            // The notehead can be scaled with @fontsize
+            const int headStaffSize = note->GetNoteheadStaffSize(staff->m_drawingStaffSize);
+
+            this->DrawSmuflCode(dc, x, y, fontNo, headStaffSize, drawingCueSize, true);
 
             // handle notehead enclosure
             if (note->HasHeadMod()) {
                 switch (note->GetHeadMod()) {
                     case NOTEHEADMODIFIER_paren: {
                         this->DrawSmuflCode(dc, x - note->GetDrawingRadius(m_doc), y, SMUFL_E26A_accidentalParensLeft,
-                            staff->m_drawingStaffSize, drawingCueSize, true);
+                            headStaffSize, drawingCueSize, true);
                         this->DrawSmuflCode(dc, x + note->GetDrawingRadius(m_doc) * 2, y,
-                            SMUFL_E26B_accidentalParensRight, staff->m_drawingStaffSize, drawingCueSize, true);
+                            SMUFL_E26B_accidentalParensRight, headStaffSize, drawingCueSize, true);
                         break;
                     }
                     case NOTEHEADMODIFIER_slash:
