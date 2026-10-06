@@ -72,6 +72,7 @@ Note::Note()
     , AttStemsCmn()
     , AttStringtab()
     , AttTiePresent()
+    , AttTypography()
     , AttVisibility()
 {
     this->RegisterInterface(AltSymInterface::GetAttClasses(), AltSymInterface::IsInterface());
@@ -93,6 +94,7 @@ Note::Note()
     this->RegisterAttClass(ATT_STEMSCMN);
     this->RegisterAttClass(ATT_STRINGTAB);
     this->RegisterAttClass(ATT_TIEPRESENT);
+    this->RegisterAttClass(ATT_TYPOGRAPHY);
     this->RegisterAttClass(ATT_VISIBILITY);
 
     this->Reset();
@@ -123,6 +125,7 @@ void Note::Reset()
     this->ResetStemsCmn();
     this->ResetStringtab();
     this->ResetTiePresent();
+    this->ResetTypography();
     this->ResetVisibility();
 
     m_noteGroupPosition = 0;
@@ -491,8 +494,27 @@ int Note::GetDiatonicPitch() const
     return 0;
 }
 
+int Note::GetNoteheadStaffSize(int staffSize) const
+{
+    if (!this->HasFontsize() || this->IsChordTone()) return staffSize;
+
+    const data_FONTSIZE fontsize = this->GetFontsize();
+    double percent = 100.0;
+    switch (fontsize.GetType()) {
+        case FONTSIZE_percent: percent = fontsize.GetPercent(); break;
+        case FONTSIZE_term: percent = fontsize.GetPercentForTerm(); break;
+        // Absolute sizes (pt or vu) are not supported for noteheads
+        default: return staffSize;
+    }
+    if (percent <= 0.0) return staffSize;
+
+    return std::max(1, static_cast<int>(std::lround(staffSize * percent / 100.0)));
+}
+
 Point Note::GetStemUpSE(const Doc *doc, int staffSize, bool isCueSize) const
 {
+    // The notehead can be scaled with @fontsize
+    staffSize = this->GetNoteheadStaffSize(staffSize);
     int defaultYShift = doc->GetDrawingUnit(staffSize) / 4;
     if (isCueSize) defaultYShift = doc->GetCueSize(defaultYShift);
     // x default is always set to the right for now
@@ -526,6 +548,8 @@ Point Note::GetStemUpSE(const Doc *doc, int staffSize, bool isCueSize) const
 
 Point Note::GetStemDownNW(const Doc *doc, int staffSize, bool isCueSize) const
 {
+    // The notehead can be scaled with @fontsize
+    staffSize = this->GetNoteheadStaffSize(staffSize);
     int defaultYShift = doc->GetDrawingUnit(staffSize) / 4;
     if (isCueSize) defaultYShift = doc->GetCueSize(defaultYShift);
     // x default is always set to the left for now
