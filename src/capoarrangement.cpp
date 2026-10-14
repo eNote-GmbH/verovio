@@ -436,6 +436,11 @@ namespace {
         ranked.reserve(fingerings.size());
         for (CapoFingering &fingering : fingerings) {
             const bool preferred = preferredFrets && *preferredFrets == fingering.frets;
+            // The grip the arranger wrote in the chordDef is known to be playable in this arrangement, so it
+            // never counts as harder than the easiest level. Otherwise a single slightly stretched but standard
+            // grip (A/C# as x42220) can rule out the arranger's own shapes, since the hardest chord is compared
+            // before anything else, even before the penalty for a higher capo.
+            if (preferred) fingering.difficultyLevel = std::min(fingering.difficultyLevel, 1);
             ranked.push_back({ std::move(fingering), preferred });
         }
         std::sort(ranked.begin(), ranked.end(), [](const CandidateOption &left, const CandidateOption &right) {
