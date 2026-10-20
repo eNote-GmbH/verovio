@@ -564,7 +564,14 @@ void TransposeFunctor::ApplyCapoArrangement()
             plan.harm->SetChordDef(definition);
         }
         Dir *directive = documentPlan.directive;
-        if (!directive && !documentPlan.harmonies.empty())
+        if (documentPlan.capo == 0) {
+            // No capo: the indication is dropped rather than shown as "Capo 0" (also with the capo switched off,
+            // transposeCapo "0"). The chord shapes still carry the guitar-chord-shape role, so the capo
+            // planner can run again on the output.
+            if (directive && directive->GetParent()) directive->GetParent()->DeleteChild(directive);
+            directive = NULL;
+        }
+        else if (!directive && !documentPlan.harmonies.empty())
             directive = CreateCapoDirective(documentPlan.harmonies.front().harm, documentPlan.capo);
         if (directive) {
             directive->SetType(SetCapoType(directive->GetType(), documentPlan.capo));
